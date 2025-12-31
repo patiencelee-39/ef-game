@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>執行功能訓練遊戲 - 詳細註解版</title>
+
+    <!-- 
+    ╔══════════════════════════════════════════════════════════════════╗
+    ║  區塊 1：CSS 樣式 (控制外觀)                                      ║
+    ║  這裡決定了所有東西「長什麼樣子」                                  ║
+    ╚══════════════════════════════════════════════════════════════════╝
+    
+    CSS 的基本語法：
+    選擇器 {
+        屬性: 值;
+    }
+    
+    例如：
+    .btn {              ← 選擇器：所有 class="btn" 的元素
+        color: white;   ← 文字顏色設為白色
+        padding: 10px;  ← 內部留白 10 像素
+    }
+    -->
+    <style>
+        /* ----- 基本重置 ----- */
+        /* 把所有元素的預設邊距歸零，讓排版更好控制 */
+        * {
+            margin: 0;      /* 外邊距歸零 */
+            padding: 0;     /* 內邊距歸零 */
+            box-sizing: border-box;  /* 讓寬度計算包含邊框 */
+        }
+
+        /* ----- 整個頁面的背景 ----- */
+        body {
+            /* 字體：先嘗試微軟正黑體，沒有就用系統預設 */
+            font-family: "Microsoft JhengHei", "微軟正黑體", sans-serif;
+            
+            /* 漸層背景：從左上到右下，紫色漸層 */
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            
+            /* 最小高度 = 整個視窗高度 */
+            min-height: 100vh;
+            
+            /* 用 flexbox 讓內容置中 */
+            display: flex;
+            justify-content: center;  /* 水平置中 */
+            align-items: center;      /* 垂直置中 */
+            padding: 20px;
+        }
+
+        /* ----- 遊戲主容器（白色卡片）----- */
+        .game-container {
+            background: white;
+            border-radius: 20px;      /* 圓角 */
+            padding: 30px;            /* 內部留白 */
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);  /* 陰影效果 */
+            max-width: 500px;         /* 最大寬度 */
+            width: 100%;
+            text-align: center;       /* 文字置中 */
+        }
+
+        /* ----- 標題樣式 ----- */
+        h1 {
+            color: #333;              /* 深灰色 */
+            margin-bottom: 10px;
+            font-size: 1.8em;         /* 字體大小是正常的 1.8 倍 */
+        }
+
+        /* ----- 刺激呈現區（圓形區域）----- */
+        .stimulus {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;       /* 50% = 變成圓形 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3em;           /* 大字體顯示 emoji */
+            margin: 20px 0;
+            transition: all 0.3s ease;  /* 變化時有 0.3 秒的過渡動畫 */
+        }
+
+        /* Go 刺激（星星）的樣式 - 綠色背景 */
+        .stimulus.go {
+            background: #4CAF50;      /* 綠色 */
+            color: white;
+            animation: pulse 0.5s ease;  /* 套用 pulse 動畫 */
+        }
+
+        /* No-Go 刺激（叉叉）的樣式 - 紅色背景 */
+        .stimulus.nogo {
+            background: #f44336;      /* 紅色 */
+            color: white;
+            animation: pulse 0.5s ease;
+        }
+
+        /* 中性狀態（問號）- 灰色背景 */
+        .stimulus.neutral {
+            background: #ddd;
+            color: #999;
+        }
+
+        /* 定義 pulse 動畫：從小變大再恢復 */
+        @keyframes pulse {
+            0% { transform: scale(0.8); opacity: 0; }   /* 開始：80% 大小，透明 */
+            50% { transform: scale(1.1); }              /* 中間：110% 大小 */
+            100% { transform: scale(1); opacity: 1; }   /* 結束：正常大小，不透明 */
+        }
+
+        /* ----- 按鈕基本樣式 ----- */
+        .btn {
+            padding: 15px 40px;       /* 上下 15px，左右 40px */
+            font-size: 1.2em;
+            border: none;             /* 無邊框 */
+            border-radius: 10px;      /* 圓角 */
+            cursor: pointer;          /* 滑鼠變成手指 */
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        /* 主要按鈕（紫色漸層）*/
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        /* 滑鼠移上去時的效果 */
+        .btn-primary:hover {
+            transform: translateY(-3px);  /* 往上移動 3px */
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);  /* 加深陰影 */
+        }
+
+        /* 反應按鈕（綠色，更大）*/
+        .btn-action {
+            background: #4CAF50;
+            color: white;
+            font-size: 1.5em;
+            padding: 20px 60px;
+        }
+
+        /* ----- 回饋訊息樣式 ----- */
+        .feedback {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin: 15px 0;
+            min-height: 40px;         /* 保留空間，避免版面跳動 */
+        }
+
+        .feedback.correct {
+            color: #4CAF50;           /* 正確 = 綠色 */
+        }
+
+        .feedback.incorrect {
+            color: #f44336;           /* 錯誤 = 紅色 */
+        }
+
+        /* ----- 進度條 ----- */
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #e0e0e0;      /* 灰色底 */
+            border-radius: 5px;
+            overflow: hidden;         /* 超出部分隱藏 */
+            margin: 15px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s ease;  /* 寬度變化有動畫 */
+        }
+
+        /* ----- 分數板 ----- */
+        .score-board {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+
+        .score-item {
+            background: #f0f0f0;
+            padding: 15px 25px;
+            border-radius: 10px;
+        }
+
+        .score-item .label {
+            font-size: 0.8em;
+            color: #666;
+        }
+
+        .score-item .value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* ----- 遊戲區域 ----- */
+        .game-area {
+            background: #f5f5f5;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* ----- 說明區塊 ----- */
+        .instruction {
+            background: #e3f2fd;      /* 淺藍色背景 */
+            border-left: 4px solid #2196F3;  /* 左邊藍色邊條 */
+            padding: 15px;
+            margin: 15px 0;
+            text-align: left;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .instruction h3 {
+            color: #1976D2;
+            margin-bottom: 8px;
+        }
+
+        /* ----- 結果頁面 ----- */
+        .results {
+            text-align: left;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        /* ----- 數據表格 ----- */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85em;
+            margin-top: 10px;
+        }
+
+        .data-table th, .data-table td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        .data-table th {
+            background: #f5f5f5;
+        }
+
+        /* ----- 隱藏元素的 class ----- */
+        /* 加上這個 class 的元素會被隱藏 */
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 
+    ╔══════════════════════════════════════════════════════════════════╗
+    ║  區塊 2：HTML 結構 (畫面內容)                                      ║
+    ║  這裡決定了畫面上「有哪些東西」                                    ║
+    ╚══════════════════════════════════════════════════════════════════╝
+    
+    HTML 的基本語法：
+    <標籤 屬性="值">內容</標籤>
+    
+    重要概念：
+    - id="xxx"    → 唯一識別碼，用 document.getElementById('xxx') 取得
+    - class="xxx" → 樣式類別，可以重複使用
+    - onclick="函數()" → 點擊時執行某個函數
+    -->
+
+    <div class="game-container">
+        
+        <!-- ===== 畫面 1：開始畫面 ===== -->
+        <!-- 一開始顯示，點「開始遊戲」後會被隱藏 -->
+        <div id="startScreen">
+            <h1>🧠 執行功能訓練遊戲</h1>
+            <p class="subtitle">工作記憶 + 抑制控制 訓練原型</p>
+            
+            <!-- 遊戲規則說明 -->
+            <div class="instruction">
+                <h3>📋 遊戲規則</h3>
+                <p>
+                    <strong>1. 看到 ⭐ 星星 → 按下按鈕！</strong><br>
+                    <strong>2. 看到 ❌ 叉叉 → 不要按！忍住！</strong><br>
+                    <strong>3. 記住前一個是什麼</strong>（之後會問你）
+                </p>
+            </div>
+
+            <!-- 訓練目標說明 -->
+            <div class="instruction">
+                <h3>🎯 訓練目標</h3>
+                <p>
+                    • <strong>工作記憶</strong>：記住看過的圖案<br>
+                    • <strong>抑制控制</strong>：看到叉叉要忍住不按
+                </p>
+            </div>
+
+            <!-- 點擊這個按鈕會執行 startGame() 函數 -->
+            <button class="btn btn-primary" onclick="startGame()">開始遊戲</button>
+        </div>
+
+        <!-- ===== 畫面 2：遊戲進行中 ===== -->
+        <!-- 一開始是隱藏的 (class="hidden")，開始遊戲後才顯示 -->
+        <div id="gameScreen" class="hidden">
+            <!-- 題號顯示 -->
+            <h2>第 <span id="currentTrial">1</span> / <span id="totalTrials">10</span> 題</h2>
+            
+            <!-- 進度條 -->
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+
+            <!-- 分數板 -->
+            <div class="score-board">
+                <div class="score-item">
+                    <div class="label">正確</div>
+                    <div class="value" id="correctCount">0</div>
+                </div>
+                <div class="score-item">
+                    <div class="label">錯誤</div>
+                    <div class="value" id="errorCount">0</div>
+                </div>
+            </div>
+
+            <!-- 遊戲區域：顯示刺激和回饋 -->
+            <div class="game-area">
+                <!-- 刺激呈現區（圓形，會顯示星星或叉叉）-->
+                <div class="stimulus neutral" id="stimulus">?</div>
+                <!-- 回饋訊息（正確/錯誤）-->
+                <div class="feedback" id="feedback"></div>
+            </div>
+
+            <!-- 反應按鈕 -->
+            <button class="btn btn-action" id="responseBtn" onclick="recordResponse()">
+                按這裡！
+            </button>
+        </div>
+
+        <!-- ===== 畫面 3：記憶測試 ===== -->
+        <div id="memoryTestScreen" class="hidden">
+            <h2>🤔 記憶測試</h2>
+            <p style="margin: 20px 0; font-size: 1.1em;">
+                剛才<strong>倒數第二個</strong>圖案是什麼？
+            </p>
+            
+            <!-- 兩個選項按鈕 -->
+            <div style="display: flex; justify-content: center; gap: 20px; margin: 30px 0;">
+                <button class="btn btn-primary" onclick="checkMemory('star')" 
+                        style="font-size: 2em; padding: 20px 40px;">⭐</button>
+                <button class="btn btn-primary" onclick="checkMemory('cross')" 
+                        style="font-size: 2em; padding: 20px 40px;">❌</button>
+            </div>
+        </div>
+
+        <!-- ===== 畫面 4：結果顯示 ===== -->
+        <div id="resultScreen" class="hidden">
+            <h2>📊 遊戲結果</h2>
+            
+            <!-- 統計數據 -->
+            <div class="results">
+                <div class="result-item">
+                    <span class="label">總題數</span>
+                    <span class="value" id="resultTotal">-</span>
+                </div>
+                <div class="result-item">
+                    <span class="label">正確次數</span>
+                    <span class="value" id="resultCorrect">-</span>
+                </div>
+                <div class="result-item">
+                    <span class="label">正確率</span>
+                    <span class="value" id="resultAccuracy">-</span>
+                </div>
+                <div class="result-item">
+                    <span class="label">平均反應時間</span>
+                    <span class="value" id="resultRT">-</span>
+                </div>
+                <div class="result-item">
+                    <span class="label">抑制成功率</span>
+                    <span class="value" id="resultInhibition">-</span>
+                </div>
+                <div class="result-item">
+                    <span class="label">記憶測試</span>
+                    <span class="value" id="resultMemory">-</span>
+                </div>
+            </div>
+
+            <!-- 詳細數據表格 -->
+            <div class="data-section" style="margin-top: 20px; text-align: left;">
+                <h3>📝 詳細數據（可匯出）</h3>
+                <table class="data-table" id="dataTable">
+                    <thead>
+                        <tr>
+                            <th>題號</th>
+                            <th>類型</th>
+                            <th>反應</th>
+                            <th>正確</th>
+                            <th>反應時間(ms)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataBody">
+                        <!-- JavaScript 會動態填入內容 -->
+                    </tbody>
+                </table>
+                <button class="btn btn-primary" onclick="exportData()" style="margin-top: 15px;">
+                    匯出 CSV
+                </button>
+            </div>
+
+            <button class="btn btn-primary" onclick="restartGame()" style="margin-top: 20px;">
+                再玩一次
+            </button>
+        </div>
+    </div>
+
+    <!-- 
+    ╔══════════════════════════════════════════════════════════════════╗
+    ║  區塊 3：JavaScript 邏輯 (程式運作)                               ║
+    ║  這裡決定了遊戲「怎麼運作」                                       ║
+    ╚══════════════════════════════════════════════════════════════════╝
+    -->
+    <script>
+        // ═══════════════════════════════════════════════════════════════
+        // 區塊 3-1：遊戲設定 (可以修改這裡來調整遊戲參數)
+        // ═══════════════════════════════════════════════════════════════
+        
+        const CONFIG = {
+            totalTrials: 10,           // 總題數（可改成 15, 20 等）
+            stimulusDuration: 1500,    // 刺激呈現時間，單位是毫秒（1500 = 1.5 秒）
+            interTrialInterval: 1000,  // 題目之間的間隔（1000 = 1 秒）
+            goRatio: 0.7               // Go 刺激的比例（0.7 = 70% 星星, 30% 叉叉）
+        };
+
+        // ═══════════════════════════════════════════════════════════════
+        // 區塊 3-2：遊戲狀態 (儲存遊戲進行中的所有資料)
+        // ═══════════════════════════════════════════════════════════════
+        
+        /*
+         * 這是一個「物件」(object)，用來存放遊戲的各種狀態
+         * 想像成一個資料夾，裡面有很多小格子存不同的資料
+         */
+        let gameState = {
+            currentTrial: 0,           // 目前是第幾題
+            correctCount: 0,           // 答對幾題
+            errorCount: 0,             // 答錯幾題
+            trialData: [],             // 每一題的詳細數據（陣列）
+            stimulusSequence: [],      // 刺激的順序（例如：['go','nogo','go','go',...]）
+            currentStimulus: null,     // 目前這題是 'go' 還是 'nogo'
+            stimulusStartTime: null,   // 刺激出現的時間點（用來計算反應時間）
+            responded: false,          // 這一題是否已經按過按鈕
+            gameActive: false          // 遊戲是否正在進行中
+        };
+
+        // ═══════════════════════════════════════════════════════════════
+        // 區塊 3-3：產生刺激序列
+        // ═══════════════════════════════════════════════════════════════
+        
+        /*
+         * 這個函數會產生一個隨機的刺激序列
+         * 例如：['go', 'go', 'nogo', 'go', 'nogo', 'go', ...]
+         */
+        function generateSequence() {
+            const sequence = [];  // 建立一個空陣列
+            
+            // 計算 Go 和 No-Go 各需要幾題
+            // Math.floor() 是「無條件捨去」，例如 7.5 會變成 7
+            const goCount = Math.floor(CONFIG.totalTrials * CONFIG.goRatio);
+            const nogoCount = CONFIG.totalTrials - goCount;
+            
+            // 把 'go' 加入陣列 goCount 次
+            for (let i = 0; i < goCount; i++) {
+                sequence.push('go');
+            }
+            
+            // 把 'nogo' 加入陣列 nogoCount 次
+            for (let i = 0; i < nogoCount; i++) {
+                sequence.push('nogo');
+            }
+            
+            // 隨機打亂陣列（Fisher-Yates 洗牌演算法）
+            // 這樣每次玩遊戲，順序都會不一樣
+            for (let i = sequence.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                // 交換位置 i 和位置 j 的元素
+                [sequence[i], sequence[j]] = [sequence[j], sequence[i]];
+            }
+            
+            return sequence;  // 回傳打亂後的序列
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // 區塊 3-4：開始遊戲
+        // ═══════════════════════════════════════════════════════════════
+        
+        /*
+         * 當玩家點擊「開始遊戲」按鈕時，會執行這個函數
+         */
+        function startGame() {
+            // 重置所有遊戲狀態
+            gameState = {
+                currentTrial: 0,
+                correctCount: 0,
+                errorCount: 0,
+                trialData: [],
+                stimulusSequence: generateSequence(),  // 產生新的隨機序列
+                currentStimulus: null,
+                stimulusStartTime: null,
+                responded: false,
+                gameActive: true
+            };
+
+            // 切換畫面：隱藏開始畫面，顯示遊戲畫面
+            // classList.add('hidden') = 加上 'hidden' 這個 class
+            // classList.remove('hidden') = 移除 'hidden' 這個 class
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+            
+            // 更新總題數顯示
+            document.getElementById('totalTrials').textContent = CONFIG.totalTrials;
+
+            // 1 秒後開始第一題
+            // setTimeout(函數, 時間) = 在指定時間後執行函數
+            setTimeout(nextTrial, 1000);
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // 區塊 3-5：進入下一題
+        // ═══════════════════════════════════════════════════════════════
+        
+        function nextTrial() {
+            // 如果已經做完所有題目，就進入記憶測試
+            if (gameState.currentTrial >= CONFIG.totalTrials) {
+                showMemoryTest();
+                return;  // 結束這個函數，不執行下面的程式碼
+            }
+
+            // 題號 +1
+            gameState.currentTrial++;
+            gameState.responded = false;  // 重置「已反應」狀態
+            
+            // === 更新畫面上的資訊 ===
+            
+            // 更新題號顯示
+            document.getElementById('currentTrial').textContent = gameState.currentTrial;
+            
+            // 更新進度條寬度（百分比）
+            const progressPercent = (gameState.currentTrial / CONFIG.totalTrials * 100);
+            document.getElementById('progressFill').style.width = progressPercent + '%';
+            
+            // 清空回饋訊息
+            document.getElementById('feedback').textContent = '';
+            document.getElementById('feedback').className = 'feedback';
+
+            // === 呈現刺激 ===
+            
+            // 取得這一題的刺激類型（從序列中按順序取出）
+            // 注意：陣列是從 0 開始編號，所以要 -1
+            const stimulusType = gameState.stimulusSequence[gameState.currentTrial - 1];
+            gameState.currentStimulus = stimulusType;
+            
+            // 取得刺激元素，改變它的樣式和內容
+            const stimulusEl = document.getElementById('stimulus');
+            stimulusEl.className = 'stimulus ' + stimulusType;  // 例如 'stimulus go'
+            stimulusEl.textContent = stimulusType === 'go' ? '⭐' : '❌';
+            // 上面這行是「三元運算子」，相當於：
+            // if (stimulusType === 'go') {
+            //     stimulusEl.textContent = '⭐';
+            // } else {
+            //     stimulusEl.textContent = '❌';
+            // }
+            
+            // 記錄刺激出現的時間（用來計算反應時間）
+            gameState.stimulusStartTime = Date.now();
+
+            // === 設定時間限制 ===
+            
+            // 如果超過時間還沒反應，就當作「沒有按」
+            setTimeout(() => {
+                // 這是一個「箭頭函數」，會在指定時間後執行
+                if (!gameState.responded && gameState.gameActive) {
+                    // 如果還沒反應，而且遊戲還在進行中
+                    processResponse(false);  // 處理「沒有按」的情況
+                }
+            }, CONFIG.stimulusDuration);
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // 區塊 3-6：記錄玩家的反應
+        // ═══════════════════════════════════════════════════════════════
+        
+        /*
+         * 當玩家點擊「按這裡！」按鈕時，會執行這個函數
+         */
+        function recordResponse() {
+            // 如果遊戲沒在進行，或這題已經按過了，就不處理
+            if (!gameState.gameActive || gameState.responded) {
+                return;
+            }
+            
+            gameState.responded = true;  // 標記為「已反應」
+            
+            // 計算反應時間 = 現在時間 - 刺激出現時間
+            const responseTime = Date.now() - gameState.stimulusStartTime;
+            
+            // 處理這個反應
+            processResponse(true, responseTime);
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // 區塊 3-7：處理反應（判斷對錯、記錄數據）
+        // ═══════════════════════════════════════════════════════════════
+        
+        /*
+         * didRespond: 玩家是否有按按鈕（true/false）
+         * responseTime: 反應時間（毫秒），如果沒按就是 null
+         */
+        function processResponse(didRespond, responseTime = null) {
+            const stimulusType = gameState.currentStimulus;
+            let isCorrect = false;
+            
+            // === 判斷正確與否 ===
+            // Go 刺激（星星）：要按才對
+            // No-Go 刺激（叉叉）：不按才對
+            
+            if (stimulusType === 'go' && didRespond) {
+                isCorrect = true;  // 星星 + 有按 = 正確 ✓
+            } else if (stimulusType === 'nogo' && !didRespond) {
+                isCorrect = true;  // 叉叉 + 沒按 = 正確 ✓（成功抑制）
+            }
+            // 其他情況都是錯誤：
+            // - 星星 + 沒按 = 太慢了
+            // - 叉叉 + 有按 = 抑制失敗
+
+            // === 更新計數 ===
+            if (isCorrect) {
+                gameState.correctCount++;
+            } else {
+                gameState.errorCount++;
+            }
+
+            // === 記錄這一題的詳細數據 ===
+            // push() 是把新元素加到陣列的最後面
+            gameState.trialData.push({
+                trial: gameState.currentTrial,    // 題號
+                type: stimulusType,               // 'go' 或 'nogo'
+                responded: didRespond,            // 有沒有按
+                correct: isCorrect,               // 對不對
+                rt: responseTime                  // 反應時間
+            });
+
+            // === 顯示回饋訊息 ===
+            const feedbackEl = document.getElementById('feedback');
+            if (isCorrect) {
+                feedbackEl.textContent = '✓ 正確！';
+                feedbackEl.className = 'feedback correct';
+            } else {
+                // 根據錯誤類型顯示不同訊息
+                if (stimulusType === 'go' && !didRespond) {
+                    feedbackEl.textContent = '✗ 太慢了！要按按鈕！';
+                } else if (stimulusType === 'nogo' && didRespond) {
+                    feedbackEl.textContent = '✗ 要忍住不按！';
+                }
+                feedbackEl.className = 'feedback incorrect';
+            }
+
+            // === 更新分數顯示 ===
+            document.getElementById('correctCount').textContent = gameState.correctCount;
+            document.getElementById('errorCount').textContent = gameState.errorCount;
+
+            // === 清除刺激（顯示問號）===
+            const stimulusEl = document.getElementById('stimulus');
+            stimulusEl.className = 'stimulus neutral';
+            stimulusEl.textContent = '?';
+
+            // === 進入下一題 ===
+            setTimeout(nextTrial, CONFIG.interTrialInterval);
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // 區塊 3-8：記憶測試
+        // ═══════════════════════════════════════════════════════════════
+        
+        function showMemoryTest() {
+            gameState.gameActive = false;  // 停止遊戲
+            
+            // 切換畫面
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('memoryTestScreen').classList.remove('hidden');
+        }
+
+        /*
+         * 檢查記憶測試的答案
+         * answer: 'star' 或 'cross'
+         */
+        function checkMemory(answer) {
+            // 取得倒數第二個刺激的類型
+            // CONFIG.totalTrials - 2 是因為陣列從 0 開始，而且是「倒數第二個」
+            const secondLastStimulus = gameState.stimulusSequence[CONFIG.totalTrials - 2];
+            
+            // 判斷正確答案
+            const correctAnswer = secondLastStimulus === 'go' ? 'star' : 'cross';
+            
+            // 記錄是否答對
+            gameState.memoryCorrect = (answer === correctAnswer);
+            
+            // 顯示結果
+            showResults();
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // 區塊 3-9：顯示結果
+        // ═══════════════════════════════════════════════════════════════
+        
+        function showResults() {
+            // 切換畫面
+            document.getElementById('memoryTestScreen').classList.add('hidden');
+            document.getElementById('resultScreen').classList.remove('hidden');
+
+            // === 計算統計數據 ===
+            
+            // 篩選出 Go 試題和 No-Go 試題
+            // filter() 會根據條件篩選出符合的元素
+            const goTrials = gameState.trialData.filter(t => t.type === 'go');
+            const nogoTrials = gameState.trialData.filter(t => t.type === 'nogo');
+            
+            // 計算 Go 試題的平均反應時間
+            // 只計算「正確且有按」的試題
+            const goCorrectTrials = goTrials.filter(t => t.correct && t.rt);
+            let avgRT = '-';
+            if (goCorrectTrials.length > 0) {
+                // reduce() 會把陣列中所有元素加總起來
+                const totalRT = goCorrectTrials.reduce((sum, t) => sum + t.rt, 0);
+                avgRT = Math.round(totalRT / goCorrectTrials.length);
+            }
+
+            // 計算抑制成功率（No-Go 試題的正確率）
+            let inhibitionRate = '-';
+            if (nogoTrials.length > 0) {
+                const correctNoGo = nogoTrials.filter(t => t.correct).length;
+                inhibitionRate = Math.round(correctNoGo / nogoTrials.length * 100);
+            }
+
+            // === 顯示結果 ===
+            document.getElementById('resultTotal').textContent = CONFIG.totalTrials + ' 題';
+            document.getElementById('resultCorrect').textContent = gameState.correctCount + ' 次';
+            document.getElementById('resultAccuracy').textContent = 
+                Math.round(gameState.correctCount / CONFIG.totalTrials * 100) + '%';
+            document.getElementById('resultRT').textContent = avgRT + ' ms';
+            document.getElementById('resultInhibition').textContent = inhibitionRate + '%';
+            document.getElementById('resultMemory').textContent = 
+                gameState.memoryCorrect ? '✓ 正確' : '✗ 錯誤';
+
+            // === 填入詳細數據表格 ===
+            const tbody = document.getElementById('dataBody');
+            tbody.innerHTML = '';  // 清空表格
+            
+            // 用迴圈把每一題的數據加入表格
+            gameState.trialData.forEach(trial => {
+                const row = document.createElement('tr');  // 建立一個新的 <tr> 元素
+                row.innerHTML = `
+                    <td>${trial.trial}</td>
+                    <td>${trial.type === 'go' ? '⭐ Go' : '❌ No-Go'}</td>
+                    <td>${trial.responded ? '有按' : '沒按'}</td>
+                    <td style="color: ${trial.correct ? 'green' : 'red'}">
+                        ${trial.correct ? '✓' : '✗'}
+                    </td>
+                    <td>${trial.rt || '-'}</td>
+                `;
+                tbody.appendChild(row);  // 把這一列加到表格中
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // 區塊 3-10：匯出數據（CSV 格式）
+        // ═══════════════════════════════════════════════════════════════
+        
+        function exportData() {
+            // CSV 的第一行是標題
+            let csv = '題號,類型,反應,正確,反應時間(ms)\n';
+            
+            // 把每一題的數據加入 CSV
+            gameState.trialData.forEach(trial => {
+                csv += `${trial.trial},`;
+                csv += `${trial.type},`;
+                csv += `${trial.responded ? '有按' : '沒按'},`;
+                csv += `${trial.correct ? '正確' : '錯誤'},`;
+                csv += `${trial.rt || ''}\n`;
+            });
+
+            // 加入摘要統計
+            csv += '\n摘要統計\n';
+            csv += `總正確率,${Math.round(gameState.correctCount / CONFIG.totalTrials * 100)}%\n`;
+            csv += `記憶測試,${gameState.memoryCorrect ? '正確' : '錯誤'}\n`;
+
+            // === 建立下載連結 ===
+            // Blob 是一種二進位大型物件，用來處理檔案
+            // '\ufeff' 是 BOM 標記，讓 Excel 能正確顯示中文
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            
+            // 建立一個隱藏的 <a> 連結並點擊它
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `遊戲數據_${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();  // 自動點擊，觸發下載
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // 區塊 3-11：重新開始遊戲
+        // ═══════════════════════════════════════════════════════════════
+        
+        function restartGame() {
+            document.getElementById('resultScreen').classList.add('hidden');
+            document.getElementById('startScreen').classList.remove('hidden');
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // 區塊 3-12：鍵盤快捷鍵
+        // ═══════════════════════════════════════════════════════════════
+        
+        /*
+         * 監聽鍵盤按鍵事件
+         * 讓玩家可以用空白鍵代替滑鼠點擊
+         */
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && gameState.gameActive) {
+                e.preventDefault();  // 防止空白鍵捲動頁面
+                recordResponse();    // 執行和點擊按鈕一樣的動作
+            }
+        });
+    </script>
+</body>
+</html>
