@@ -1,9 +1,61 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
+<!-- --------------------------- -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>執行功能訓練遊戲 - v2.1 最佳實踐版</title>
+    
+    <!-- ===== 重要：增強網站信任度的 Meta 標籤 ===== -->
+    
+    <!-- 網站描述 - 清楚說明網站用途 -->
+    <meta name="description" content="執行功能訓練遊戲是一個學術研究工具，用於中原大學特殊教育學系碩士班實務報告。採用 Go/No-Go 典範訓練 ADHD 不專注型學童的工作記憶與抑制控制能力。不收集任何個人資訊。">
+    
+    <!-- 作者資訊 - 表明是學術研究 -->
+    <meta name="author" content="中原大學特殊教育學系碩士班">
+    
+    <!-- 關鍵字 - 強調教育研究性質 -->
+    <meta name="keywords" content="執行功能, executive function, ADHD, 注意力訓練, 認知訓練, 特殊教育, 教育研究, Go/No-Go, 工作記憶, 抑制控制, 中原大學">
+    
+    <!-- 機器人指令 - 允許索引 -->
+    <meta name="robots" content="index, follow">
+    
+    <!-- 內容分類 - 表明是教育網站 -->
+    <meta name="classification" content="Education, Academic Research, Special Education">
+    
+    <!-- 版權聲明 -->
+    <meta name="copyright" content="中原大學特殊教育學系">
+    
+    <!-- 網站主題色彩 -->
+    <meta name="theme-color" content="#667eea">
+    
+    <!-- ===== Open Graph 標籤 (社群分享用) ===== -->
+    <meta property="og:title" content="執行功能訓練遊戲 - 認知訓練研究工具">
+    <meta property="og:description" content="中原大學特殊教育學系碩士班學術研究工具。採用 Go/No-Go 典範訓練注意力困難學童的執行功能。">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://patiencelee-39.github.io/ef-game/">
+    <meta property="og:site_name" content="執行功能訓練遊戲">
+    <meta property="og:locale" content="zh_TW">
+    
+    <!-- ===== Twitter Card ===== -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="執行功能訓練遊戲">
+    <meta name="twitter:description" content="學術研究用認知訓練工具 - 中原大學特殊教育學系">
+    
+    <!-- ===== 安全相關標籤 ===== -->
+    <!-- Content Security Policy - 限制資源來源，增加安全性 -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self';">
+    
+    <!-- 防止點擊劫持 -->
+    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+    
+    <!-- 防止 MIME 類型嗅探 -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+
+    <!-- 標題 -->
+    <title>執行功能訓練遊戲 - 中原大學特殊教育學術研究工具 v2.1 最佳實踐版</title>
+
+    <!-- 規範連結 -->
+    <link rel="canonical" href="https://patiencelee-39.github.io/ef-game/">
     
     <!-- 
     ╔══════════════════════════════════════════════════════════════════════════════╗
@@ -369,7 +421,13 @@
                     • <strong>抑制控制</strong>：看到叉叉要忍住不按
                 </p>
             </div>
-
+            <!-- 研究聲明 - 增強 Google Safe Browsing 信任度 -->
+            <div class="research-notice" style="background: #e8f5e9; padding: 12px 15px; border-radius: 8px; margin: 15px 0; font-size: 0.85em; color: #2e7d32; border-left: 4px solid #4CAF50;">
+                <strong>📚 學術研究工具</strong><br>
+                本遊戲為中原大學特殊教育學系碩士班研究專案，<br>
+                <strong>不收集任何個人資訊</strong>，所有資料僅存於您的瀏覽器。
+                <a href="privacy.html" style="color: #1565c0; margin-left: 5px;">了解更多 →</a>
+            </div>
             <button class="btn btn-primary" onclick="GameController.startGame()">
                 開始遊戲
             </button>
