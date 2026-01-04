@@ -1,5 +1,12 @@
-自行修改遊戲教學 參考 PAPAYA 電腦教學：<br>
-<a href="https://youtu.be/FKXRiAiQFiY" target="_blank">程式與網頁開發者必備技能！Git 和 GitHub 零基礎快速上手，輕鬆掌握版本控制的要訣！</a>
+### 自行修改遊戲教學之先備知識參考
+
+1. **PAPAYA 電腦教學：**
+   <br>
+   <a href="https://youtu.be/FKXRiAiQFiY" target="_blank">程式與網頁開發者必備技能！Git 和 GitHub 零基礎快速上手，輕鬆掌握版本控制的要訣！</a>
+
+2. **Vibe Coding 教學：**
+   <br>
+   <a href="https://youtu.be/LL0Zazm-qik" target="_blank">【寫好 Vibe Coding 的秘密】別人的 Vibe Coding 總是不會讓人失望!! Context7 MCP 如何安裝及使用 | 使用 10xRules.ai 寫出專案級提示詞</a>
 
 # 執行功能訓練遊戲 (Executive Function Training Game)
 
