@@ -2,7 +2,10 @@
 
 1. **PAPAYA 電腦教學：**
    <br>
-   <a href="https://youtu.be/FKXRiAiQFiY" target="_blank">程式與網頁開發者必備技能！Git 和 GitHub 零基礎快速上手，輕鬆掌握版本控制的要訣！</a>
+   <a href="https://youtu.be/FKXRiAiQFiY" target="_blank">
+   <img src="https://img.youtube.com/vi/FKXRiAiQFiY/0.jpg" alt="Git 教學" width="240">
+   <br>程式與網頁開發者必備技能！Git 和 GitHub 零基礎快速上手
+   </a>
 
 2. **Vibe Coding 教學：**
    <br>
