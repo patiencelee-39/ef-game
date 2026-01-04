@@ -1,210 +1,260 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="執行功能訓練遊戲 - 隱私權政策與資料使用說明">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>隱私權政策 - 執行功能訓練遊戲</title>
-    
+
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;"
+    />
+
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: "Microsoft JhengHei", "微軟正黑體", sans-serif;
-            line-height: 1.8;
-            color: #333;
-            background: #f5f5f5;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        h1 {
-            color: #667eea;
-            border-bottom: 3px solid #667eea;
-            padding-bottom: 10px;
-            margin-bottom: 30px;
-        }
-        
-        h2 {
-            color: #764ba2;
-            margin-top: 30px;
-            margin-bottom: 15px;
-        }
-        
-        h3 {
-            color: #555;
-            margin-top: 20px;
-            margin-bottom: 10px;
-        }
-        
-        ul {
-            margin-left: 30px;
-            margin-bottom: 15px;
-        }
-        
-        li {
-            margin-bottom: 8px;
-        }
-        
-        .highlight {
-            background: #e3f2fd;
-            padding: 15px;
-            border-left: 4px solid #2196F3;
-            margin: 20px 0;
-            border-radius: 0 5px 5px 0;
-        }
-        
-        .back-link {
-            display: inline-block;
-            margin-top: 30px;
-            padding: 10px 20px;
-            background: #667eea;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background 0.3s;
-        }
-        
-        .back-link:hover {
-            background: #764ba2;
-        }
-        
-        .section {
-            margin-bottom: 25px;
-        }
+      /* [良好實踐: DRY 原則 (Don't Repeat Yourself)]
+          來源參考：程式碼良好實踐完整指南.md 第 3.1 章
+          
+          我們使用 CSS 變數 (:root) 來定義顏色。
+          好處：如果未來想把背景從「深藍」改成「黑色」，只要改這裡的一行代碼，
+          不用去改下面幾十個地方。這就是「易於維護」的程式碼。
+        */
+      :root {
+        --bg-color: #2c3e50; /* 遊戲主背景色 */
+        --text-color: #ecf0f1; /* 主要文字顏色 */
+        --primary-color: #3498db; /* 連結與按鈕顏色 */
+        --success-color: #2ecc71; /* 代表「安全/允許」的綠色 */
+        --error-color: #e74c3c; /* 代表「禁止/不收集」的紅色 */
+        --card-bg: #34495e; /* 內容區塊的背景色 */
+      }
+
+      /* [良好實踐: 一致性]
+          body 的設定確保整個網站的字體、背景色與遊戲頁面一致。
+        */
+      body {
+        font-family: "微軟正黑體", sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        margin: 0;
+        padding: 20px;
+        display: flex; /* 使用 Flexbox 排版 */
+        flex-direction: column; /* 內容由上到下排列 */
+        align-items: center; /* 內容水平置中 */
+        line-height: 1.6; /* 增加行高，提升可讀性 */
+      }
+
+      /* [良好實踐: 命名規範]
+          來源參考：程式碼良好實踐完整指南.md 第 1.1 章
+          使用具描述性的名稱 (.policy-container)，而不是無意義的名稱 (如 .box1)。
+          讓人一眼就知道這個區塊是用來放「政策內容」的。
+        */
+      .policy-container {
+        background-color: var(--card-bg);
+        border-radius: 15px; /* 圓角設計，看起來較柔和 */
+        padding: 40px;
+        width: 100%;
+        max-width: 800px; /* 限制最大寬度，避免在寬螢幕上文字太長難以閱讀 */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); /* 陰影增加立體感 */
+        margin-bottom: 30px;
+      }
+
+      h1 {
+        text-align: center;
+        border-bottom: 2px solid var(--primary-color);
+        padding-bottom: 15px;
+        margin-bottom: 30px;
+      }
+
+      h2 {
+        color: var(--primary-color);
+        margin-top: 30px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      ul {
+        list-style: none; /* 移除預設的清單圓點，我們要用自訂圖示 */
+        padding: 0;
+      }
+
+      li {
+        margin-bottom: 10px;
+        padding: 15px;
+        background: rgba(0, 0, 0, 0.2); /* 半透明黑底，增加對比度 */
+        border-radius: 8px;
+        display: flex;
+        align-items: center; /* 讓圖示與文字垂直居中對齊 */
+      }
+
+      /* [視覺化設計] 
+          針對聽障或閱讀需求，使用顏色與圖示來傳達「對」與「錯」。
+        */
+      .icon-yes {
+        color: var(--success-color);
+        font-size: 1.5em;
+        margin-right: 15px;
+        font-weight: bold;
+      }
+
+      .icon-no {
+        color: var(--error-color);
+        font-size: 1.5em;
+        margin-right: 15px;
+        font-weight: bold;
+      }
+
+      /* 按鈕樣式 (復用遊戲中的設計) */
+      .btn {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        font-size: 1.2em;
+        border-radius: 50px;
+        cursor: pointer;
+        text-decoration: none; /* 去除超連結底線 */
+        display: inline-block;
+        transition: transform 0.1s;
+      }
+
+      /* 增加按鈕互動感 */
+      .btn:hover {
+        opacity: 0.9;
+      }
+      .btn:active {
+        transform: scale(0.95);
+      }
+
+      /* 資料表格樣式 */
+      .data-table {
+        width: 100%;
+        border-collapse: collapse; /* 去除表格間隙 */
+        margin-top: 10px;
+        background: rgba(0, 0, 0, 0.3);
+      }
+      .data-table th,
+      .data-table td {
+        padding: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        text-align: left;
+      }
+
+      .contact-box {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 20px;
+        border-radius: 10px;
+        margin-top: 20px;
+      }
+
+      a {
+        color: var(--primary-color);
+      }
     </style>
-</head>
-<body>
-    <div class="container">
-        <h1>🔒 隱私權政策與資料使用說明</h1>
-        
-        <div class="highlight">
-            <strong>✅ 重要說明：</strong>本網站為教育研究工具，不收集、不儲存、不傳輸任何個人隱私資訊。
-        </div>
-        
-        <div class="section">
-            <h2>📋 網站性質</h2>
-            <p>「執行功能訓練遊戲」是一個用於學術研究的認知訓練工具，旨在協助 ADHD 不專注型學童提升執行功能。本網站為中原大學特殊教育學系碩士班實務報告的一部分。</p>
-        </div>
-        
-        <div class="section">
-            <h2>🎮 遊戲運作方式</h2>
-            <p>遊戲採用 Go/No-Go 實驗典範，訓練以下認知能力：</p>
-            <ul>
-                <li><strong>工作記憶</strong>：記住上一題的刺激類型</li>
-                <li><strong>抑制控制</strong>：在看到「叉叉」時不按按鈕</li>
-                <li><strong>反應速度</strong>：快速且準確地回應</li>
-            </ul>
-        </div>
-        
-        <div class="section">
-            <h2>📊 資料收集與使用</h2>
-            
-            <h3>遊戲過程中收集的資料</h3>
-            <p>本遊戲僅在<strong>您的瀏覽器本地</strong>記錄以下統計資料：</p>
-            <ul>
-                <li>試題編號（第 1 題、第 2 題...）</li>
-                <li>刺激類型（星星或叉叉）</li>
-                <li>是否按下按鈕（是/否）</li>
-                <li>答題正確性（正確/錯誤）</li>
-                <li>反應時間（毫秒）</li>
-            </ul>
-            
-            <div class="highlight">
-                <strong>🔒 隱私保護：</strong>
-                <ul style="margin-bottom: 0;">
-                    <li>❌ 不收集姓名、年齡、性別等個人資訊</li>
-                    <li>❌ 不記錄 IP 位址或裝置資訊</li>
-                    <li>❌ 不使用 Cookies 或追蹤技術</li>
-                    <li>❌ 資料不會上傳到任何伺服器</li>
-                    <li>✅ 所有資料僅存在於您的瀏覽器中</li>
-                </ul>
-            </div>
-        </div>
-        
-        <div class="section">
-            <h2>💾 資料匯出功能</h2>
-            
-            <h3>功能說明</h3>
-            <p>遊戲結束後，您可以選擇「匯出資料」將表現資料儲存為 CSV 檔案。</p>
-            
-            <h3>匯出檔案內容</h3>
-            <p>匯出的 CSV 檔案<strong>僅包含遊戲統計資料</strong>，格式如下：</p>
-            <pre style="background: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto;">
-trial,stimulus_type,did_respond,is_correct,reaction_time
-1,go,yes,correct,542
-2,nogo,no,correct,
-3,go,yes,correct,398
-...
-            </pre>
-            
-            <h3>資料用途</h3>
-            <ul>
-                <li>✅ 教師檢視學童訓練成效</li>
-                <li>✅ 研究者進行資料分析</li>
-                <li>✅ 學童自我檢視學習進步情形</li>
-            </ul>
-            
-            <h3>使用者控制</h3>
-            <ul>
-                <li>✅ 匯出功能<strong>完全由您控制</strong></li>
-                <li>✅ 必須主動點擊「匯出資料」按鈕才會下載</li>
-                <li>✅ 可以選擇不匯出資料</li>
-                <li>✅ 關閉瀏覽器後資料自動清除</li>
-            </ul>
-        </div>
-        
-        <div class="section">
-            <h2>🔐 資料安全性</h2>
-            
-            <h3>技術保障</h3>
-            <ul>
-                <li><strong>本地運算</strong>：所有資料處理在您的瀏覽器完成</li>
-                <li><strong>無伺服器傳輸</strong>：資料不會離開您的裝置</li>
-                <li><strong>開源透明</strong>：程式碼公開於 GitHub，可供檢驗</li>
-                <li><strong>HTTPS 加密</strong>：網站使用安全連線（由 GitHub Pages 提供）</li>
-            </ul>
-        </div>
-        
-        <div class="section">
-            <h2>🎓 學術研究倫理</h2>
-            <p>本研究遵循以下倫理原則：</p>
-            <ul>
-                <li><strong>自願參與</strong>：使用本遊戲完全自願</li>
-                <li><strong>知情同意</strong>：使用前應了解遊戲目的與資料用途</li>
-                <li><strong>資料保護</strong>：確保資料安全與隱私</li>
-                <li><strong>匿名性</strong>：不要求也不記錄個人身分資訊</li>
-            </ul>
-        </div>
-        
-        <div class="section">
-            <h2>📞 聯絡資訊</h2>
-            <p>如有任何疑問，請透過以下方式聯繫：</p>
-            <ul>
-                <li><strong>研究機構</strong>：中原大學特殊教育學系</li>
-                <li><strong>GitHub 專案</strong>：<a href="https://github.com/patiencelee-39/ef-training-game" target="_blank">patiencelee-39/ef-training-game</a></li>
-            </ul>
-        </div>
-        
-        <div class="section">
-            <h2>📝 更新紀錄</h2>
-            <p><strong>最後更新日期：</strong>2026 年 1 月 3 日</p>
-            <p>本隱私權政策可能依研究需求更新，任何重大變更將在網站上公告。</p>
-        </div>
-        
-        <a href="index.html" class="back-link">← 返回遊戲</a>
+  </head>
+  <body>
+    <div class="policy-container">
+      <h1>🔒 隱私權政策與資料使用</h1>
+
+      <div
+        style="
+          background: rgba(46, 204, 113, 0.1);
+          padding: 15px;
+          border-radius: 10px;
+          border-left: 5px solid var(--success-color);
+        "
+      >
+        <p style="margin: 0">
+          <strong>✅ 安全承諾：</strong><br />
+          本網站是「教育研究工具」，所有遊戲資料只存在您的電腦裡，<b>不會</b>上傳到網路伺服器。
+        </p>
+      </div>
+
+      <h2>📊 資料收集範圍</h2>
+      <ul>
+        <li>
+          <span class="icon-no">❌</span>
+          <span><b>不收集</b> 姓名、年齡、性別等個人資訊</span>
+        </li>
+        <li>
+          <span class="icon-no">❌</span>
+          <span><b>不使用</b> Cookies 或追蹤技術</span>
+        </li>
+        <li>
+          <span class="icon-no">❌</span>
+          <span><b>不記錄</b> IP 位址或您的位置</span>
+        </li>
+
+        <li style="margin-top: 20px">
+          <span class="icon-yes">✅</span>
+          <span
+            ><b>僅記錄</b> 遊戲內的表現數據（例如：反應時間、答對幾題）</span
+          >
+        </li>
+      </ul>
+
+      <h2>💾 關於「匯出資料」功能</h2>
+      <p>
+        當您點擊「匯出資料」按鈕時，瀏覽器會生成一個 CSV
+        檔案給您下載。檔案內容僅包含：
+      </p>
+
+      <table class="data-table">
+        <tr>
+          <th>欄位名稱</th>
+          <th>範例</th>
+          <th>說明</th>
+        </tr>
+        <tr>
+          <td>Trial</td>
+          <td>1</td>
+          <td>第幾題</td>
+        </tr>
+        <tr>
+          <td>InputKey</td>
+          <td>J</td>
+          <td>按了什麼鍵 (F 或 J)</td>
+        </tr>
+        <tr>
+          <td>RT(ms)</td>
+          <td>452</td>
+          <td>反應速度 (毫秒)</td>
+        </tr>
+      </table>
+      <p style="font-size: 0.9em; opacity: 0.8; margin-top: 10px">
+        * 這些資料僅供您或研究者分析使用。
+      </p>
+
+      <h2>📞 聯絡與專案資訊</h2>
+      <div class="contact-box">
+        <p><strong>研究機構：</strong>中原大學特殊教育學系</p>
+        <p>
+          <strong>開源專案：</strong>本遊戲程式碼公開透明，您可以在 GitHub
+          上檢視。
+        </p>
+        <p>
+          🔗
+          <a
+            href="https://github.com/patiencelee-39/ef-training-game"
+            target="_blank"
+            >GitHub 專案連結</a
+          >
+        </p>
+      </div>
+
+      <div style="text-align: center; margin-top: 40px">
+        <a href="index.html" class="btn"> 🔙 返回遊戲 </a>
+      </div>
+
+      <div
+        style="
+          text-align: center;
+          margin-top: 20px;
+          font-size: 0.8em;
+          opacity: 0.6;
+        "
+      >
+        最後更新日期：2026 年 1 月 3 日
+      </div>
     </div>
-</body>
+  </body>
 </html>

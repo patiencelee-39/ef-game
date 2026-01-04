@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>執行功能訓練遊戲 - 左右對應版</title>
+
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;"
+    />
+
+    <style>
+      :root {
+        --bg-color: #2c3e50;
+        --text-color: #ecf0f1;
+        --primary-color: #3498db;
+        --success-color: #2ecc71;
+        --error-color: #e74c3c;
+        --accent-yellow: #f1c40f;
+        --round1-color: #e67e22;
+        --round2-color: #9b59b6;
+      }
+
+      body {
+        font-family: "微軟正黑體", sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        text-align: center;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        touch-action: manipulation;
+      }
+
+      /* 說明區塊樣式 */
+      .tutorial-container {
+        display: flex;
+        flex-direction: row; /* 橫向排列 */
+        justify-content: center;
+        gap: 20px;
+        margin-bottom: 30px;
+        width: 100%;
+      }
+
+      .rule-box {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 20px;
+        border-radius: 15px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .rule-box.left-box {
+        background: rgba(231, 76, 60, 0.1);
+      }
+      .rule-box.right-box {
+        background: rgba(241, 196, 15, 0.1);
+      }
+
+      .rule-icon {
+        font-size: 4em;
+        margin-bottom: 10px;
+      }
+
+      .rule-arrow {
+        font-size: 2em;
+        color: #bdc3c7;
+        margin: 10px 0;
+        /* [修正] 移除旋轉，因為文字本身已經是下箭頭了 */
+        /* transform: rotate(90deg);  <-- 這一行刪除 */
+      }
+
+      .rule-key {
+        border: 3px solid #fff;
+        border-radius: 10px;
+        padding: 5px 20px;
+        font-family: monospace;
+        background: rgba(0, 0, 0, 0.3);
+        font-size: 3.5em;
+        font-weight: bold;
+        display: inline-block;
+        margin-bottom: 5px;
+      }
+
+      .key-desc {
+        font-size: 1.2em;
+        opacity: 0.9;
+      }
+
+      /* 遊戲區域 */
+      .game-area {
+        background-color: #34495e;
+        border-radius: 15px;
+        padding: 20px;
+        width: 100%;
+        max-width: 600px;
+        margin: 20px auto;
+        border: 5px solid transparent;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        height: 600px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+      }
+
+      .round-label {
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.9em;
+        font-weight: bold;
+        z-index: 10;
+      }
+      .round1-badge {
+        background-color: var(--round1-color);
+      }
+      .round2-badge {
+        background-color: var(--round2-color);
+      }
+
+      .feedback-success {
+        animation: pulse-green 0.3s ease-out;
+        border-color: var(--success-color) !important;
+      }
+      .feedback-error {
+        animation: shake-red 0.2s ease-in-out;
+        border-color: var(--error-color) !important;
+      }
+
+      @keyframes pulse-green {
+        0% {
+          transform: scale(1);
+          box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7);
+        }
+        50% {
+          transform: scale(1.02);
+          box-shadow: 0 0 0 15px rgba(46, 204, 113, 0);
+        }
+        100% {
+          transform: scale(1);
+          box-shadow: 0 0 0 0 rgba(46, 204, 113, 0);
+        }
+      }
+      @keyframes shake-red {
+        0%,
+        100% {
+          transform: translateX(0);
+        }
+        25% {
+          transform: translateX(-15px);
+        }
+        75% {
+          transform: translateX(15px);
+        }
+      }
+
+      .stimulus {
+        font-size: 150px;
+        height: 200px;
+        width: 200px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: transform 0.1s;
+        margin: 0 auto;
+      }
+      .stimulus.pop {
+        transform: scale(1.3);
+      }
+
+      .controls-area {
+        width: 100%;
+        display: flex;
+        justify-content: space-around;
+        padding-bottom: 20px;
+        gap: 20px;
+      }
+
+      .btn-key {
+        flex: 1;
+        height: 100px;
+        border: none;
+        border-radius: 15px;
+        font-size: 1.5em;
+        color: white;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        transition: transform 0.1s, opacity 0.3s;
+        box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
+      }
+      .btn-key:active,
+      .btn-key.active-key {
+        transform: translateY(4px);
+        box-shadow: none;
+      }
+
+      .btn-f {
+        background-color: #e74c3c;
+      }
+      .btn-j {
+        background-color: #f39c12;
+      }
+
+      .btn-disabled {
+        background-color: #7f8c8d;
+        opacity: 0.3;
+        pointer-events: none;
+      }
+
+      .key-hint {
+        font-size: 0.6em;
+        opacity: 0.8;
+        margin-bottom: 5px;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      .screen-layer {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .btn {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        font-size: 1.2em;
+        border-radius: 50px;
+        cursor: pointer;
+        margin-top: 15px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>🧠 執行功能訓練</h1>
+      <p>聽障版 v2.2 (修正箭頭)</p>
+    </header>
+
+    <main class="game-area" id="gameContainer">
+      <div id="introScreen" class="screen-layer">
+        <h2>第一回：辨識練習</h2>
+        <p style="margin-bottom: 20px; color: #bdc3c7">
+          看❌按左邊F鍵，看⭐按右邊J鍵
+        </p>
+
+        <div class="tutorial-container">
+          <div class="rule-box left-box">
+            <span class="rule-icon">❌</span>
+            <span class="rule-arrow">⬇</span>
+            <span class="rule-key">F</span>
+            <span class="key-desc">左手</span>
+          </div>
+
+          <div class="rule-box right-box">
+            <span class="rule-icon">⭐</span>
+            <span class="rule-arrow">⬇</span>
+            <span class="rule-key">J</span>
+            <span class="key-desc">右手</span>
+          </div>
+        </div>
+
+        <button class="btn" onclick="game.startRound1()">🚀 開始第一回</button>
+      </div>
+
+      <div id="intermissionScreen" class="screen-layer hidden">
+        <h2 style="color: var(--round2-color)">⚠️ 規則改變了！</h2>
+
+        <div class="tutorial-container">
+          <div class="rule-box left-box" style="opacity: 0.8">
+            <span class="rule-icon">❌</span>
+            <span class="rule-arrow">⬇</span>
+            <span class="rule-icon" style="font-size: 3em">🛑</span>
+            <span
+              class="key-desc"
+              style="color: var(--error-color); font-weight: bold"
+              >不要按！</span
+            >
+          </div>
+
+          <div class="rule-box right-box">
+            <span class="rule-icon">⭐</span>
+            <span class="rule-arrow">⬇</span>
+            <span class="rule-key">J</span>
+            <span class="key-desc">要按！</span>
+          </div>
+        </div>
+
+        <button class="btn" onclick="game.startRound2()">🚀 開始第二回</button>
+      </div>
+
+      <div
+        id="playScreen"
+        class="hidden"
+        style="
+          width: 100%;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+        "
+      >
+        <div style="width: 100%">
+          <div id="roundLabel" class="round-label round1-badge">第一回</div>
+          <div
+            style="
+              margin-top: 25px;
+              display: flex;
+              justify-content: space-between;
+            "
+          >
+            <span
+              >進度: <span id="currentTrialDisplay">0</span>/<span
+                id="totalTrialDisplay"
+                >10</span
+              ></span
+            >
+          </div>
+        </div>
+
+        <div id="stimulusBox" class="stimulus"></div>
+
+        <div class="controls-area">
+          <button
+            id="btnF"
+            class="btn-key btn-f"
+            onpointerdown="game.handleInput('F')"
+          >
+            <span class="key-hint">Keyboard F</span>
+            ❌
+          </button>
+          <button
+            id="btnJ"
+            class="btn-key btn-j"
+            onpointerdown="game.handleInput('J')"
+          >
+            <span class="key-hint">Keyboard J</span>
+            ⭐
+          </button>
+        </div>
+      </div>
+
+      <div id="resultScreen" class="screen-layer hidden">
+        <h2>🎉 全部完成！</h2>
+        <div
+          style="
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            width: 100%;
+          "
+        >
+          <p>
+            答對題數：<span
+              id="scoreDisplay"
+              style="color: var(--success-color); font-size: 1.5em"
+              >0</span
+            >
+          </p>
+          <p>平均速度：<span id="avgTimeDisplay">0ms</span></p>
+        </div>
+        <button class="btn" onclick="location.reload()">🔄 重新開始</button>
+        <button
+          class="btn"
+          onclick="game.exportData()"
+          style="background-color: #7f8c8d"
+        >
+          📥 匯出資料
+        </button>
+      </div>
+    </main>
+
+    <script>
+      const CONFIG = {
+        round1Trials: 5,
+        round2Trials: 10,
+        stimulusDuration: 1500,
+        isiMin: 800,
+        isiMax: 1200,
+        goRatio: 0.5,
+      };
+
+      const game = {
+        state: {
+          currentRound: 1,
+          currentTrial: 0,
+          totalTrials: 0,
+          score: 0,
+          results: [],
+          isPlaying: false,
+          currentStimulus: null,
+          startTime: 0,
+          responded: false,
+          timer: null,
+        },
+
+        elements: {
+          container: document.getElementById("gameContainer"),
+          screens: {
+            intro: document.getElementById("introScreen"),
+            intermission: document.getElementById("intermissionScreen"),
+            play: document.getElementById("playScreen"),
+            result: document.getElementById("resultScreen"),
+          },
+          stimulus: document.getElementById("stimulusBox"),
+          btnF: document.getElementById("btnF"),
+          btnJ: document.getElementById("btnJ"),
+          roundLabel: document.getElementById("roundLabel"),
+          trialDisplay: document.getElementById("currentTrialDisplay"),
+          totalDisplay: document.getElementById("totalTrialDisplay"),
+          scoreDisplay: document.getElementById("scoreDisplay"),
+          avgTimeDisplay: document.getElementById("avgTimeDisplay"),
+        },
+
+        startRound1: function () {
+          this.state.currentRound = 1;
+          this.state.totalTrials = CONFIG.round1Trials;
+          this.state.results = [];
+          this.elements.roundLabel.innerText = "第一回：辨識";
+          this.elements.roundLabel.className = "round-label round1-badge";
+          this.elements.btnF.classList.remove("btn-disabled");
+          this.elements.btnF.innerHTML =
+            '<span class="key-hint">Keyboard F</span>❌';
+          this.initGameSession();
+        },
+
+        startRound2: function () {
+          this.state.currentRound = 2;
+          this.state.totalTrials = CONFIG.round2Trials;
+          this.elements.roundLabel.innerText = "第二回：抑制";
+          this.elements.roundLabel.className = "round-label round2-badge";
+          this.elements.btnF.classList.add("btn-disabled");
+          this.elements.btnF.innerHTML = '<span class="key-hint">❌</span>忍住';
+          this.initGameSession();
+        },
+
+        initGameSession: function () {
+          this.state.currentTrial = 0;
+          this.state.score = 0;
+          this.state.isPlaying = true;
+          this.elements.totalDisplay.innerText = this.state.totalTrials;
+          this.showScreen("play");
+          this.nextTrial();
+        },
+
+        nextTrial: function () {
+          if (this.state.currentTrial >= this.state.totalTrials) {
+            this.endSession();
+            return;
+          }
+
+          this.state.currentTrial++;
+          this.updateUI();
+
+          this.elements.stimulus.innerText = "";
+          this.elements.container.className = "game-area";
+          this.elements.stimulus.classList.remove("pop");
+          this.state.responded = false;
+
+          const delay =
+            Math.floor(Math.random() * (CONFIG.isiMax - CONFIG.isiMin + 1)) +
+            CONFIG.isiMin;
+
+          setTimeout(() => this.showStimulus(), delay);
+        },
+
+        showStimulus: function () {
+          const isStar = Math.random() < CONFIG.goRatio;
+          this.state.currentStimulus = isStar ? "star" : "cross";
+
+          if (isStar) {
+            this.elements.stimulus.innerText = "⭐";
+            this.elements.stimulus.style.color = "#f1c40f";
+          } else {
+            this.elements.stimulus.innerText = "❌";
+            this.elements.stimulus.style.color = "#e74c3c";
+          }
+
+          this.state.startTime = Date.now();
+
+          this.state.timer = setTimeout(() => {
+            if (!this.state.responded) {
+              this.handleTimeout();
+            }
+          }, CONFIG.stimulusDuration);
+        },
+
+        handleInput: function (keyInput) {
+          if (
+            !this.state.isPlaying ||
+            this.state.responded ||
+            !this.elements.stimulus.innerText
+          )
+            return;
+
+          this.state.responded = true;
+          clearTimeout(this.state.timer);
+
+          const btn =
+            keyInput === "J" ? this.elements.btnJ : this.elements.btnF;
+          btn.classList.add("active-key");
+          setTimeout(() => btn.classList.remove("active-key"), 100);
+
+          const reactionTime = Date.now() - this.state.startTime;
+          const stimulus = this.state.currentStimulus;
+          let isCorrect = false;
+
+          if (this.state.currentRound === 1) {
+            if (stimulus === "star" && keyInput === "J") isCorrect = true;
+            else if (stimulus === "cross" && keyInput === "F") isCorrect = true;
+          } else {
+            if (stimulus === "star" && keyInput === "J") isCorrect = true;
+            else isCorrect = false;
+          }
+
+          this.triggerFeedback(isCorrect);
+          this.recordResult(isCorrect, reactionTime, keyInput);
+          setTimeout(() => this.nextTrial(), 800);
+        },
+
+        handleTimeout: function () {
+          this.state.responded = true;
+          const stimulus = this.state.currentStimulus;
+          let isCorrect = false;
+
+          if (this.state.currentRound === 1) {
+            isCorrect = false;
+          } else {
+            if (stimulus === "cross") isCorrect = true;
+            else isCorrect = false;
+          }
+
+          if (isCorrect) this.triggerFeedback(true);
+          else this.triggerFeedback(false);
+
+          this.recordResult(isCorrect, 0, "none");
+          setTimeout(() => this.nextTrial(), 800);
+        },
+
+        triggerFeedback: function (isSuccess) {
+          this.elements.container.classList.remove(
+            "feedback-success",
+            "feedback-error"
+          );
+          void this.elements.container.offsetWidth;
+
+          if (isSuccess) {
+            this.elements.container.classList.add("feedback-success");
+            if (this.state.currentStimulus === "star")
+              this.elements.stimulus.classList.add("pop");
+          } else {
+            this.elements.container.classList.add("feedback-error");
+          }
+        },
+
+        recordResult: function (isCorrect, rt, inputKey) {
+          if (isCorrect) this.state.score++;
+
+          this.state.results.push({
+            round: this.state.currentRound,
+            trial: this.state.currentTrial,
+            stimulus: this.state.currentStimulus,
+            input: inputKey,
+            correct: isCorrect ? "yes" : "no",
+            rt: rt,
+          });
+        },
+
+        endSession: function () {
+          this.state.isPlaying = false;
+          if (this.state.currentRound === 1) {
+            this.showScreen("intermission");
+          } else {
+            this.showFinalResult();
+          }
+        },
+
+        showFinalResult: function () {
+          this.showScreen("result");
+          const totalCorrect = this.state.results.filter(
+            (r) => r.correct === "yes"
+          ).length;
+          const validTrials = this.state.results.filter(
+            (r) => r.input === "J" && r.correct === "yes"
+          );
+          const avgRT =
+            validTrials.length > 0
+              ? Math.round(
+                  validTrials.reduce((sum, r) => sum + r.rt, 0) /
+                    validTrials.length
+                )
+              : 0;
+
+          this.elements.scoreDisplay.innerText = totalCorrect;
+          this.elements.avgTimeDisplay.innerText = avgRT + "ms";
+        },
+
+        updateUI: function () {
+          this.elements.trialDisplay.innerText = this.state.currentTrial;
+        },
+
+        showScreen: function (name) {
+          Object.values(this.elements.screens).forEach((el) =>
+            el.classList.add("hidden")
+          );
+          this.elements.screens[name].classList.remove("hidden");
+        },
+
+        exportData: function () {
+          let csv =
+            "data:text/csv;charset=utf-8,Round,Trial,Stimulus,InputKey,Correct,RT(ms)\n";
+          this.state.results.forEach((r) => {
+            csv += `${r.round},${r.trial},${r.stimulus},${r.input},${r.correct},${r.rt}\n`;
+          });
+          const encodedUri = encodeURI(csv);
+          const link = document.createElement("a");
+          link.setAttribute("href", encodedUri);
+          link.setAttribute("download", "ef_training_data.csv");
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        },
+      };
+
+      document.addEventListener("keydown", function (event) {
+        if (!game.state.isPlaying) return;
+        const key = event.key.toUpperCase();
+        if (key === "J" || key === "F") {
+          game.handleInput(key);
+        }
+      });
+    </script>
+  </body>
+</html>
