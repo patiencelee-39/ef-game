@@ -1,18 +1,3 @@
-### 自行修改遊戲教學之先備知識參考
-
-1. **PAPAYA 電腦教學：**
-   <br>
-   <a href="https://youtu.be/FKXRiAiQFiY" target="_blank">
-   <img src="https://img.youtube.com/vi/FKXRiAiQFiY/0.jpg" alt="Git 教學" width="240">
-   <br>程式與網頁開發者必備技能！Git 和 GitHub 零基礎快速上手
-   </a>
-
-2. **Vibe Coding 教學：**
-   <br>
-   <a href="https://youtu.be/LL0Zazm-qik" target="_blank">
-   <img src="https://img.youtube.com/vi/LL0Zazm-qik/0.jpg" alt="Vibe Code 教學" width="240">
-   <br>【寫好 Vibe Coding 的秘密】別人的 Vibe Coding 總是不會讓人失望!! Context7 MCP 如何安裝及使用 | 使用 10xRules.ai 寫出專案級提示詞</a>
-
 # 執行功能訓練遊戲 (Executive Function Training Game)
 
 ## 📚 專案性質
@@ -43,3 +28,18 @@ CSV 匯出功能僅用於研究資料分析，
 
 中原大學特殊教育學系
 Chung Yuan Christian University, Department of Special Education
+
+### 自行修改遊戲教學之先備知識參考
+
+1. **PAPAYA 電腦教學：**
+   <br>
+   <a href="https://youtu.be/FKXRiAiQFiY" target="_blank">
+   <img src="https://img.youtube.com/vi/FKXRiAiQFiY/0.jpg" alt="Git 教學" width="240">
+   <br>程式與網頁開發者必備技能！Git 和 GitHub 零基礎快速上手
+   </a>
+
+2. **Vibe Coding 教學：**
+   <br>
+   <a href="https://youtu.be/LL0Zazm-qik" target="_blank">
+   <img src="https://img.youtube.com/vi/LL0Zazm-qik/0.jpg" alt="Vibe Code 教學" width="240">
+   <br>【寫好 Vibe Coding 的秘密】別人的 Vibe Coding 總是不會讓人失望!! Context7 MCP 如何安裝及使用 | 使用 10xRules.ai 寫出專案級提示詞</a>
