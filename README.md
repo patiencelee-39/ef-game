@@ -1,4 +1,5 @@
-使用教學影片 <a href="https://youtu.be/FKXRiAiQFiY" target="_blank">程式與網頁開發者必備技能！Git 和 GitHub 零基礎快速上手，輕鬆掌握版本控制的要訣！</a>
+自行修改遊戲教學 參考 PAPAYA 電腦教學：
+<a href="https://youtu.be/FKXRiAiQFiY" target="_blank">程式與網頁開發者必備技能！Git 和 GitHub 零基礎快速上手，輕鬆掌握版本控制的要訣！</a>
 
 # 執行功能訓練遊戲 (Executive Function Training Game)
 
