@@ -9,7 +9,9 @@
 
 2. **Vibe Coding 教學：**
    <br>
-   <a href="https://youtu.be/LL0Zazm-qik" target="_blank">【寫好 Vibe Coding 的秘密】別人的 Vibe Coding 總是不會讓人失望!! Context7 MCP 如何安裝及使用 | 使用 10xRules.ai 寫出專案級提示詞</a>
+   <a href="https://youtu.be/LL0Zazm-qik" target="_blank">
+   <img src="https://img.youtube.com/vi/LL0Zazm-qik/0.jpg" alt="Vibe Code 教學" width="240">
+   <br>【寫好 Vibe Coding 的秘密】別人的 Vibe Coding 總是不會讓人失望!! Context7 MCP 如何安裝及使用 | 使用 10xRules.ai 寫出專案級提示詞</a>
 
 # 執行功能訓練遊戲 (Executive Function Training Game)
 
