@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<!-- --------------------------- -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- ===== 重要：增強網站信任度的 Meta 標籤 ===== -->
+    
+    <!-- 網站描述 - 清楚說明網站用途 -->
+    <meta name="description" content="執行功能訓練遊戲是一個學術研究工具，用於中原大學特殊教育學系碩士班實務報告。採用 Go/No-Go 典範訓練 ADHD 不專注型學童的工作記憶與抑制控制能力。不收集任何個人資訊。">
+    
+    <!-- 作者資訊 - 表明是學術研究 -->
+    <meta name="author" content="中原大學特殊教育學系碩士班">
+    
+    <!-- 關鍵字 - 強調教育研究性質 -->
+    <meta name="keywords" content="執行功能, executive function, ADHD, 注意力訓練, 認知訓練, 特殊教育, 教育研究, Go/No-Go, 工作記憶, 抑制控制, 中原大學">
+    
+    <!-- 機器人指令 - 允許索引 -->
+    <meta name="robots" content="index, follow">
+    
+    <!-- 內容分類 - 表明是教育網站 -->
+    <meta name="classification" content="Education, Academic Research, Special Education">
+    
+    <!-- 版權聲明 -->
+    <meta name="copyright" content="中原大學特殊教育學系">
+    
+    <!-- 網站主題色彩 -->
+    <meta name="theme-color" content="#667eea">
+    
+    <!-- ===== Open Graph 標籤 (社群分享用) ===== -->
+    <meta property="og:title" content="執行功能訓練遊戲 - 認知訓練研究工具">
+    <meta property="og:description" content="中原大學特殊教育學系碩士班學術研究工具。採用 Go/No-Go 典範訓練注意力困難學童的執行功能。">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://patiencelee-39.github.io/ef-game/">
+    <meta property="og:site_name" content="執行功能訓練遊戲">
+    <meta property="og:locale" content="zh_TW">
+    
+    <!-- ===== Twitter Card ===== -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="執行功能訓練遊戲">
+    <meta name="twitter:description" content="學術研究用認知訓練工具 - 中原大學特殊教育學系">
+    
+    <!-- ===== 安全相關標籤 ===== -->
+    <!-- Content Security Policy - 限制資源來源，增加安全性 -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self';">
+    
+    <!-- 防止點擊劫持 -->
+    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+    
+    <!-- 防止 MIME 類型嗅探 -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+
+    <!-- 標題 -->
+    <title>執行功能訓練遊戲 - 中原大學特殊教育學術研究工具 v2.1 最佳實踐版</title>
+
+    <!-- 規範連結 -->
+    <link rel="canonical" href="https://patiencelee-39.github.io/ef-game/">
+    
+    <!-- 
+    ╔══════════════════════════════════════════════════════════════════════════════╗
+    ║  執行功能訓練遊戲 (Executive Function Training Game)                          ║
+    ║  版本：v2.1 最佳實踐版                                                        ║
+    ║  用途：訓練 ADHD 不專注型學生的工作記憶與抑制控制能力                           ║
+    ║  設計依據：Go/No-Go 實驗典範                                                  ║
+    ║                                                                              ║
+    ║  程式碼遵循「程式碼良好實踐完整指南」：                                         ║
+    ║  1. 描述性命名 - 變數、函數名稱清楚表達用途                                    ║
+    ║  2. 單一職責原則 - 每個函數只做一件事                                          ║
+    ║  3. 常數使用全大寫 - 設定值集中管理                                            ║
+    ║  4. 有意義的註解 - 解釋「為什麼」而非「做什麼」                                 ║
+    ║  5. 早期返回模式 - 避免深度嵌套                                               ║
+    ║  6. 適當的空行分隔 - 提高可讀性                                               ║
+    ╚══════════════════════════════════════════════════════════════════════════════╝
+    -->
+
+    <style>
+        /* 
+        ============================================================
+        區塊 1：CSS 樣式設定
+        ============================================================
+        說明：控制遊戲的視覺呈現，包括顏色、大小、位置、動畫效果
+        設計原則：
+        - 使用漸層背景增加視覺吸引力（適合兒童使用者）
+        - 按鈕尺寸加大，方便點擊
+        - 回饋訊息使用明顯的綠色（正確）與紅色（錯誤）
+        ============================================================
+        */
+
+        /* ----- 1.1 全域重置與基本設定 ----- */
+        /* 重置所有元素的預設邊距，確保跨瀏覽器一致性 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* 頁面主體設定 */
+        body {
+            /* 使用微軟正黑體，確保中文顯示清晰 */
+            font-family: "Microsoft JhengHei", "微軟正黑體", sans-serif;
+            /* 紫色漸層背景，營造專注且不刺眼的氛圍 */
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            /* 最小高度設為視窗高度，確保背景填滿 */
+            min-height: 100vh;
+            /* 使用 Flexbox 置中遊戲容器 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* ----- 1.2 遊戲主容器 ----- */
+        .game-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            /* 陰影效果增加立體感 */
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            /* 限制最大寬度，在大螢幕上不會過寬 */
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        /* ----- 1.3 標題樣式 ----- */
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.8em;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
+
+        /* ----- 1.4 遊戲區域 ----- */
+        .game-area {
+            background: #f5f5f5;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* ----- 1.5 刺激呈現區（顯示星星或叉叉的圓形區域）----- */
+        .stimulus {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* 字體大小設為 3em，確保圖案清晰可見 */
+            font-size: 3em;
+            margin: 20px 0;
+            /* 過渡動畫，讓狀態變換更平滑 */
+            transition: all 0.3s ease;
+        }
+
+        /* Go 刺激（星星）- 使用綠色，傳達「行動」的意涵 */
+        .stimulus.go {
+            background: #4CAF50;
+            color: white;
+            animation: pulse 0.5s ease;
+        }
+
+        /* No-Go 刺激（叉叉）- 使用紅色，傳達「停止」的意涵 */
+        .stimulus.nogo {
+            background: #f44336;
+            color: white;
+            animation: pulse 0.5s ease;
+        }
+
+        /* 中性狀態（等待中）- 使用灰色 */
+        .stimulus.neutral {
+            background: #ddd;
+            color: #999;
+        }
+
+        /* 脈衝動畫：刺激出現時的視覺效果，吸引注意力 */
+        @keyframes pulse {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* ----- 1.6 按鈕樣式 ----- */
+        .btn {
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        /* 主要按鈕（開始遊戲、匯出等）*/
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        /* 反應按鈕（遊戲中點擊的大按鈕）*/
+        /* 設計考量：按鈕要夠大，讓兒童容易點擊 */
+        .btn-action {
+            background: #4CAF50;
+            color: white;
+            font-size: 1.5em;
+            padding: 20px 60px;
+        }
+
+        .btn-action:hover {
+            background: #45a049;
+        }
+
+        .btn-action:active {
+            transform: scale(0.95);
+        }
+
+        /* ----- 1.7 說明區塊 ----- */
+        .instruction {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 15px 0;
+            text-align: left;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .instruction h3 {
+            color: #1976D2;
+            margin-bottom: 8px;
+        }
+
+        .instruction p {
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* ----- 1.8 分數板 ----- */
+        .score-board {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+
+        .score-item {
+            background: #f0f0f0;
+            padding: 15px 25px;
+            border-radius: 10px;
+        }
+
+        .score-item .label {
+            font-size: 0.8em;
+            color: #666;
+        }
+
+        .score-item .value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* ----- 1.9 回饋訊息 ----- */
+        .feedback {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin: 15px 0;
+            min-height: 40px;
+        }
+
+        /* 正確回饋 - 綠色，給予正向鼓勵 */
+        .feedback.correct {
+            color: #4CAF50;
+        }
+
+        /* 錯誤回饋 - 紅色，提示需要改進 */
+        .feedback.incorrect {
+            color: #f44336;
+        }
+
+        /* ----- 1.10 進度條 ----- */
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s ease;
+        }
+
+        /* ----- 1.11 結果頁面 ----- */
+        .results {
+            text-align: left;
+        }
+
+        .results h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .result-item .label {
+            color: #666;
+        }
+
+        .result-item .value {
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* ----- 1.12 數據表格 ----- */
+        .data-section {
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .data-section h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85em;
+            margin-top: 10px;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        .data-table th {
+            background: #f5f5f5;
+        }
+
+        /* ----- 1.13 工具類別 ----- */
+        /* 隱藏元素，使用 !important 確保優先級 */
+        .hidden {
+            display: none !important;
+        }
+
+        /* 版本標籤 */
+        .version-tag {
+            font-size: 0.7em;
+            color: #999;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 
+    ============================================================
+    區塊 2：HTML 結構
+    ============================================================
+    說明：定義遊戲的四個主要畫面
+    1. startScreen - 開始畫面（顯示規則說明）
+    2. gameScreen - 遊戲畫面（進行 Go/No-Go 任務）
+    3. memoryTestScreen - 記憶測試畫面（測試工作記憶）
+    4. resultScreen - 結果畫面（顯示統計與匯出功能）
+    
+    設計原則：
+    - 使用語義化的 ID 命名，清楚表達元素用途
+    - 畫面切換透過 CSS 的 .hidden 類別控制
+    ============================================================
+    -->
+
+    <div class="game-container">
+        
+        <!-- ===== 2.1 開始畫面 ===== -->
+        <div id="startScreen">
+            <h1>🧠 執行功能訓練遊戲</h1>
+            <p class="subtitle">工作記憶 + 抑制控制 訓練</p>
+
+            <!-- 遊戲規則說明 -->
+            <div class="instruction">
+                <h3>📋 遊戲規則</h3>
+                <p>
+                    <strong>1. 看到 ⭐ 星星 → 按下按鈕！</strong><br>
+                    <strong>2. 看到 ❌ 叉叉 → 不要按！忍住！</strong><br>
+                    <strong>3. 記住前一個是什麼</strong>（之後會問你）
+                </p>
+            </div>
+
+            <!-- 訓練目標說明 -->
+            <div class="instruction">
+                <h3>🎯 訓練目標</h3>
+                <p>
+                    • <strong>工作記憶</strong>：記住看過的圖案<br>
+                    • <strong>抑制控制</strong>：看到叉叉要忍住不按
+                </p>
+            </div>
+            <!-- 研究聲明 - 增強 Google Safe Browsing 信任度 -->
+            <div class="research-notice" style="background: #e8f5e9; padding: 12px 15px; border-radius: 8px; margin: 15px 0; font-size: 0.85em; color: #2e7d32; border-left: 4px solid #4CAF50;">
+                <strong>📚 學術研究工具</strong><br>
+                本遊戲為中原大學特殊教育學系碩士班研究專案，<br>
+                <strong>不收集任何個人資訊</strong>，所有資料僅存於您的瀏覽器。
+                <a href="privacy.html" style="color: #1565c0; margin-left: 5px;">了解更多 →</a>
+            </div>
+            <button class="btn btn-primary" onclick="GameController.startGame()">
+                開始遊戲
+            </button>
+            <p class="version-tag">v2.1 最佳實踐版</p>
+        </div>
+
+        <!-- ===== 2.2 遊戲畫面 ===== -->
+        <div id="gameScreen" class="hidden">
+            <!-- 題號顯示 -->
+            <h2>第 <span id="currentTrialDisplay">1</span> / <span id="totalTrialsDisplay">10</span> 題</h2>
+
+            <!-- 進度條 -->
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+
+            <!-- 分數板 -->
+            <div class="score-board">
+                <div class="score-item">
+                    <div class="label">正確</div>
+                    <div class="value" id="correctCountDisplay">0</div>
+                </div>
+                <div class="score-item">
+                    <div class="label">錯誤</div>
+                    <div class="value" id="errorCountDisplay">0</div>
+                </div>
+            </div>
+
+            <!-- 刺激呈現區 -->
+            <div class="game-area">
+                <div class="stimulus neutral" id="stimulusDisplay">?</div>
+                <div class="feedback" id="feedbackDisplay"></div>
+            </div>
+
+            <!-- 反應按鈕 -->
+            <button class="btn btn-action" id="responseButton" onclick="GameController.recordResponse()">
+                按這裡！
+            </button>
+        </div>
+
+        <!-- ===== 2.3 記憶測試畫面 ===== -->
+        <div id="memoryTestScreen" class="hidden">
+            <h2>🤔 記憶測試</h2>
+            <p style="margin: 20px 0; font-size: 1.1em;">
+                剛才<strong>倒數第二個</strong>圖案是什麼？
+            </p>
+
+            <!-- 記憶測試選項 -->
+            <div style="display: flex; justify-content: center; gap: 20px; margin: 30px 0;">
+                <button class="btn btn-primary" onclick="GameController.checkMemoryAnswer('star')" 
+                        style="font-size: 2em; padding: 20px 40px;">⭐</button>
+                <button class="btn btn-primary" onclick="GameController.checkMemoryAnswer('cross')" 
+                        style="font-size: 2em; padding: 20px 40px;">❌</button>
+            </div>
+        </div>
+
+        <!-- ===== 2.4 結果畫面 ===== -->
+        <div id="resultScreen" class="hidden">
+            <h2>📊 遊戲結果</h2>
+
+            <!-- 統計摘要 -->
+            <div class="results">
+                <div class="result-item">
+                    <span class="label">總題數</span>
+                    <span class="value" id="resultTotalTrials">-</span>
+                </div>
+                <div class="result-item">
+                    <span class="label">正確次數</span>
+                    <span class="value" id="resultCorrectCount">-</span>
+                </div>
+                <div class="result-item">
+                    <span class="label">正確率</span>
+                    <span class="value" id="resultAccuracyRate">-</span>
+                </div>
+                <div class="result-item">
+                    <span class="label">平均反應時間</span>
+                    <span class="value" id="resultAverageReactionTime">-</span>
+                </div>
+                <div class="result-item">
+                    <span class="label">抑制成功率</span>
+                    <span class="value" id="resultInhibitionRate">-</span>
+                </div>
+                <div class="result-item">
+                    <span class="label">記憶測試</span>
+                    <span class="value" id="resultMemoryTest">-</span>
+                </div>
+            </div>
+
+            <!-- 詳細數據表格 -->
+            <div class="data-section">
+                <h3>📝 詳細數據（可匯出）</h3>
+                <table class="data-table" id="dataTable">
+                    <thead>
+                        <tr>
+                            <th>題號</th>
+                            <th>類型</th>
+                            <th>反應</th>
+                            <th>正確</th>
+                            <th>反應時間(ms)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTableBody"></tbody>
+                </table>
+                <!-- 第 476-489 行（修改後）-->
+                <div class="export-info-box" style="margin-top: 15px; padding: 15px; background: #f0f7ff; border: 2px solid #2196F3; border-radius: 10px;">
+                    <h4 style="color: #1976D2; margin-bottom: 10px;">📊 資料匯出說明</h4>
+                    <ul style="margin: 0; padding-left: 20px; line-height: 1.8; color: #555;">
+                        <li><strong>檔案格式：</strong>CSV（逗號分隔值）</li>
+                        <li><strong>檔案內容：</strong>試題資料、反應時間、正確率</li>
+                        <li><strong>使用用途：</strong>學術研究、教學分析</li>
+                        <li><strong>隱私保護：</strong>不含個人身分資訊</li>
+                    </ul>
+                    <button class="btn btn-primary" onclick="DataExporter.exportToCSV()" style="margin-top: 15px; width: 100%;">
+                        📥 匯出 CSV 資料
+                    </button>
+                </div>
+            <!-- 第 481-500 行（修改後）-->
+            <button class="btn btn-primary" onclick="GameController.restartGame()" style="margin-top: 20px;">
+                再玩一次
+            </button>
+                    </div>
+                </div>
+
+                <!-- ✨ 新增：完整頁尾 ✨ -->
+                <footer style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); margin-top: 30px; padding: 30px 20px; border-top: 3px solid #667eea;">
+                    <div style="max-width: 500px; margin: 0 auto; text-align: center;">
+                        <!-- 頁尾標題 -->
+                        <p style="font-size: 1em; color: #333; margin-bottom: 15px; font-weight: bold;">
+                            執行功能訓練遊戲
+                        </p>
+                        
+                        <!-- 說明文字 -->
+                        <p style="font-size: 0.85em; color: #666; margin-bottom: 20px; line-height: 1.6;">
+                            中原大學特殊教育學系碩士班實務報告<br>
+                            用於協助 ADHD 不專注型學童進行認知訓練
+                        </p>
+                        
+                        <!-- 連結區 -->
+                        <div style="margin-bottom: 15px;">
+                            <a href="privacy.html" target="_blank" style="display: inline-block; margin: 5px 10px; padding: 8px 15px; background: white; color: #667eea; text-decoration: none; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: all 0.3s;">
+                                🔒 隱私權政策
+                            </a>
+                            <a href="https://github.com/patiencelee-39/ef-training-game" target="_blank" style="display: inline-block; margin: 5px 10px; padding: 8px 15px; background: white; color: #667eea; text-decoration: none; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: all 0.3s;">
+                                💻 開源專案
+                            </a>
+                        </div>
+                        
+                        <!-- 版權資訊 -->
+                        <p style="font-size: 0.75em; color: #999; margin-top: 15px;">
+                            © 2026 中原大學特殊教育學系 | 僅供學術研究使用
+                        </p>
+                    </div>
+                </footer>
+                <!-- ✨ 新增結束 ✨ -->
+
+                <script>
+        /*
+        ╔══════════════════════════════════════════════════════════════════════════════╗
+        ║  區塊 3：JavaScript 遊戲邏輯                                                  ║
+        ╠══════════════════════════════════════════════════════════════════════════════╣
+        ║  程式架構說明：                                                               ║
+        ║                                                                              ║
+        ║  本程式採用模組化設計，將功能分為以下幾個獨立模組：                             ║
+        ║  1. GAME_CONFIG - 遊戲設定常數（全大寫命名）                                   ║
+        ║  2. GameState - 遊戲狀態管理                                                 ║
+        ║  3. StimulusGenerator - 刺激序列產生器                                        ║
+        ║  4. UIManager - 使用者介面管理                                               ║
+        ║  5. TrialProcessor - 試題處理邏輯                                            ║
+        ║  6. StatisticsCalculator - 統計計算                                          ║
+        ║  7. DataExporter - 資料匯出                                                  ║
+        ║  8. GameController - 遊戲流程控制（主控制器）                                  ║
+        ║                                                                              ║
+        ║  設計原則：                                                                   ║
+        ║  - 單一職責原則：每個模組只負責一項功能                                        ║
+        ║  - 描述性命名：函數名稱使用動詞開頭，清楚表達功能                               ║
+        ║  - 常數集中管理：所有可調整的參數放在 GAME_CONFIG                              ║
+        ║  - 早期返回模式：避免深度嵌套的 if-else                                        ║
+        ╚══════════════════════════════════════════════════════════════════════════════╝
+        */
+
+
+        /* 
+        ============================================================
+        3.1 遊戲設定常數 (GAME_CONFIG)
+        ============================================================
+        說明：集中管理所有可調整的遊戲參數
+        命名規範：常數使用全大寫字母，用底線分隔
+        
+        調整指南：
+        - TOTAL_TRIALS: 增加題數可提高訓練強度，但可能降低兒童專注力
+        - STIMULUS_DURATION_MS: 縮短時間可增加難度
+        - GO_STIMULUS_RATIO: 調整 Go/No-Go 比例影響抑制控制訓練強度
+        ============================================================
+        */
+        const GAME_CONFIG = {
+            // 總題數：預設 10 題，適合單次訓練
+            TOTAL_TRIALS: 10,
+            
+            // 刺激呈現時間（毫秒）：1500ms 給予足夠反應時間
+            STIMULUS_DURATION_MS: 1500,
+            
+            // 題目間隔時間（毫秒）：1000ms 讓大腦有短暫休息
+            INTER_TRIAL_INTERVAL_MS: 1000,
+            
+            // Go 刺激比例：70% 星星，30% 叉叉
+            // 設計依據：較高的 Go 比例會建立「按按鈕」的優勢反應，
+            // 使得抑制 No-Go 刺激更具挑戰性
+            GO_STIMULUS_RATIO: 0.7,
+            
+            // 刺激類型定義
+            STIMULUS_TYPES: {
+                GO: 'go',       // 需要反應的刺激
+                NOGO: 'nogo'    // 需要抑制反應的刺激
+            },
+            
+            // 刺激符號
+            STIMULUS_SYMBOLS: {
+                GO: '⭐',       // 星星代表「行動」
+                NOGO: '❌',     // 叉叉代表「停止」
+                NEUTRAL: '?'   // 問號代表「等待」
+            }
+        };
+
+
+        /* 
+        ============================================================
+        3.2 遊戲狀態管理 (GameState)
+        ============================================================
+        說明：管理遊戲運行時的所有狀態資料
+        設計原則：
+        - 將狀態集中管理，避免全域變數散落各處
+        - 提供 reset() 方法確保每次遊戲開始時狀態乾淨
+        ============================================================
+        */
+        const GameState = {
+            // ----- 基本計數 -----
+            currentTrialNumber: 0,      // 當前題號（1-based）
+            correctResponseCount: 0,    // 正確反應次數
+            errorResponseCount: 0,      // 錯誤反應次數
+            
+            // ----- 刺激相關 -----
+            stimulusSequence: [],       // 刺激序列陣列（如：['go', 'nogo', 'go', ...]）
+            currentStimulusType: null,  // 當前刺激類型（'go' 或 'nogo'）
+            
+            // ----- 時間記錄 -----
+            stimulusOnsetTime: null,    // 刺激呈現的時間戳記（用於計算反應時間）
+            
+            // ----- 反應狀態 -----
+            hasRespondedToCurrentTrial: false,  // 是否已對當前試題做出反應
+            isCurrentTrialProcessed: false,     // 當前試題是否已處理完成（防止重複處理）
+            isGameActive: false,                // 遊戲是否進行中
+            
+            // ----- 計時器 -----
+            // 儲存 setTimeout 的 ID，用於在需要時取消計時器
+            // 這是修復重複記錄 bug 的關鍵
+            currentTimeoutId: null,
+            
+            // ----- 資料收集 -----
+            trialDataRecords: [],       // 各試題的詳細記錄
+            isMemoryTestCorrect: null,  // 記憶測試結果
+            
+            /**
+             * 重置遊戲狀態
+             * 
+             * 使用時機：每次開始新遊戲時呼叫
+             * 設計原則：確保所有狀態回到初始值，避免前次遊戲的資料影響新遊戲
+             * 
+             * @param {Array} newStimulusSequence - 新產生的刺激序列
+             */
+            reset: function(newStimulusSequence) {
+                this.currentTrialNumber = 0;
+                this.correctResponseCount = 0;
+                this.errorResponseCount = 0;
+                this.stimulusSequence = newStimulusSequence;
+                this.currentStimulusType = null;
+                this.stimulusOnsetTime = null;
+                this.hasRespondedToCurrentTrial = false;
+                this.isCurrentTrialProcessed = false;
+                this.isGameActive = true;
+                this.currentTimeoutId = null;
+                this.trialDataRecords = [];
+                this.isMemoryTestCorrect = null;
+            }
+        };
+
+
+        /* 
+        ============================================================
+        3.3 刺激序列產生器 (StimulusGenerator)
+        ============================================================
+        說明：負責產生隨機化的刺激序列
+        職責：
+        - 根據設定的 Go/No-Go 比例產生序列
+        - 使用 Fisher-Yates 演算法進行隨機打亂
+        ============================================================
+        */
+        const StimulusGenerator = {
+            
+            /**
+             * 產生隨機化的刺激序列
+             * 
+             * @returns {Array} 包含 'go' 和 'nogo' 的隨機序列
+             * 
+             * 演算法說明：
+             * 1. 根據比例計算 Go 和 No-Go 的數量
+             * 2. 建立包含正確數量的序列
+             * 3. 使用 Fisher-Yates shuffle 隨機打亂
+             */
+            generateRandomSequence: function() {
+                const sequence = [];
+                
+                // 計算各類型刺激的數量
+                const goStimulusCount = Math.floor(
+                    GAME_CONFIG.TOTAL_TRIALS * GAME_CONFIG.GO_STIMULUS_RATIO
+                );
+                const nogoStimulusCount = GAME_CONFIG.TOTAL_TRIALS - goStimulusCount;
+                
+                // 建立序列
+                for (let i = 0; i < goStimulusCount; i++) {
+                    sequence.push(GAME_CONFIG.STIMULUS_TYPES.GO);
+                }
+                for (let i = 0; i < nogoStimulusCount; i++) {
+                    sequence.push(GAME_CONFIG.STIMULUS_TYPES.NOGO);
+                }
+                
+                // 隨機打亂序列
+                return this.shuffleArray(sequence);
+            },
+            
+            /**
+             * Fisher-Yates 洗牌演算法
+             * 
+             * @param {Array} array - 要打亂的陣列
+             * @returns {Array} 打亂後的陣列
+             * 
+             * 為什麼使用 Fisher-Yates？
+             * - 時間複雜度 O(n)，效率高
+             * - 每種排列的機率相等，真正隨機
+             * - 是業界標準的洗牌演算法
+             */
+            shuffleArray: function(array) {
+                const shuffled = [...array]; // 複製陣列，不修改原陣列
+                
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    // 產生 0 到 i 之間的隨機整數
+                    const randomIndex = Math.floor(Math.random() * (i + 1));
+                    // 交換元素
+                    [shuffled[i], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[i]];
+                }
+                
+                return shuffled;
+            }
+        };
+
+
+        /* 
+        ============================================================
+        3.4 使用者介面管理 (UIManager)
+        ============================================================
+        說明：負責所有 DOM 操作與畫面更新
+        職責：
+        - 切換畫面
+        - 更新顯示內容
+        - 顯示刺激與回饋
+        
+        設計原則：將 DOM 操作集中管理，方便維護與修改
+        ============================================================
+        */
+        const UIManager = {
+            
+            // ----- 畫面切換方法 -----
+            
+            /**
+             * 顯示指定畫面，隱藏其他畫面
+             * 
+             * @param {string} screenId - 要顯示的畫面 ID
+             */
+            showScreen: function(screenId) {
+                // 所有畫面 ID
+                const allScreenIds = ['startScreen', 'gameScreen', 'memoryTestScreen', 'resultScreen'];
+                
+                allScreenIds.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (id === screenId) {
+                        element.classList.remove('hidden');
+                    } else {
+                        element.classList.add('hidden');
+                    }
+                });
+            },
+            
+            // ----- 遊戲畫面更新方法 -----
+            
+            /**
+             * 更新題號顯示
+             * 
+             * @param {number} currentTrial - 當前題號
+             * @param {number} totalTrials - 總題數
+             */
+            updateTrialDisplay: function(currentTrial, totalTrials) {
+                document.getElementById('currentTrialDisplay').textContent = currentTrial;
+                document.getElementById('totalTrialsDisplay').textContent = totalTrials;
+            },
+            
+            /**
+             * 更新進度條
+             * 
+             * @param {number} progressPercentage - 進度百分比（0-100）
+             */
+            updateProgressBar: function(progressPercentage) {
+                document.getElementById('progressFill').style.width = progressPercentage + '%';
+            },
+            
+            /**
+             * 更新分數顯示
+             * 
+             * @param {number} correctCount - 正確次數
+             * @param {number} errorCount - 錯誤次數
+             */
+            updateScoreDisplay: function(correctCount, errorCount) {
+                document.getElementById('correctCountDisplay').textContent = correctCount;
+                document.getElementById('errorCountDisplay').textContent = errorCount;
+            },
+            
+            /**
+             * 顯示刺激
+             * 
+             * @param {string} stimulusType - 刺激類型（'go', 'nogo', 或 'neutral'）
+             */
+            displayStimulus: function(stimulusType) {
+                const stimulusElement = document.getElementById('stimulusDisplay');
+                
+                // 設定樣式類別
+                stimulusElement.className = 'stimulus ' + stimulusType;
+                
+                // 設定顯示符號
+                if (stimulusType === GAME_CONFIG.STIMULUS_TYPES.GO) {
+                    stimulusElement.textContent = GAME_CONFIG.STIMULUS_SYMBOLS.GO;
+                } else if (stimulusType === GAME_CONFIG.STIMULUS_TYPES.NOGO) {
+                    stimulusElement.textContent = GAME_CONFIG.STIMULUS_SYMBOLS.NOGO;
+                } else {
+                    stimulusElement.textContent = GAME_CONFIG.STIMULUS_SYMBOLS.NEUTRAL;
+                }
+            },
+            
+            /**
+             * 顯示回饋訊息
+             * 
+             * @param {string} message - 回饋訊息
+             * @param {boolean} isCorrect - 是否正確
+             */
+            displayFeedback: function(message, isCorrect) {
+                const feedbackElement = document.getElementById('feedbackDisplay');
+                feedbackElement.textContent = message;
+                feedbackElement.className = 'feedback ' + (isCorrect ? 'correct' : 'incorrect');
+            },
+            
+            /**
+             * 清除回饋訊息
+             */
+            clearFeedback: function() {
+                const feedbackElement = document.getElementById('feedbackDisplay');
+                feedbackElement.textContent = '';
+                feedbackElement.className = 'feedback';
+            },
+            
+            // ----- 結果畫面更新方法 -----
+            
+            /**
+             * 顯示遊戲結果
+             * 
+             * @param {Object} statistics - 統計資料物件
+             */
+            displayResults: function(statistics) {
+                document.getElementById('resultTotalTrials').textContent = 
+                    statistics.totalTrials + ' 題';
+                document.getElementById('resultCorrectCount').textContent = 
+                    statistics.correctCount + ' 次';
+                document.getElementById('resultAccuracyRate').textContent = 
+                    statistics.accuracyRate + '%';
+                document.getElementById('resultAverageReactionTime').textContent = 
+                    statistics.averageReactionTime + ' ms';
+                document.getElementById('resultInhibitionRate').textContent = 
+                    statistics.inhibitionRate + '%';
+                document.getElementById('resultMemoryTest').textContent = 
+                    statistics.memoryTestResult;
+            },
+            
+            /**
+             * 填入詳細數據表格
+             * 
+             * @param {Array} trialDataRecords - 試題記錄陣列
+             */
+            populateDataTable: function(trialDataRecords) {
+                const tableBody = document.getElementById('dataTableBody');
+                tableBody.innerHTML = ''; // 清空現有內容
+                
+                trialDataRecords.forEach(record => {
+                    const row = document.createElement('tr');
+                    
+                    // 根據正確與否設定顏色
+                    const correctnessColor = record.isCorrect ? 'green' : 'red';
+                    const correctnessSymbol = record.isCorrect ? '✓' : '✗';
+                    
+                    row.innerHTML = `
+                        <td>${record.trialNumber}</td>
+                        <td>${record.stimulusType === 'go' ? '⭐ Go' : '❌ No-Go'}</td>
+                        <td>${record.didRespond ? '有按' : '沒按'}</td>
+                        <td style="color: ${correctnessColor}">${correctnessSymbol}</td>
+                        <td>${record.reactionTime || '-'}</td>
+                    `;
+                    
+                    tableBody.appendChild(row);
+                });
+            }
+        };
+
+
+        /* 
+        ============================================================
+        3.5 試題處理器 (TrialProcessor)
+        ============================================================
+        說明：負責處理單一試題的邏輯
+        職責：
+        - 判斷反應正確性
+        - 記錄試題資料
+        - 產生回饋訊息
+        ============================================================
+        */
+        const TrialProcessor = {
+            
+            /**
+             * 判斷反應是否正確
+             * 
+             * @param {string} stimulusType - 刺激類型（'go' 或 'nogo'）
+             * @param {boolean} didRespond - 是否有反應（按了按鈕）
+             * @returns {boolean} 反應是否正確
+             * 
+             * 判斷邏輯：
+             * - Go 刺激 + 有反應 = 正確（正確偵測）
+             * - Go 刺激 + 沒反應 = 錯誤（遺漏）
+             * - No-Go 刺激 + 沒反應 = 正確（成功抑制）
+             * - No-Go 刺激 + 有反應 = 錯誤（錯誤警報/抑制失敗）
+             */
+            determineResponseCorrectness: function(stimulusType, didRespond) {
+                const isGoStimulus = (stimulusType === GAME_CONFIG.STIMULUS_TYPES.GO);
+                
+                if (isGoStimulus && didRespond) {
+                    return true;  // Go + 有按 = 正確
+                }
+                
+                if (!isGoStimulus && !didRespond) {
+                    return true;  // No-Go + 沒按 = 正確（成功抑制）
+                }
+                
+                return false;  // 其他情況都是錯誤
+            },
+            
+            /**
+             * 產生回饋訊息
+             * 
+             * @param {string} stimulusType - 刺激類型
+             * @param {boolean} didRespond - 是否有反應
+             * @param {boolean} isCorrect - 是否正確
+             * @returns {string} 回饋訊息
+             */
+            generateFeedbackMessage: function(stimulusType, didRespond, isCorrect) {
+                // 早期返回：正確的情況
+                if (isCorrect) {
+                    return '✓ 正確！';
+                }
+                
+                // 錯誤的情況：根據情境給予具體回饋
+                const isGoStimulus = (stimulusType === GAME_CONFIG.STIMULUS_TYPES.GO);
+                
+                if (isGoStimulus && !didRespond) {
+                    return '✗ 太慢了！要按按鈕！';
+                }
+                
+                if (!isGoStimulus && didRespond) {
+                    return '✗ 要忍住不按！';
+                }
+                
+                return '✗ 錯誤';
+            },
+            
+            /**
+             * 建立試題記錄物件
+             * 
+             * @param {number} trialNumber - 題號
+             * @param {string} stimulusType - 刺激類型
+             * @param {boolean} didRespond - 是否有反應
+             * @param {boolean} isCorrect - 是否正確
+             * @param {number|null} reactionTime - 反應時間（毫秒）
+             * @returns {Object} 試題記錄物件
+             */
+            createTrialRecord: function(trialNumber, stimulusType, didRespond, isCorrect, reactionTime) {
+                return {
+                    trialNumber: trialNumber,
+                    stimulusType: stimulusType,
+                    didRespond: didRespond,
+                    isCorrect: isCorrect,
+                    reactionTime: reactionTime
+                };
+            }
+        };
+
+
+        /* 
+        ============================================================
+        3.6 統計計算器 (StatisticsCalculator)
+        ============================================================
+        說明：負責計算遊戲結果的各項統計指標
+        職責：
+        - 計算正確率
+        - 計算平均反應時間
+        - 計算抑制成功率
+        ============================================================
+        */
+        const StatisticsCalculator = {
+            
+            /**
+             * 計算所有統計指標
+             * 
+             * @param {Array} trialDataRecords - 試題記錄陣列
+             * @param {boolean} isMemoryTestCorrect - 記憶測試是否正確
+             * @returns {Object} 包含所有統計指標的物件
+             */
+            calculateAllStatistics: function(trialDataRecords, isMemoryTestCorrect) {
+                return {
+                    totalTrials: GAME_CONFIG.TOTAL_TRIALS,
+                    correctCount: this.calculateCorrectCount(trialDataRecords),
+                    accuracyRate: this.calculateAccuracyRate(trialDataRecords),
+                    averageReactionTime: this.calculateAverageReactionTime(trialDataRecords),
+                    inhibitionRate: this.calculateInhibitionRate(trialDataRecords),
+                    memoryTestResult: isMemoryTestCorrect ? '✓ 正確' : '✗ 錯誤'
+                };
+            },
+            
+            /**
+             * 計算正確次數
+             */
+            calculateCorrectCount: function(trialDataRecords) {
+                return trialDataRecords.filter(record => record.isCorrect).length;
+            },
+            
+            /**
+             * 計算正確率（百分比）
+             */
+            calculateAccuracyRate: function(trialDataRecords) {
+                const correctCount = this.calculateCorrectCount(trialDataRecords);
+                return Math.round(correctCount / trialDataRecords.length * 100);
+            },
+            
+            /**
+             * 計算 Go 試題的平均反應時間
+             * 
+             * 只計算「正確且有反應」的 Go 試題
+             * 
+             * @returns {string} 平均反應時間（毫秒）或 '-'
+             */
+            calculateAverageReactionTime: function(trialDataRecords) {
+                // 篩選：Go 試題 + 正確 + 有反應時間
+                const validGoTrials = trialDataRecords.filter(record => 
+                    record.stimulusType === GAME_CONFIG.STIMULUS_TYPES.GO &&
+                    record.isCorrect &&
+                    record.reactionTime !== null
+                );
+                
+                // 早期返回：沒有有效資料
+                if (validGoTrials.length === 0) {
+                    return '-';
+                }
+                
+                // 計算平均值
+                const totalReactionTime = validGoTrials.reduce(
+                    (sum, record) => sum + record.reactionTime, 0
+                );
+                
+                return Math.round(totalReactionTime / validGoTrials.length);
+            },
+            
+            /**
+             * 計算抑制成功率
+             * 
+             * 抑制成功率 = 正確的 No-Go 試題數 / 總 No-Go 試題數
+             * 
+             * @returns {string} 抑制成功率（百分比）或 '-'
+             */
+            calculateInhibitionRate: function(trialDataRecords) {
+                // 篩選所有 No-Go 試題
+                const nogoTrials = trialDataRecords.filter(
+                    record => record.stimulusType === GAME_CONFIG.STIMULUS_TYPES.NOGO
+                );
+                
+                // 早期返回：沒有 No-Go 試題
+                if (nogoTrials.length === 0) {
+                    return '-';
+                }
+                
+                // 計算成功抑制的數量
+                const successfulInhibitions = nogoTrials.filter(record => record.isCorrect).length;
+                
+                return Math.round(successfulInhibitions / nogoTrials.length * 100);
+            }
+        };
+
+
+        /* 
+        ============================================================
+        3.7 資料匯出器 (DataExporter)
+        ============================================================
+        說明：負責將遊戲資料匯出為 CSV 檔案
+        職責：
+        - 格式化資料為 CSV 格式
+        - 處理檔案下載
+        ============================================================
+        */
+        const DataExporter = {
+            
+            /**
+             * 匯出資料為 CSV 檔案
+             * 
+             * CSV 格式說明：
+             * - 使用 UTF-8 編碼（加入 BOM 確保 Excel 正確顯示中文）
+             * - 欄位：題號, 類型, 反應, 正確, 反應時間(ms)
+             */
+            exportToCSV: function() {
+                // ✨ 步驟 1：使用者確認對話框
+                const confirmed = confirm(
+                    '📊 資料匯出說明\n\n' +
+                    '即將匯出遊戲表現資料為 CSV 檔案\n\n' +
+                    '檔案內容包含：\n' +
+                    '• 試題編號\n' +
+                    '• 刺激類型（星星/叉叉）\n' +
+                    '• 是否按下按鈕\n' +
+                    '• 答題正確性\n' +
+                    '• 反應時間\n\n' +
+                    '此資料僅供研究或教學使用\n' +
+                    '不包含任何個人隱私資訊\n\n' +
+                    '是否繼續匯出？'
+                );
+                
+                // ✨ 步驟 2：使用者取消則返回
+                if (!confirmed) {
+                    console.log('使用者取消匯出');
+                    return;
+                }
+                
+                // 建立 CSV 標題行
+                let csvContent = '題號,類型,反應,正確,反應時間(ms)\n';
+                
+                // 加入每一題的資料
+                GameState.trialDataRecords.forEach(record => {
+                    const row = [
+                        record.trialNumber,
+                        record.stimulusType,
+                        record.didRespond ? '有按' : '沒按',
+                        record.isCorrect ? '正確' : '錯誤',
+                        record.reactionTime || ''
+                    ].join(',');
+                    
+                    csvContent += row + '\n';
+                });
+                
+                // ✨ 步驟 3：記錄資料筆數（方便除錯）
+                const recordCount = GameState.trialDataRecords.length;
+                console.log(`準備匯出 ${recordCount} 筆資料`);
+                
+                // 觸發下載
+                const fileName = this.generateFileName();
+                this.downloadFile(csvContent, fileName);
+                
+                // ✨ 步驟 4：顯示成功訊息
+                alert(
+                    `✅ 資料匯出成功！\n\n` +
+                    `檔案名稱：${fileName}\n` +
+                    `資料筆數：${recordCount} 筆`
+                );
+            },
+            /**
+             * 產生檔案名稱
+             * 
+             * @returns {string} 包含日期的檔案名稱
+             */
+            generateFileName: function() {
+                const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+                return `遊戲數據_${today}.csv`;
+            },
+            
+            /**
+             * 觸發檔案下載
+             * 
+             * @param {string} content - 檔案內容
+             * @param {string} fileName - 檔案名稱
+             * 
+             * 技術說明：
+             * - 使用 Blob 物件建立檔案
+             * - '\ufeff' 是 UTF-8 BOM，確保 Excel 正確識別編碼
+             * - 動態建立 <a> 元素觸發下載
+             */
+            downloadFile: function(content, fileName) {
+                // 建立 Blob（加入 BOM 確保中文正確顯示）
+                const blob = new Blob(
+                    ['\ufeff' + content], 
+                    { type: 'text/csv;charset=utf-8' }
+                );
+                
+                // 建立下載連結
+                const downloadUrl = URL.createObjectURL(blob);
+                const downloadLink = document.createElement('a');
+                downloadLink.href = downloadUrl;
+                downloadLink.download = fileName;
+                
+                // 觸發下載
+                downloadLink.click();
+                
+                // 清理
+                URL.revokeObjectURL(downloadUrl);
+            }
+        };
+
+
+        /* 
+        ============================================================
+        3.8 遊戲控制器 (GameController)
+        ============================================================
+        說明：主控制器，協調各模組的運作
+        職責：
+        - 控制遊戲流程（開始、進行、結束）
+        - 處理使用者輸入
+        - 協調各模組之間的互動
+        ============================================================
+        */
+        const GameController = {
+            
+            /**
+             * 開始新遊戲
+             * 
+             * 流程：
+             * 1. 產生新的刺激序列
+             * 2. 重置遊戲狀態
+             * 3. 切換到遊戲畫面
+             * 4. 開始第一題
+             */
+            startGame: function() {
+                // 產生隨機刺激序列
+                const newSequence = StimulusGenerator.generateRandomSequence();
+                
+                // 重置遊戲狀態
+                GameState.reset(newSequence);
+                
+                // 更新介面
+                UIManager.showScreen('gameScreen');
+                UIManager.updateTrialDisplay(1, GAME_CONFIG.TOTAL_TRIALS);
+                UIManager.updateScoreDisplay(0, 0);
+                UIManager.updateProgressBar(0);
+                
+                // 延遲 1 秒後開始第一題（給玩家準備時間）
+                setTimeout(() => this.startNextTrial(), 1000);
+            },
+            
+            /**
+             * 開始下一題
+             * 
+             * 流程：
+             * 1. 清除之前的計時器（防止重複觸發）
+             * 2. 檢查是否已完成所有試題
+             * 3. 更新狀態與介面
+             * 4. 呈現刺激
+             * 5. 設定反應時間限制
+             */
+            startNextTrial: function() {
+                // [重要] 清除之前的計時器，防止重複處理
+                this.clearCurrentTimeout();
+                
+                // 檢查是否已完成所有試題
+                if (GameState.currentTrialNumber >= GAME_CONFIG.TOTAL_TRIALS) {
+                    this.showMemoryTest();
+                    return;
+                }
+                
+                // 更新狀態
+                GameState.currentTrialNumber++;
+                GameState.hasRespondedToCurrentTrial = false;
+                GameState.isCurrentTrialProcessed = false;
+                
+                // 取得當前刺激類型
+                const currentStimulus = GameState.stimulusSequence[GameState.currentTrialNumber - 1];
+                GameState.currentStimulusType = currentStimulus;
+                
+                // 更新介面
+                const progressPercentage = (GameState.currentTrialNumber / GAME_CONFIG.TOTAL_TRIALS) * 100;
+                UIManager.updateTrialDisplay(GameState.currentTrialNumber, GAME_CONFIG.TOTAL_TRIALS);
+                UIManager.updateProgressBar(progressPercentage);
+                UIManager.clearFeedback();
+                UIManager.displayStimulus(currentStimulus);
+                
+                // 記錄刺激呈現時間（用於計算反應時間）
+                GameState.stimulusOnsetTime = Date.now();
+                
+                // 設定刺激消失的計時器
+                // [重要] 儲存 timeout ID，以便在需要時取消
+                GameState.currentTimeoutId = setTimeout(() => {
+                    // 只有在尚未處理的情況下才處理「沒有反應」
+                    if (!GameState.isCurrentTrialProcessed && GameState.isGameActive) {
+                        this.processTrialResponse(false, null);
+                    }
+                }, GAME_CONFIG.STIMULUS_DURATION_MS);
+            },
+            
+            /**
+             * 記錄玩家的反應（按下按鈕）
+             * 
+             * 防護措施：
+             * - 檢查遊戲是否進行中
+             * - 檢查是否已經反應過
+             * - 檢查試題是否已處理
+             */
+            recordResponse: function() {
+                // 早期返回：各種無效情況
+                if (!GameState.isGameActive) {
+                    return;
+                }
+                
+                if (GameState.hasRespondedToCurrentTrial) {
+                    return;
+                }
+                
+                if (GameState.isCurrentTrialProcessed) {
+                    return;
+                }
+                
+                // 標記已反應
+                GameState.hasRespondedToCurrentTrial = true;
+                
+                // [重要] 立即清除計時器，防止重複處理
+                this.clearCurrentTimeout();
+                
+                // 計算反應時間
+                const reactionTime = Date.now() - GameState.stimulusOnsetTime;
+                
+                // 處理這次反應
+                this.processTrialResponse(true, reactionTime);
+            },
+            
+            /**
+             * 處理試題反應
+             * 
+             * @param {boolean} didRespond - 是否有反應
+             * @param {number|null} reactionTime - 反應時間（毫秒）
+             */
+            processTrialResponse: function(didRespond, reactionTime) {
+                // [重要] 防止重複處理同一題
+                if (GameState.isCurrentTrialProcessed) {
+                    return;
+                }
+                GameState.isCurrentTrialProcessed = true;
+                
+                // 判斷正確性
+                const isCorrect = TrialProcessor.determineResponseCorrectness(
+                    GameState.currentStimulusType,
+                    didRespond
+                );
+                
+                // 更新計數
+                if (isCorrect) {
+                    GameState.correctResponseCount++;
+                } else {
+                    GameState.errorResponseCount++;
+                }
+                
+                // 建立並儲存試題記錄
+                const trialRecord = TrialProcessor.createTrialRecord(
+                    GameState.currentTrialNumber,
+                    GameState.currentStimulusType,
+                    didRespond,
+                    isCorrect,
+                    reactionTime
+                );
+                GameState.trialDataRecords.push(trialRecord);
+                
+                // 顯示回饋
+                const feedbackMessage = TrialProcessor.generateFeedbackMessage(
+                    GameState.currentStimulusType,
+                    didRespond,
+                    isCorrect
+                );
+                UIManager.displayFeedback(feedbackMessage, isCorrect);
+                UIManager.updateScoreDisplay(
+                    GameState.correctResponseCount,
+                    GameState.errorResponseCount
+                );
+                
+                // 清除刺激顯示
+                UIManager.displayStimulus('neutral');
+                
+                // 進入下一題
+                setTimeout(() => this.startNextTrial(), GAME_CONFIG.INTER_TRIAL_INTERVAL_MS);
+            },
+            
+            /**
+             * 清除當前的計時器
+             * 
+             * 為什麼需要這個方法？
+             * 當玩家按下按鈕後，需要取消原本設定的「無反應」計時器，
+             * 否則會導致同一題被處理兩次（重複記錄的 bug）
+             */
+            clearCurrentTimeout: function() {
+                if (GameState.currentTimeoutId !== null) {
+                    clearTimeout(GameState.currentTimeoutId);
+                    GameState.currentTimeoutId = null;
+                }
+            },
+            
+            /**
+             * 顯示記憶測試
+             */
+            showMemoryTest: function() {
+                GameState.isGameActive = false;
+                UIManager.showScreen('memoryTestScreen');
+            },
+            
+            /**
+             * 檢查記憶測試答案
+             * 
+             * @param {string} answer - 玩家的答案（'star' 或 'cross'）
+             */
+            checkMemoryAnswer: function(answer) {
+                // 取得倒數第二個刺激的正確答案
+                const secondLastStimulus = GameState.stimulusSequence[GAME_CONFIG.TOTAL_TRIALS - 2];
+                const correctAnswer = (secondLastStimulus === GAME_CONFIG.STIMULUS_TYPES.GO) 
+                    ? 'star' 
+                    : 'cross';
+                
+                // 判斷是否正確
+                GameState.isMemoryTestCorrect = (answer === correctAnswer);
+                
+                // 顯示結果
+                this.showResults();
+            },
+            
+            /**
+             * 顯示遊戲結果
+             */
+            showResults: function() {
+                // 計算統計資料
+                const statistics = StatisticsCalculator.calculateAllStatistics(
+                    GameState.trialDataRecords,
+                    GameState.isMemoryTestCorrect
+                );
+                
+                // 更新介面
+                UIManager.showScreen('resultScreen');
+                UIManager.displayResults(statistics);
+                UIManager.populateDataTable(GameState.trialDataRecords);
+            },
+            
+            /**
+             * 重新開始遊戲
+             */
+            restartGame: function() {
+                UIManager.showScreen('startScreen');
+            }
+        };
+
+
+        /* 
+        ============================================================
+        3.9 鍵盤事件監聽
+        ============================================================
+        說明：允許使用空白鍵作為反應按鈕的替代方式
+        設計考量：提供多種輸入方式，增加可及性
+        ============================================================
+        */
+        document.addEventListener('keydown', function(event) {
+            // 只在遊戲進行中且按下空白鍵時觸發
+            if (event.code === 'Space' && GameState.isGameActive) {
+                // 防止空白鍵的預設行為（頁面捲動）
+                event.preventDefault();
+                
+                // 觸發反應
+                GameController.recordResponse();
+            }
+        });
+
+
+        /*
+        ============================================================
+        程式碼結束
+        ============================================================
+        
+        修改指南：
+        
+        1. 調整遊戲難度：
+           修改 GAME_CONFIG 中的參數
+           - TOTAL_TRIALS: 題數
+           - STIMULUS_DURATION_MS: 反應時間限制
+           - GO_STIMULUS_RATIO: Go/No-Go 比例
+        
+        2. 更換刺激符號：
+           修改 GAME_CONFIG.STIMULUS_SYMBOLS
+           例如：將星星換成笑臉 😊，叉叉換成生氣臉 😠
+        
+        3. 調整視覺樣式：
+           修改 CSS 區塊中的顏色、大小等屬性
+        
+        4. 新增功能：
+           遵循現有的模組化架構，新增獨立的模組
+           例如：新增音效模組 (SoundManager)
+        ============================================================
+        */
+    </script>
+</body>
+</html>
