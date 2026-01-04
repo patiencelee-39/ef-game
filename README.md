@@ -34,13 +34,12 @@ Chung Yuan Christian University, Department of Special Education
 1. **PAPAYA 電腦教學：**
    <br>
    <a href="https://youtu.be/FKXRiAiQFiY" target="_blank">
-   <!-- <img src="https://img.youtube.com/vi/FKXRiAiQFiY/0.jpg" alt="Git 教學" width="240"> -->
-
    <br>程式與網頁開發者必備技能！Git 和 GitHub 零基礎快速上手
    </a>
+   <!-- <img src="https://img.youtube.com/vi/FKXRiAiQFiY/0.jpg" alt="Git 教學" width="240"> -->
 
 2. **Vibe Coding 教學：**
    <br>
    <a href="https://youtu.be/LL0Zazm-qik" target="_blank">
-   <!-- <img src="https://img.youtube.com/vi/LL0Zazm-qik/0.jpg" alt="Vibe Code 教學" width="240"> -->
    <br>【寫好 Vibe Coding 的秘密】別人的 Vibe Coding 總是不會讓人失望!! Context7 MCP 如何安裝及使用 | 使用 10xRules.ai 寫出專案級提示詞</a>
+   <!-- <img src="https://img.youtube.com/vi/LL0Zazm-qik/0.jpg" alt="Vibe Code 教學" width="240"> -->
