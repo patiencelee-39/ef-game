@@ -784,7 +784,11 @@
           this.elements.roundLabel.className = "round-label round2-badge";
           // 停用 F 鍵 (classList.add 新增 CSS class)
           this.elements.btnF.classList.add("btn-disabled");
-          this.elements.btnF.innerHTML = '<span class="key-hint">⭐</span>忍住';
+          // [修改這裡] 控制按鈕文字大小
+          // 原本： '<span class="key-hint">⭐</span>忍住'
+          // 修改後：加上 style="font-size: 0.6em;" 讓「忍住」變小
+          this.elements.btnF.innerHTML =
+            '<span class="key-hint" style="font-size: 3rem;">⭐</span><span style="font-size: 0.6em;">忍住</span>';
           this.initGameSession();
         },
 
