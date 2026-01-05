@@ -516,6 +516,29 @@
             )
           </p>
         </div>
+        <div style="margin-bottom: 15px; width: 90%; max-width: 400px">
+          <label
+            for="playerId"
+            style="display: block; margin-bottom: 5px; opacity: 0.8"
+          >
+            請輸入暱稱或座號：
+          </label>
+          <input
+            type="text"
+            id="playerId"
+            placeholder="例如：小明01"
+            style="
+              padding: 10px;
+              width: 100%;
+              border-radius: 10px;
+              border: 2px solid var(--primary-color);
+              background: rgba(255, 255, 255, 0.9);
+              font-size: 1.1em;
+              box-sizing: border-box;
+              text-align: center;
+            "
+          />
+        </div>
         <button class="btn" onclick="game.showTutorial()">
           👉 進入測驗說明
         </button>
@@ -711,6 +734,7 @@
       const game = {
         // State (狀態)：記錄遊戲現在進行到哪裡，像是「遊戲進度存檔」
         state: {
+          participantId: "", // [新增] 用來存暱稱 (記得後面要加逗號)
           currentRound: 1, // 目前第幾回
           currentTrial: 0, // 目前第幾題
           totalTrials: 0, // 這回合總共幾題
@@ -748,7 +772,16 @@
         },
 
         // 顯示教學畫面
+        // 修改後的 showTutorial
         showTutorial: function () {
+          // 1. 抓取輸入框
+          const inputEl = document.getElementById("playerId");
+
+          // 2. 存入狀態 (如果沒輸入，就預設叫 "無名氏")
+          // .trim() 是為了去掉前後多餘的空白
+          this.state.participantId = inputEl.value.trim() || "無名氏";
+
+          // 3. 切換畫面
           this.showScreen("intro");
         },
 
@@ -1031,16 +1064,39 @@
            2. 建立一個 <a> 連結，並觸發點擊。
            3. 這樣的「使用者觸發下載」符合安全規範，不會被誤判為自動下載惡意軟體。
         */
+        // 匯出資料功能 (含暱稱版)
         exportData: function () {
           let csv =
             "data:text/csv;charset=utf-8,Round,Trial,Stimulus,InputKey,Correct,RT(ms)\n";
           this.state.results.forEach((r) => {
             csv += `${r.round},${r.trial},${r.stimulus},${r.input},${r.correct},${r.rt}\n`;
           });
+
+          // === [新增] 製作包含日期時間的檔名 ===
+          const now = new Date(); // 取得現在時間
+
+          // 取得 年、月、日 (padStart(2, '0') 意思是：如果不滿2位數，前面補0，例如 5 -> 05)
+          const year = now.getFullYear();
+          const month = String(now.getMonth() + 1).padStart(2, "0"); // 月份是從0開始算的，所以要+1
+          const day = String(now.getDate()).padStart(2, "0");
+
+          // 取得 時、分、秒
+          const hour = String(now.getHours()).padStart(2, "0");
+          const minute = String(now.getMinutes()).padStart(2, "0");
+          const second = String(now.getSeconds()).padStart(2, "0");
+
+          // 取得剛剛存下來的暱稱
+          const id = this.state.participantId;
+
+          // 組合檔名，例如：EF訓練遊戲數據_20231025_143005.csv
+          const fileName = `EF訓練遊戲數據_${id}_${year}${month}${day}_${hour}${minute}${second}.csv`;
+          // ===================================
+
           const encodedUri = encodeURI(csv);
           const link = document.createElement("a");
           link.setAttribute("href", encodedUri);
-          link.setAttribute("download", "ef_training_data.csv"); // 設定下載檔名
+          // [修改] 這裡原本是寫死的字串，現在改成我們剛剛做好的變數 fileName
+          link.setAttribute("download", fileName); // 設定下載檔名
           document.body.appendChild(link);
           link.click(); // 模擬點擊下載
           document.body.removeChild(link); // 下載完移除連結
