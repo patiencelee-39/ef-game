@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>執行功能認知訓練 - 中原大學特教系研究工具</title>
+
+    <meta
+      name="description"
+      content="中原大學特殊教育學系開發的執行功能認知訓練工具，專為聽障學童設計的學術研究用途網頁。"
+    />
+    <meta name="author" content="中原大學特殊教育學系研究團隊" />
+    <meta
+      name="keywords"
+      content="執行功能, 認知訓練, 聽障教育, 中原大學, Go-NoGo"
+    />
+
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;"
+    />
+
+    <style>
+      /* === [良好實踐] CSS 變數 (Variables) ===
+         我們把顏色都定義在這裡，就像是把顏料裝在貼有標籤的罐子裡。
+         以後要改顏色，只要改這裡，整個網站都會一起變！
+      */
+      :root {
+        /* [試試看] 修改這裡的色碼 (例如改成 #000000) 試試看背景變色 */
+        --bg-color: #2c3e50; /* 深藍灰色背景 */
+        --text-color: #ecf0f1; /* 米白色文字 */
+        --primary-color: #3498db; /* 主要按鈕藍色 */
+        --success-color: #2ecc71; /* 答對時的綠色 */
+        --error-color: #e74c3c; /* 答錯時的紅色 */
+        --accent-yellow: #f1c40f; /* 星星的黃色 */
+        --round1-color: #e67e22; /* 第一回代表色 (橘色) */
+        --round2-color: #9b59b6; /* 第二回代表色 (紫色) */
+        --practice-color: #1abc9c; /* 練習模式代表色 (青色) */
+      }
+
+      /* 設定整個網頁的基礎樣式 */
+      body {
+        font-family: "微軟正黑體", sans-serif; /* 設定字體 */
+        background-color: var(--bg-color); /* 使用上面設定的變數 */
+        color: var(--text-color);
+        text-align: center; /* 讓內容置中 */
+        margin: 0;
+        padding: 20px;
+        /* Flexbox 排版：這是一種很強大的排版方式，可以讓內容乖乖排好 */
+        display: flex;
+        flex-direction: column; /* 垂直排列 */
+        align-items: center; /* 水平置中 */
+        min-height: 100vh; /* 最小高度為視窗高度的 100% */
+        touch-action: manipulation; /* 優化觸控螢幕的點擊反應 */
+      }
+
+      /* 首頁說明區塊的樣式 */
+      .landing-info {
+        background: rgba(255, 255, 255, 0.1); /* 半透明白色背景 */
+        padding: 30px;
+        border-radius: 15px; /* 圓角 */
+        max-width: 600px;
+        margin-bottom: 20px;
+        text-align: left; /* 文字靠左對齊 */
+        border-left: 5px solid var(--primary-color); /* 左邊加一條藍色裝飾線 */
+      }
+
+      .landing-info h3 {
+        margin-top: 0;
+        color: var(--primary-color);
+      }
+
+      .landing-info p {
+        line-height: 1.6; /* 行高，讓文字不要擠在一起，比較好讀 */
+        opacity: 0.9; /* 稍微透明一點點 */
+      }
+
+      /* 遊戲規則說明的容器 */
+      .tutorial-container {
+        display: flex; /* 讓左右兩個說明框並排 */
+        flex-direction: row;
+        justify-content: center;
+        gap: 20px; /* 兩個框框之間的距離 */
+        margin-bottom: 30px;
+        width: 100%;
+      }
+
+      /* 規則說明的小框框 */
+      .rule-box {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 20px;
+        border-radius: 15px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1; /* 讓左右兩個框框一樣寬 */
+        border: 2px solid rgba(255, 255, 255, 0.1);
+      }
+
+      /* 給左邊和右邊框框不同的底色 */
+      .rule-box.left-box {
+        background: rgba(230, 126, 34, 0.2);
+      }
+      .rule-box.right-box {
+        background: rgba(241, 196, 15, 0.2);
+      }
+
+      .rule-icon {
+        font-size: 4em;
+        margin-bottom: 10px;
+      } /* 圖案大一點 */
+      .rule-arrow {
+        font-size: 2em;
+        color: #bdc3c7;
+        margin: 10px 0;
+      }
+
+      /* 模擬鍵盤按鍵的樣式 */
+      .rule-key {
+        border: 3px solid #fff;
+        border-radius: 10px;
+        padding: 5px 20px;
+        font-family: monospace; /* 等寬字體，看起來像程式碼或按鍵 */
+        background: rgba(0, 0, 0, 0.3);
+        font-size: 3.5em;
+        font-weight: bold;
+        display: inline-block;
+        margin-bottom: 5px;
+      }
+
+      .key-desc {
+        font-size: 1.2em;
+        opacity: 0.9;
+      }
+
+      /* 主要遊戲區域 */
+      .game-area {
+        background-color: #34495e;
+        border-radius: 15px;
+        padding: 20px;
+        width: 100%;
+        max-width: 600px; /* 限制最大寬度，避免在大螢幕上太寬 */
+        margin: 20px auto;
+        border: 5px solid transparent; /* 預留邊框位置給回饋動畫用 */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); /* 陰影，增加立體感 */
+        height: 600px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between; /* 讓內容分散對齊 (頭、中、腳) */
+        align-items: center;
+        position: relative; /* 讓裡面的絕對定位元素參考這個位置 */
+      }
+
+      /* 顯示「第一回」、「練習模式」的標籤 */
+      .round-label {
+        position: absolute; /* 絕對定位：可以自由決定放在哪 */
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%); /* 讓它水平正中央 */
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.9em;
+        font-weight: bold;
+        z-index: 10; /* 確保它浮在最上層 */
+      }
+      /* 不同模式的標籤顏色 */
+      .round-practice {
+        background-color: var(--practice-color);
+      }
+      .round1-badge {
+        background-color: var(--round1-color);
+      }
+      .round2-badge {
+        background-color: var(--round2-color);
+      }
+
+      /* 進度條容器 */
+      .progress-container {
+        width: 100%;
+        height: 8px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
+        overflow: hidden; /* 確保裡面的條不會跑出圓角外 */
+        margin-top: 10px;
+      }
+      /* 進度條本體 */
+      .progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #3498db, #2ecc71); /* 漸層色 */
+        border-radius: 10px;
+        transition: width 0.3s ease; /* 寬度改變時要有動畫效果 */
+        width: 0%; /* 一開始是 0% */
+      }
+
+      /* === 互動回饋動畫 === */
+      /* 答對時的綠色邊框 */
+      .feedback-success {
+        animation: pulse-green 0.3s ease-out; /* 執行 pulse-green 動畫 */
+        border-color: var(--success-color) !important;
+      }
+      /* 答錯時的紅色邊框 */
+      .feedback-error {
+        animation: shake-red 0.2s ease-in-out; /* 執行 shake-red 動畫 */
+        border-color: var(--error-color) !important;
+      }
+
+      /* 定義綠色脈衝動畫關鍵影格 */
+      @keyframes pulse-green {
+        0% {
+          transform: scale(1);
+          box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7);
+        }
+        50% {
+          transform: scale(1.02);
+          box-shadow: 0 0 0 15px rgba(46, 204, 113, 0);
+        }
+        100% {
+          transform: scale(1);
+          box-shadow: 0 0 0 0 rgba(46, 204, 113, 0);
+        }
+      }
+      /* 定義紅色震動動畫關鍵影格 (左右晃動) */
+      @keyframes shake-red {
+        0%,
+        100% {
+          transform: translateX(0);
+        }
+        25% {
+          transform: translateX(-15px);
+        }
+        75% {
+          transform: translateX(15px);
+        }
+      }
+
+      /* 顯示星星或太陽的區域 */
+      .stimulus {
+        font-size: 150px; /* 圖案大小 */
+        height: 200px;
+        width: 200px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: transform 0.1s;
+        margin: 0 auto;
+      }
+      /* 當圖案出現時的放大效果 */
+      .stimulus.pop {
+        transform: scale(1.3);
+      }
+
+      /* 下方按鈕區 */
+      .controls-area {
+        width: 100%;
+        display: flex;
+        justify-content: space-around;
+        padding-bottom: 20px;
+        gap: 20px;
+      }
+
+      /* 按鍵按鈕樣式 */
+      .btn-key {
+        flex: 1;
+        height: 100px; /* <-- 如果圖案太大被切掉，可以把這個高度改大一點，例如 120px */
+        border: none;
+        border-radius: 15px;
+        font-size: 2em; /* 控制⭐☀️圖案大小 */
+        color: white;
+        cursor: pointer; /* 滑鼠移上去變手指 */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        transition: transform 0.1s, opacity 0.3s;
+        box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2); /* 讓按鈕有立體感 */
+      }
+      /* 按下按鈕時的效果 */
+      .btn-key:active,
+      .btn-key.active-key {
+        transform: translateY(4px); /* 往下壓 */
+        box-shadow: none; /* 陰影消失 */
+      }
+
+      .btn-f {
+        background-color: #f1c40f;
+        color: #2c3e50;
+      }
+      .btn-j {
+        background-color: #e67e22;
+      }
+
+      /* 禁用按鈕的樣式 (例如第二回不能按的時候) */
+      .btn-disabled {
+        background-color: #7f8c8d;
+        opacity: 0.3;
+        pointer-events: none; /* 讓它點不到 */
+      }
+
+      .key-hint {
+        font-size: 0.6em;
+        opacity: 0.8;
+        margin-bottom: 5px;
+      }
+
+      /* 答對時圖案的動畫 */
+      @keyframes pulse-correct {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.3);
+          filter: brightness(1.5);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+      /* 答錯時圖案的動畫 */
+      @keyframes shake-error {
+        0%,
+        100% {
+          transform: translateX(0) rotate(0deg);
+        }
+        25% {
+          transform: translateX(-10px) rotate(-5deg);
+        }
+        75% {
+          transform: translateX(10px) rotate(5deg);
+        }
+      }
+
+      .correct-flash {
+        animation: pulse-correct 0.5s ease-out;
+        filter: drop-shadow(0 0 20px #2ecc71);
+      }
+      .error-flash {
+        animation: shake-error 0.4s ease-in-out;
+        filter: drop-shadow(0 0 20px #e74c3c);
+      }
+
+      /* === [良好實踐] 控制顯示狀態 ===
+         使用 CSS class 來控制隱藏，而不是直接用 JS 改 style.display
+         這樣比較好管理。
+      */
+      .hidden {
+        display: none !important;
+      }
+
+      .screen-layer {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+
+      /* 通用按鈕樣式 */
+      .btn {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        font-size: 1.2em;
+        border-radius: 50px;
+        cursor: pointer;
+        margin-top: 15px;
+      }
+
+      /* 文字閃爍動畫 */
+      .blink-text {
+        animation: blink 1.5s infinite;
+      }
+      @keyframes blink {
+        0% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.6;
+        }
+        100% {
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>🧠 執行功能認知訓練</h1>
+      <p style="opacity: 0.7">
+        中原大學特殊教育學系 | 學術研究工具 v2.7 (全域空白鍵)
+      </p>
+    </header>
+
+    <main class="game-area" id="gameContainer">
+      <div id="landingPage" class="screen-layer">
+        <div class="landing-info">
+          <h3>🏫 關於本研究工具</h3>
+          <p>
+            本工具由
+            <a
+              href="https://special.cycu.edu.tw/"
+              target="_blank"
+              style="color: var(--primary-color); text-decoration: underline"
+            >
+              中原大學特殊教育學系
+            </a>
+            開發，旨在協助聽障學童進行「執行功能」的訓練與評估。
+          </p>
+
+          <hr
+            style="
+              border: 0;
+              border-top: 1px solid rgba(255, 255, 255, 0.2);
+              margin: 15px 0;
+            "
+          />
+
+          <p><strong>🔒 隱私權聲明：</strong></p>
+          <p>
+            本測驗為純前端運作，您的反應時間與正確率數據<b>僅暫存於瀏覽器中</b>，我們不會將任何個人資料上傳至伺服器。
+          </p>
+
+          <p style="margin-top: 15px; font-size: 0.9em; opacity: 0.8">
+            📧 專案聯絡人：研究團隊 (
+            <a
+              href="https://github.com/patiencelee-39/ef-training-game"
+              target="_blank"
+              style="color: var(--accent-yellow)"
+              >GitHub 專案頁面</a
+            >
+            )
+          </p>
+        </div>
+
+        <button class="btn" onclick="game.showTutorial()">
+          👉 進入測驗說明
+        </button>
+        <br />
+        <small
+          ><a href="privacy.html" style="color: #bdc3c7"
+            >詳細隱私權政策</a
+          ></small
+        >
+
+        <div style="margin-top: 50px; font-size: 0.8em; opacity: 0.5">
+          &copy; 2026 Chung Yuan Christian University. All Rights Reserved.
+        </div>
+      </div>
+
+      <div id="introScreen" class="screen-layer hidden">
+        <h2>練習模式</h2>
+        <p style="margin-bottom: 20px; color: #bdc3c7">
+          我們先練習一下！<br />看 ⭐ 按左邊F鍵，看 ☀️ 按右邊J鍵
+        </p>
+
+        <div class="tutorial-container">
+          <div class="rule-box left-box">
+            <span class="rule-icon">⭐</span>
+            <span class="rule-arrow">⬇</span>
+            <span class="rule-key">F</span>
+            <span class="key-desc">左手</span>
+          </div>
+          <div class="rule-box right-box">
+            <span class="rule-icon">☀️</span>
+            <span class="rule-arrow">⬇</span>
+            <span class="rule-key">J</span>
+            <span class="key-desc">右手</span>
+          </div>
+        </div>
+
+        <button class="btn blink-text" onclick="game.startPractice()">
+          ⌨️ 請按空白鍵 (Space) 開始練習
+        </button>
+      </div>
+
+      <div id="practiceEndScreen" class="screen-layer hidden">
+        <h2>👍 練習完成！</h2>
+        <p>做得很棒！知道怎麼玩了嗎？</p>
+        <p>接下來要<b>正式開始</b>囉！</p>
+        <div style="margin-top: 20px">
+          <button class="btn blink-text" onclick="game.startRound1()">
+            ⌨️ 請按空白鍵 (Space) 開始第一回
+          </button>
+        </div>
+      </div>
+
+      <div id="intermissionScreen" class="screen-layer hidden">
+        <h2 style="color: var(--round2-color)">⚠️ 規則改變了！</h2>
+
+        <div class="tutorial-container">
+          <div
+            class="rule-box left-box"
+            style="background: rgba(127, 140, 141, 0.5)"
+          >
+            <span class="rule-icon">⭐</span>
+            <span class="rule-arrow">⬇</span>
+            <span class="rule-icon" style="font-size: 3em">🛑</span>
+            <span
+              class="key-desc"
+              style="color: var(--error-color); font-weight: bold"
+              >不要按！</span
+            >
+          </div>
+
+          <div class="rule-box right-box">
+            <span class="rule-icon">☀️</span>
+            <span class="rule-arrow">⬇</span>
+            <span class="rule-key">J</span>
+            <span class="key-desc">要按！</span>
+          </div>
+        </div>
+
+        <button class="btn blink-text" onclick="game.startRound2()">
+          ⌨️ 請按空白鍵 (Space) 開始第二回
+        </button>
+      </div>
+
+      <div
+        id="playScreen"
+        class="hidden"
+        style="
+          width: 100%;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+        "
+      >
+        <div style="width: 100%">
+          <div id="roundLabel" class="round-label round1-badge">第一回</div>
+          <div
+            style="
+              margin-top: 25px;
+              display: flex;
+              justify-content: space-between;
+            "
+          >
+            <span
+              >進度: <span id="currentTrialDisplay">0</span>/<span
+                id="totalTrialDisplay"
+                >10</span
+              ></span
+            >
+          </div>
+          <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+          </div>
+        </div>
+
+        <div id="stimulusBox" class="stimulus"></div>
+
+        <div class="controls-area">
+          <button
+            id="btnF"
+            class="btn-key btn-f"
+            onpointerdown="game.handleInput('F')"
+          >
+            <span class="key-hint">按鍵 F</span>⭐
+          </button>
+          <button
+            id="btnJ"
+            class="btn-key btn-j"
+            onpointerdown="game.handleInput('J')"
+          >
+            <span class="key-hint">按鍵 J</span>☀️
+          </button>
+        </div>
+      </div>
+
+      <div id="resultScreen" class="screen-layer hidden">
+        <h2>🎉 全部完成！</h2>
+        <div
+          style="
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            width: 100%;
+          "
+        >
+          <p>
+            答對題數：<span
+              id="scoreDisplay"
+              style="color: var(--success-color); font-size: 1.5em"
+              >0</span
+            >
+          </p>
+          <p>平均速度：<span id="avgTimeDisplay">0ms</span></p>
+        </div>
+        <button class="btn" onclick="location.reload()">🔄 回到首頁</button>
+        <button
+          class="btn"
+          onclick="game.exportData()"
+          style="background-color: #7f8c8d"
+        >
+          📥 匯出資料
+        </button>
+      </div>
+    </main>
+
+    <script>
+      /* === [良好實踐] 設定檔 (Configuration Object) ===
+         原則：避免在程式碼中散落「魔法數字」(Magic Numbers)。
+         我們把所有需要調整的參數都放在這裡，方便管理。
+         參考來源：程式碼良好實踐完整指南.md (1.3 常數命名)
+      */
+      const CONFIG = {
+        // [試試看] 修改這裡的數字，可以改變題目數量
+        practiceTrials: 3, // 練習題數
+        round1Trials: 3, // 第一回題數
+        round2Trials: 3, // 第二回題數
+
+        // [試試看] 修改這裡可以改變速度 (單位是毫秒，1000毫秒 = 1秒)
+        stimulusDuration: 1500, // 圖案出現多久會消失
+        isiMin: 800, // 兩題之間最快休息多久
+        isiMax: 1200, // 兩題之間最慢休息多久
+
+        goRatio: 0.5, // 出現目標(Go)的機率 (0.5 = 50%)
+      };
+
+      /*
+         === [良好實踐] 單一職責原則與物件封裝 ===
+         原則：將遊戲的狀態 (State) 和功能 (Function) 封裝在一個 `game` 物件中。
+         這樣不會汙染全域變數，也讓程式碼結構更清晰。
+         參考來源：程式碼良好實踐完整指南.md (2.1)
+      */
+      const game = {
+        // State: 記錄遊戲當下的狀態
+        state: {
+          currentRound: 1, // 目前第幾回
+          currentTrial: 0, // 目前第幾題
+          totalTrials: 0, //總共幾題
+          score: 0, // 得分
+          results: [], // 儲存每一題的數據
+          isPlaying: false, // 遊戲是否進行中
+          isPractice: false, // 是否為練習模式
+          currentStimulus: null, // 現在出現的是星星還是太陽
+          startTime: 0, // 題目出現的時間點 (用來算反應時間)
+          responded: false, // 使用者是否已經按鍵
+          timer: null, // 計時器 ID
+        },
+
+        // Elements: 預先抓取 HTML 元素，提升效能
+        elements: {
+          container: document.getElementById("gameContainer"),
+          screens: {
+            landing: document.getElementById("landingPage"),
+            intro: document.getElementById("introScreen"),
+            practiceEnd: document.getElementById("practiceEndScreen"),
+            intermission: document.getElementById("intermissionScreen"),
+            play: document.getElementById("playScreen"),
+            result: document.getElementById("resultScreen"),
+          },
+          stimulus: document.getElementById("stimulusBox"),
+          btnF: document.getElementById("btnF"),
+          btnJ: document.getElementById("btnJ"),
+          roundLabel: document.getElementById("roundLabel"),
+          trialDisplay: document.getElementById("currentTrialDisplay"),
+          totalDisplay: document.getElementById("totalTrialDisplay"),
+          scoreDisplay: document.getElementById("scoreDisplay"),
+          avgTimeDisplay: document.getElementById("avgTimeDisplay"),
+        },
+
+        // --- 流程控制函數 ---
+
+        // 顯示教學畫面
+        showTutorial: function () {
+          this.showScreen("intro");
+        },
+
+        // 開始練習模式
+        startPractice: function () {
+          this.state.isPractice = true;
+          this.state.currentRound = 1;
+          this.state.totalTrials = CONFIG.practiceTrials;
+
+          // 設定 UI
+          this.elements.roundLabel.innerText = "練習模式";
+          this.elements.roundLabel.className = "round-label round-practice";
+
+          // 啟用 F 鍵 (因為練習模式 F 鍵是有用的)
+          this.elements.btnF.classList.remove("btn-disabled");
+          this.elements.btnF.innerHTML =
+            '<span class="key-hint">按鍵 F</span>⭐';
+
+          this.initGameSession();
+        },
+
+        // 開始第一回 (正式)
+        startRound1: function () {
+          this.state.isPractice = false;
+          this.state.currentRound = 1;
+          this.state.totalTrials = CONFIG.round1Trials;
+          this.state.results = []; // 清空之前的紀錄
+
+          this.elements.roundLabel.innerText = "第一回：辨識";
+          this.elements.roundLabel.className = "round-label round1-badge";
+
+          this.elements.btnF.classList.remove("btn-disabled");
+          this.elements.btnF.innerHTML =
+            '<span class="key-hint">按鍵 F</span>⭐';
+
+          this.initGameSession();
+        },
+
+        // 開始第二回 (抑制)
+        startRound2: function () {
+          this.state.isPractice = false;
+          this.state.currentRound = 2;
+          this.state.totalTrials = CONFIG.round2Trials;
+
+          this.elements.roundLabel.innerText = "第二回：抑制";
+          this.elements.roundLabel.className = "round-label round2-badge";
+
+          // 停用 F 鍵 (第二回看到星星不能按)
+          this.elements.btnF.classList.add("btn-disabled");
+          this.elements.btnF.innerHTML = '<span class="key-hint">⭐</span>忍住';
+
+          this.initGameSession();
+        },
+
+        // 初始化一回合的遊戲
+        initGameSession: function () {
+          this.state.currentTrial = 0;
+          this.state.score = 0;
+          this.state.isPlaying = true;
+          this.elements.totalDisplay.innerText = this.state.totalTrials;
+          this.showScreen("play");
+          this.nextTrial(); // 開始第一題
+        },
+
+        // 進入下一題
+        nextTrial: function () {
+          // 檢查是否所有題目都做完了
+          if (this.state.currentTrial >= this.state.totalTrials) {
+            this.endSession();
+            return;
+          }
+
+          this.state.currentTrial++;
+          this.updateUI();
+
+          // 重置畫面狀態
+          this.elements.stimulus.innerText = "";
+          this.elements.container.className = "game-area"; // 移除成功/失敗的回饋色
+          this.elements.stimulus.classList.remove("pop");
+          this.state.responded = false;
+
+          // 隨機等待一段時間後顯示題目 (ISI)
+          const delay =
+            Math.floor(Math.random() * (CONFIG.isiMax - CONFIG.isiMin + 1)) +
+            CONFIG.isiMin;
+          setTimeout(() => this.showStimulus(), delay);
+        },
+
+        // 顯示刺激物 (星星或太陽)
+        showStimulus: function () {
+          const isStar = Math.random() < CONFIG.goRatio;
+          this.state.currentStimulus = isStar ? "sun" : "star";
+
+          // [試試看] 這裡可以修改顯示的圖案
+          if (isStar) {
+            this.elements.stimulus.innerText = "☀️";
+            this.elements.stimulus.style.color = "#f39c12"; // 太陽顏色
+          } else {
+            this.elements.stimulus.innerText = "⭐";
+            this.elements.stimulus.style.color = "#f1c40f"; // 星星顏色
+          }
+
+          // 記錄開始時間 (為了計算反應時間)
+          this.state.startTime = Date.now();
+
+          // 設定倒數計時，如果你都不按，時間到就算逾時
+          this.state.timer = setTimeout(() => {
+            if (!this.state.responded) {
+              this.handleTimeout();
+            }
+          }, CONFIG.stimulusDuration);
+        },
+
+        // 處理使用者輸入 (按鍵或點擊)
+        handleInput: function (keyInput) {
+          // 防呆：如果沒在玩、或已經按過了、或圖案還沒出來，就不理會
+          if (
+            !this.state.isPlaying ||
+            this.state.responded ||
+            !this.elements.stimulus.innerText
+          )
+            return;
+
+          this.state.responded = true;
+          clearTimeout(this.state.timer); // 清除逾時計時器
+
+          // 按鈕的視覺回饋 (按下去的效果)
+          const btn =
+            keyInput === "J" ? this.elements.btnJ : this.elements.btnF;
+          btn.classList.add("active-key");
+          setTimeout(() => btn.classList.remove("active-key"), 100);
+
+          // 計算反應時間
+          const reactionTime = Date.now() - this.state.startTime;
+          const stimulus = this.state.currentStimulus;
+          let isCorrect = false;
+
+          // 判斷對錯邏輯
+          if (this.state.currentRound === 1) {
+            // 第一回：星星按 F，太陽按 J
+            if (stimulus === "star" && keyInput === "F") isCorrect = true;
+            else if (stimulus === "sun" && keyInput === "J") isCorrect = true;
+          } else {
+            // 第二回：太陽按 J，星星不能按 (但這裡使用者按了，所以如果這題是星星就錯了)
+            if (stimulus === "sun" && keyInput === "J") isCorrect = true;
+            else isCorrect = false;
+          }
+
+          this.triggerFeedback(isCorrect);
+          this.recordResult(isCorrect, reactionTime, keyInput);
+
+          setTimeout(() => this.nextTrial(), 800); // 延遲一下再進下一題
+        },
+
+        // 處理逾時 (使用者在時間內沒有按鍵)
+        handleTimeout: function () {
+          this.state.responded = true;
+          const stimulus = this.state.currentStimulus;
+          let isCorrect = false;
+
+          if (this.state.currentRound === 1) {
+            // 第一回：必須按鍵，所以沒按就錯
+            isCorrect = false;
+          } else {
+            // 第二回：星星不能按，所以如果這題是星星且沒按，就對了！
+            if (stimulus === "star") isCorrect = true;
+            else isCorrect = false;
+          }
+
+          if (isCorrect) this.triggerFeedback(true);
+          else this.triggerFeedback(false);
+
+          this.recordResult(isCorrect, 0, "none");
+          setTimeout(() => this.nextTrial(), 800);
+        },
+
+        // 觸發視覺回饋 (畫面閃綠色或紅色)
+        triggerFeedback: function (isSuccess) {
+          // 先移除之前的 class，觸發重繪 (magic trick for restarting css animation)
+          this.elements.container.classList.remove(
+            "feedback-success",
+            "feedback-error"
+          );
+          this.elements.stimulus.classList.remove(
+            "correct-flash",
+            "error-flash"
+          );
+          void this.elements.container.offsetWidth;
+
+          if (isSuccess) {
+            this.elements.container.classList.add("feedback-success");
+            this.elements.stimulus.classList.add("correct-flash");
+          } else {
+            this.elements.container.classList.add("feedback-error");
+            this.elements.stimulus.classList.add("error-flash");
+          }
+        },
+
+        // 記錄該題結果
+        recordResult: function (isCorrect, rt, inputKey) {
+          if (isCorrect) {
+            this.state.score++;
+            // 分數動畫
+            const scoreEl = document.getElementById("scoreDisplay");
+            if (scoreEl) {
+              scoreEl.style.transform = "scale(1.3)";
+              scoreEl.style.color = "#2ecc71";
+              setTimeout(() => {
+                scoreEl.style.transform = "scale(1)";
+              }, 300);
+            }
+          }
+
+          // 只有正式測驗才記錄數據，練習模式不記
+          if (!this.state.isPractice) {
+            this.state.results.push({
+              round: this.state.currentRound,
+              trial: this.state.currentTrial,
+              stimulus: this.state.currentStimulus,
+              input: inputKey,
+              correct: isCorrect ? "yes" : "no",
+              rt: rt,
+            });
+          }
+        },
+
+        // 結束這一回合
+        endSession: function () {
+          this.state.isPlaying = false;
+
+          if (this.state.isPractice) {
+            this.showScreen("practiceEnd");
+          } else if (this.state.currentRound === 1) {
+            this.showScreen("intermission");
+          } else {
+            this.showFinalResult();
+          }
+        },
+
+        // 顯示最終成績
+        showFinalResult: function () {
+          this.showScreen("result");
+          // 計算正確題數
+          const totalCorrect = this.state.results.filter(
+            (r) => r.correct === "yes"
+          ).length;
+          // 計算平均反應時間 (只算答對且有按鍵的)
+          const validTrials = this.state.results.filter(
+            (r) => r.input === "J" && r.correct === "yes"
+          );
+          const avgRT =
+            validTrials.length > 0
+              ? Math.round(
+                  validTrials.reduce((sum, r) => sum + r.rt, 0) /
+                    validTrials.length
+                )
+              : 0;
+
+          this.elements.scoreDisplay.innerText = totalCorrect;
+          this.elements.avgTimeDisplay.innerText = avgRT + "ms";
+        },
+
+        // 更新介面 (進度條)
+        updateUI: function () {
+          this.elements.trialDisplay.innerText = this.state.currentTrial;
+          const progressBar = document.getElementById("progressBar");
+          if (progressBar) {
+            // 這裡原本是拿「當前題號」來算，所以第一題就是 1/10 = 10%
+            // ★ 修改這裡：(當前題號 - 1) 代表「已完成」的數量
+            // 例如第1題：(1-1)/10 = 0%
+            // 例如第5題：(5-1)/10 = 40%
+            const progress =
+              ((this.state.currentTrial - 1) / this.state.totalTrials) * 100;
+            progressBar.style.width = progress + "%";
+            // 進度條顏色隨進度變化
+            if (progress < 30) progressBar.style.background = "#3498db";
+            else if (progress < 70) progressBar.style.background = "#f39c12";
+            else progressBar.style.background = "#2ecc71";
+          }
+        },
+
+        // 切換顯示的畫面 (Helper function)
+        showScreen: function (name) {
+          // 先把所有畫面都加上 hidden
+          Object.values(this.elements.screens).forEach((el) =>
+            el.classList.add("hidden")
+          );
+          // 再把指定的畫面移除 hidden
+          this.elements.screens[name].classList.remove("hidden");
+        },
+
+        /*
+           === [GSB 安全] 匯出資料功能 ===
+           Google 機器人對「自動下載」非常敏感。
+           這裡的安全設計原則：
+           1. 必須是 .csv (純文字格式)，絕對不能是 .exe 或 .zip。
+           2. 必須由使用者點擊按鈕觸發 (不可以網頁一打開就自動下載)。
+           3. 透過 Blob 物件在瀏覽器內產生檔案，不需要後端伺服器。
+           參考來源：如何避免網站被GSB判斷為危險網站.md (6.1)
+        */
+        exportData: function () {
+          // 建立 CSV 標頭
+          let csv =
+            "data:text/csv;charset=utf-8,Round,Trial,Stimulus,InputKey,Correct,RT(ms)\n";
+          // 將數據轉換成 CSV 格式字串
+          this.state.results.forEach((r) => {
+            csv += `${r.round},${r.trial},${r.stimulus},${r.input},${r.correct},${r.rt}\n`;
+          });
+
+          // 編碼 URI 並建立下載連結
+          const encodedUri = encodeURI(csv);
+          const link = document.createElement("a");
+          link.setAttribute("href", encodedUri);
+          link.setAttribute("download", "ef_training_data.csv"); // [安全] 使用安全的副檔名
+          document.body.appendChild(link);
+          link.click(); // 模擬點擊下載
+          document.body.removeChild(link); // 下載後移除連結
+        },
+      };
+
+      /* === [良好實踐] 事件委派與全域按鍵監聽 ===
+       參考來源：程式碼良好實踐完整指南.md (2. 章)
+       這裡我們統一監聽鍵盤事件，並根據「當前顯示的畫面」決定空白鍵的功能。
+       這比在每個按鈕上單獨寫 onclick 更容易管理，也防止了「只有第一次有效」的 Bug。
+      */
+      document.addEventListener("keydown", function (event) {
+        // 檢查是否按下了空白鍵 (Space)
+        if (event.code === "Space" || event.key === " ") {
+          const screens = game.elements.screens;
+
+          // 1. 如果在「教學畫面」，按空白鍵 -> 開始練習
+          if (!screens.intro.classList.contains("hidden")) {
+            event.preventDefault(); // 防止網頁因為按空白鍵而往下捲動
+            game.startPractice();
+            return;
+          }
+
+          // 2. 如果在「練習結束畫面」，按空白鍵 -> 開始第一回
+          if (!screens.practiceEnd.classList.contains("hidden")) {
+            event.preventDefault();
+            game.startRound1();
+            return;
+          }
+
+          // 3. 如果在「中場休息畫面」，按空白鍵 -> 開始第二回
+          if (!screens.intermission.classList.contains("hidden")) {
+            event.preventDefault();
+            game.startRound2();
+            return;
+          }
+        }
+
+        // 一般遊戲控制 (J/F)
+        if (!game.state.isPlaying) return;
+        const key = event.key.toUpperCase();
+        if (key === "J" || key === "F") {
+          game.handleInput(key);
+        }
+      });
+    </script>
+  </body>
+</html>
