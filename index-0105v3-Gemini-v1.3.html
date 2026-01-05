@@ -777,9 +777,9 @@
           // 1. 抓取輸入框
           const inputEl = document.getElementById("playerId");
 
-          // 2. 存入狀態 (如果沒輸入，就預設叫 "無名氏")
+          // 2. 存入狀態 (如果沒輸入，就預設叫 "NoName")
           // .trim() 是為了去掉前後多餘的空白
-          this.state.participantId = inputEl.value.trim() || "無名氏";
+          this.state.participantId = inputEl.value.trim() || "NoName";
 
           // 3. 切換畫面
           this.showScreen("intro");
