@@ -392,6 +392,32 @@
         </div>
       </div>
 
+      <!-- 練習模式畫面 -->
+      <div id="practiceScreen" class="screen-layer hidden">
+        <h2 style="color: #f39c12">🎮 練習模式</h2>
+        <p style="color: #bdc3c7; margin-bottom: 30px">
+          先來練習 3 題，熟悉遊戲規則！
+        </p>
+
+        <div class="tutorial-container">
+          <div class="rule-box left-box">
+            <span class="rule-icon">⭐</span>
+            <span class="rule-arrow">⬇</span>
+            <span class="rule-key">F</span>
+            <span class="key-desc">左手</span>
+          </div>
+
+          <div class="rule-box right-box">
+            <span class="rule-icon">☀️</span>
+            <span class="rule-arrow">⬇</span>
+            <span class="rule-key">J</span>
+            <span class="key-desc">右手</span>
+          </div>
+        </div>
+
+        <button class="btn" onclick="game.startPractice()">🚀 開始練習</button>
+      </div>
+
       <div id="intermissionScreen" class="screen-layer hidden">
         <h2 style="color: var(--round2-color)">⚠️ 規則改變了！</h2>
 
@@ -552,7 +578,7 @@
         },
 
         showTutorial: function () {
-          this.showScreen("intro");
+          this.showScreen("practice"); // 👈 改成先顯示練習 // ✅ 先進入練習模式
         },
 
         // [新增] 開始練習模式
@@ -571,6 +597,32 @@
           this.initGameSession();
         },
 
+        /**
+         * [功能] 開始練習模式
+         */
+        startPractice: function () {
+          this.state.currentRound = 0; // 練習回合
+          this.state.totalTrials = 3; // 只練習 3 題
+          this.state.results = [];
+          this.state.currentTrial = 0;
+          this.state.score = 0;
+          this.state.isPlaying = true;
+
+          this.elements.roundLabel.innerText = "練習模式";
+          this.elements.roundLabel.className = "round-label round1-badge";
+          this.elements.totalDisplay.innerText = this.state.totalTrials;
+
+          // 啟用 F 鍵
+          this.elements.btnF.classList.remove("btn-disabled");
+          this.elements.btnF.innerHTML =
+            '<span class="key-hint">Keyboard F</span>⭐';
+
+          this.showScreen("play");
+          this.nextTrial();
+        },
+
+        //* [功能] 開始第一回
+        //*/
         startRound1: function () {
           this.state.isPractice = false; // 正式開始
           this.state.currentRound = 1;
