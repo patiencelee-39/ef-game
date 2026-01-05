@@ -86,11 +86,22 @@
         border: 2px solid rgba(255, 255, 255, 0.1);
       }
 
+      /* [修改教學] 這裡控制左邊框框 (星星) 的背景顏色 */
       .rule-box.left-box {
-        background: rgba(231, 76, 60, 0.1);
+        background: rgba(241, 196, 15, 0.4); /* 👈 改成黃色系 */
+        /* 黃色背景 
+           數值解釋：rgba(紅色, 綠色, 藍色, 透明度)
+           建議透明度設為 0.2 ~ 0.3，避免顏色太深影響文字閱讀 
+        */
       }
+
+      /* [修改教學] 這裡控制右邊框框 (太陽) 的背景顏色 */
       .rule-box.right-box {
-        background: rgba(241, 196, 15, 0.1);
+        background: rgba(243, 156, 18, 0.4); /* 👈 改成橘色系 */
+        /* 橘色背景 
+           數值解釋：rgba(紅色, 綠色, 藍色, 透明度)
+           建議透明度設為 0.2 ~ 0.3，避免顏色太深影響文字閱讀 
+        */
       }
 
       .rule-icon {
@@ -217,6 +228,24 @@
         gap: 20px;
       }
 
+      /* 進度條 */
+      .progress-container {
+        width: 100%;
+        height: 8px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
+        overflow: hidden;
+        margin-top: 10px;
+      }
+
+      .progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #3498db, #2ecc71);
+        border-radius: 10px;
+        transition: width 0.3s ease;
+        width: 0%;
+      }
+
       .btn-key {
         flex: 1;
         height: 100px;
@@ -239,10 +268,11 @@
       }
 
       .btn-f {
-        background-color: #e74c3c;
+        background-color: #f1c40f; /* 改成黃色 (對應星星) */
+        color: #2c3e50; /* 因為黃色太亮，建議文字改深色才看得清楚，或者維持白色 */
       }
       .btn-j {
-        background-color: #f39c12;
+        background-color: #e67e22; /* 改成深橘色 (對應太陽) */
       }
 
       .btn-disabled {
@@ -370,19 +400,19 @@
       <div id="introScreen" class="screen-layer hidden">
         <h2>第一回：辨識練習</h2>
         <p style="margin-bottom: 20px; color: #bdc3c7">
-          看 <b>X</b> 按左邊，看 <b>星星</b> 按右邊
+          看 ⭐ 按左邊F鍵，看 ☀️ 按右邊J鍵
         </p>
 
         <div class="tutorial-container">
           <div class="rule-box left-box">
-            <span class="rule-icon">❌</span>
+            <span class="rule-icon">⭐</span>
             <span class="rule-arrow">⬇</span>
             <span class="rule-key">F</span>
             <span class="key-desc">左手</span>
           </div>
 
           <div class="rule-box right-box">
-            <span class="rule-icon">⭐</span>
+            <span class="rule-icon">☀️</span>
             <span class="rule-arrow">⬇</span>
             <span class="rule-key">J</span>
             <span class="key-desc">右手</span>
@@ -397,7 +427,7 @@
 
         <div class="tutorial-container">
           <div class="rule-box left-box" style="opacity: 0.8">
-            <span class="rule-icon">❌</span>
+            <span class="rule-icon">⭐</span>
             <span class="rule-arrow">⬇</span>
             <span class="rule-icon" style="font-size: 3em">🛑</span>
             <span
@@ -408,7 +438,7 @@
           </div>
 
           <div class="rule-box right-box">
-            <span class="rule-icon">⭐</span>
+            <span class="rule-icon">☀️</span>
             <span class="rule-arrow">⬇</span>
             <span class="rule-key">J</span>
             <span class="key-desc">要按！</span>
@@ -445,6 +475,10 @@
               ></span
             >
           </div>
+
+          <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+          </div>
         </div>
 
         <div id="stimulusBox" class="stimulus"></div>
@@ -456,7 +490,7 @@
             onpointerdown="game.handleInput('F')"
           >
             <span class="key-hint">Keyboard F</span>
-            ❌
+            ⭐
           </button>
           <button
             id="btnJ"
@@ -464,7 +498,7 @@
             onpointerdown="game.handleInput('J')"
           >
             <span class="key-hint">Keyboard J</span>
-            ⭐
+            ☀️
           </button>
         </div>
       </div>
@@ -579,7 +613,7 @@
           // 啟用 F 鍵 (第一回 F 鍵是有效的)
           this.elements.btnF.classList.remove("btn-disabled");
           this.elements.btnF.innerHTML =
-            '<span class="key-hint">Keyboard F</span>❌';
+            '<span class="key-hint">Keyboard F</span>⭐';
 
           this.initGameSession();
         },
@@ -598,7 +632,7 @@
 
           // 禁用 F 鍵 (第二回 F 鍵代表抑制，不能按)
           this.elements.btnF.classList.add("btn-disabled");
-          this.elements.btnF.innerHTML = '<span class="key-hint">❌</span>忍住';
+          this.elements.btnF.innerHTML = '<span class="key-hint">⭐</span>忍住';
 
           this.initGameSession();
         },
@@ -649,14 +683,14 @@
          */
         showStimulus: function () {
           const isStar = Math.random() < CONFIG.goRatio;
-          this.state.currentStimulus = isStar ? "star" : "cross";
+          this.state.currentStimulus = isStar ? "sun" : "star"; // ✅ 改名稱
 
           if (isStar) {
-            this.elements.stimulus.innerText = "⭐";
-            this.elements.stimulus.style.color = "#f1c40f";
+            this.elements.stimulus.innerText = "☀️";
+            this.elements.stimulus.style.color = "#f39c12"; // 橘色
           } else {
-            this.elements.stimulus.innerText = "❌";
-            this.elements.stimulus.style.color = "#e74c3c";
+            this.elements.stimulus.innerText = "⭐";
+            this.elements.stimulus.style.color = "#f1c40f"; // 黃色
           }
 
           this.state.startTime = Date.now();
@@ -694,15 +728,17 @@
           const stimulus = this.state.currentStimulus;
           let isCorrect = false;
 
-          // [核心邏輯]
+          // [核心邏輯]// [核心邏輯修正] 配合新的符號：sun(太陽) 與 star(星星)
           if (this.state.currentRound === 1) {
-            // 第一回：完全對應 (星->J, 叉->F)
-            if (stimulus === "star" && keyInput === "J") isCorrect = true;
-            else if (stimulus === "cross" && keyInput === "F") isCorrect = true;
+            // 第一回：完全對應 辨識練習 (⭐->F, ☀️->J)
+            // 規則：看 ⭐ 按 F，看 ☀️ 按 J
+            if (stimulus === "star" && keyInput === "F") isCorrect = true;
+            else if (stimulus === "sun" && keyInput === "J") isCorrect = true;
           } else {
-            // 第二回：抑制任務 (星->J, 叉->不能按)
-            if (stimulus === "star" && keyInput === "J") isCorrect = true;
-            else isCorrect = false; // 看到叉叉按鍵就是錯
+            // 第二回：抑制任務 (☀️->J, ⭐->不能按)
+            // 規則：看 ☀️ (要按) 按 J，看 ⭐ (不要按)
+            if (stimulus === "sun" && keyInput === "J") isCorrect = true;
+            else isCorrect = false; // 看到星星按鍵就是錯
           }
 
           this.triggerFeedback(isCorrect);
@@ -724,9 +760,10 @@
             // 第一回：都要按，沒按就是錯
             isCorrect = false;
           } else {
-            // 第二回：看到叉叉沒按 = 正確抑制 (Correct Rejection)
-            if (stimulus === "cross") isCorrect = true;
-            else isCorrect = false; // 看到星星沒按 = 漏按 (Miss)
+            // 第二回：看到⭐沒按 = 正確抑制 (Correct Rejection)
+            // 規則：看 ⭐ (不要按) 沒按 = 正確
+            if (stimulus === "star") isCorrect = true;
+            else isCorrect = false; // 看到☀️沒按 = 漏按 (Miss)
           }
 
           // 根據對錯給予回饋
@@ -766,8 +803,8 @@
          * [功能] 記錄數據
          */
         recordResult: function (isCorrect, rt, inputKey) {
-          // [修復：語法錯誤] 補上了這裡遺失的 "{"
           if (isCorrect) {
+            // [修復：語法錯誤] 補上了這裡遺失的 "{"
             this.state.score++;
 
             // 分數增加動畫
@@ -833,15 +870,22 @@
         updateUI: function () {
           this.elements.trialDisplay.innerText = this.state.currentTrial;
 
-          // 進度條顏色變化
-          const progress =
-            (this.state.currentTrial / this.state.totalTrials) * 100;
-          const progressColor =
-            progress < 30 ? "#3498db" : progress < 70 ? "#f39c12" : "#2ecc71";
-          document.documentElement.style.setProperty(
-            "--progress-width",
-            progress + "%"
-          );
+          // 進度條更新
+          const progressBar = document.getElementById("progressBar");
+          if (progressBar) {
+            const progress =
+              (this.state.currentTrial / this.state.totalTrials) * 100;
+            progressBar.style.width = progress + "%";
+
+            // 顏色變化
+            if (progress < 30) {
+              progressBar.style.background = "#3498db";
+            } else if (progress < 70) {
+              progressBar.style.background = "#f39c12";
+            } else {
+              progressBar.style.background = "#2ecc71";
+            }
+          }
         },
 
         /**
