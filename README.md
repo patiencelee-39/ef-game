@@ -37,7 +37,7 @@ Chung Yuan Christian University, Department of Special Education
    </a>
    <!-- <img src="https://img.youtube.com/vi/FKXRiAiQFiY/0.jpg" alt="Git 教學" width="240"> -->
 
-2. **Gemini Code Assist**
+2. **免費用 Gemini 寫 Vibe Codeing**
    <br>
    <a href="https://www.gvm.com.tw/article/119853" target="_blank">VScode(Visual Studio Code)＋ Gemini Code Assist ＝ Vibe Coding</a>
 
