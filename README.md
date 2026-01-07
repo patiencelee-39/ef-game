@@ -31,7 +31,7 @@ Chung Yuan Christian University, Department of Special Education
 
 ## 🎮 自行修改遊戲教學之先備知識參考
 
-1. **PAPAYA 電腦教學：**
+1. **PAPAYA 電腦教學(16 分鐘)：**
    <br>
    <a href="https://youtu.be/FKXRiAiQFiY" target="_blank">程式與網頁開發者必備技能！Git 和 GitHub 零基礎快速上手
    </a>
@@ -41,7 +41,7 @@ Chung Yuan Christian University, Department of Special Education
    <br>
    <a href="https://www.gvm.com.tw/article/119853" target="_blank">VScode(Visual Studio Code)＋ Gemini Code Assist ＝ Vibe Coding</a>
 
-3. **Vibe Coding 教學：**
-   <br>
-   <a href="https://youtu.be/LL0Zazm-qik" target="_blank">【寫好 Vibe Coding 的秘密】別人的 Vibe Coding 總是不會讓人失望!! Context7 MCP 如何安裝及使用 | 使用 10xRules.ai 寫出專案級提示詞</a>
+<!-- 3. **Vibe Coding 教學：** -->
+   <!-- <br> -->
+   <!-- <a href="https://youtu.be/LL0Zazm-qik" target="_blank">【寫好 Vibe Coding 的秘密】別人的 Vibe Coding 總是不會讓人失望!! Context7 MCP 如何安裝及使用 | 使用 10xRules.ai 寫出專案級提示詞</a> -->
    <!-- <img src="https://img.youtube.com/vi/LL0Zazm-qik/0.jpg" alt="Vibe Code 教學" width="240"> -->
