@@ -715,12 +715,87 @@
       */
       const CONFIG = {
         practiceTrials: 3, // 練習題數 (想練久一點改大這個數字)
-        round1Trials: 3, // 第一回題數
-        round2Trials: 3, // 第二回題數
+        round1Trials: 10, // 第一回題數
+        round2Trials: 10, // 第二回題數
         stimulusDuration: 1500, // 圖案出現幾毫秒後消失 (1500ms = 1.5秒)
         isiMin: 800, // 兩題之間最快休息幾毫秒
         isiMax: 1200, // 兩題之間最慢休息幾毫秒
         goRatio: 0.5, // 出現目標(Go)的機率 (0.5 = 50%)
+      };
+
+      /*
+       * ========================================
+       * [新增功能] 音效控制系統 (Sound System)
+       * ========================================
+       * [初學者觀念]
+       * 這裡我們建立一個名為 audio 的物件，專門負責「聲音」相關的工作。
+       * 使用瀏覽器內建的 Web Audio API，就像是在網頁裡接上一組虛擬音響。
+       */
+      const audio = {
+        // 1. 建立音效環境 (Context)
+        // 這就像是把音響插上電源，準備開始運作。
+        // window.AudioContext 是標準寫法，webkitAudioContext 是為了相容舊版 Safari 瀏覽器。
+        ctx: new (window.AudioContext || window.webkitAudioContext)(),
+
+        /**
+         * [功能] 產生並播放一個單音
+         * @param {number} freq - 頻率 (Hz)。數值越大，聲音越高 (例如 880Hz 比 440Hz 高)。
+         * @param {string} type - 波形形狀。決定音色 (sine=圓潤, square=像電玩, sawtooth=刺耳)。
+         * @param {number} duration - 持續時間 (秒)。
+         */
+        playTone: function (freq, type, duration) {
+          // [除錯] 如果瀏覽器因為沒人點擊而暫停聲音，這裡強制把它打開
+          if (this.ctx.state === "suspended") {
+            this.ctx.resume();
+          }
+
+          // 2. 建立發聲器 (Oscillator) - 就像是樂器的弦或琴鍵
+          const osc = this.ctx.createOscillator();
+
+          // 3. 建立音量控制器 (GainNode) - 就像是音量旋鈕
+          const gain = this.ctx.createGain();
+
+          // 4. 設定聲音參數
+          osc.type = type; // 設定波形 (音色)
+          osc.frequency.value = freq; // 設定頻率 (音高)
+
+          // 5. 接線路：發聲器 -> 音量旋鈕 -> 喇叭 (Destination)
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          // 6. 開始發聲 (現在的時間)
+          osc.start();
+
+          // 7. 設定音量變化 (淡出效果，避免啵一聲很難聽)
+          // setValueAtTime(0.5) -> 一開始音量設為 0.5 (調大聲一點，最大是 1.0)
+          // exponentialRampToValueAtTime -> 在時間內慢慢把音量關小到 0.001
+          gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(
+            0.001,
+            this.ctx.currentTime + duration
+          );
+
+          // 8. 時間到停止發聲
+          osc.stop(this.ctx.currentTime + duration);
+        },
+
+        /**
+         * [功能] 播放「答對」音效 - 清脆的高音
+         */
+        playCorrect: function () {
+          // ★ 修改這裡可以改變答對的聲音
+          // 參數：頻率(880Hz), 波形('sine'圓潤), 時間(0.1秒)
+          this.playTone(880, "sine", 0.1);
+        },
+
+        /**
+         * [功能] 播放「答錯」音效 - 低沉的警告音
+         */
+        playError: function () {
+          // ★ 修改這裡可以改變答錯的聲音
+          // 參數：頻率(150Hz), 波形('sawtooth'刺耳), 時間(0.3秒)
+          this.playTone(150, "sawtooth", 0.3);
+        },
       };
 
       /*
@@ -888,6 +963,31 @@
           }, CONFIG.stimulusDuration);
         },
 
+        /**
+         * [重構 - 新增功能] 核心邏輯判斷
+         * 將「判斷對錯」的規則集中在這裡，符合「單一職責原則」。
+         * @param {string} stimulus - 現在出現的圖案 ('star' 或 'sun')
+         * @param {string|null} inputKey - 使用者按的鍵 ('F', 'J') 或 null (沒按)
+         * @returns {boolean} - 回傳 true (答對) 或 false (答錯)
+         */
+        checkAnswer: function (stimulus, inputKey) {
+          const round = this.state.currentRound;
+
+          if (round === 1) {
+            // 第一回：辨識任務 (星星->F, 太陽->J)
+            if (stimulus === "star" && inputKey === "F") return true;
+            if (stimulus === "sun" && inputKey === "J") return true;
+            return false;
+          } else {
+            // 第二回：抑制任務 (太陽->J, 星星->不按)
+            // 情況A: 看到太陽(Go)且按了J -> 對
+            if (stimulus === "sun" && inputKey === "J") return true;
+            // 情況B: 看到星星(NoGo)且沒按(null) -> 對
+            if (stimulus === "star" && inputKey === null) return true;
+            return false;
+          }
+        },
+
         // 處理使用者輸入 (按下 F 或 J)
         handleInput: function (keyInput) {
           // 防呆機制：如果沒在玩、或已經按過了、或圖案還沒出來，就不理會
@@ -910,18 +1010,9 @@
           // 計算反應時間 (現在時間 - 題目出現時間)
           const reactionTime = Date.now() - this.state.startTime;
           const stimulus = this.state.currentStimulus;
-          let isCorrect = false;
 
-          // 判斷對錯邏輯
-          if (this.state.currentRound === 1) {
-            // 第一回：星星按 F，太陽按 J
-            if (stimulus === "star" && keyInput === "F") isCorrect = true;
-            else if (stimulus === "sun" && keyInput === "J") isCorrect = true;
-          } else {
-            // 第二回：太陽按 J，星星不能按 (這是抑制任務)
-            if (stimulus === "sun" && keyInput === "J") isCorrect = true;
-            else isCorrect = false; // 星星按了就算錯
-          }
+          // [重構] 使用 checkAnswer 統一判斷
+          const isCorrect = this.checkAnswer(stimulus, keyInput);
 
           this.triggerFeedback(isCorrect); // 顯示回饋(閃綠/閃紅)
           this.recordResult(isCorrect, reactionTime, keyInput); // 存檔
@@ -932,14 +1023,10 @@
         handleTimeout: function () {
           this.state.responded = true;
           const stimulus = this.state.currentStimulus;
-          let isCorrect = false;
-          if (this.state.currentRound === 1) {
-            isCorrect = false; // 第一回一定要按，沒按就錯
-          } else {
-            // 第二回：星星不能按，所以如果這題是星星且沒按，就對了！
-            if (stimulus === "star") isCorrect = true;
-            else isCorrect = false;
-          }
+
+          // [重構] 使用 checkAnswer 統一判斷 (傳入 null 代表沒按)
+          const isCorrect = this.checkAnswer(stimulus, null);
+
           if (isCorrect) this.triggerFeedback(true);
           else this.triggerFeedback(false);
           this.recordResult(isCorrect, 0, "none");
@@ -963,9 +1050,15 @@
           if (isSuccess) {
             this.elements.container.classList.add("feedback-success");
             this.elements.stimulus.classList.add("correct-flash");
+
+            // [新增] 呼叫 audio 物件播放答對音效
+            audio.playCorrect();
           } else {
             this.elements.container.classList.add("feedback-error");
             this.elements.stimulus.classList.add("error-flash");
+
+            // [新增] 呼叫 audio 物件播放答錯音效
+            audio.playError();
           }
         },
 
@@ -1066,40 +1159,39 @@
         */
         // 匯出資料功能 (含暱稱版)
         exportData: function () {
-          let csv =
-            "data:text/csv;charset=utf-8,Round,Trial,Stimulus,InputKey,Correct,RT(ms)\n";
-          this.state.results.forEach((r) => {
-            csv += `${r.round},${r.trial},${r.stimulus},${r.input},${r.correct},${r.rt}\n`;
-          });
-
-          // === [新增] 製作包含日期時間的檔名 ===
-          const now = new Date(); // 取得現在時間
-
-          // 取得 年、月、日 (padStart(2, '0') 意思是：如果不滿2位數，前面補0，例如 5 -> 05)
+          // 1. 準備時間與檔名資訊
+          const now = new Date();
           const year = now.getFullYear();
-          const month = String(now.getMonth() + 1).padStart(2, "0"); // 月份是從0開始算的，所以要+1
+          const month = String(now.getMonth() + 1).padStart(2, "0");
           const day = String(now.getDate()).padStart(2, "0");
-
-          // 取得 時、分、秒
           const hour = String(now.getHours()).padStart(2, "0");
           const minute = String(now.getMinutes()).padStart(2, "0");
           const second = String(now.getSeconds()).padStart(2, "0");
 
-          // 取得剛剛存下來的暱稱
           const id = this.state.participantId;
-
-          // 組合檔名，例如：EF訓練遊戲數據_20231025_143005.csv
+          const dateStr = `${year}/${month}/${day} ${hour}:${minute}:${second}`;
           const fileName = `EF訓練遊戲數據_${id}_${year}${month}${day}_${hour}${minute}${second}.csv`;
-          // ===================================
 
-          const encodedUri = encodeURI(csv);
+          // 2. 建立 CSV 內容 (新增 Participant 和 Date 欄位，讓資料更完整)
+          let csvContent =
+            "Participant,Date,Round,Trial,Stimulus,InputKey,Correct,RT(ms)\n";
+          this.state.results.forEach((r) => {
+            csvContent += `${id},${dateStr},${r.round},${r.trial},${r.stimulus},${r.input},${r.correct},${r.rt}\n`;
+          });
+
+          // 3. [優化] 使用 Blob + BOM (\uFEFF) 解決 Excel 中文亂碼問題
+          const blob = new Blob(["\uFEFF" + csvContent], {
+            type: "text/csv;charset=utf-8;",
+          });
+          const url = URL.createObjectURL(blob);
+
           const link = document.createElement("a");
-          link.setAttribute("href", encodedUri);
-          // [修改] 這裡原本是寫死的字串，現在改成我們剛剛做好的變數 fileName
+          link.setAttribute("href", url);
           link.setAttribute("download", fileName); // 設定下載檔名
           document.body.appendChild(link);
           link.click(); // 模擬點擊下載
-          document.body.removeChild(link); // 下載完移除連結
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url); // 釋放記憶體
         },
       };
 
@@ -1135,6 +1227,28 @@
           game.handleInput(key);
         }
       });
+
+      /*
+       * ========================================
+       * [新增功能] 輸入框按 Enter 鍵自動下一步
+       * ========================================
+       * 讓使用者輸入完名字後，直接按 Enter 就能進入下一步。
+       */
+      document
+        .getElementById("playerId")
+        .addEventListener("keydown", function (event) {
+          // [修正] 檢查是否正在使用輸入法 (IME) 選字
+          // 如果 isComposing 為 true，代表使用者還在打中文，這時候的 Enter 只是確認選字，不是要送出
+          if (event.isComposing) {
+            return;
+          }
+
+          // event.key 會告訴我們使用者按了哪顆鍵
+          if (event.key === "Enter") {
+            // 如果是 Enter 鍵，就執行「顯示教學」的動作，跟點擊按鈕一樣
+            game.showTutorial();
+          }
+        });
     </script>
   </body>
 </html>
