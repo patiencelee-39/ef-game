@@ -1,5 +1,6 @@
 *.png
 .DS_Store
+.Rhistory
 index-0103v1.html
 index-0104v2.html
 index-0105v3-Claude.html
