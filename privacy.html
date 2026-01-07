@@ -195,7 +195,7 @@
       <h2>💾 關於「匯出資料」功能</h2>
       <p>
         當您點擊「匯出資料」按鈕時，瀏覽器會生成一個 CSV
-        檔案給您下載。檔案內容僅包含：
+        檔案給您下載。檔案內容包含受試者代號、測驗時間與詳細答題數據：
       </p>
 
       <table class="data-table">
@@ -205,14 +205,39 @@
           <th>說明</th>
         </tr>
         <tr>
+          <td>Participant</td>
+          <td>01王小明</td>
+          <td>受試者座號姓名</td>
+        </tr>
+        <tr>
+          <td>Date</td>
+          <td>2026/01/07...</td>
+          <td>測驗日期與時間</td>
+        </tr>
+        <tr>
+          <td>Round</td>
+          <td>1</td>
+          <td>回合 (1=辨識, 2=抑制)</td>
+        </tr>
+        <tr>
           <td>Trial</td>
           <td>1</td>
           <td>第幾題</td>
         </tr>
         <tr>
+          <td>Stimulus</td>
+          <td>sun</td>
+          <td>出現的圖案 (sun/star)</td>
+        </tr>
+        <tr>
           <td>InputKey</td>
           <td>J</td>
           <td>按了什麼鍵 (F 或 J)</td>
+        </tr>
+        <tr>
+          <td>Correct</td>
+          <td>yes</td>
+          <td>是否答對</td>
         </tr>
         <tr>
           <td>RT(ms)</td>
