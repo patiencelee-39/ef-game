@@ -1,4 +1,5 @@
 *.png
+.DS_Store
 index-0103v1.html
 index-0104v2.html
 index-0105v3-Claude.html
@@ -11,3 +12,6 @@ index-0109v6.html
 index-0110v7.html
 index-0111v8.html
 index-0112v9.html
+index-0113v10.html
+index-0114v11.html
+index-0115v12.html
