@@ -1,3 +1,5 @@
+最後更新日期：2026 年 01 月 12 日 星期一
+
 # 執行功能訓練遊戲 (Executive Function Training Game)
 
 ## 📚 專案性質
@@ -7,9 +9,9 @@
 
 ## 🎯 研究目的
 
-- 訓練 ADHD 不專注型學童的執行功能
+- 訓練 聽障學童的執行功能
 - 採用 Go/No-Go 實驗典範
-- 訓練工作記憶與抑制控制能力
+- 訓練工作記憶、抑制控制、認知彈性
 
 ## 🔒 隱私聲明
 
@@ -28,6 +30,12 @@ CSV 匯出功能僅用於研究資料分析，
 
 中原大學特殊教育學系
 Chung Yuan Christian University, Department of Special Education
+
+## 📖 參考文獻 (References)
+
+- Hall, M. L., Eigsti, I.-M., Bortfeld, H., & Lillo-Martin, D. (2017). Auditory deprivation does not impair executive function, but language deprivation might: Evidence from a parent-report measure in Deaf native signing children. _Journal of Deaf Studies and Deaf Education_, _22_(1), 9-21. https://doi.org/10.1093/deafed/enw054
+- Hall, M. L., Eigsti, I.-M., Bortfeld, H., & Lillo-Martin, D. (2018). Executive function in deaf children: Auditory access and language access. _Journal of Speech, Language, and Hearing Research_, _61_(8), 1970-1988. https://doi.org/10.1044/2018_JSLHR-L-17-0281
+- Goodwin, C., Carrigan, E., Walker, K., & Coppola, M. (2022). Language not auditory experience is related to parent-reported executive functioning in preschool-aged deaf and hard-of-hearing children. _Child Development_, _93_(1), 209-224. https://doi.org/10.1111/cdev.13677
 
 ## 🎮 自行修改遊戲教學之先備知識
 
