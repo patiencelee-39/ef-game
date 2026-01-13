@@ -33,19 +33,19 @@ Chung Yuan Christian University, Department of Special Education
 
 ## 📖 參考文獻 (References)
 
-#### 第一回合
+#### 第一回合(抑制控制)
 
 - Hall, M. L., Eigsti, I.-M., Bortfeld, H., & Lillo-Martin, D. (2017). Auditory deprivation does not impair executive function, but language deprivation might: Evidence from a parent-report measure in Deaf native signing children. _Journal of Deaf Studies and Deaf Education_, _22_(1), 9-21. https://doi.org/10.1093/deafed/enw054
 
 - Hall, M. L., Eigsti, I.-M., Bortfeld, H., & Lillo-Martin, D. (2018). Executive function in deaf children: Auditory access and language access. _Journal of Speech, Language, and Hearing Research_, _61_(8), 1970-1988. https://doi.org/10.1044/2018_JSLHR-L-17-0281
 
-#### 第三回合
-
-- Goodwin, C., Carrigan, E., Walker, K., & Coppola, M. (2022). Language not auditory experience is related to parent-reported executive functioning in preschool-aged deaf and hard-of-hearing children. _Child Development_, _93_(1), 209-224. https://doi.org/10.1111/cdev.13677
-
-#### 認知彈性
+#### 第二回合(認知彈性)
 
 - Zelazo, P. (2006). The Dimensional Change Card Sort (DCCS): a method of assessing executive function in children. _Nature Protocols_, _1_, 297–301. https://doi.org/10.1038/nprot.2006.46
+
+#### 第三回合(抑制控制)
+
+- Goodwin, C., Carrigan, E., Walker, K., & Coppola, M. (2022). Language not auditory experience is related to parent-reported executive functioning in preschool-aged deaf and hard-of-hearing children. _Child Development_, _93_(1), 209-224. https://doi.org/10.1111/cdev.13677
 
 ## 🎮 自行修改遊戲教學之先備知識
 
