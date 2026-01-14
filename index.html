@@ -37,8 +37,10 @@
         --round1-color: #e67e22; /* 第一回代表色 (橘色) */
         --round2-color: #e74c3c; /* 第二回代表色 (紅色) */
         --round3-color: #9b59b6; /* 第三回代表色 (紫色) */
+        --round4-color: #34495e; /* [新增] 第四回代表色 (深藍色) */
         --practice-color: #1abc9c; /* 練習模式代表色 (青色) */
         --person-border: #ff6b6b; /* [新增] 有人時的紅色邊框色/提示色 */
+        --night-border: #f39c12; /* [新增] 晚上時的橙色邊框色/提示色 */
       }
 
       /* body 是網頁的「身體」，設定全域的基礎樣式 */
@@ -293,6 +295,13 @@
         flex-direction: column;
         gap: 5px;
       }
+      /* [新增] night-box 樣式 */
+      .rule-box.night-box {
+        background: rgba(243, 156, 18, 0.2);
+        border: 2px solid var(--night-border);
+        flex-direction: column;
+        gap: 5px;
+      }
 
       .rule-icon-large {
         font-size: 3em;
@@ -330,6 +339,10 @@
       }
       .round3-badge {
         background-color: var(--round3-color);
+      }
+      /* [新增] 第四回合標籤樣式 */
+      .round4-badge {
+        background-color: var(--round4-color);
       }
 
       /* 進度條 */
@@ -666,6 +679,186 @@
           </button>
         </div>
       </div>
+      <!-- [新增] 第三回合正式測驗結束，銜接第四回合 -->
+      <div id="round3EndScreen" class="screen-layer hidden">
+        <h2>🎉 第三回合完成！</h2>
+        <p>
+          你已經完成了釣魚遊戲！<br />
+          但是...還有最後的挑戰！
+        </p>
+        <div
+          style="
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(52, 73, 94, 0.3);
+            border-radius: 15px;
+            border: 2px solid var(--round4-color);
+          "
+        ></div>
+        <p
+          style="margin-top: 20px; color: var(--round4-color); font-size: 1.2em"
+        >
+          <b>🌙 注意：晚上不要釣魚！</b>
+        </p>
+
+        <p style="color: #bdc3c7; font-size: 1.1em">
+          接下來會有白天和晚上的變化，<br />
+          晚上出現時，不管是什麼都不能按！
+        </p>
+
+        <button
+          class="btn blink-text"
+          onclick="game.showScreen('round4Practice')"
+        >
+          ⌨️ 按空白鍵進入第四回合說明
+        </button>
+      </div>
+
+      <!-- [新增] 第四回合練習介紹頁 -->
+      <div id="round4PracticeScreen" class="screen-layer hidden">
+        <h2 style="color: var(--round4-color)">🎮 第四回合：白天 vs 晚上</h2>
+
+        <p style="margin-bottom: 20px; color: #bdc3c7; font-size: 1.1em">
+          規則跟剛才一樣，但是...<br />
+          <b>看到月亮時（晚上），絕對不能釣魚！</b>
+        </p>
+
+        <div class="tutorial-container">
+          <!-- ===== 白天規則 ===== -->
+          <div style="text-align: center; margin-bottom: 15px; width: 100%">
+            <!-- 白天標題 -->
+            <div
+              style="
+                font-size: 2.5em;
+                margin-bottom: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+              "
+            >
+              <span>☀️</span>
+              <span style="font-size: 0.6em; color: #ecf0f1">白天</span>
+            </div>
+
+            <!-- 白天規則框 -->
+            <div
+              style="
+                display: flex;
+                gap: 10px;
+                justify-content: center;
+                flex-wrap: wrap;
+              "
+            >
+              <!-- 魚→按 -->
+              <div
+                class="rule-box"
+                style="
+                  background: rgba(255, 165, 0, 0.2);
+                  flex: 1;
+                  min-width: 150px;
+                "
+              >
+                <span style="font-size: 2.5em">🟠</span>
+                <span class="rule-arrow">→</span>
+                <span class="rule-text" style="color: var(--success-color)"
+                  >按！</span
+                >
+              </div>
+
+              <!-- 鯊魚→不按 -->
+              <div
+                class="rule-box"
+                style="
+                  background: rgba(231, 76, 60, 0.2);
+                  flex: 1;
+                  min-width: 150px;
+                "
+              >
+                <span style="font-size: 2.5em">🦈</span>
+                <span class="rule-arrow">→</span>
+                <span class="rule-text" style="color: var(--error-color)"
+                  >不按！</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== 晚上規則（重點強調）===== -->
+          <div class="rule-box night-box" style="width: 100%; margin-top: 20px">
+            <!-- 月亮標題 + 規則 -->
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 15px;
+              "
+            >
+              <span class="rule-icon-large" style="font-size: 3em">🌙</span>
+              <span class="rule-arrow" style="font-size: 2em">→</span>
+              <span
+                class="rule-text"
+                style="color: var(--night-border); font-size: 1.5em"
+              >
+                都不要按！
+              </span>
+            </div>
+
+            <!-- 補充說明 -->
+            <div
+              style="
+                font-size: 0.95em;
+                color: #ecf0f1;
+                margin-top: 10px;
+                text-align: center;
+              "
+            >
+              (晚上出現時，不管是魚🟠還是鯊魚🦈都不能按)
+            </div>
+          </div>
+        </div>
+
+        <button class="btn blink-text" onclick="game.startRound4Practice()">
+          ⌨️ 按空白鍵開始練習
+        </button>
+
+        <h4 style="margin-top: 15px; color: #95a5a6">練習模式不計分</h4>
+      </div>
+
+      <!-- [新增] 第四回合練習結束頁 -->
+      <div id="round4PracticeEndScreen" class="screen-layer hidden">
+        <h2>👍 練習完成！</h2>
+
+        <p style="font-size: 1.2em; line-height: 1.6">
+          記得規則：<br />
+          <span style="color: #f39c12">🌙 看到月亮（晚上）→ 絕對不能按！</span
+          ><br />
+          <span style="color: #f1c40f"
+            >☀️ 看到太陽（白天）→ 魚按、鯊魚不按</span
+          >
+        </p>
+
+        <div
+          style="
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(52, 73, 94, 0.3);
+            border-radius: 10px;
+          "
+        >
+          <p style="color: #ecf0f1; margin: 0">
+            準備好正式挑戰第四回合了嗎？<br />
+            <b>這次會計分喔！</b>
+          </p>
+        </div>
+
+        <div style="margin-top: 20px; width: 100%; text-align: center">
+          <button class="btn blink-text" onclick="game.startRound4()">
+            ⌨️ 按空白鍵開始正式測驗
+          </button>
+        </div>
+      </div>
 
       <!-- 遊戲進行畫面 -->
       <div
@@ -760,17 +953,20 @@
 
     <script>
       const CONFIG = {
-        practiceTrials: 3, // 練習題數
-        round1Trials: 3, // 第一回題數
-        round2PracticeTrials: 3, // [新增] 第二回練習題數
-        round2Trials: 3, // [新增] 第二回題數
-        round3PracticeTrials: 3, // [修改] 第三回練習題數
-        round3Trials: 3, // [修改] 第三回題數
+        practiceTrials: 10, // 練習題數
+        round1Trials: 10, // 第一回題數
+        round2PracticeTrials: 10, // [新增] 第二回練習題數
+        round2Trials: 10, // [新增] 第二回題數
+        round3PracticeTrials: 10, // [修改] 第三回練習題數
+        round3Trials: 10, // [修改] 第三回題數
+        round4PracticeTrials: 10, // [新增] 第四回練習題數
+        round4Trials: 10, // [新增] 第四回題數
         stimulusDuration: 2000,
         isiMin: 800,
         isiMax: 1200,
         goRatio: 0.75,
         personRatio: 0.25, // [新增] 第一回合人出現的機率
+        nightRatio: 0.7, // [新增] 第四回合晚上出現的機率
         debugMode: true,
       };
 
@@ -799,6 +995,37 @@
 	<path style="fill:#FFC552;" d="M62.874,101.694H43.281c-4.546,0-8.232-3.686-8.232-8.232s3.686-8.232,8.232-8.232h19.593c4.546,0,8.232,3.686,8.232,8.232S67.42,101.694,62.874,101.694z"/>
 	<path style="fill:#FFC552;" d="M82.098,55.281c-2.106,0-4.214-0.803-5.82-2.411L62.424,39.016c-3.215-3.215-3.215-8.427,0-11.641c3.215-3.215,8.427-3.215,11.642,0l13.854,13.854c3.215,3.215,3.215,8.427,0,11.641C86.311,54.477,84.205,55.281,82.098,55.281z"/>
 	
+</g>
+<path style="fill:#FFC552;" d="M43.281,512H476.95V398.961l-28.93-36.03l-114.148,18.582l-96.587-18.582l-76.098,18.582l-54.879-18.582l-63.026,36.03L43.281,512z"/>
+<path style="fill:#70B1CC;" d="M476.951,398.961c-27.412-13.165-59.322-13.165-86.734,0l0,0c-27.412,13.165-59.322,13.165-86.734,0l0,0c-27.412-13.165-59.322-13.165-86.734,0l0,0c-27.412,13.165-59.322,13.165-86.734,0l0,0c-27.412-13.165-59.322-13.165-86.734,0V342.98l42.198-37.123l68.39,19.346l50.075-1.276l56.171-18.069l49.611,6.174l38.781,21.075l67.318-32.971l46.83,11.896l14.295,30.95v55.982H476.951z"/>
+<path style="fill:#7EC8E6;" d="M476.951,342.98c-27.412-13.165-59.322-13.165-86.734,0l0,0c-27.412,13.165-59.322,13.165-86.734,0l0,0c-27.412-13.165-59.322-13.165-86.734,0l0,0c-27.412,13.165-59.322,13.165-86.734,0l0,0c-27.412-13.165-59.322-13.165-86.734,0V287l42.198-38.217l91.806,18.293l82.831-21.22l94.245,25.052l87.074-25.052l35.516,41.144L476.951,342.98z"/>
+<g>
+	<path style="fill:#8CDEFF;" d="M444.368,88.209c-5.579,0-10.83,1.405-15.421,3.876c0.509-3.059,0.778-6.199,0.778-9.403c0-31.412-25.464-56.875-56.875-56.875c-24.502,0-45.386,15.495-53.387,37.22c-3.318-1.427-6.973-2.22-10.813-2.22c-15.133,0-27.402,12.269-27.402,27.402c0,0.045,0.003,0.089,0.003,0.134c-0.951-0.083-1.91-0.134-2.882-0.134c-17.995,0-32.583,14.588-32.583,32.583s14.588,32.583,32.583,32.583h165.999c17.995,0,32.583-14.588,32.583-32.583S462.363,88.209,444.368,88.209z"/>
+	<path style="fill:#8CDEFF;" d="M390.217,231.02L390.217,231.02c-27.412,13.165-59.321,13.165-86.733,0l0,0c-27.413-13.167-59.322-13.167-86.734,0l0,0c-27.413,13.165-59.322,13.165-86.734,0l0,0c-27.413-13.167-59.322-13.167-86.734,0v55.981c27.412-13.167,59.321-13.167,86.734,0l0,0c27.412,13.165,59.321,13.165,86.734,0l0,0c27.412-13.167,59.321-13.167,86.734,0l0,0c27.412,13.165,59.321,13.165,86.733,0l0,0c27.413-13.167,59.322-13.167,86.734,0V231.02C449.538,217.853,417.629,217.853,390.217,231.02z"/>	
+</g>
+</svg>`,
+
+        oceanNight: `<svg height="100%" width="100%" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 -70 512 582" xml:space="preserve">
+          <rect x="43" y="-170" width="434" height="682" fill="#000000" />
+<g transform="translate(60, 10) scale(0.4)">
+<path style="fill:#FFE53C;" d="M71.926,235.796c88-5.6,158.8-76.4,164.4-164c1.2-18.8-0.4-36.8-4.8-54c-1.6-6.4,5.2-12,11.2-9.2
+	c63.2,29.2,106,94.4,101.6,169.6c-4.8,88.8-76.8,161.2-166,166c-74.8,4-140.4-38.8-169.6-101.6c-2.8-6,2.8-12.8,9.2-11.2
+	C35.526,235.396,53.526,236.996,71.926,235.796z"/>
+<path style="fill:#C39215;" d="M168.726,352.596c-72,0-136.8-40.8-167.2-106.4c-2.8-5.6-1.6-12,2.4-16.8s10-6.8,16-5.6
+	c17.2,4,34.4,5.2,51.6,4l0,0c84-5.2,151.6-72.8,156.8-156.4c1.2-18-0.4-35.2-4.4-51.6c-1.6-6,0.4-12.4,5.2-16
+	c4.8-4,11.2-4.8,16.8-2.4c68.8,32,110.8,101.6,106.4,177.2c-4.8,92.4-81.2,168.4-173.6,173.6
+	C175.526,352.196,171.926,352.596,168.726,352.596z M16.326,239.396c28.8,62.4,92.4,100.4,161.6,96.8c84.4-4.4,154-74,158.4-158.4
+	c4-69.2-34-132.8-96.8-162c4.4,18,6,36.8,4.8,56.4c-6,92-79.6,165.6-172,171.6l0,0C53.926,244.996,34.726,243.396,16.326,239.396z"
+	/>
+<path style="fill:#F8D133;" d="M244.726,25.796c31.6,30.8,51.2,74,51.2,122c0,94-76.4,170.4-170.4,170.4c-19.2,0-38-3.2-55.2-9.2
+	c27.2,18.8,60.4,29.6,96,29.6c94,0,170.4-76.4,170.4-170.4c0-66.8-38.4-124.4-94-152.4
+	C235.926,12.196,237.526,18.996,244.726,25.796z"/>
+<path style="fill:#FFE53C;" d="M231.126,284.196c28.8-19.6,50-49.2,58-84"/>
+<path style="fill:#C39215;" d="M231.126,292.196c-2.4,0-5.2-1.2-6.8-3.6c-2.4-3.6-1.6-8.8,2-11.2c28-18.8,47.2-47.2,54.8-79.2
+	c0.8-4.4,5.2-6.8,9.6-6s6.8,5.2,6,9.6c-8.4,36-30,67.6-61.2,88.8C234.326,291.796,232.726,292.196,231.126,292.196z"/>
+<path style="fill:#FFE53C;" d="M192.726,302.596c2.8-0.8,5.2-1.6,8-2.8"/>
+<path style="fill:#C39215;" d="M192.726,310.596c-3.6,0-6.8-2.4-7.6-6c-1.2-4.4,1.2-8.8,5.6-10c2.8-0.8,4.8-1.6,7.2-2.4
+	c4-1.6,8.8,0,10.4,4.4c1.6,4,0,8.8-4.4,10.4c-2.8,1.2-5.6,2-8.8,3.2C194.326,310.596,193.526,310.596,192.726,310.596z"/>
 </g>
 <path style="fill:#FFC552;" d="M43.281,512H476.95V398.961l-28.93-36.03l-114.148,18.582l-96.587-18.582l-76.098,18.582l-54.879-18.582l-63.026,36.03L43.281,512z"/>
 <path style="fill:#70B1CC;" d="M476.951,398.961c-27.412-13.165-59.322-13.165-86.734,0l0,0c-27.412,13.165-59.322,13.165-86.734,0l0,0c-27.412-13.165-59.322-13.165-86.734,0l0,0c-27.412,13.165-59.322,13.165-86.734,0l0,0c-27.412-13.165-59.322-13.165-86.734,0V342.98l42.198-37.123l68.39,19.346l50.075-1.276l56.171-18.069l49.611,6.174l38.781,21.075l67.318-32.971l46.83,11.896l14.295,30.95v55.982H476.951z"/>
@@ -852,6 +1079,7 @@
           isRound3Practice: false,
           currentStimulus: null,
           hasPerson: false,
+          isNightTime: false, // [新增] 第四回合：是否為晚上
           startTime: 0,
           responded: false,
           timer: null,
@@ -860,29 +1088,34 @@
         elements: {
           container: document.getElementById("gameContainer"),
           screens: {
-            landing: document.getElementById("landingPage"),
-            intro: document.getElementById("introScreen"),
-            practiceEnd: document.getElementById("practiceEndScreen"),
-            round2Intro: document.getElementById("round2IntroScreen"),
+            landing: document.getElementById("landingPage"), // 首頁
+            intro: document.getElementById("introScreen"), //  介紹畫面
+            practiceEnd: document.getElementById("practiceEndScreen"), // 練習結束畫面
+            round2Intro: document.getElementById("round2IntroScreen"), // 第二回合介紹畫面
             round2PracticeEnd: document.getElementById(
               "round2PracticeEndScreen"
-            ),
-            round3Practice: document.getElementById("round3PracticeScreen"),
+            ), // 第二回合練習結束畫面
+            round3Practice: document.getElementById("round3PracticeScreen"), // 第三回合練習畫面
             round3PracticeEnd: document.getElementById(
               "round3PracticeEndScreen"
-            ),
-            play: document.getElementById("playScreen"),
-            result: document.getElementById("resultScreen"),
+            ), // 第三回合練習結束畫面
+            round3End: document.getElementById("round3EndScreen"), // 第三回合結束畫面
+            round4Practice: document.getElementById("round4PracticeScreen"), // 第四回合練習畫面
+            round4PracticeEnd: document.getElementById(
+              "round4PracticeEndScreen"
+            ), // 第四回合練習結束畫面
+            play: document.getElementById("playScreen"), // 遊戲畫面
+            result: document.getElementById("resultScreen"), // 結果畫面
           },
-          backgroundLayer: document.getElementById("backgroundLayer"),
-          stimulus: document.getElementById("stimulusBox"),
-          personIndicator: document.getElementById("personIndicator"),
-          btnSpace: document.getElementById("btnSpace"),
-          roundLabel: document.getElementById("roundLabel"),
-          trialDisplay: document.getElementById("currentTrialDisplay"),
-          totalDisplay: document.getElementById("totalTrialDisplay"),
-          scoreDisplay: document.getElementById("scoreDisplay"),
-          avgTimeDisplay: document.getElementById("avgTimeDisplay"),
+          backgroundLayer: document.getElementById("backgroundLayer"), // 背景層
+          stimulus: document.getElementById("stimulusBox"), // 刺激呈現區
+          personIndicator: document.getElementById("personIndicator"), // 人物指示器
+          btnSpace: document.getElementById("btnSpace"), // 空白鍵提示按鈕
+          roundLabel: document.getElementById("roundLabel"), // 回合標籤
+          trialDisplay: document.getElementById("currentTrialDisplay"), // 目前試次顯示
+          totalDisplay: document.getElementById("totalTrialDisplay"), // 總試次顯示
+          scoreDisplay: document.getElementById("scoreDisplay"), // 分數顯示
+          avgTimeDisplay: document.getElementById("avgTimeDisplay"), // 平均反應時間顯示
         },
 
         showTutorial: function () {
@@ -953,6 +1186,50 @@
           this.initGameSession();
         },
 
+        /**
+         * [新增] 開始第四回合練習：釣魚 + 晚上條件
+         * 規則：晚上時都不按，白天時魚按、鯊魚不按
+         */
+        startRound4Practice: function () {
+          if (CONFIG.debugMode) console.log("🎮 開始第四回合練習（釣魚+晚上）");
+
+          this.state.currentRound = 4;
+          this.state.isPractice = true;
+          this.state.isNightTime = false;
+          this.state.totalTrials = CONFIG.round4PracticeTrials;
+          this.state.currentTrial = 0;
+          this.state.score = 0;
+
+          // 設定回合標籤：練習模式
+          const roundLabel = this.elements.roundLabel;
+          roundLabel.className = "round-label round-practice";
+          roundLabel.textContent = "第四回合練習";
+
+          this.initGameSession();
+        },
+
+        /**
+         * [新增] 開始第四回合正式測驗
+         */
+        startRound4: function () {
+          if (CONFIG.debugMode)
+            console.log("🎮 開始第四回合正式測驗（釣魚+晚上）");
+
+          this.state.currentRound = 4;
+          this.state.isPractice = false;
+          this.state.isNightTime = false;
+          this.state.totalTrials = CONFIG.round4Trials;
+          this.state.currentTrial = 0;
+          this.state.score = 0;
+
+          // 設定回合標籤：正式測驗
+          const roundLabel = this.elements.roundLabel;
+          roundLabel.className = "round-label round4-badge";
+          roundLabel.textContent = "第四回合";
+
+          this.initGameSession();
+        },
+
         initGameSession: function () {
           this.state.currentTrial = 0;
           this.state.score = 0;
@@ -965,6 +1242,11 @@
             this.elements.btnSpace.innerHTML =
               '<span class="key-hint">按空白鍵</span><span>蒐集起司</span>';
           } else if (this.state.currentRound === 3) {
+            this.elements.backgroundLayer.innerHTML =
+              SVG_ASSETS_FISHING.oceanBg;
+            this.elements.btnSpace.innerHTML =
+              '<span class="key-hint">按空白鍵</span><span>釣魚</span>';
+          } else if (this.state.currentRound === 4) {
             this.elements.backgroundLayer.innerHTML =
               SVG_ASSETS_FISHING.oceanBg;
             this.elements.btnSpace.innerHTML =
@@ -998,10 +1280,12 @@
 
           if (this.state.currentRound === 1 || this.state.currentRound === 2) {
             this.elements.backgroundLayer.innerHTML = SVG_ASSETS.mouseHole;
-          } else {
+          } else if (this.state.currentRound === 3) {
             this.elements.backgroundLayer.innerHTML =
               SVG_ASSETS_FISHING.oceanBg;
           }
+          // [修改] 第四回合不重置背景，避免「晚上 -> 白天(ISI) -> 晚上」的閃爍
+          // 這樣可以讓晚上的背景在 ISI 期間持續顯示，直到下一次試驗開始
 
           const delay =
             Math.floor(Math.random() * (CONFIG.isiMax - CONFIG.isiMin + 1)) +
@@ -1039,6 +1323,53 @@
             this.state.currentStimulus = isGo ? "fish" : "shark";
             goStimulus = SVG_ASSETS_FISHING.fish;
             noGoStimulus = SVG_ASSETS_FISHING.shark;
+          } else if (this.state.currentRound === 4) {
+            // ==========================================
+            // [新增] 第四回合：釣魚 + 晚上條件
+            // ==========================================
+
+            // 步驟1：決定是否為晚上（根據 nightRatio 機率）
+            this.state.isNightTime = Math.random() < CONFIG.nightRatio;
+
+            // 步驟2：隨機選擇刺激物（魚或鯊魚）
+            const stimuli = ["fish", "shark"];
+            const stimulus =
+              stimuli[Math.floor(Math.random() * stimuli.length)];
+
+            // 步驟3：根據時間設定背景和指示器
+            if (this.state.isNightTime) {
+              // === 晚上 ===
+              // 背景：黑色海洋
+              this.elements.backgroundLayer.innerHTML =
+                SVG_ASSETS_FISHING.oceanNight;
+
+              // 隱藏人物指示器
+              this.elements.personIndicator.style.display = "none";
+
+              if (CONFIG.debugMode) {
+                console.log(`  🌙 晚上 | 刺激物: ${stimulus} | 正確答案：不按`);
+              }
+            } else {
+              // === 白天 ===
+              // 背景：一般海洋（有太陽）
+              this.elements.backgroundLayer.innerHTML =
+                SVG_ASSETS_FISHING.oceanBg;
+
+              this.elements.personIndicator.style.display = "none";
+
+              if (CONFIG.debugMode) {
+                const answer = stimulus === "fish" ? "按" : "不按";
+                console.log(
+                  `  ☀️ 白天 | 刺激物: ${stimulus} | 正確答案：${answer}`
+                );
+              }
+            }
+
+            // 步驟4：設定變數以供後續統一渲染
+            isGo = stimulus === "fish";
+            goStimulus = SVG_ASSETS_FISHING.fish;
+            noGoStimulus = SVG_ASSETS_FISHING.shark;
+            this.state.currentStimulus = stimulus;
           }
 
           if (CONFIG.debugMode) {
@@ -1077,6 +1408,34 @@
             if (stimulus === "fish" && inputKey === "Space") return true;
             if (stimulus === "shark" && inputKey === null) return true;
             return false;
+          } else if (this.state.currentRound === 4) {
+            // ==========================================
+            // 第四回合判斷邏輯：釣魚 + 晚上條件
+            // ==========================================
+
+            if (this.state.isNightTime) {
+              // === 晚上規則 ===
+              // 不管是魚還是鯊魚，都不能按（正確答案是不按）
+              if (inputKey === null) {
+                // 沒有按 → 正確
+                return true;
+              } else {
+                // 按了 → 錯誤
+                return false;
+              }
+            } else {
+              // === 白天規則（與第三回合相同）===
+              // 魚→按（正確）
+              if (stimulus === "fish" && inputKey === "Space") {
+                return true;
+              }
+              // 鯊魚→不按（正確）
+              if (stimulus === "shark" && inputKey === null) {
+                return true;
+              }
+              // 其他情況→錯誤
+              return false;
+            }
           }
         },
 
@@ -1168,6 +1527,7 @@
               trial: this.state.currentTrial,
               stimulus: this.state.currentStimulus,
               hasPerson: this.state.hasPerson,
+              isNightTime: this.state.isNightTime || false, // [新增] 新增 isNightTime 欄位，儲存記錄是否為晚上
               input: inputKey,
               correct: isCorrect ? "yes" : "no",
               rt: rt,
@@ -1185,6 +1545,8 @@
               this.showScreen("round2PracticeEnd");
             } else if (this.state.currentRound === 3) {
               this.showScreen("round3PracticeEnd");
+            } else if (this.state.currentRound === 4) {
+              this.showScreen("round4PracticeEnd");
             }
           } else {
             if (this.state.currentRound === 1) {
@@ -1192,6 +1554,10 @@
             } else if (this.state.currentRound === 2) {
               this.showScreen("round3Practice");
             } else if (this.state.currentRound === 3) {
+              // 第三回合結束後，顯示銜接第四回合的畫面
+              this.showScreen("round3End");
+            } else if (this.state.currentRound === 4) {
+              // 第四回合結束後，顯示最終結果
               this.showFinalResult();
             }
           }
@@ -1244,9 +1610,13 @@
           const fileName = `EF訓練遊戲數據_${id}_${dateStr}_${timeStr}.csv`;
 
           let csvContent =
-            "Participant,Round,Trial,Stimulus,HasPerson,InputKey,Correct,RT(ms),Timestamp\n";
+            "Participant,Round,Trial,Stimulus,HasPerson,IsNightTime,InputKey,Correct,RT(ms),Timestamp\n"; // [新增] 新增 IsNightTime 欄位
           this.state.results.forEach((r) => {
-            csvContent += `${r.participantId},${r.round},${r.trial},${r.stimulus},${r.hasPerson},${r.input},${r.correct},${r.rt},${r.timestamp}\n`;
+            csvContent += `${r.participantId},${r.round},${r.trial},${
+              r.stimulus
+            },${r.hasPerson},${r.isNightTime || false},${r.input},${
+              r.correct
+            },${r.rt},${r.timestamp}\n`;
           });
 
           const blob = new Blob(["\uFEFF" + csvContent], {
@@ -1294,6 +1664,26 @@
           if (!screens.round3PracticeEnd.classList.contains("hidden")) {
             event.preventDefault();
             game.startRound3();
+            return;
+          }
+          // [新增] 第三回合結束畫面
+          if (!screens.round3End.classList.contains("hidden")) {
+            event.preventDefault();
+            game.showScreen("round4Practice");
+            return;
+          }
+
+          // [新增] 第四回合練習介紹畫面
+          if (!screens.round4Practice.classList.contains("hidden")) {
+            event.preventDefault();
+            game.startRound4Practice();
+            return;
+          }
+
+          // [新增] 第四回合練習結束畫面
+          if (!screens.round4PracticeEnd.classList.contains("hidden")) {
+            event.preventDefault();
+            game.startRound4();
             return;
           }
           if (game.state.isPlaying) {

@@ -47,6 +47,10 @@ Chung Yuan Christian University, Department of Special Education
 
 - Goodwin, C., Carrigan, E., Walker, K., & Coppola, M. (2022). Language not auditory experience is related to parent-reported executive functioning in preschool-aged deaf and hard-of-hearing children. _Child Development_, _93_(1), 209-224. https://doi.org/10.1111/cdev.13677
 
+#### 第四回合：認知彈性(Zelazo)
+
+- Zelazo, P. (2006). The Dimensional Change Card Sort (DCCS): a method of assessing executive function in children. _Nature Protocols_, _1_, 297–301. https://doi.org/10.1038/nprot.2006.46
+
 ## 🎮 自行修改遊戲教學之先備知識
 
 1. **PAPAYA 電腦教學(16 分鐘)：**
