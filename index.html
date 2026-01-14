@@ -22,7 +22,13 @@
 
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;"
+      content="default-src 'self'; 
+               script-src 'self' 'unsafe-inline'; 
+               style-src 'self' 'unsafe-inline'; 
+               img-src 'self' data:;
+               connect-src 'none';
+               frame-ancestors 'none';
+               form-action 'self';"
     />
 
     <style>
@@ -267,6 +273,18 @@
         max-width: 400px;
       }
 
+      /* 工作記憶測試容器 */
+      .wm-test-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 30px;
+        padding: 20px;
+        width: 100%;
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
       /* 規則小框框 */
       .rule-box {
         background: rgba(255, 255, 255, 0.1);
@@ -295,6 +313,39 @@
         flex-direction: column;
         gap: 5px;
       }
+
+      /* 工作記憶問題文字 */
+      .wm-question {
+        font-size: 1.3em;
+        color: var(--text-color);
+        margin-bottom: 10px;
+        line-height: 1.6;
+      }
+
+      /* 工作記憶提示文字 */
+      .wm-hint {
+        font-size: 1.1em;
+        color: var(--accent-yellow);
+        margin-top: 10px;
+      }
+
+      /* 工作記憶選項容器 */
+      /* .wm-options {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap;
+      } */
+
+      /* 工作記憶選項容器（位置式按鈕）*/
+      .wm-position-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        flex-wrap: wrap;
+        width: 100%;
+      }
+
       /* [新增] night-box 樣式 */
       .rule-box.night-box {
         background: rgba(243, 156, 18, 0.2);
@@ -313,6 +364,179 @@
       .rule-text {
         font-size: 1.3em;
         font-weight: bold;
+      }
+
+      /* 工作記憶選項按鈕 */
+      .wm-option-btn {
+        width: 100px;
+        height: 100px;
+        border: 3px solid var(--primary-color);
+        border-radius: 15px;
+        background-color: rgba(255, 255, 255, 0.1);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 4em;
+      }
+
+      /* 單個位置按鈕 */
+      .wm-position-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-width: 80px;
+        min-height: 100px;
+        padding: 10px;
+        border: 3px solid var(--primary-color);
+        border-radius: 15px;
+        background-color: rgba(255, 255, 255, 0.1);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+      }
+
+      .wm-position-btn:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+        transform: scale(1.05);
+        border-color: var(--success-color);
+      }
+
+      .wm-position-btn:active {
+        transform: scale(0.95);
+      }
+
+      /* 位置編號 */
+      .wm-position-number {
+        font-size: 1.2em;
+        font-weight: bold;
+        color: var(--accent-yellow);
+        margin-bottom: 5px;
+      }
+
+      /* 位置圖示 */
+      .wm-position-icon {
+        font-size: 3em;
+        line-height: 1;
+      }
+
+      /* 問號狀態 */
+      .wm-position-icon.unknown {
+        color: #95a5a6;
+      }
+
+      .wm-option-btn:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+        transform: scale(1.05);
+        border-color: var(--success-color);
+      }
+
+      .wm-option-btn:active {
+        transform: scale(0.95);
+      }
+
+      /* 已選擇的選項 */
+      .wm-option-btn.selected {
+        background-color: rgba(52, 152, 219, 0.3);
+        border-color: var(--success-color);
+        border-width: 4px;
+      }
+
+      /* 選擇順序標記 */
+      .wm-order-badge {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        width: 30px;
+        height: 30px;
+        background-color: var(--success-color);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2em;
+        font-weight: bold;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      /* 已選擇的序列顯示 */
+      .wm-sequence-display {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        min-height: 80px;
+        padding: 15px;
+        background-color: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        width: 100%;
+        justify-content: center;
+      }
+
+      .wm-sequence-item {
+        font-size: 3em;
+        animation: popIn 0.3s ease-out;
+      }
+
+      @keyframes popIn {
+        0% {
+          transform: scale(0);
+          opacity: 0;
+        }
+        50% {
+          transform: scale(1.2);
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      /* 工作記憶結果顯示 */
+      .wm-result {
+        font-size: 1.5em;
+        padding: 20px;
+        border-radius: 10px;
+        margin-top: 20px;
+        animation: fadeIn 0.5s ease-in;
+      }
+
+      .wm-result.correct {
+        background-color: rgba(46, 204, 113, 0.2);
+        color: var(--success-color);
+        border: 2px solid var(--success-color);
+      }
+
+      .wm-result.incorrect {
+        background-color: rgba(231, 76, 60, 0.2);
+        color: var(--error-color);
+        border: 2px solid var(--error-color);
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* 手機版調整 */
+      @media (max-width: 600px) {
+        .wm-option-btn {
+          width: 80px;
+          height: 80px;
+          font-size: 3em;
+        }
+
+        .wm-question {
+          font-size: 1.1em;
+        }
       }
 
       /* 回合標籤 */
@@ -370,6 +594,72 @@
       .feedback-error {
         animation: shake-red 0.2s ease-in-out;
         border-color: var(--error-color) !important;
+      }
+
+      /* 答案比對顯示 */
+      .wm-comparison {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin-top: 20px;
+        width: 100%;
+        max-width: 600px;
+      }
+
+      .wm-comparison-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px;
+        background-color: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+      }
+
+      .wm-comparison-label {
+        font-size: 1.1em;
+        min-width: 80px;
+        color: var(--text-color);
+      }
+
+      .wm-comparison-items {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .wm-comparison-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 10px;
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 5px;
+      }
+
+      .wm-comparison-item.correct {
+        background-color: rgba(46, 204, 113, 0.2);
+        border: 1px solid var(--success-color);
+      }
+
+      .wm-comparison-item.incorrect {
+        background-color: rgba(231, 76, 60, 0.2);
+        border: 1px solid var(--error-color);
+      }
+
+      /* 手機版調整 */
+      @media (max-width: 600px) {
+        .wm-position-btn {
+          min-width: 60px;
+          min-height: 80px;
+        }
+
+        .wm-position-icon {
+          font-size: 2em;
+        }
+
+        .wm-question {
+          font-size: 1.1em;
+        }
       }
 
       @keyframes pulse-green {
@@ -477,6 +767,16 @@
           opacity: 1;
         }
       }
+
+      /* [良好實踐] 將頁尾樣式提取到 CSS 中，保持 HTML 整潔 */
+      .site-footer {
+        text-align: center;
+        padding: 20px;
+        margin-top: 30px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        color: var(--text-color);
+        font-size: 0.9em;
+      }
     </style>
   </head>
   <body>
@@ -505,9 +805,10 @@
           </p>
           <p>
             <strong>🎮 遊戲主題：</strong><br />
-            第一回合：老鼠與起司 (基礎規則)<br />
-            第二回合：老鼠與起司 (進階規則)<br />
-            第三回合：捕魚遊戲
+            第一回合：蒐集起司<br />
+            第二回合：蒐集起司（進階）<br />
+            第三回合：捕魚遊戲 <br />
+            第四回合：捕魚遊戲（進階）
           </p>
           <hr
             style="
@@ -568,7 +869,7 @@
           </div>
 
           <div class="rule-box cat-box">
-            <span class="rule-icon-large">🐱</span>
+            <span class="rule-icon-large">🐈‍⬛</span>
             <span class="rule-arrow">→</span>
             <span class="rule-text" style="color: var(--error-color)"
               >不要按！</span
@@ -593,12 +894,73 @@
         </div>
       </div>
 
+      <!-- ============================================
+     [新增] 工作記憶測試畫面（位置式版本）
+     ============================================ -->
+      <div id="workingMemoryScreen" class="screen-layer hidden">
+        <h2 style="color: var(--round1-color)">🧠 記憶力測試</h2>
+
+        <div class="wm-test-container">
+          <!-- 問題 -->
+          <div class="wm-question">
+            <p style="font-size: 1.4em; margin-bottom: 10px">
+              <strong>請回想：</strong>
+            </p>
+            <p id="wmQuestionText">
+              按照順序，<br />
+              剛才<span style="color: var(--accent-yellow)">最後三個物件</span
+              >的順序為何？
+            </p>
+          </div>
+
+          <!-- 提示 -->
+          <div class="wm-hint">點擊按鈕切換圖示（❓ → 🧀 → 🐈‍⬛）</div>
+
+          <!-- 位置式按鈕容器 -->
+          <div class="wm-position-buttons" id="wmPositionButtons">
+            <!-- 按鈕會由 JavaScript 動態生成 -->
+          </div>
+
+          <!-- 重選按鈕 -->
+          <button
+            class="btn"
+            onclick="game.resetWMTest()"
+            style="background-color: #7f8c8d; margin-top: 10px"
+          >
+            🔄 重新選擇
+          </button>
+
+          <!-- 結果顯示區域（初始隱藏）-->
+          <div id="wmResultDisplay" style="display: none"></div>
+
+          <!-- 確認按鈕 -->
+          <button
+            id="wmConfirmBtn"
+            class="btn blink-text"
+            onclick="game.checkWMAnswer()"
+            style="margin-top: 10px"
+          >
+            ✓ 確認答案
+          </button>
+
+          <!-- 繼續按鈕（答題後顯示）-->
+          <button
+            id="wmContinueBtn"
+            class="btn blink-text"
+            onclick="game.continueAfterWM()"
+            style="display: none"
+          >
+            ➜ 繼續下一回合
+          </button>
+        </div>
+      </div>
+
       <!-- [新增] 第二回合說明頁 (DCCS) -->
       <div id="round2IntroScreen" class="screen-layer hidden">
         <h2 style="color: var(--round2-color)">🎮 第二回合：難度升級</h2>
         <p style="margin-bottom: 20px; color: #bdc3c7; font-size: 1.1em">
           規則跟剛才一樣，但是...<br />
-          <b>有人出現時，絕對不能動！</b>
+          <b>有 🚶人 出現時，絕對不能動！</b>
         </p>
 
         <div class="tutorial-container">
@@ -611,14 +973,14 @@
                 gap: 10px;
               "
             >
-              <span class="rule-icon-large">👤</span>
+              <span class="rule-icon-large">🚶</span>
               <span class="rule-arrow">→</span>
               <span class="rule-text" style="color: var(--person-border)"
                 >都不要按！</span
               >
             </div>
             <div style="font-size: 0.9em; color: #ddd">
-              (人出現時，不管是什麼都不能按)
+              ( 🚶 人 出現時，不管是什麼都不能按)
             </div>
           </div>
         </div>
@@ -631,7 +993,7 @@
       <!-- [新增] 第二回合練習結束頁 -->
       <div id="round2PracticeEndScreen" class="screen-layer hidden">
         <h2>👍 練習完成！</h2>
-        <p>記得喔：<br />看到人 👤 出現，絕對不能按！</p>
+        <p>記得喔：<br />看到 🚶 人 出現，絕對不能按！</p>
         <p>準備好正式挑戰第二回合了嗎？</p>
         <div style="margin-top: 20px; width: 100%; text-align: center">
           <button class="btn blink-text" onclick="game.startRound2()">
@@ -645,7 +1007,7 @@
         <h2 style="color: var(--round3-color)">🎮 第三回合：捕魚遊戲！</h2>
         <p style="margin-bottom: 20px; color: #bdc3c7; font-size: 1.1em">
           場景換到海裡囉！<br />
-          這次沒有「人」了，專心釣魚吧！
+          這次沒有「 人 」了，專心釣魚吧！
         </p>
 
         <div class="tutorial-container">
@@ -679,6 +1041,179 @@
           </button>
         </div>
       </div>
+
+      <!-- ============================================
+     [新增] 第二回合工作記憶測試畫面
+     ============================================ -->
+      <div id="workingMemory2Screen" class="screen-layer hidden">
+        <h2 style="color: var(--round2-color)">🧠 記憶力測試（第二回合）</h2>
+
+        <div class="wm-test-container">
+          <!-- 問題 -->
+          <div class="wm-question">
+            <p style="font-size: 1.4em; margin-bottom: 10px">
+              <strong>請回想：</strong>
+            </p>
+            <p id="wmQuestion2Text">
+              按照順序，<br />
+              剛才<span style="color: var(--accent-yellow)">最後三個物件</span
+              >的順序為何？
+            </p>
+          </div>
+
+          <!-- 提示 -->
+          <div class="wm-hint">
+            點擊按鈕切換圖示（❓ → 🧀 → 🐈‍⬛ → 🚶🧀 → 🚶🐈‍⬛）
+          </div>
+
+          <!-- 位置式按鈕容器 -->
+          <div class="wm-position-buttons" id="wmPosition2Buttons">
+            <!-- 按鈕會由 JavaScript 動態生成 -->
+          </div>
+
+          <!-- 重選按鈕 -->
+          <button
+            class="btn"
+            onclick="game.resetWMTest2()"
+            style="background-color: #7f8c8d; margin-top: 10px"
+          >
+            🔄 重新選擇
+          </button>
+
+          <!-- 結果顯示區域（初始隱藏）-->
+          <div id="wmResult2Display" style="display: none"></div>
+
+          <!-- 確認按鈕 -->
+          <button
+            id="wmConfirm2Btn"
+            class="btn blink-text"
+            onclick="game.checkWMAnswer2()"
+            style="margin-top: 10px"
+          >
+            ✓ 確認答案
+          </button>
+
+          <!-- 繼續按鈕（答題後顯示）-->
+          <button
+            id="wmContinue2Btn"
+            class="btn blink-text"
+            onclick="game.continueAfterWM2()"
+            style="display: none"
+          >
+            ➜ 繼續下一回合
+          </button>
+        </div>
+      </div>
+
+      <!-- [新增] 第三回合工作記憶測試畫面 -->
+      <div id="workingMemory3Screen" class="screen-layer hidden">
+        <h2 style="color: var(--round3-color)">🧠 記憶力測試（第三回合）</h2>
+
+        <div class="wm-test-container">
+          <!-- 問題 -->
+          <div class="wm-question">
+            <p style="font-size: 1.4em; margin-bottom: 10px">
+              <strong>請回想：</strong>
+            </p>
+            <p id="wmQuestion3Text">
+              按照順序，<br />
+              剛才<span style="color: var(--accent-yellow)">最後三個物件</span
+              >的順序為何？
+            </p>
+          </div>
+
+          <!-- 提示 -->
+          <div class="wm-hint">點擊按鈕切換圖示（❓ → 🐟 → 🦈）</div>
+
+          <!-- 位置式按鈕容器 -->
+          <div class="wm-position-buttons" id="wmPosition3Buttons"></div>
+
+          <!-- 重選按鈕 -->
+          <button
+            class="btn"
+            onclick="game.resetWMTest3()"
+            style="background-color: #7f8c8d; margin-top: 10px"
+          >
+            🔄 重新選擇
+          </button>
+
+          <!-- 結果顯示區域 -->
+          <div id="wmResult3Display" style="display: none"></div>
+
+          <!-- 確認按鈕 -->
+          <button
+            id="wmConfirm3Btn"
+            class="btn blink-text"
+            onclick="game.checkWMAnswer3()"
+            style="margin-top: 10px"
+          >
+            ✓ 確認答案
+          </button>
+
+          <!-- 繼續按鈕 -->
+          <button
+            id="wmContinue3Btn"
+            class="btn blink-text"
+            onclick="game.continueAfterWM3()"
+            style="display: none"
+          >
+            ➜ 繼續下一回合
+          </button>
+        </div>
+      </div>
+
+      <!-- [新增] 第四回合工作記憶測試畫面 -->
+      <div id="workingMemory4Screen" class="screen-layer hidden">
+        <h2 style="color: var(--round4-color)">🧠 記憶力測試（第四回合）</h2>
+
+        <div class="wm-test-container">
+          <div class="wm-question">
+            <p style="font-size: 1.4em; margin-bottom: 10px">
+              <strong>請回想：</strong>
+            </p>
+            <p id="wmQuestion4Text">
+              按照順序，<br />剛才<span style="color: var(--accent-yellow)"
+                >最後三個物件</span
+              >的順序為何？
+            </p>
+          </div>
+
+          <div class="wm-hint">
+            點擊按鈕切換圖示（❓ → 🐟 → 🦈 → 🌛🐟 → 🌛🦈）
+          </div>
+
+          <div class="wm-position-buttons" id="wmPosition4Buttons"></div>
+
+          <button
+            class="btn"
+            onclick="game.resetWMTest4()"
+            style="background-color: #7f8c8d; margin-top: 10px"
+          >
+            🔄 重新選擇
+          </button>
+
+          <div id="wmResult4Display" style="display: none"></div>
+
+          <button
+            id="wmConfirm4Btn"
+            class="btn blink-text"
+            onclick="game.checkWMAnswer4()"
+            style="margin-top: 10px"
+          >
+            ✓ 確認答案
+          </button>
+
+          <button
+            id="wmContinue4Btn"
+            class="btn blink-text"
+            onclick="game.continueAfterWM4()"
+            style="display: none"
+          >
+            ➜ 查看最終結果
+          </button>
+        </div>
+      </div>
+
       <!-- [新增] 第三回合正式測驗結束，銜接第四回合 -->
       <div id="round3EndScreen" class="screen-layer hidden">
         <h2>🎉 第三回合完成！</h2>
@@ -696,9 +1231,13 @@
           "
         ></div>
         <p
-          style="margin-top: 20px; color: var(--round4-color); font-size: 1.2em"
+          style="
+            margin-top: 20px;
+            color: var(--accent-yellow);
+            font-size: 1.2em;
+          "
         >
-          <b>🌙 注意：晚上不要釣魚！</b>
+          <b>🌛 注意：晚上不要釣魚！</b>
         </p>
 
         <p style="color: #bdc3c7; font-size: 1.1em">
@@ -720,7 +1259,7 @@
 
         <p style="margin-bottom: 20px; color: #bdc3c7; font-size: 1.1em">
           規則跟剛才一樣，但是...<br />
-          <b>看到月亮時（晚上），絕對不能釣魚！</b>
+          <b>看到🌛月亮時（晚上），絕對不能釣魚！</b>
         </p>
 
         <div class="tutorial-container">
@@ -759,7 +1298,7 @@
                   min-width: 150px;
                 "
               >
-                <span style="font-size: 2.5em">🟠</span>
+                <span style="font-size: 2.5em">🌤️</span>
                 <span class="rule-arrow">→</span>
                 <span class="rule-text" style="color: var(--success-color)"
                   >按！</span
@@ -795,7 +1334,7 @@
                 gap: 15px;
               "
             >
-              <span class="rule-icon-large" style="font-size: 3em">🌙</span>
+              <span class="rule-icon-large" style="font-size: 3em">🌛</span>
               <span class="rule-arrow" style="font-size: 2em">→</span>
               <span
                 class="rule-text"
@@ -814,7 +1353,7 @@
                 text-align: center;
               "
             >
-              (晚上出現時，不管是魚🟠還是鯊魚🦈都不能按)
+              (🌛 看到月亮（晚上）出現時，不管是 🐟魚 還是 鯊魚🦈 都不能按)
             </div>
           </div>
         </div>
@@ -832,10 +1371,10 @@
 
         <p style="font-size: 1.2em; line-height: 1.6">
           記得規則：<br />
-          <span style="color: #f39c12">🌙 看到月亮（晚上）→ 絕對不能按！</span
+          <span style="color: #f39c12">🌛 看到月亮（晚上）→ 絕對不能按！</span
           ><br />
           <span style="color: #f1c40f"
-            >☀️ 看到太陽（白天）→ 魚按、鯊魚不按</span
+            >☀️ 看到太陽（白天）→ 魚按 、 🦈鯊魚 不按</span
           >
         </p>
 
@@ -940,36 +1479,97 @@
           </p>
           <p>平均速度：<span id="avgTimeDisplay">0ms</span></p>
         </div>
+
+        <!-- 在匯出按鈕前加入 -->
+        <div
+          style="
+            background: rgba(52, 152, 219, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px auto;
+            max-width: 500px;
+            text-align: left;
+          "
+        >
+          <h4 style="margin-top: 0; color: var(--primary-color)">
+            📊 資料匯出說明
+          </h4>
+
+          <p style="font-size: 0.9em; line-height: 1.6">
+            點擊下方按鈕將下載 <strong>CSV 純文字檔案</strong>，內容包含：
+          </p>
+
+          <ul style="font-size: 0.9em; line-height: 1.6; padding-left: 20px">
+            <li>參與者代號（您輸入的 ID）</li>
+            <li>回合編號與試題編號</li>
+            <li>刺激類型（起司/貓咪/魚/鯊魚）</li>
+            <li>邊框條件（有人/晚上）</li>
+            <li>反應結果（按鍵 + 正確性）</li>
+            <li>反應時間（毫秒）</li>
+          </ul>
+
+          <p
+            style="
+              font-size: 0.9em;
+              color: var(--success-color);
+              font-weight: bold;
+              margin-bottom: 0;
+            "
+          >
+            ✅ 不包含任何個人識別資訊，僅供研究分析使用
+          </p>
+        </div>
+
         <button class="btn" onclick="location.reload()">🔄 回到首頁</button>
+
+        <!-- 比較醜的匯出按鈕 -->
+        <!-- <button
+          class="btn-primary"
+          onclick="game.exportData()"
+          style="margin: 15px"
+        >
+          📥 匯出研究資料 (CSV)
+        </button> -->
+
         <button
           class="btn"
           onclick="game.exportData()"
           style="background-color: #7f8c8d"
         >
-          📥 匯出資料
+          📥 匯出研究資料 (CSV)
         </button>
       </div>
     </main>
 
     <script>
+      // === [教學註解] 遊戲設定檔 (Configuration) ===
+      // 修改這裡的數值可以調整遊戲的長度與難度
       const CONFIG = {
-        practiceTrials: 10, // 練習題數
-        round1Trials: 10, // 第一回題數
-        round2PracticeTrials: 10, // [新增] 第二回練習題數
-        round2Trials: 10, // [新增] 第二回題數
-        round3PracticeTrials: 10, // [修改] 第三回練習題數
-        round3Trials: 10, // [修改] 第三回題數
-        round4PracticeTrials: 10, // [新增] 第四回練習題數
-        round4Trials: 10, // [新增] 第四回題數
+        practiceTrials: 5, // 練習題數 (建議: 3-5)
+        round1Trials: 5, // 第一回題數
+        round2PracticeTrials: 5, // [新增] 第二回練習題數
+        round2Trials: 5, // [新增] 第二回題數
+        round3PracticeTrials: 5, // [修改] 第三回練習題數
+        round3Trials: 5, // [修改] 第三回題數
+        round4PracticeTrials: 5, // [新增] 第四回練習題數
+        round4Trials: 5, // [新增] 第四回題數
         stimulusDuration: 2000,
         isiMin: 800,
         isiMax: 1200,
         goRatio: 0.75,
-        personRatio: 0.25, // [新增] 第一回合人出現的機率
+        personRatio: 0.5, // [新增] 第一回合人出現的機率
         nightRatio: 0.7, // [新增] 第四回合晚上出現的機率
         debugMode: true,
+        wmTestCount: 3, // [新增] 工作記憶測試：測試最後幾個物件（可設定 1, 2, 3, 4, 5...）
+        wm1TestReverse: false, // [新增] 第一回合工作記憶測試：false=順向, true=逆向
+        wm2TestReverse: false, // [新增] 第二回合工作記憶測試：false=順向, true=逆向
+        wm3TestReverse: true, // [新增] 第三回合工作記憶測試：false=順向, true=逆向
+        wm4TestReverse: true, // [新增] 第四回合工作記憶測試：false=順向, true=逆向
       };
 
+      // === [教學註解] SVG 資源庫 ===
+      // 將所有 SVG 圖檔以字串形式儲存，避免發送額外的 HTTP 請求，提升載入速度。
+      // 這也是一種將資源內嵌(embed)到 HTML 中的方法。
       const SVG_ASSETS = {
         cheese: `<?xml version="1.0" encoding="utf-8"?><svg width="200px" height="200px" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg"><path d="M48.18 68.45L6.7 69.95s-2.63-2.63-2.25-3.57S39.18 38.6 40.49 38.79s4.32 3.38 6.76 2.25c2.44-1.13 0-7.7.75-8.63c.75-.94 27.59-15.39 29.28-16.14c1.69-.75 3.19-2.44 6.57-1.69s11.83 2.25 21.02 8.45s18.77 13.33 18.02 17.27c-.75 3.94-74.71 28.15-74.71 28.15z" fill="#ffe265"></path><path d="M19.46 115.57c9.2-1.13 94.98-19.52 98.55-20.08c3.57-.56 5.82-3.94 5.82-7.7s-.94-47.49-.94-47.49s-4.13 1.31-9.01 2.44C109 43.86 69.01 53.62 53.25 57.19S12.33 67.33 9.51 67.33s-5.07-.94-5.07-.94s.75 39.04.94 41.86c.19 2.82 1.5 6.19 4.69 7.13s5.27.69 9.39.19z" fill="#feb502"></path><path d="M74.97 25.56c0 2.4 2.44 3.99 6.48 3.87c4.41-.13 5.63-2.75 5.49-4.43c-.14-1.69-2.17-3.17-6.19-3.1c-3.73.07-5.78 1.55-5.78 3.66z" fill="#ff8b0d"></path><path d="M29.92 55.48c-6.5 2.19-5.77 7.88-3.87 9.15c1.9 1.27 4.43 1.2 7.39.14s4.84-2.27 5.14-4.25c.28-1.88-2.18-7.23-8.66-5.04z" fill="#ed6b31"></path><path d="M88.98 39.22c-4.36.2-9.18 3.33-10.98 6.34c-1.9 3.17-2.04 6.9 2.32 9.22c4.36 2.32 19.78-3.59 19.01-9.01c-.77-5.43-5.77-6.76-10.35-6.55z" fill="#ed6b31"></path><path d="M73.85 83.07s6.19-4.58 6.19-7.81c0-3.24-2.67-10.89-14.01-11.47c-10.63-.55-17.18 13.94-10.21 21.4c6.97 7.46 11.19 4.08 13.8 3.38c2.61-.71 4.23-5.5 4.23-5.5z" fill="#ed6b31"></path><path d="M43.23 96.09s6.15-3.85 1.43-8.07c-3.32-2.97-7.76-1.63-10.02.68c-2.89 2.96-2.11 7.67.56 9.78c2.68 2.12 8.03-2.39 8.03-2.39z" fill="#ed6b31"></path><path d="M22.39 78.78s-.7-2.21-3.21-3.1c-2.82-1-7.03 2.51-5.23 6.26c1.62 3.38 5.21 2.39 5.21 2.39l3.23-5.55z" fill="#ed6b31"></path><path d="M112.42 82.01c.61-.66 4.6-3.54 4.6-5.73c0-2.18-6.01-8.92-13.68-3.85s-3.66 12.74-1.55 14.01c2.11 1.27 7.96-1.54 10.63-4.43z" fill="#ed6b31"></path></svg>`,
         cat: `<?xml version="1.0" encoding="utf-8"?><svg width="200px" height="200px" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><path fill="#292F33" d="M10.478 22.439s.702 2.281-.337 7.993c-.186 1.025-.46 2.072-.599 2.93c-1.757 0-1.851 2.002-1.478 2.002h2.094c1.337 0 2.971-3.334 3.854-7.961s-3.534-4.964-3.534-4.964zm13.042 3.702s2.272 1.22 2.188 4.081c-.033 1.131-.249 2.091-.355 3.024c-1.832 0-1.839 1.985-1.305 1.985h1.856c.923 0 3.001-3.158 3.379-7.281c.379-4.122-5.763-1.809-5.763-1.809z"></path><path fill="#292F33" d="M36 8.447C36 3.525 31.859 1 27 1a1 1 0 1 0 0 2c1.804 0 6.717.934 6.717 5.447c0 2.881-1.567 5.462-3.77 5.982c-.164-.073-.345-.104-.509-.192c-7.239-3.917-13.457.902-15.226-.29c-1.752-1.182-.539-3.255-2.824-5.243c-.33-1.841-1.073-4.477-1.794-4.477c-.549 0-1.265 1.825-1.74 3.656c-.591-1.381-1.363-2.756-1.86-2.756c-.64 0-1.278 2.273-1.594 4.235c-1.68 1.147-2.906 2.809-2.906 4.765c0 2.7 4.05 3.357 5.4 3.411c1.35.054 3.023 3.562 3.585 5.072c1.242 4.367 2.051 8.699 2.698 11.183c-1.649 0-1.804 2.111-1.348 2.111c.713 0 1.953-.003 2.225 0c1.381.014 2.026-4.706 2.026-8.849c0-.212-.011-.627-.011-.627s1.93.505 6.038-.208c2.444-.424 5.03.849 5.746 3.163c.527 1.704 1.399 3.305 1.868 4.484c-1.589 0-1.545 2.037-1.084 2.037c.787 0 1.801.014 2.183 0c1.468-.055.643-7.574 1.03-10.097s1.267-5.578-.229-8.797C34.857 15.236 36 11.505 36 8.447z"></path><circle fill="#C3C914" cx="5.994" cy="11.768" r=".9"></circle><path fill="#66757F" d="M2.984 12.86c-.677.423-.677 1.777-1.015 1.777S.954 13.841.954 12.86c-.001-.981 2.862-.52 2.03 0zm3.594 1.483c-.041.026-.09.036-.142.026c-.018-.004-1.548-.241-2.545.146c-.129.05-.341-.023-.413-.191s.023-.365.152-.415c1.44-.569 2.857-.234 2.934-.218c.139.029.195.19.188.372c-.004.114-.104.235-.174.28z"></path><path fill="#292F33" d="M5.976 10.982s.333.347.319.778c-.014.43-.25.833-.25.833s-.292-.347-.319-.826c-.027-.48.25-.785.25-.785z"></path></svg>`,
@@ -1037,6 +1637,8 @@
 </svg>`,
       };
 
+      // === [教學註解] 音效控制器 ===
+      // 使用 Web Audio API 來產生簡單的音效，避免載入音檔，增加遊戲互動性。
       const audio = {
         ctx: new (window.AudioContext || window.webkitAudioContext)(),
         playTone: function (freq, type, duration) {
@@ -1065,6 +1667,10 @@
         },
       };
 
+      // === [教學註解] 遊戲核心邏輯 (Game Controller) ===
+      // 這個物件包含了遊戲所有的狀態與功能函式
+      // 這種將狀態(state)和操作狀態的方法(methods)包裝在一起的模式，
+      // 稱為「狀態機 (State Machine)」，是管理複雜互動邏輯的常用方法。
       const game = {
         state: {
           participantId: "",
@@ -1083,14 +1689,42 @@
           startTime: 0,
           responded: false,
           timer: null,
+          // [新增] 工作記憶測試相關狀態
+          wmLastThree: [], // 最後三個刺激物
+          wmUserSelection: [], // 玩家選擇的順序
+          // [新增] 工作記憶測試相關狀態（位置式版本）
+          wmCorrectAnswer: [], // 正確答案序列
+          wmUserAnswer: [], // 玩家答案序列（位置式）
+          wmStartTime: 0, // 工作記憶測試開始時間
+          wmCorrect: false, // 是否答對
+          // [新增] 第二回合工作記憶測試狀態
+          wmCorrectAnswer2: [], // 第二回合正確答案序列
+          wmUserAnswer2: [], // 第二回合玩家答案序列
+          wmStartTime2: 0, // 第二回合測試開始時間
+          wmCorrect2: false, // 第二回合是否答對
+          // [新增] 第三回合工作記憶測試狀態
+          wmCorrectAnswer3: [],
+          wmUserAnswer3: [],
+          wmStartTime3: 0,
+          // [新增] 第四回合工作記憶測試狀態
+          wmCorrectAnswer4: [],
+          wmUserAnswer4: [],
+          wmStartTime4: 0,
         },
 
+        // === [教學註解] DOM 元素快取 (Caching) ===
+        // 在遊戲初始化時，先將所有會用到的 HTML 元素找出來並存放在這裡。
+        // 這樣可以避免在遊戲迴圈中反覆執行 document.getElementById()，有助於提升效能。
         elements: {
           container: document.getElementById("gameContainer"),
           screens: {
             landing: document.getElementById("landingPage"), // 首頁
             intro: document.getElementById("introScreen"), //  介紹畫面
             practiceEnd: document.getElementById("practiceEndScreen"), // 練習結束畫面
+            workingMemory: document.getElementById("workingMemoryScreen"), // [新增] 工作記憶測試畫面
+            workingMemory2: document.getElementById("workingMemory2Screen"), // [新增] 第二回合工作記憶測試畫面
+            workingMemory3: document.getElementById("workingMemory3Screen"), // [新增] 第三回合工作記憶測試畫面
+            workingMemory4: document.getElementById("workingMemory4Screen"), // [新增] 第四回合工作記憶測試畫面
             round2Intro: document.getElementById("round2IntroScreen"), // 第二回合介紹畫面
             round2PracticeEnd: document.getElementById(
               "round2PracticeEndScreen"
@@ -1118,6 +1752,7 @@
           avgTimeDisplay: document.getElementById("avgTimeDisplay"), // 平均反應時間顯示
         },
 
+        // 顯示教學/輸入 ID 畫面
         showTutorial: function () {
           const inputEl = document.getElementById("playerId");
           this.state.participantId = inputEl.value.trim() || "NoName";
@@ -1230,6 +1865,7 @@
           this.initGameSession();
         },
 
+        // 初始化單一回合的遊戲數據
         initGameSession: function () {
           this.state.currentTrial = 0;
           this.state.score = 0;
@@ -1256,6 +1892,7 @@
           this.nextTrial();
         },
 
+        // 進入下一題
         nextTrial: function () {
           if (this.state.currentTrial >= this.state.totalTrials) {
             this.endSession();
@@ -1293,6 +1930,7 @@
           setTimeout(() => this.showStimulus(), delay);
         },
 
+        // 顯示刺激物 (核心邏輯：決定出現什麼圖案)
         showStimulus: function () {
           let isGo, goStimulus, noGoStimulus;
 
@@ -1347,7 +1985,7 @@
               this.elements.personIndicator.style.display = "none";
 
               if (CONFIG.debugMode) {
-                console.log(`  🌙 晚上 | 刺激物: ${stimulus} | 正確答案：不按`);
+                console.log(`  🌛 晚上 | 刺激物: ${stimulus} | 正確答案：不按`);
               }
             } else {
               // === 白天 ===
@@ -1375,8 +2013,8 @@
           if (CONFIG.debugMode) {
             const round = this.state.currentRound;
             const emoji =
-              round === 1 ? (isGo ? "🧀" : "🐱") : isGo ? "🐟" : "🦈";
-            const personMsg = this.state.hasPerson ? " + 👤人出現" : "";
+              round === 1 ? (isGo ? "🧀" : "🐈‍⬛") : isGo ? "🐟" : "🦈";
+            const personMsg = this.state.hasPerson ? " + 🚶人出現" : "";
             console.log(
               `[第${round}回 試驗${this.state.currentTrial}] 刺激: ${this.state.currentStimulus} ${emoji}${personMsg}`
             );
@@ -1393,6 +2031,7 @@
           }, CONFIG.stimulusDuration);
         },
 
+        // 檢查答案是否正確
         checkAnswer: function (stimulus, inputKey) {
           if (this.state.currentRound === 1 || this.state.currentRound === 2) {
             // 如果是第二回合且有人出現，必須不按
@@ -1439,6 +2078,7 @@
           }
         },
 
+        // 處理玩家輸入 (按鍵)
         handleInput: function (keyInput) {
           if (
             !this.state.isPlaying ||
@@ -1470,6 +2110,7 @@
           setTimeout(() => this.nextTrial(), 800);
         },
 
+        // 處理逾時 (沒按鍵)
         handleTimeout: function () {
           this.state.responded = true;
           const stimulus = this.state.currentStimulus;
@@ -1486,6 +2127,7 @@
           setTimeout(() => this.nextTrial(), 800);
         },
 
+        // 顯示回饋動畫 (綠色/紅色邊框)
         triggerFeedback: function (isSuccess) {
           this.elements.container.classList.remove(
             "feedback-success",
@@ -1508,6 +2150,7 @@
           }
         },
 
+        // 記錄該次試驗結果
         recordResult: function (isCorrect, rt, inputKey) {
           if (isCorrect) {
             this.state.score++;
@@ -1536,6 +2179,7 @@
           }
         },
 
+        // 結束目前回合，決定下一個畫面
         endSession: function () {
           this.state.isPlaying = false;
           if (this.state.isPractice) {
@@ -1550,17 +2194,953 @@
             }
           } else {
             if (this.state.currentRound === 1) {
-              this.showScreen("round2Intro");
+              // [修改] 第一回合結束後，進入工作記憶測試
+              this.prepareWMTest();
+              this.showScreen("workingMemory");
             } else if (this.state.currentRound === 2) {
-              this.showScreen("round3Practice");
+              // [修改] 第二回合結束後，進入工作記憶測試
+              this.prepareWMTest2();
+              this.showScreen("workingMemory2");
             } else if (this.state.currentRound === 3) {
-              // 第三回合結束後，顯示銜接第四回合的畫面
-              this.showScreen("round3End");
+              // [修改] 第三回合結束後，進入工作記憶測試
+              this.prepareWMTest3();
+              this.showScreen("workingMemory3");
             } else if (this.state.currentRound === 4) {
-              // 第四回合結束後，顯示最終結果
-              this.showFinalResult();
+              // [修改] 第四回合結束後，進入工作記憶測試
+              this.prepareWMTest4();
+              this.showScreen("workingMemory4");
             }
           }
+        },
+
+        /**
+         * ============================================
+         * [新增] 工作記憶測試相關函式（位置式版本）
+         * ============================================
+         */
+
+        /**
+         * 準備工作記憶測試（位置式版本）
+         * 功能：根據 CONFIG.wmTestCount 和 CONFIG.wmTestReverse 提取答案
+         */
+        prepareWMTest: function () {
+          // 取得第一回合（非練習）的所有試驗
+          const round1Trials = this.state.results.filter(
+            (r) => r.round === 1 && !this.state.isPractice
+          );
+
+          // 根據 CONFIG.wmTestCount 取得最後 N 個刺激物
+          const testCount = CONFIG.wmTestCount || 3;
+          const lastN = round1Trials.slice(-testCount).map((r) => r.stimulus);
+
+          // 根據 CONFIG.wmTestReverse 決定順序
+          const isReverse = CONFIG.wm1TestReverse || false;
+          this.state.wmCorrectAnswer = isReverse ? [...lastN].reverse() : lastN;
+
+          // 初始化玩家答案（全部設為 null）
+          this.state.wmUserAnswer = new Array(testCount).fill(null);
+
+          this.state.wmStartTime = Date.now();
+          this.state.wmCorrect = false;
+
+          if (CONFIG.debugMode) {
+            console.log(`🧠 工作記憶測試準備完成`);
+            console.log(`  測試數量: ${testCount} 個`);
+            console.log(`  測試方向: ${isReverse ? "逆向" : "順向"}`);
+            console.log(`  原始順序:`, lastN);
+            console.log(`  正確答案:`, this.state.wmCorrectAnswer);
+          }
+
+          // 更新題目和顯示
+          this.updateWMQuestion();
+          this.generateWMButtons();
+        },
+
+        /**
+         * 更新工作記憶測試的題目文字
+         */
+        updateWMQuestion: function () {
+          const testCount = CONFIG.wmTestCount || 3;
+          const isReverse = CONFIG.wm1TestReverse || false;
+          const questionElement = document.getElementById("wmQuestionText");
+
+          if (questionElement) {
+            // 根據數量使用不同的量詞
+            let countText = "";
+            if (testCount === 1) {
+              countText = "最後一個物件";
+            } else {
+              countText = `最後${testCount}個物件`;
+            }
+
+            // 根據順逆向使用不同的文字
+            const orderText = isReverse
+              ? "按照<span style='color: var(--error-color);'>逆序</span>"
+              : "按照順序";
+
+            questionElement.innerHTML = `
+      ${orderText}，<br/>
+      剛才<span style="color: var(--accent-yellow);">${countText}</span>的順序為何？
+    `;
+          }
+        },
+
+        /**
+         * 生成位置式按鈕
+         */
+        generateWMButtons: function () {
+          const container = document.getElementById("wmPositionButtons");
+          const testCount = CONFIG.wmTestCount || 3;
+
+          // 清空容器
+          container.innerHTML = "";
+
+          // 生成按鈕
+          for (let i = 0; i < testCount; i++) {
+            const button = document.createElement("button");
+            button.className = "wm-position-btn";
+            button.setAttribute("data-position", i);
+            button.onclick = () => this.toggleWMPosition(i);
+
+            button.innerHTML = `
+      <div class="wm-position-number">${i + 1}</div>
+      <div class="wm-position-icon unknown">❓</div>
+    `;
+
+            container.appendChild(button);
+          }
+        },
+
+        /**
+         * 切換位置按鈕的圖示
+         * @param {number} position - 按鈕位置（0-based）
+         */
+        toggleWMPosition: function (position) {
+          // 如果已經答題完成，不允許再改
+          if (this.state.wmCorrect) {
+            return;
+          }
+
+          // 圖示循環：null → "cheese" → "cat" → null
+          const currentValue = this.state.wmUserAnswer[position];
+          let nextValue;
+
+          if (currentValue === null) {
+            nextValue = "cheese";
+          } else if (currentValue === "cheese") {
+            nextValue = "cat";
+          } else {
+            nextValue = null;
+          }
+
+          this.state.wmUserAnswer[position] = nextValue;
+
+          // 更新按鈕顯示
+          this.updateWMButtonDisplay(position);
+
+          // 播放音效
+          audio.playTone(600, "sine", 0.1);
+
+          if (CONFIG.debugMode) {
+            console.log(`  位置 ${position + 1} 切換為:`, nextValue || "❓");
+            console.log(`  當前答案:`, this.state.wmUserAnswer);
+          }
+        },
+
+        /**
+         * 更新單個按鈕的顯示
+         * @param {number} position - 按鈕位置
+         */
+        updateWMButtonDisplay: function (position) {
+          const buttons = document.querySelectorAll(".wm-position-btn");
+          const button = buttons[position];
+          const iconElement = button.querySelector(".wm-position-icon");
+
+          const value = this.state.wmUserAnswer[position];
+
+          // 圖示對應
+          const icons = {
+            cheese: "🧀",
+            cat: "🐈‍⬛",
+            null: "❓",
+          };
+
+          iconElement.textContent = icons[value] || icons.null;
+          iconElement.className =
+            value === null ? "wm-position-icon unknown" : "wm-position-icon";
+        },
+
+        /**
+         * 重選按鈕
+         */
+        resetWMTest: function () {
+          const testCount = CONFIG.wmTestCount || 3;
+          this.state.wmUserAnswer = new Array(testCount).fill(null);
+
+          // 更新所有按鈕顯示
+          for (let i = 0; i < testCount; i++) {
+            this.updateWMButtonDisplay(i);
+          }
+
+          if (CONFIG.debugMode) {
+            console.log("🔄 工作記憶測試已重置");
+          }
+        },
+
+        /**
+         * 檢查工作記憶答案
+         */
+        checkWMAnswer: function () {
+          // 檢查是否有未選擇的位置
+          const hasNull = this.state.wmUserAnswer.includes(null);
+
+          if (hasNull) {
+            alert("請完成所有位置的選擇！");
+            return;
+          }
+
+          // 比對答案
+          const correct =
+            JSON.stringify(this.state.wmUserAnswer) ===
+            JSON.stringify(this.state.wmCorrectAnswer);
+
+          const rt = Date.now() - this.state.wmStartTime;
+
+          this.state.wmCorrect = correct;
+
+          // 記錄結果
+          const isReverse = CONFIG.wm1TestReverse || false;
+          this.state.results.push({
+            participantId: this.state.participantId,
+            round: "WM1", // Working Memory Test after Round 1
+            trial: 1,
+            stimulus: this.state.wmCorrectAnswer.join("-"), // [修改] 正確答案 (使用 - 連接)
+            hasPerson: "none", // [修改] HasPerson 為 none
+            isNightTime: "none", // [修改] IsNightTime 為 none
+            input: this.state.wmUserAnswer.join("-"), // [修改] 使用者答案 (InputKey)
+            correct: correct ? "yes" : "no",
+            rt: rt,
+            timestamp: new Date().toISOString(),
+          });
+
+          // 顯示結果
+          this.showWMResult(correct);
+
+          if (CONFIG.debugMode) {
+            console.log("✓ 工作記憶測試完成");
+            console.log("  正確答案:", this.state.wmCorrectAnswer);
+            console.log("  玩家答案:", this.state.wmUserAnswer);
+            console.log("  結果:", correct ? "正確" : "錯誤");
+            console.log("  反應時間:", rt + "ms");
+          }
+        },
+
+        /**
+         * 顯示工作記憶測試結果
+         * @param {boolean} correct - 是否正確
+         */
+        showWMResult: function (correct) {
+          const resultDisplay = document.getElementById("wmResultDisplay");
+          const confirmBtn = document.getElementById("wmConfirmBtn");
+          const continueBtn = document.getElementById("wmContinueBtn");
+
+          // 圖示對應
+          const icons = {
+            cheese: "🧀",
+            cat: "🐈‍⬛",
+          };
+
+          if (correct) {
+            // 答對
+            resultDisplay.innerHTML = `
+      <div class="wm-result correct">
+        <div style="font-size: 2em; margin-bottom: 10px;">✓ 答對了！</div>
+        <div>你的記憶力真棒！</div>
+      </div>
+    `;
+            audio.playCorrect();
+          } else {
+            // 答錯 - 顯示比對
+            let comparisonHTML = '<div class="wm-comparison">';
+
+            // 正確答案
+            comparisonHTML += '<div class="wm-comparison-row">';
+            comparisonHTML +=
+              '<div class="wm-comparison-label">正確答案：</div>';
+            comparisonHTML += '<div class="wm-comparison-items">';
+            this.state.wmCorrectAnswer.forEach((item, index) => {
+              comparisonHTML += `
+        <div class="wm-comparison-item">
+          <span style="color: var(--accent-yellow);">${index + 1}:</span>
+          <span>${icons[item]}</span>
+        </div>
+      `;
+            });
+            comparisonHTML += "</div></div>";
+
+            // 你的答案
+            comparisonHTML += '<div class="wm-comparison-row">';
+            comparisonHTML +=
+              '<div class="wm-comparison-label">你的答案：</div>';
+            comparisonHTML += '<div class="wm-comparison-items">';
+            this.state.wmUserAnswer.forEach((item, index) => {
+              const isCorrect = item === this.state.wmCorrectAnswer[index];
+              const className = isCorrect
+                ? "wm-comparison-item correct"
+                : "wm-comparison-item incorrect";
+              comparisonHTML += `
+        <div class="${className}">
+          <span style="color: var(--accent-yellow);">${index + 1}:</span>
+          <span>${icons[item]}</span>
+        </div>
+      `;
+            });
+            comparisonHTML += "</div></div>";
+
+            comparisonHTML += "</div>";
+
+            resultDisplay.innerHTML = `
+      <div class="wm-result incorrect">
+        <div style="font-size: 2em; margin-bottom: 10px;">✗ 答錯了</div>
+        <div style="margin-top: 10px;">請對照下方的答案：</div>
+      </div>
+      ${comparisonHTML}
+    `;
+            audio.playError();
+          }
+
+          // 顯示結果和繼續按鈕
+          resultDisplay.style.display = "block";
+          confirmBtn.style.display = "none";
+          continueBtn.style.display = "block";
+        },
+
+        /**
+         * 工作記憶測試後繼續
+         */
+        continueAfterWM: function () {
+          // 進入第二回合介紹
+          this.showScreen("round2Intro");
+
+          if (CONFIG.debugMode) {
+            console.log("➜ 進入第二回合");
+          }
+        },
+
+        /**
+         * ============================================
+         * [新增] 第二回合工作記憶測試相關函式
+         * ============================================
+         */
+
+        /**
+         * 準備第二回合工作記憶測試
+         */
+        prepareWMTest2: function () {
+          // 取得第二回合（非練習）的所有試驗
+          const round2Trials = this.state.results.filter(
+            (r) => r.round === 2 && !this.state.isPractice
+          );
+
+          // 根據 CONFIG.wmTestCount 取得最後 N 個刺激物
+          const testCount = CONFIG.wmTestCount || 3;
+          const lastN = round2Trials.slice(-testCount).map((r) => {
+            return r.hasPerson ? "person_" + r.stimulus : r.stimulus;
+          });
+
+          // 根據 CONFIG.wmTestReverse 決定順序
+          const isReverse = CONFIG.wm2TestReverse || false;
+          this.state.wmCorrectAnswer2 = isReverse
+            ? [...lastN].reverse()
+            : lastN;
+
+          // 初始化玩家答案（全部設為 null）
+          this.state.wmUserAnswer2 = new Array(testCount).fill(null);
+
+          this.state.wmStartTime2 = Date.now();
+          this.state.wmCorrect2 = false;
+
+          if (CONFIG.debugMode) {
+            console.log(`🧠 第二回合工作記憶測試準備完成`);
+            console.log(`  測試數量: ${testCount} 個`);
+            console.log(`  測試方向: ${isReverse ? "逆向" : "順向"}`);
+            console.log(`  原始順序:`, lastN);
+            console.log(`  正確答案:`, this.state.wmCorrectAnswer2);
+          }
+
+          // 更新題目和顯示
+          this.updateWMQuestion2();
+          this.generateWMButtons2();
+        },
+
+        /**
+         * 更新第二回合工作記憶測試的題目文字
+         */
+        updateWMQuestion2: function () {
+          const testCount = CONFIG.wmTestCount || 3;
+          const isReverse = CONFIG.wm2TestReverse || false;
+          const questionElement = document.getElementById("wmQuestion2Text");
+
+          if (questionElement) {
+            // 根據數量使用不同的量詞
+            let countText = "";
+            if (testCount === 1) {
+              countText = "最後一個物件";
+            } else {
+              countText = `最後${testCount}個物件`;
+            }
+
+            // 根據順逆向使用不同的文字
+            const orderText = isReverse
+              ? "按照<span style='color: var(--error-color);'>逆序</span>"
+              : "按照順序";
+
+            questionElement.innerHTML = `
+      ${orderText}，<br/>
+      剛才<span style="color: var(--accent-yellow);">${countText}</span>的順序為何？
+    `;
+          }
+        },
+
+        /**
+         * 生成第二回合位置式按鈕
+         */
+        generateWMButtons2: function () {
+          const container = document.getElementById("wmPosition2Buttons");
+          const testCount = CONFIG.wmTestCount || 3;
+
+          // 清空容器
+          container.innerHTML = "";
+
+          // 生成按鈕
+          for (let i = 0; i < testCount; i++) {
+            const button = document.createElement("button");
+            button.className = "wm-position-btn";
+            button.setAttribute("data-position", i);
+            button.onclick = () => this.toggleWMPosition2(i);
+
+            button.innerHTML = `
+      <div class="wm-position-number">${i + 1}</div>
+      <div class="wm-position-icon unknown">❓</div>
+    `;
+
+            container.appendChild(button);
+          }
+        },
+
+        /**
+         * 切換第二回合位置按鈕的圖示
+         */
+        toggleWMPosition2: function (position) {
+          // 如果已經答題完成，不允許再改
+          if (this.state.wmCorrect2) {
+            return;
+          }
+
+          // 圖示循環：null → "cheese" → "cat" → null
+          const currentValue = this.state.wmUserAnswer2[position];
+          let nextValue;
+
+          if (currentValue === null) {
+            nextValue = "cheese";
+          } else if (currentValue === "cheese") {
+            nextValue = "cat";
+          } else if (currentValue === "cat") {
+            nextValue = "person_cheese";
+          } else if (currentValue === "person_cheese") {
+            nextValue = "person_cat";
+          } else {
+            nextValue = null;
+          }
+
+          this.state.wmUserAnswer2[position] = nextValue;
+
+          // 更新按鈕顯示
+          this.updateWMButtonDisplay2(position);
+
+          // 播放音效
+          audio.playTone(600, "sine", 0.1);
+
+          if (CONFIG.debugMode) {
+            console.log(`  位置 ${position + 1} 切換為:`, nextValue || "❓");
+            console.log(`  當前答案:`, this.state.wmUserAnswer2);
+          }
+        },
+
+        /**
+         * 更新第二回合單個按鈕的顯示
+         */
+        updateWMButtonDisplay2: function (position) {
+          const buttons = document.querySelectorAll(
+            "#wmPosition2Buttons .wm-position-btn"
+          );
+          const button = buttons[position];
+          const iconElement = button.querySelector(".wm-position-icon");
+
+          const value = this.state.wmUserAnswer2[position];
+
+          // 圖示對應
+          const icons = {
+            cheese: "🧀",
+            cat: "🐈‍⬛",
+            person_cheese: "🚶🧀",
+            person_cat: "🚶🐈‍⬛",
+            null: "❓",
+          };
+
+          iconElement.textContent = icons[value] || icons.null;
+          iconElement.className =
+            value === null ? "wm-position-icon unknown" : "wm-position-icon";
+        },
+
+        /**
+         * 重選第二回合按鈕
+         */
+        resetWMTest2: function () {
+          const testCount = CONFIG.wmTestCount || 3;
+          this.state.wmUserAnswer2 = new Array(testCount).fill(null);
+
+          // 更新所有按鈕顯示
+          for (let i = 0; i < testCount; i++) {
+            this.updateWMButtonDisplay2(i);
+          }
+
+          if (CONFIG.debugMode) {
+            console.log("🔄 第二回合工作記憶測試已重置");
+          }
+        },
+
+        /**
+         * 檢查第二回合工作記憶答案
+         */
+        checkWMAnswer2: function () {
+          // 檢查是否有未選擇的位置
+          const hasNull = this.state.wmUserAnswer2.includes(null);
+
+          if (hasNull) {
+            alert("請完成所有位置的選擇！");
+            return;
+          }
+
+          // 比對答案
+          const correct =
+            JSON.stringify(this.state.wmUserAnswer2) ===
+            JSON.stringify(this.state.wmCorrectAnswer2);
+
+          const rt = Date.now() - this.state.wmStartTime2;
+
+          this.state.wmCorrect2 = correct;
+
+          // 記錄結果
+          const isReverse = CONFIG.wm2TestReverse || false;
+          this.state.results.push({
+            participantId: this.state.participantId,
+            round: "WM2", // Working Memory Test after Round 2
+            trial: 1,
+            stimulus: this.state.wmCorrectAnswer2.join("-"), // [修改] 正確答案紀錄在 Stimulus 欄位
+            hasPerson: "none", // [修改] HasPerson 欄位為 none
+            isNightTime: "none", // [修改] IsNightTime 欄位為 none
+            input: this.state.wmUserAnswer2.join("-"), // [修改] 使用者答案紀錄在 InputKey 欄位
+            correct: correct ? "yes" : "no",
+            rt: rt,
+            timestamp: new Date().toISOString(),
+          });
+
+          // 顯示結果
+          this.showWMResult2(correct);
+
+          if (CONFIG.debugMode) {
+            console.log("✓ 第二回合工作記憶測試完成");
+            console.log("  正確答案:", this.state.wmCorrectAnswer2);
+            console.log("  玩家答案:", this.state.wmUserAnswer2);
+            console.log("  結果:", correct ? "正確" : "錯誤");
+            console.log("  反應時間:", rt + "ms");
+          }
+        },
+
+        /**
+         * 顯示第二回合工作記憶測試結果
+         */
+        showWMResult2: function (correct) {
+          const resultDisplay = document.getElementById("wmResult2Display");
+          const confirmBtn = document.getElementById("wmConfirm2Btn");
+          const continueBtn = document.getElementById("wmContinue2Btn");
+
+          // 圖示對應
+          const icons = {
+            cheese: "🧀",
+            cat: "🐈‍⬛",
+            person_cheese: "🚶🧀",
+            person_cat: "🚶🐈‍⬛",
+          };
+
+          if (correct) {
+            // 答對
+            resultDisplay.innerHTML = `
+      <div class="wm-result correct">
+        <div style="font-size: 2em; margin-bottom: 10px;">✓ 答對了！</div>
+        <div>你的記憶力真棒！</div>
+      </div>
+    `;
+            audio.playCorrect();
+          } else {
+            // 答錯 - 顯示比對
+            let comparisonHTML = '<div class="wm-comparison">';
+
+            // 正確答案
+            comparisonHTML += '<div class="wm-comparison-row">';
+            comparisonHTML +=
+              '<div class="wm-comparison-label">正確答案：</div>';
+            comparisonHTML += '<div class="wm-comparison-items">';
+            this.state.wmCorrectAnswer2.forEach((item, index) => {
+              comparisonHTML += `
+        <div class="wm-comparison-item">
+          <span style="color: var(--accent-yellow);">${index + 1}:</span>
+          <span>${icons[item]}</span>
+        </div>
+      `;
+            });
+            comparisonHTML += "</div></div>";
+
+            // 你的答案
+            comparisonHTML += '<div class="wm-comparison-row">';
+            comparisonHTML +=
+              '<div class="wm-comparison-label">你的答案：</div>';
+            comparisonHTML += '<div class="wm-comparison-items">';
+            this.state.wmUserAnswer2.forEach((item, index) => {
+              const isCorrect = item === this.state.wmCorrectAnswer2[index];
+              const className = isCorrect
+                ? "wm-comparison-item correct"
+                : "wm-comparison-item incorrect";
+              comparisonHTML += `
+        <div class="${className}">
+          <span style="color: var(--accent-yellow);">${index + 1}:</span>
+          <span>${icons[item]}</span>
+        </div>
+      `;
+            });
+            comparisonHTML += "</div></div>";
+
+            comparisonHTML += "</div>";
+
+            resultDisplay.innerHTML = `
+      <div class="wm-result incorrect">
+        <div style="font-size: 2em; margin-bottom: 10px;">✗ 答錯了</div>
+        <div style="margin-top: 10px;">請對照下方的答案：</div>
+      </div>
+      ${comparisonHTML}
+    `;
+            audio.playError();
+          }
+
+          // 顯示結果和繼續按鈕
+          resultDisplay.style.display = "block";
+          confirmBtn.style.display = "none";
+          continueBtn.style.display = "block";
+        },
+
+        /**
+         * 第二回合工作記憶測試後繼續
+         */
+        continueAfterWM2: function () {
+          // 進入第三回合練習
+          this.showScreen("round3Practice");
+
+          if (CONFIG.debugMode) {
+            console.log("➜ 進入第三回合");
+          }
+        },
+
+        /**
+         * ============================================
+         * [新增] 第三回合工作記憶測試相關函式 (魚/鯊魚)
+         * ============================================
+         */
+        prepareWMTest3: function () {
+          const round3Trials = this.state.results.filter(
+            (r) => r.round === 3 && !this.state.isPractice
+          );
+          const testCount = CONFIG.wmTestCount || 3;
+          const lastN = round3Trials.slice(-testCount).map((r) => r.stimulus);
+          const isReverse = CONFIG.wm3TestReverse || false;
+
+          this.state.wmCorrectAnswer3 = isReverse
+            ? [...lastN].reverse()
+            : lastN;
+          this.state.wmUserAnswer3 = new Array(testCount).fill(null);
+          this.state.wmStartTime3 = Date.now();
+
+          this.updateWMQuestion3();
+          this.generateWMButtons3();
+        },
+
+        updateWMQuestion3: function () {
+          const testCount = CONFIG.wmTestCount || 3;
+          const isReverse = CONFIG.wm3TestReverse || false;
+          const el = document.getElementById("wmQuestion3Text");
+          if (el) {
+            const countText =
+              testCount === 1 ? "最後一個物件" : `最後${testCount}個物件`;
+            const orderText = isReverse
+              ? "按照<span style='color: var(--error-color);'>逆序</span>"
+              : "按照順序";
+            el.innerHTML = `${orderText}，<br/>剛才<span style="color: var(--accent-yellow);">${countText}</span>的順序為何？`;
+          }
+        },
+
+        generateWMButtons3: function () {
+          const container = document.getElementById("wmPosition3Buttons");
+          const testCount = CONFIG.wmTestCount || 3;
+          container.innerHTML = "";
+          for (let i = 0; i < testCount; i++) {
+            const btn = document.createElement("button");
+            btn.className = "wm-position-btn";
+            btn.onclick = () => this.toggleWMPosition3(i);
+            btn.innerHTML = `<div class="wm-position-number">${
+              i + 1
+            }</div><div class="wm-position-icon unknown">❓</div>`;
+            container.appendChild(btn);
+          }
+        },
+
+        toggleWMPosition3: function (pos) {
+          const curr = this.state.wmUserAnswer3[pos];
+          let next;
+          // 循環：null -> fish -> shark -> null
+          if (curr === null) next = "fish";
+          else if (curr === "fish") next = "shark";
+          else next = null;
+
+          this.state.wmUserAnswer3[pos] = next;
+          this.updateWMButtonDisplay3(pos);
+          audio.playTone(600, "sine", 0.1);
+        },
+
+        updateWMButtonDisplay3: function (pos) {
+          const btns = document.querySelectorAll(
+            "#wmPosition3Buttons .wm-position-btn"
+          );
+          const iconEl = btns[pos].querySelector(".wm-position-icon");
+          const val = this.state.wmUserAnswer3[pos];
+          const icons = { fish: "🐟", shark: "🦈", null: "❓" };
+          iconEl.textContent = icons[val] || icons.null;
+          iconEl.className =
+            val === null ? "wm-position-icon unknown" : "wm-position-icon";
+        },
+
+        resetWMTest3: function () {
+          const testCount = CONFIG.wmTestCount || 3;
+          this.state.wmUserAnswer3 = new Array(testCount).fill(null);
+          for (let i = 0; i < testCount; i++) this.updateWMButtonDisplay3(i);
+        },
+
+        checkWMAnswer3: function () {
+          if (this.state.wmUserAnswer3.includes(null)) {
+            alert("請完成所有位置的選擇！");
+            return;
+          }
+          const correct =
+            JSON.stringify(this.state.wmUserAnswer3) ===
+            JSON.stringify(this.state.wmCorrectAnswer3);
+          const rt = Date.now() - this.state.wmStartTime3;
+
+          this.state.results.push({
+            participantId: this.state.participantId,
+            round: "WM3",
+            trial: 1,
+            stimulus: this.state.wmCorrectAnswer3.join("-"), // 正確答案
+            hasPerson: "none",
+            isNightTime: "none",
+            input: this.state.wmUserAnswer3.join("-"), // 使用者答案
+            correct: correct ? "yes" : "no",
+            rt: rt,
+            timestamp: new Date().toISOString(),
+          });
+
+          this.showWMResult3(correct);
+        },
+
+        showWMResult3: function (correct) {
+          const display = document.getElementById("wmResult3Display");
+          const confirmBtn = document.getElementById("wmConfirm3Btn");
+          const continueBtn = document.getElementById("wmContinue3Btn");
+          const icons = { fish: "🐟", shark: "🦈" };
+
+          if (correct) {
+            display.innerHTML = `<div class="wm-result correct"><div style="font-size: 2em;">✓ 答對了！</div></div>`;
+            audio.playCorrect();
+          } else {
+            let html = `<div class="wm-result incorrect"><div style="font-size: 2em;">✗ 答錯了</div><div>正確答案：</div><div class="wm-comparison-items">`;
+            this.state.wmCorrectAnswer3.forEach((item, i) => {
+              html += `<div class="wm-comparison-item"><span style="color:var(--accent-yellow)">${
+                i + 1
+              }:</span><span>${icons[item]}</span></div>`;
+            });
+            html += `</div></div>`;
+            display.innerHTML = html;
+            audio.playError();
+          }
+          display.style.display = "block";
+          confirmBtn.style.display = "none";
+          continueBtn.style.display = "block";
+        },
+
+        continueAfterWM3: function () {
+          this.showScreen("round3End");
+        },
+
+        /**
+         * ============================================
+         * [新增] 第四回合工作記憶測試相關函式 (白天/晚上 + 魚/鯊魚)
+         * ============================================
+         */
+        prepareWMTest4: function () {
+          const round4Trials = this.state.results.filter(
+            (r) => r.round === 4 && !this.state.isPractice
+          );
+          const testCount = CONFIG.wmTestCount || 3;
+          // 根據是否晚上，加上前綴
+          const lastN = round4Trials.slice(-testCount).map((r) => {
+            return r.isNightTime ? "night_" + r.stimulus : r.stimulus;
+          });
+          const isReverse = CONFIG.wm4TestReverse || false;
+
+          this.state.wmCorrectAnswer4 = isReverse
+            ? [...lastN].reverse()
+            : lastN;
+          this.state.wmUserAnswer4 = new Array(testCount).fill(null);
+          this.state.wmStartTime4 = Date.now();
+
+          this.updateWMQuestion4();
+          this.generateWMButtons4();
+        },
+
+        updateWMQuestion4: function () {
+          const testCount = CONFIG.wmTestCount || 3;
+          const isReverse = CONFIG.wm4TestReverse || false;
+          const el = document.getElementById("wmQuestion4Text");
+          if (el) {
+            const countText =
+              testCount === 1 ? "最後一個物件" : `最後${testCount}個物件`;
+            const orderText = isReverse
+              ? "按照<span style='color: var(--error-color);'>逆序</span>"
+              : "按照順序";
+            el.innerHTML = `${orderText}，<br/>剛才<span style="color: var(--accent-yellow);">${countText}</span>的順序為何？`;
+          }
+        },
+
+        generateWMButtons4: function () {
+          const container = document.getElementById("wmPosition4Buttons");
+          const testCount = CONFIG.wmTestCount || 3;
+          container.innerHTML = "";
+          for (let i = 0; i < testCount; i++) {
+            const btn = document.createElement("button");
+            btn.className = "wm-position-btn";
+            btn.onclick = () => this.toggleWMPosition4(i);
+            btn.innerHTML = `<div class="wm-position-number">${
+              i + 1
+            }</div><div class="wm-position-icon unknown">❓</div>`;
+            container.appendChild(btn);
+          }
+        },
+
+        toggleWMPosition4: function (pos) {
+          const curr = this.state.wmUserAnswer4[pos];
+          let next;
+          // 循環：null -> fish -> shark -> night_fish -> night_shark -> null
+          if (curr === null) next = "fish";
+          else if (curr === "fish") next = "shark";
+          else if (curr === "shark") next = "night_fish";
+          else if (curr === "night_fish") next = "night_shark";
+          else next = null;
+
+          this.state.wmUserAnswer4[pos] = next;
+          this.updateWMButtonDisplay4(pos);
+          audio.playTone(600, "sine", 0.1);
+        },
+
+        updateWMButtonDisplay4: function (pos) {
+          const btns = document.querySelectorAll(
+            "#wmPosition4Buttons .wm-position-btn"
+          );
+          const iconEl = btns[pos].querySelector(".wm-position-icon");
+          const val = this.state.wmUserAnswer4[pos];
+          const icons = {
+            fish: "🐟",
+            shark: "🦈",
+            night_fish: "🌛🐟",
+            night_shark: "🌛🦈",
+            null: "❓",
+          };
+          iconEl.textContent = icons[val] || icons.null;
+          iconEl.className =
+            val === null ? "wm-position-icon unknown" : "wm-position-icon";
+        },
+
+        resetWMTest4: function () {
+          const testCount = CONFIG.wmTestCount || 3;
+          this.state.wmUserAnswer4 = new Array(testCount).fill(null);
+          for (let i = 0; i < testCount; i++) this.updateWMButtonDisplay4(i);
+        },
+
+        checkWMAnswer4: function () {
+          if (this.state.wmUserAnswer4.includes(null)) {
+            alert("請完成所有位置的選擇！");
+            return;
+          }
+          const correct =
+            JSON.stringify(this.state.wmUserAnswer4) ===
+            JSON.stringify(this.state.wmCorrectAnswer4);
+          const rt = Date.now() - this.state.wmStartTime4;
+
+          this.state.results.push({
+            participantId: this.state.participantId,
+            round: "WM4",
+            trial: 1,
+            stimulus: this.state.wmCorrectAnswer4.join("-"),
+            hasPerson: "none",
+            isNightTime: "none",
+            input: this.state.wmUserAnswer4.join("-"),
+            correct: correct ? "yes" : "no",
+            rt: rt,
+            timestamp: new Date().toISOString(),
+          });
+
+          this.showWMResult4(correct);
+        },
+
+        showWMResult4: function (correct) {
+          const display = document.getElementById("wmResult4Display");
+          const confirmBtn = document.getElementById("wmConfirm4Btn");
+          const continueBtn = document.getElementById("wmContinue4Btn");
+          const icons = {
+            fish: "🐟",
+            shark: "🦈",
+            night_fish: "🌛🐟",
+            night_shark: "🌛🦈",
+          };
+
+          if (correct) {
+            display.innerHTML = `<div class="wm-result correct"><div style="font-size: 2em;">✓ 答對了！</div></div>`;
+            audio.playCorrect();
+          } else {
+            let html = `<div class="wm-result incorrect"><div style="font-size: 2em;">✗ 答錯了</div><div>正確答案：</div><div class="wm-comparison-items">`;
+            this.state.wmCorrectAnswer4.forEach((item, i) => {
+              html += `<div class="wm-comparison-item"><span style="color:var(--accent-yellow)">${
+                i + 1
+              }:</span><span>${icons[item]}</span></div>`;
+            });
+            html += `</div></div>`;
+            display.innerHTML = html;
+            audio.playError();
+          }
+          display.style.display = "block";
+          confirmBtn.style.display = "none";
+          continueBtn.style.display = "block";
+        },
+
+        continueAfterWM4: function () {
+          this.showFinalResult();
         },
 
         showFinalResult: function () {
@@ -1595,6 +3175,7 @@
           }
         },
 
+        // 切換顯示的畫面 (Screen Manager)
         showScreen: function (name) {
           Object.values(this.elements.screens).forEach((el) =>
             el.classList.add("hidden")
@@ -1602,6 +3183,7 @@
           this.elements.screens[name].classList.remove("hidden");
         },
 
+        // 匯出 CSV 資料
         exportData: function () {
           const now = new Date();
           const dateStr = now.toISOString().slice(0, 10).replace(/-/g, "");
@@ -1634,60 +3216,66 @@
       };
 
       document.addEventListener("keydown", function (event) {
+        // [新增] 如果焦點在輸入框，允許輸入空白，不進行遊戲操作
+        if (
+          event.target.tagName === "INPUT" ||
+          event.target.tagName === "TEXTAREA"
+        ) {
+          return;
+        }
+
         if (event.code === "Space" || event.key === " ") {
+          // [修正] 全域防止空白鍵捲動頁面
+          event.preventDefault();
+
           const screens = game.elements.screens;
           if (!screens.intro.classList.contains("hidden")) {
-            event.preventDefault();
             game.startPractice();
             return;
           }
+          // [新增] 第一回合結束畫面
           if (!screens.practiceEnd.classList.contains("hidden")) {
-            event.preventDefault();
             game.startRound1();
             return;
           }
+          // [新增] 第二回合練習介紹畫面
           if (!screens.round2Intro.classList.contains("hidden")) {
-            event.preventDefault();
             game.startRound2Practice();
             return;
           }
+          // [新增] 第二回合練習結束畫面
           if (!screens.round2PracticeEnd.classList.contains("hidden")) {
-            event.preventDefault();
             game.startRound2();
             return;
           }
+          // 第三回合練習介紹（如果有此畫面）
           if (!screens.round3Practice.classList.contains("hidden")) {
-            event.preventDefault();
             game.startRound3Practice();
             return;
           }
+          // 第三回合練習結束
           if (!screens.round3PracticeEnd.classList.contains("hidden")) {
-            event.preventDefault();
             game.startRound3();
             return;
           }
-          // [新增] 第三回合結束畫面
+          // 第三回合正式測驗結束
           if (!screens.round3End.classList.contains("hidden")) {
-            event.preventDefault();
-            game.showScreen("round4Practice");
+            game.showScreen("round4Practice"); // 進入第四回合說明
             return;
           }
 
-          // [新增] 第四回合練習介紹畫面
+          // 第四回合練習介紹（如果有此畫面）
           if (!screens.round4Practice.classList.contains("hidden")) {
-            event.preventDefault();
             game.startRound4Practice();
             return;
           }
 
-          // [新增] 第四回合練習結束畫面
+          // 第四回合練習結束
           if (!screens.round4PracticeEnd.classList.contains("hidden")) {
-            event.preventDefault();
             game.startRound4();
             return;
           }
           if (game.state.isPlaying) {
-            event.preventDefault();
             game.handleInput("Space");
             return;
           }
@@ -1701,5 +3289,44 @@
           if (event.key === "Enter") game.showTutorial();
         });
     </script>
+
+    <!-- 在 </body> 之前加入 -->
+    <footer class="site-footer">
+      <a
+        href="privacy.html"
+        style="
+          color: var(--primary-color);
+          text-decoration: none;
+          margin: 0 15px;
+        "
+      >
+        🔒 隱私權政策
+      </a>
+
+      <span style="margin: 0 10px; color: rgba(255, 255, 255, 0.3)">|</span>
+
+      <a
+        href="https://github.com/patiencelee-39/ef-game"
+        target="_blank"
+        rel="noopener noreferrer"
+        style="
+          color: var(--primary-color);
+          text-decoration: none;
+          margin: 0 15px;
+        "
+      >
+        💻 開源專案
+      </a>
+
+      <div
+        style="
+          margin-top: 10px;
+          font-size: 0.85em;
+          color: rgba(255, 255, 255, 0.5);
+        "
+      >
+        © 2026 中原大學特殊教育學系 | 學術研究工具
+      </div>
+    </footer>
   </body>
 </html>
