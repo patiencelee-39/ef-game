@@ -461,10 +461,7 @@
               <div class="box-error" style="margin-top: 20px">
                 <h3 style="font-size: 26px">❌ 現有工具不足</h3>
                 <ul style="font-size: 22px">
-                  <li>
-                    <strong>視覺化設計不足</strong
-                    ><br />未利用聽障學生的視覺優勢
-                  </li>
+                  <li><strong>非聽障友善</strong><br />指導語較仰賴聽覺理解</li>
                   <li>
                     <strong>缺乏開源與可及性</strong><br />商業工具價格昂貴
                   </li>
@@ -506,7 +503,7 @@
               <h3 style="font-size: 26px">認知負荷假說</h3>
               <p style="font-size: 20px">(Zhao et al., 2024)</p>
               <p><strong>發現</strong>：資源掠奪現象</p>
-              <p>✅ <strong>啟示</strong>：降低聽知覺負荷、最大化視覺提示</p>
+              <p>✅ <strong>啟示</strong>：降低聽知覺負荷、視覺優先</p>
             </div>
           </div>
           <h2>研究目的</h2>
@@ -556,7 +553,7 @@
                 2
               </div>
               <p style="font-size: 22px">
-                <strong>視覺優先</strong><br />故事場景
+                <strong>視覺優先</strong><br />故事性指導語
               </p>
             </div>
             <div style="text-align: center; width: 18%">
@@ -644,7 +641,7 @@
         <div class="slide-content">
           <h2>Miyake et al. (2000) 統一與多樣性模型</h2>
           <p style="font-size: 22px; margin-bottom: 30px">
-            三大核心成分：各自獨立卻中度相關
+            三大核心成分為階層性發展
           </p>
           <table>
             <tr>
@@ -699,7 +696,7 @@
               <td><strong>聽覺鷹架假說</strong></td>
               <td>早期聽覺經驗剝奪影響序列處理能力</td>
               <td>聲音時間序列是認知發展鷹架</td>
-              <td style="background: rgba(231, 76, 60, 0.2)">❌ 無法繞過</td>
+              <td style="background: rgba(231, 76, 60, 0.2)">❌ 受限聽力</td>
             </tr>
             <tr>
               <td><strong>語言剝奪假說</strong></td>
@@ -744,26 +741,53 @@
               grid-template-columns: repeat(3, 1fr);
               gap: 25px;
               margin: 30px 0;
+              width: 100%;
             "
           >
             <div class="box">
-              <h3 style="text-align: center">⚙️ 適性化</h3>
-              <p style="font-size: 20px">
-                <strong>IRT + DA</strong><br />精準測量 θ<br />定位ZPD<br />動態調整難度
-              </p>
+              <h3 style="text-align: center">⚙️ 適性化介入與難度調整</h3>
+              <div
+                style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px"
+              >
+                <div style="text-align: center">
+                  <strong style="font-size: 20px">IRT</strong>
+                  <p style="font-size: 18px">精準測量 θ</p>
+                </div>
+                <div style="text-align: center">
+                  <strong style="font-size: 20px">DA</strong>
+                  <p style="font-size: 18px">動態調整難度</p>
+                </div>
+              </div>
             </div>
             <div class="box">
-              <h3 style="text-align: center">🎮 提升動機</h3>
-              <p style="font-size: 20px">
-                <strong>遊戲化</strong
-                ><br />故事情境<br />即時回饋<br />讓訓練有趣
-              </p>
+              <h3 style="text-align: center">🎮 提升動機與即時回饋</h3>
+              <div
+                style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px"
+              >
+                <div style="text-align: center">
+                  <strong style="font-size: 20px">故事性指導語</strong>
+                  <p style="font-size: 18px">__ __</p>
+                </div>
+                <div style="text-align: center">
+                  <strong style="font-size: 20px">即時回饋</strong>
+                  <p style="font-size: 18px">__ __</p>
+                </div>
+              </div>
             </div>
             <div class="box">
-              <h3 style="text-align: center">📊 精確記錄</h3>
-              <p style="font-size: 20px">
-                <strong>毫秒級</strong><br />反應時間<br />正確率<br />完整歷程
-              </p>
+              <h3 style="text-align: center">📊 施測的精確性與便利性</h3>
+              <div
+                style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px"
+              >
+                <div style="text-align: center">
+                  <strong style="font-size: 20px">精確性</strong>
+                  <p style="font-size: 18px">毫秒級紀錄</p>
+                </div>
+                <div style="text-align: center">
+                  <strong style="font-size: 20px">便利性</strong>
+                  <p style="font-size: 18px">不受限物理空間</p>
+                </div>
+              </div>
             </div>
           </div>
           <h2>經典訓練典範與本研究對應</h2>
@@ -777,8 +801,8 @@
             <tr>
               <td><strong>🛑 抑制控制</strong></td>
               <td>Go/No-Go</td>
-              <td>起司vs貓咪（第一、二回合）</td>
-              <td>錯誤率、RT</td>
+              <td>起司vs貓咪（第一、三回合）</td>
+              <td>正確率、RT</td>
             </tr>
             <tr>
               <td><strong>🧠 工作記憶</strong></td>
@@ -790,7 +814,7 @@
               <td><strong>🔄 認知彈性</strong></td>
               <td>DCCS</td>
               <td>規則轉換（第二、四回合）</td>
-              <td>轉換成本</td>
+              <td>正確率、RT</td>
             </tr>
           </table>
         </div>
@@ -818,17 +842,15 @@
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px">
             <div class="box" style="border-color: var(--practice-teal)">
               <h3 style="font-size: 24px">1️⃣ 難度適性化 (DA+IRT)</h3>
-              <p style="font-size: 20px">雙軌路徑設計<br />動態調整難度</p>
+              <p style="font-size: 20px">精準起點<br />精準介入</p>
             </div>
             <div class="box" style="border-color: var(--round1-orange)">
               <h3 style="font-size: 24px">2️⃣ 視覺優先設計</h3>
-              <p style="font-size: 20px">
-                故事場景代替文字<br />色彩編碼+圖像化
-              </p>
+              <p style="font-size: 20px">__ __<br />__ __</p>
             </div>
             <div class="box" style="border-color: var(--round3-purple)">
               <h3 style="font-size: 24px">3️⃣ 跨平台響應式</h3>
-              <p style="font-size: 20px">電腦/平板/手機<br />無需安裝</p>
+              <p style="font-size: 20px">電腦/平板/手機<br />__ __</p>
             </div>
             <div class="box" style="border-color: var(--primary-blue)">
               <h3 style="font-size: 24px">4️⃣ 程式碼開源</h3>
@@ -840,12 +862,29 @@
           <div class="box-success" style="text-align: center; margin-top: 20px">
             <h3 style="font-size: 28px">5️⃣ 數據視覺化報告 (CSV + PDF)</h3>
             <p style="font-size: 22px">
-              自動記錄完整訓練資料 → CSV匯出 → 圖表分析 → PDF列印
+              自動記錄完整訓練資料 → CSV匯出 → 數據圖表報告 → PDF列印
             </p>
           </div>
         </div>
         <div class="slide-footer">
-          開源專案：https://github.com/patiencelee-39/ef-game
+          開源專案：<a
+            href="https://github.com/patiencelee-39/ef-game"
+            target="_blank"
+            style="color: inherit; text-decoration: underline"
+            >https://github.com/patiencelee-39/ef-game</a
+          >
+          | 遊戲：<a
+            href="https://patiencelee-39.github.io/ef-game/"
+            target="_blank"
+            style="color: inherit; text-decoration: underline"
+            >https://patiencelee-39.github.io/ef-game/</a
+          >
+          | 分析：<a
+            href="https://patiencelee-39.github.io/ef-game/csv_visualizer.html"
+            target="_blank"
+            style="color: inherit; text-decoration: underline"
+            >https://patiencelee-39.github.io/ef-game/csv_visualizer.html</a
+          >
         </div>
       </div>
 
@@ -914,11 +953,11 @@
               </div>
             </div>
             <div>
-              <h2>設計說明</h2>
+              <h2>__ __</h2>
               <div class="box">
                 <h3 style="font-size: 24px">經典典範</h3>
                 <p style="font-size: 20px">
-                  <strong>Go/No-Go Task</strong><br />最經典的反應抑制訓練
+                  <strong>Go/No-Go Task</strong><br />__ __
                 </p>
               </div>
               <div class="box" style="border-color: var(--round1-orange)">
@@ -932,16 +971,16 @@
               <div class="box-success">
                 <h3 style="font-size: 24px">視覺優先設計</h3>
                 <p style="font-size: 20px">
-                  ✅ 橘色場景主題<br />✅ 圖示+顏色編碼<br />✅ 即時視聽回饋<br />✅
-                  零文字依賴
+                  ✅ 故事性指導語<br />✅ 圖示+顏色編碼<br />✅ 即時視聽回饋<br />✅
+                  排除聽覺負擔
                 </p>
               </div>
             </div>
           </div>
         </div>
-        <div class="slide-footer">
+        <!-- <div class="slide-footer">
           Rezvanfard et al. (2016); Friedman & Miyake (2004)
-        </div>
+        </div> -->
       </div>
 
       <!-- 投影片：工作記憶模組 (New) -->
@@ -1019,7 +1058,7 @@
             </div>
           </div>
         </div>
-        <div class="slide-footer">Corsi (1972); Baddeley (2000)</div>
+        <!-- <div class="slide-footer">Corsi (1972); Baddeley (2000)</div> -->
       </div>
 
       <!-- 投影片9：認知彈性模組 ⭐⭐⭐ -->
@@ -1052,14 +1091,14 @@
               </p>
               <div class="box" style="border-color: var(--round2-red)">
                 <p style="font-size: 20px">
-                  <strong>Zelazo (2006) DCCS 標準版</strong
-                  ><br />單一規則轉換<br />基礎能力訓練
+                  <strong>Zelazo (2006) DCCS 標準版</strong><br />__ __<br />__
+                  __
                 </p>
               </div>
               <div class="box-success">
                 <p style="font-size: 20px">
-                  <strong>訓練目標</strong
-                  ><br />快速偵測情境線索<br />彈性切換規則
+                  <strong>訓練階段</strong
+                  ><br />階段一：建立規則<br />階段二：規則轉換<br />階段三：混合轉換
                 </p>
               </div>
             </div>
@@ -1121,7 +1160,7 @@
       <div class="slide">
         <div class="slide-header">
           <div class="slide-title">
-            第三回合（場景轉換）+ 第四回合（DCCS進階版）
+            第三回合（Go/No-Go）+ 第四回合（DCCS分離向度版）
           </div>
           <div class="slide-number">10/16</div>
         </div>
@@ -1175,81 +1214,90 @@
             <div style="display: flex; flex-direction: column; gap: 15px">
               <div class="box" style="border-color: var(--round3-purple)">
                 <p style="font-size: 18px">
-                  <strong>第三回合</strong>：場景切換、刺激物轉換
-                </p>
-              </div>
-              <div class="box" style="border-color: var(--night-border)">
-                <p style="font-size: 18px">
-                  <strong>Diamond (2005) 分離向度版</strong
-                  ><br />雙重規則轉換、進階能力
+                  <strong>第三回合</strong>：Go/No-Go
                 </p>
               </div>
             </div>
           </div>
           <div>
             <h2 style="border-color: var(--night-border)">
-              第四回合：白天vs晚上（DCCS進階）
+              第四回合：白天vs晚上（DCCS分離向度版）
             </h2>
             <div
-              style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px"
+              style="
+                display: grid;
+                grid-template-columns: 3fr 1fr;
+                gap: 15px;
+                width: 100%;
+                align-items: center;
+              "
             >
-              <div>
-                <h3
-                  style="
-                    text-align: center;
-                    color: var(--primary-blue);
-                    font-size: 30px;
-                  "
-                >
-                  ☀️ 白天
-                </h3>
-                <div
-                  style="
-                    display: grid;
-                    grid-template-columns: 1fr 1fr;
-                    gap: 5px;
-                  "
-                >
-                  <img
-                    src="402.第四回合 練習 白天 魚.png"
-                    class="screenshot"
-                    style="max-height: 30vh"
-                  />
-                  <img
-                    src="402.第四回合 練習 白天 鯊魚.png"
-                    class="screenshot"
-                    style="max-height: 30vh"
-                  />
+              <div
+                style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px"
+              >
+                <div>
+                  <h3
+                    style="
+                      text-align: center;
+                      color: var(--primary-blue);
+                      font-size: 30px;
+                    "
+                  >
+                    ☀️ 白天
+                  </h3>
+                  <div
+                    style="
+                      display: grid;
+                      grid-template-columns: 1fr 1fr;
+                      gap: 5px;
+                    "
+                  >
+                    <img
+                      src="402.第四回合 練習 白天 魚.png"
+                      class="screenshot"
+                      style="max-height: 30vh"
+                    />
+                    <img
+                      src="402.第四回合 練習 白天 鯊魚.png"
+                      class="screenshot"
+                      style="max-height: 30vh"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <h3
+                    style="
+                      text-align: center;
+                      color: var(--night-border);
+                      font-size: 30px;
+                    "
+                  >
+                    🌙 晚上（橙框）
+                  </h3>
+                  <div
+                    style="
+                      display: grid;
+                      grid-template-columns: 1fr 1fr;
+                      gap: 5px;
+                    "
+                  >
+                    <img
+                      src="403.第四回合 練習 黑夜 魚.png"
+                      class="screenshot"
+                      style="max-height: 30vh"
+                    />
+                    <img
+                      src="403.第四回合 練習 黑夜 鯊魚.png"
+                      class="screenshot"
+                      style="max-height: 30vh"
+                    />
+                  </div>
                 </div>
               </div>
-              <div>
-                <h3
-                  style="
-                    text-align: center;
-                    color: var(--night-border);
-                    font-size: 30px;
-                  "
-                >
-                  🌙 晚上（橙框）
-                </h3>
-                <div
-                  style="
-                    display: grid;
-                    grid-template-columns: 1fr 1fr;
-                    gap: 5px;
-                  "
-                >
-                  <img
-                    src="403.第四回合 練習 黑夜 魚.png"
-                    class="screenshot"
-                    style="max-height: 30vh"
-                  />
-                  <img
-                    src="403.第四回合 練習 黑夜 鯊魚.png"
-                    class="screenshot"
-                    style="max-height: 30vh"
-                  />
-                </div>
+              <div class="box" style="border-color: var(--night-border)">
+                <p style="font-size: 18px">
+                  <strong>Diamond (2005) 分離向度版</strong><br />__ __
+                </p>
               </div>
             </div>
           </div>
@@ -1268,7 +1316,7 @@
         <div class="slide-content">
           <div class="two-column">
             <div>
-              <h2>技術架構</h2>
+              <h2>使用技術</h2>
               <div
                 style="text-align: center; font-size: 2.4vmin; line-height: 1.5"
               >
@@ -1288,15 +1336,14 @@
               </div>
               <div class="box-warning">
                 <p style="font-size: 2vmin">
-                  <strong>技術優勢</strong><br />✅ 跨平台/跨裝置<br />✅
-                  無需安裝<br />✅ 免費穩定
+                  <strong>__ __</strong><br />✅ 跨平台/跨裝置<br />
                 </p>
               </div>
             </div>
             <div>
               <h2>AI Vibe Coding</h2>
               <div class="box">
-                <h3 style="font-size: 2.4vmin">雙AI交替使用</h3>
+                <h3 style="font-size: 2.4vmin">Claude、Gemini交替使用</h3>
                 <div style="text-align: center; margin: 2vmin 0">
                   <div
                     style="
@@ -1354,7 +1401,24 @@
           </div>
         </div>
         <div class="slide-footer">
-          開源：https://github.com/patiencelee-39/ef-game
+          開源：<a
+            href="https://github.com/patiencelee-39/ef-game"
+            target="_blank"
+            style="color: inherit; text-decoration: underline"
+            >https://github.com/patiencelee-39/ef-game</a
+          >
+          | 遊戲：<a
+            href="https://patiencelee-39.github.io/ef-game/"
+            target="_blank"
+            style="color: inherit; text-decoration: underline"
+            >https://patiencelee-39.github.io/ef-game/</a
+          >
+          | 分析：<a
+            href="https://patiencelee-39.github.io/ef-game/csv_visualizer.html"
+            target="_blank"
+            style="color: inherit; text-decoration: underline"
+            >https://patiencelee-39.github.io/ef-game/csv_visualizer.html</a
+          >
         </div>
       </div>
 
@@ -1460,7 +1524,7 @@
               <h3 style="font-size: 24px">✅ 解決方案</h3>
               <ul style="font-size: 20px">
                 <li>增加網站說明</li>
-                <li>設定CSP</li>
+                <li>設定CSP(內容安全策略, Content Security Policy)</li>
                 <li>優化註解</li>
                 <li>提供開源連結</li>
               </ul>
@@ -1501,15 +1565,15 @@
                 <ul style="font-size: 20px">
                   <li>
                     ✅ <strong>填補國內工具缺口</strong
-                    ><br />首個針對聽障的中文EF訓練系統
+                    ><br />針對聽障友善的中文EF訓練系統
                   </li>
                   <li>
                     ✅ <strong>理論與實務結合</strong
-                    ><br />語言剝奪假說+IRT+DA+認知負荷理論
+                    ><br />語言剝奪假說+認知負荷理論+IRT+DA
                   </li>
-                  <li>
+                  <!-- <li>
                     ✅ <strong>方法學創新</strong><br />測驗與訓練雙重功能整合
-                  </li>
+                  </li> -->
                 </ul>
               </div>
               <h2 style="margin-top: 20px">實務貢獻</h2>
@@ -1535,7 +1599,12 @@
                   color: var(--text-light);
                 "
               >
-                ▲ 自動生成的訓練進步報告
+                ▲ 自動生成的訓練進步報告 (<a
+                  href="https://patiencelee-39.github.io/ef-game/csv_visualizer.html"
+                  target="_blank"
+                  style="color: var(--primary-blue); text-decoration: underline"
+                  >線上試用</a
+                >)
               </p>
               <div class="box">
                 <h3 style="font-size: 24px">報告內容</h3>
@@ -1593,16 +1662,16 @@
                 style="
                   font-size: 20px;
                   color: var(--text-light);
-                  font-style: italic;
+                  font-style: bold;
                   line-height: 1.6;
                 "
               >
-                「直接叫我做一個給特生的遊戲，打開了我Vibe
-                Coding的門，真的超好玩！」
+                直接叫我做一個給特生的遊戲，<br />
+                打開了我Vibe Coding的門，真的超好玩！
               </p>
-              <p style="font-size: 18px; margin-top: 15px">
+              <!-- <p style="font-size: 18px; margin-top: 15px">
                 感謝老師給予自由探索的空間<br />在跨領域學習中給予支持與鼓勵
-              </p>
+              </p> -->
             </div>
             <div
               class="box"
@@ -1621,15 +1690,16 @@
                 style="
                   font-size: 20px;
                   color: var(--text-light);
-                  font-style: italic;
+                  font-style: bold;
                   line-height: 1.6;
                 "
               >
-                「謝謝提供我『聽障』的方向，還真的很少人注意到聽障的執行功能訓練！」
+                謝謝提供我『聽障』的方向，<br />
+                似乎還真的很少人注意到聽障的執行功能訓練！
               </p>
-              <p style="font-size: 18px; margin-top: 15px">
+              <!-- <p style="font-size: 18px; margin-top: 15px">
                 在聽覺障礙領域的專業指導<br />提供寶貴的實務經驗
-              </p>
+              </p> -->
             </div>
             <div
               class="box"
@@ -1648,24 +1718,23 @@
                 style="
                   font-size: 20px;
                   color: var(--text-light);
-                  font-style: italic;
+                  font-style: bold;
                   line-height: 1.6;
                 "
               >
-                「昱鋒老師是我口試的最後一塊拼圖，非常感謝在我這最後一刻，願意當我的口委！」
+                昱鋒老師是我口試的最後一塊拼圖，<br />
+                非常感謝在我這最後一刻，願意當我的口委！
               </p>
-              <p style="font-size: 18px; margin-top: 15px">
+              <!-- <p style="font-size: 18px; margin-top: 15px">
                 在關鍵時刻的支持<br />課程與教學設計的專業建議
-              </p>
+              </p> -->
             </div>
           </div>
           <div
             class="box-warning"
             style="text-align: center; margin-top: 30px; padding: 20px"
           >
-            <p style="font-size: 20px">
-              協助開發的朋友們 | 雅文基金會 | Claude & Gemini AI<br />中原大學特殊教育學系
-            </p>
+            <p style="font-size: 20px">| | <br />中原大學特殊教育學系</p>
           </div>
         </div>
       </div>
@@ -1715,11 +1784,41 @@
             </div>
           </div>
           <div style="font-size: 24px; color: var(--text-light)">
-            <p><strong>研究生</strong>：李珮瑄 Patience Lee</p>
+            <p><strong>研究生</strong>：李珮瑄 10955001</p>
             <p><strong>指導教授</strong>：王文伶 博士</p>
-            <p style="margin-top: 20px; font-size: 20px">
-              開源：https://github.com/patiencelee-39/ef-game
-            </p>
+            <div
+              style="
+                margin-top: 20px;
+                font-size: 20px;
+                text-align: left;
+                display: inline-block;
+              "
+            >
+              <p>
+                🎮 <strong>遊戲網址</strong>：<a
+                  href="https://patiencelee-39.github.io/ef-game/"
+                  target="_blank"
+                  style="color: inherit; text-decoration: underline"
+                  >https://patiencelee-39.github.io/ef-game/</a
+                >
+              </p>
+              <p>
+                📊 <strong>數據報告</strong>：<a
+                  href="https://patiencelee-39.github.io/ef-game/csv_visualizer.html"
+                  target="_blank"
+                  style="color: inherit; text-decoration: underline"
+                  >https://patiencelee-39.github.io/ef-game/csv_visualizer.html</a
+                >
+              </p>
+              <p>
+                💻 <strong>開源專案</strong>：<a
+                  href="https://github.com/patiencelee-39/ef-game"
+                  target="_blank"
+                  style="color: inherit; text-decoration: underline"
+                  >https://github.com/patiencelee-39/ef-game</a
+                >
+              </p>
+            </div>
           </div>
         </div>
       </div>
