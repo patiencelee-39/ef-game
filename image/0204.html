@@ -215,6 +215,23 @@
         border: 4px solid rgba(255, 255, 255, 0.1);
         max-height: 40vh;
         object-fit: contain;
+        cursor: zoom-in;
+        position: relative;
+      }
+
+      .screenshot.active {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        max-width: 95vw !important;
+        max-height: 95vh !important;
+        width: auto !important;
+        height: auto !important;
+        z-index: 10000;
+        box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.7);
+        transition: none;
+        cursor: zoom-out;
       }
 
       table {
@@ -313,15 +330,15 @@
             style="font-size: 2.2vmin; line-height: 2; color: var(--text-light)"
           >
             <strong style="color: var(--text-white)">研究生</strong>：李珮瑄
-            Patience Lee<br />
+            10955001<br />
             <strong style="color: var(--text-white)">指導教授</strong>：王文伶
             博士<br />
             （中原大學 特殊教育學系 系主任/副教授）<br /><br />
             <strong style="color: var(--text-white)">口試委員</strong>：<br />
-            林貴如 研究員（財團法人雅文兒童聽語文教基金會）<br />
+            林貴如 研究員（財團法人雅文兒童聽語文教基金會研究員）<br />
             吳昱鋒 副教授（中原大學 教育研究所 所長/副教授）<br /><br />
             <strong style="color: var(--text-white)">口試日期</strong
-            >：2026年2月4日（三）上午10:00<br />
+            >：2026年2月4日（三）下午02:00<br />
             <strong style="color: var(--text-white)">口試地點</strong>：中原大學
             特殊教育學系 115會議室
           </div>
@@ -352,7 +369,7 @@
       <div class="slide">
         <div class="slide-header">
           <div class="slide-title">為什麼要做這個研究？</div>
-          <div class="slide-number">1/15</div>
+          <div class="slide-number">1/16</div>
         </div>
         <div class="slide-content">
           <div class="two-column">
@@ -467,7 +484,7 @@
       <div class="slide">
         <div class="slide-header">
           <div class="slide-title">研究目的與核心設計理念</div>
-          <div class="slide-number">2/15</div>
+          <div class="slide-number">2/16</div>
         </div>
         <div class="slide-content">
           <h2>理論基礎啟示</h2>
@@ -622,7 +639,7 @@
       <div class="slide">
         <div class="slide-header">
           <div class="slide-title">執行功能（EFs）的定義與架構</div>
-          <div class="slide-number">3/15</div>
+          <div class="slide-number">3/16</div>
         </div>
         <div class="slide-content">
           <h2>Miyake et al. (2000) 統一與多樣性模型</h2>
@@ -667,7 +684,7 @@
       <div class="slide">
         <div class="slide-header">
           <div class="slide-title">聽覺障礙學生的執行功能特徵</div>
-          <div class="slide-number">4/15</div>
+          <div class="slide-number">4/16</div>
         </div>
         <div class="slide-content">
           <h2>兩大理論觀點：為何聽障EF落後？</h2>
@@ -717,7 +734,7 @@
       <div class="slide">
         <div class="slide-header">
           <div class="slide-title">電腦化認知訓練（CCT）的優勢</div>
-          <div class="slide-number">5/15</div>
+          <div class="slide-number">5/16</div>
         </div>
         <div class="slide-content">
           <h2>為什麼選擇電腦化訓練？</h2>
@@ -794,7 +811,7 @@
       <div class="slide">
         <div class="slide-header">
           <div class="slide-title">系統核心功能架構</div>
-          <div class="slide-number">6/15</div>
+          <div class="slide-number">6/16</div>
         </div>
         <div class="slide-content">
           <h2>五大核心功能</h2>
@@ -838,7 +855,7 @@
           <div class="slide-title" style="color: var(--round1-orange)">
             訓練模組 I - 抑制控制（Go/No-Go）
           </div>
-          <div class="slide-number">7/15</div>
+          <div class="slide-number">7/16</div>
         </div>
         <div class="slide-content">
           <div class="two-column">
@@ -846,39 +863,43 @@
               <h2 style="border-color: var(--round1-orange)">
                 第一回合：老鼠洞場景
               </h2>
-              <img
-                src="101.第一回合 練習說明.png"
-                class="screenshot"
-                style="margin-bottom: 15px"
-              />
-              <p
-                style="
-                  text-align: center;
-                  font-size: 20px;
-                  color: var(--round1-orange);
-                "
-              >
-                ▲ 視覺化規則：起司✓ vs 貓咪✗
-              </p>
               <div
                 style="
                   display: grid;
-                  grid-template-columns: 1fr 1fr;
-                  gap: 15px;
-                  margin-top: 20px;
+                  grid-template-columns: 1fr 1fr 1fr;
+                  gap: 10px;
+                  align-items: start;
                 "
               >
                 <div>
                   <img
-                    src="103%20第一回合%20練習%20起司.png"
+                    src="101.第一回合 練習說明.png"
                     class="screenshot"
+                    style="max-height: 50vh; margin-bottom: 15px"
+                  />
+                  <p
+                    style="
+                      text-align: center;
+                      font-size: 20px;
+                      color: var(--round1-orange);
+                    "
+                  >
+                    ▲ 視覺化規則：起司✓ vs 貓咪✗
+                  </p>
+                </div>
+                <div>
+                  <img
+                    src="103.第一回合 練習 起司.png"
+                    class="screenshot"
+                    style="max-height: 50vh"
                   />
                   <p style="text-align: center; font-size: 18px">起司 → 按鍵</p>
                 </div>
                 <div>
                   <img
-                    src="104%20第一回合%20練習%20起司%20正確.png"
+                    src="104.第一回合 練習 起司 正確.png"
                     class="screenshot"
+                    style="max-height: 50vh"
                   />
                   <p
                     style="
@@ -923,91 +944,173 @@
         </div>
       </div>
 
+      <!-- 投影片：工作記憶模組 (New) -->
+      <div class="slide">
+        <div class="slide-header">
+          <div class="slide-title" style="color: var(--primary-blue)">
+            訓練模組 II - 工作記憶（序列回憶）
+          </div>
+          <div class="slide-number">8/16</div>
+        </div>
+        <div class="slide-content">
+          <div class="two-column">
+            <div>
+              <h2 style="border-color: var(--primary-blue)">記憶廣度訓練</h2>
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: 1fr 1fr 1fr;
+                  gap: 10px;
+                  align-items: start;
+                "
+              >
+                <div style="text-align: center">
+                  <img
+                    src="108.第一回合 工作記憶.png"
+                    class="screenshot"
+                    style="max-height: 50vh"
+                  />
+                  <p style="font-size: 18px; color: var(--primary-blue)">
+                    ▲ 觀察亮燈順序
+                  </p>
+                </div>
+                <div style="text-align: center">
+                  <img
+                    src="109.第一回合 工作記憶 解答.png"
+                    class="screenshot"
+                    style="max-height: 50vh"
+                  />
+                  <p style="font-size: 18px">依序點擊</p>
+                </div>
+                <div style="text-align: center">
+                  <img
+                    src="110.第一回合 工作記憶 全對(五題).png"
+                    class="screenshot"
+                    style="max-height: 50vh"
+                  />
+                  <p style="font-size: 18px">難度提升</p>
+                </div>
+              </div>
+            </div>
+            <div>
+              <h2>設計說明</h2>
+              <div class="box">
+                <h3 style="font-size: 24px">N-back Task</h3>
+                <p style="font-size: 20px">
+                  <strong>視覺空間廣度</strong><br />👆
+                  <strong>回憶</strong>：憑記憶依序點擊
+                </p>
+              </div>
+              <!-- <div class="box" style="border-color: var(--primary-blue)">
+                <h3 style="font-size: 24px">遊戲機制</h3>
+                <ul style="font-size: 20px">
+                  <li>👀 <strong>觀察</strong>：物件依序發光 (1→2→3...)</li>
+                  <li>👆 <strong>回憶</strong>：憑記憶依序點擊</li>
+                  <li>📈 <strong>難度</strong>：序列長度動態調整 (2 → 9)</li>
+                </ul>
+              </div> -->
+              <!-- <div class="box-success">
+                <h3 style="font-size: 24px">聽障友善設計</h3>
+                <p style="font-size: 20px">
+                  ✅ 排除聽覺序列負擔<br />✅ 純視覺空間記憶<br />✅
+                  減少語言編碼需求
+                </p>
+              </div> -->
+            </div>
+          </div>
+        </div>
+        <div class="slide-footer">Corsi (1972); Baddeley (2000)</div>
+      </div>
+
       <!-- 投影片9：認知彈性模組 ⭐⭐⭐ -->
       <div class="slide">
         <div class="slide-header">
           <div class="slide-title" style="color: var(--round2-red)">
-            訓練模組 II - 認知彈性（DCCS標準版）
+            訓練模組 III - 認知彈性（DCCS標準版）
           </div>
-          <div class="slide-number">8/15</div>
+          <div class="slide-number">9/16</div>
         </div>
         <div class="slide-content">
-          <h2 style="border-color: var(--round2-red)">第二回合：規則轉換</h2>
-          <img
-            src="201%20第二回合練習說明.png"
-            class="screenshot"
-            style="max-width: 60%; margin: 0 auto 20px; display: block"
-          />
-          <p
-            style="
-              text-align: center;
-              font-size: 22px;
-              color: var(--person-border);
-            "
-          >
-            有 👤 人出現時（紅框） → 不論什麼都<strong>不按</strong>！
-          </p>
-          <h2>四種情境對比</h2>
-          <div
-            style="
-              display: grid;
-              grid-template-columns: repeat(4, 1fr);
-              gap: 15px;
-            "
-          >
-            <div style="text-align: center">
-              <img src="202%20第二回合%20練習%20起司.png" class="screenshot" />
-              <p style="font-size: 18px">
-                無人+起司<br />→
-                <strong style="color: var(--success-green)">按✓</strong>
-              </p>
-            </div>
-            <div style="text-align: center">
+          <div class="two-column">
+            <div>
+              <h2 style="border-color: var(--round2-red)">
+                第二回合：規則轉換
+              </h2>
               <img
-                src="202%20第二回合%20練習%20人%20%20%20起司.png"
+                src="201.第二回合練習說明.png"
                 class="screenshot"
+                style="max-width: 100%; margin-bottom: 15px"
               />
-              <p style="font-size: 18px">
-                有人+起司<br />→
-                <strong style="color: var(--success-green)">不按✓</strong>
+              <p
+                style="
+                  text-align: center;
+                  font-size: 22px;
+                  color: var(--person-border);
+                "
+              >
+                有 👤 人出現時（紅框） → 不論什麼都<strong>不按</strong>！
               </p>
+              <div class="box" style="border-color: var(--round2-red)">
+                <p style="font-size: 20px">
+                  <strong>Zelazo (2006) DCCS 標準版</strong
+                  ><br />單一規則轉換<br />基礎能力訓練
+                </p>
+              </div>
+              <div class="box-success">
+                <p style="font-size: 20px">
+                  <strong>訓練目標</strong
+                  ><br />快速偵測情境線索<br />彈性切換規則
+                </p>
+              </div>
             </div>
-            <div style="text-align: center">
-              <img
-                src="203%20第二回合%20練習%20正確%20起司.png"
-                class="screenshot"
-              />
-              <p style="font-size: 18px; color: var(--success-green)">
-                正確回饋
-              </p>
-            </div>
-            <div style="text-align: center">
-              <img
-                src="204%20第二回合%20練習%20錯誤%20起司.png"
-                class="screenshot"
-              />
-              <p style="font-size: 18px; color: var(--error-red)">錯誤回饋</p>
-            </div>
-          </div>
-          <div
-            style="
-              display: grid;
-              grid-template-columns: 1fr 1fr;
-              gap: 25px;
-              margin-top: 20px;
-            "
-          >
-            <div class="box" style="border-color: var(--round2-red)">
-              <p style="font-size: 20px">
-                <strong>Zelazo (2006) DCCS 標準版</strong
-                ><br />單一規則轉換<br />基礎能力訓練
-              </p>
-            </div>
-            <div class="box-success">
-              <p style="font-size: 20px">
-                <strong>訓練目標</strong
-                ><br />快速偵測情境線索<br />彈性切換規則
-              </p>
+            <div>
+              <h2>四種情境對比</h2>
+              <div
+                style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px"
+              >
+                <div style="text-align: center">
+                  <img
+                    src="202.第二回合 練習 起司.png"
+                    class="screenshot"
+                    style="max-height: 30vh"
+                  />
+                  <p style="font-size: 18px">
+                    無人+起司<br />→
+                    <strong style="color: var(--success-green)">按✓</strong>
+                  </p>
+                </div>
+                <div style="text-align: center">
+                  <img
+                    src="202.第二回合 練習 人 ＋ 起司.png"
+                    class="screenshot"
+                    style="max-height: 30vh"
+                  />
+                  <p style="font-size: 18px">
+                    有人+起司<br />→
+                    <strong style="color: var(--success-green)">不按✓</strong>
+                  </p>
+                </div>
+                <div style="text-align: center">
+                  <img
+                    src="203.第二回合 練習 正確 起司.png"
+                    class="screenshot"
+                    style="max-height: 30vh"
+                  />
+                  <p style="font-size: 18px; color: var(--success-green)">
+                    正確回饋
+                  </p>
+                </div>
+                <div style="text-align: center">
+                  <img
+                    src="204.第二回合 練習 錯誤 起司.png"
+                    class="screenshot"
+                    style="max-height: 30vh"
+                  />
+                  <p style="font-size: 18px; color: var(--error-red)">
+                    錯誤回饋
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1020,93 +1123,134 @@
           <div class="slide-title">
             第三回合（場景轉換）+ 第四回合（DCCS進階版）
           </div>
-          <div class="slide-number">9/15</div>
+          <div class="slide-number">10/16</div>
         </div>
         <div class="slide-content">
-          <h2 style="border-color: var(--round3-purple)">
-            第三回合：海洋釣魚（紫色主題）
-          </h2>
-          <div
-            style="
-              display: grid;
-              grid-template-columns: repeat(3, 1fr);
-              gap: 15px;
-              margin-bottom: 20px;
-            "
-          >
-            <div style="text-align: center">
-              <img src="301%20第三回合%20練習說明.png" class="screenshot" />
-              <p style="font-size: 18px">規則說明</p>
-            </div>
-            <div style="text-align: center">
-              <img src="302%20第三回合%20練習%20魚.png" class="screenshot" />
-              <p style="font-size: 18px">魚🐟 → 按</p>
-            </div>
-            <div style="text-align: center">
-              <img src="302%20第三回合%20練習%20鯊魚.png" class="screenshot" />
-              <p style="font-size: 18px">鯊魚🦈 → 不按</p>
-            </div>
-          </div>
-          <div
-            style="height: 2px; background: var(--text-light); margin: 15px 0"
-          ></div>
-          <h2 style="border-color: var(--night-border)">
-            第四回合：白天vs晚上（DCCS進階）
-          </h2>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px">
-            <div>
-              <h3 style="text-align: center; color: var(--primary-blue)">
-                ☀️ 白天
-              </h3>
-              <div
-                style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px"
-              >
-                <img
-                  src="402%20第四回合%20練習%20白天%20魚.png"
-                  class="screenshot"
-                />
-                <img
-                  src="402%20第四回合%20練習%20白天%20鯊魚.png"
-                  class="screenshot"
-                />
-              </div>
-            </div>
-            <div>
-              <h3 style="text-align: center; color: var(--night-border)">
-                🌙 晚上（橙框）
-              </h3>
-              <div
-                style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px"
-              >
-                <img
-                  src="403%20第四回合%20練習%20黑夜%20魚.png"
-                  class="screenshot"
-                />
-                <img
-                  src="403%20第四回合%20練習%20黑夜%20鯊魚.png"
-                  class="screenshot"
-                />
-              </div>
-            </div>
-          </div>
           <div
             style="
               display: grid;
               grid-template-columns: 1fr 1fr;
-              gap: 25px;
-              margin-top: 15px;
+              gap: 20px;
+              align-items: center;
+              margin-bottom: 10px;
             "
           >
-            <div class="box" style="border-color: var(--round3-purple)">
-              <p style="font-size: 18px">
-                <strong>第三回合</strong>：場景切換、刺激物轉換
-              </p>
+            <div>
+              <h2 style="border-color: var(--round3-purple)">
+                第三回合：海洋釣魚（紫色主題）
+              </h2>
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: repeat(3, 1fr);
+                  gap: 10px;
+                "
+              >
+                <div style="text-align: center">
+                  <img
+                    src="301.第三回合 練習說明.png"
+                    class="screenshot"
+                    style="max-height: 30vh"
+                  />
+                  <p style="font-size: 18px">規則說明</p>
+                </div>
+                <div style="text-align: center">
+                  <img
+                    src="302.第三回合 練習 魚.png"
+                    class="screenshot"
+                    style="max-height: 30vh"
+                  />
+                  <p style="font-size: 18px">魚🐟 → 按</p>
+                </div>
+                <div style="text-align: center">
+                  <img
+                    src="302.第三回合 練習 鯊魚.png"
+                    class="screenshot"
+                    style="max-height: 30vh"
+                  />
+                  <p style="font-size: 18px">鯊魚🦈 → 不按</p>
+                </div>
+              </div>
             </div>
-            <div class="box" style="border-color: var(--night-border)">
-              <p style="font-size: 18px">
-                <strong>Diamond (2005) 分離向度版</strong
-                ><br />雙重規則轉換、進階能力
-              </p>
+            <div style="display: flex; flex-direction: column; gap: 15px">
+              <div class="box" style="border-color: var(--round3-purple)">
+                <p style="font-size: 18px">
+                  <strong>第三回合</strong>：場景切換、刺激物轉換
+                </p>
+              </div>
+              <div class="box" style="border-color: var(--night-border)">
+                <p style="font-size: 18px">
+                  <strong>Diamond (2005) 分離向度版</strong
+                  ><br />雙重規則轉換、進階能力
+                </p>
+              </div>
+            </div>
+          </div>
+          <div>
+            <h2 style="border-color: var(--night-border)">
+              第四回合：白天vs晚上（DCCS進階）
+            </h2>
+            <div
+              style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px"
+            >
+              <div>
+                <h3
+                  style="
+                    text-align: center;
+                    color: var(--primary-blue);
+                    font-size: 30px;
+                  "
+                >
+                  ☀️ 白天
+                </h3>
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 5px;
+                  "
+                >
+                  <img
+                    src="402.第四回合 練習 白天 魚.png"
+                    class="screenshot"
+                    style="max-height: 30vh"
+                  />
+                  <img
+                    src="402.第四回合 練習 白天 鯊魚.png"
+                    class="screenshot"
+                    style="max-height: 30vh"
+                  />
+                </div>
+              </div>
+              <div>
+                <h3
+                  style="
+                    text-align: center;
+                    color: var(--night-border);
+                    font-size: 30px;
+                  "
+                >
+                  🌙 晚上（橙框）
+                </h3>
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 5px;
+                  "
+                >
+                  <img
+                    src="403.第四回合 練習 黑夜 魚.png"
+                    class="screenshot"
+                    style="max-height: 30vh"
+                  />
+                  <img
+                    src="403.第四回合 練習 黑夜 鯊魚.png"
+                    class="screenshot"
+                    style="max-height: 30vh"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1119,7 +1263,7 @@
       <div class="slide">
         <div class="slide-header">
           <div class="slide-title">開發技術與AI輔助</div>
-          <div class="slide-number">10/15</div>
+          <div class="slide-number">11/16</div>
         </div>
         <div class="slide-content">
           <div class="two-column">
@@ -1228,7 +1372,7 @@
       <div class="slide">
         <div class="slide-header">
           <div class="slide-title">Google Safe Browsing 安全審核事件</div>
-          <div class="slide-number">11/15</div>
+          <div class="slide-number">12/16</div>
         </div>
         <div class="slide-content">
           <h2>事件經過（時間軸）</h2>
@@ -1347,7 +1491,7 @@
       <div class="slide">
         <div class="slide-header">
           <div class="slide-title">預期貢獻與研究價值</div>
-          <div class="slide-number">12/15</div>
+          <div class="slide-number">13/16</div>
         </div>
         <div class="slide-content">
           <div class="two-column">
@@ -1380,7 +1524,7 @@
             <div>
               <h2>數據視覺化功能</h2>
               <img
-                src="600%20數據圖表報告2.png"
+                src="600.數據圖表報告2.png"
                 class="screenshot"
                 style="margin-bottom: 15px"
               />
@@ -1415,7 +1559,7 @@
       <div class="slide">
         <div class="slide-header">
           <div class="slide-title">誠摯感謝</div>
-          <div class="slide-number">13/15</div>
+          <div class="slide-number">14/16</div>
         </div>
         <div class="slide-content">
           <div style="text-align: center; margin-bottom: 30px">
@@ -1471,7 +1615,7 @@
               <div style="font-size: 64px; margin-bottom: 15px">👂</div>
               <h3>口試委員</h3>
               <p style="font-size: 24px; margin: 10px 0">
-                <strong>林貴如 研究員</strong>
+                <strong>林桂如 研究員</strong>
               </p>
               <p
                 style="
@@ -1612,6 +1756,27 @@
       });
 
       showSlide(currentSlide);
+
+      // 圖片點擊放大功能
+      const screenshots = document.querySelectorAll(".screenshot");
+      screenshots.forEach((img) => {
+        img.addEventListener("click", (e) => {
+          e.stopPropagation(); // 避免觸發背景點擊
+          // 如果已經放大，就縮小；否則放大
+          if (img.classList.contains("active")) {
+            img.classList.remove("active");
+          } else {
+            // 先關閉其他已放大的圖片
+            screenshots.forEach((i) => i.classList.remove("active"));
+            img.classList.add("active");
+          }
+        });
+      });
+
+      // 點擊背景關閉放大圖片
+      document.addEventListener("click", () => {
+        screenshots.forEach((img) => img.classList.remove("active"));
+      });
     </script>
   </body>
 </html>
