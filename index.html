@@ -3,7 +3,7 @@
   <!DOCTYPE html> 告訴瀏覽器這是一個標準的 HTML5 網頁。
   <html> 標籤包裹了整個網頁內容。
 -->
-<!DOCTYPE html>
+<!doctype html>
 
 <html lang="zh-TW">
   <head>
@@ -235,7 +235,9 @@
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        transition: transform 0.1s, opacity 0.3s;
+        transition:
+          transform 0.1s,
+          opacity 0.3s;
         box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
         -webkit-tap-highlight-color: transparent;
         touch-action: none;
@@ -1645,8 +1647,8 @@
       // 使用 const 定義一個物件來存放所有設定。
       // 這樣以後要修改題數或時間，只要改這裡，不用去翻找下面的程式碼。
       const CONFIG = {
-        practiceTrials: 5, // 練習題數 (建議: 3-5)
-        round1Trials: 5, // 第一回題數
+        practiceTrials: 0, // 練習題數 (建議: 3-5)
+        round1Trials: 0, // 第一回題數
         round2PracticeTrials: 5, // [新增] 第二回練習題數
         round2Trials: 5, // [新增] 第二回題數
         round3PracticeTrials: 5, // [修改] 第三回練習題數
@@ -1754,7 +1756,7 @@
           gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
           gain.gain.exponentialRampToValueAtTime(
             0.001,
-            this.ctx.currentTime + duration
+            this.ctx.currentTime + duration,
           );
           osc.stop(this.ctx.currentTime + duration);
         },
@@ -1827,16 +1829,16 @@
             workingMemory4: document.getElementById("workingMemory4Screen"), // [新增] 第四回合工作記憶測試畫面
             round2Intro: document.getElementById("round2IntroScreen"), // 第二回合介紹畫面
             round2PracticeEnd: document.getElementById(
-              "round2PracticeEndScreen"
+              "round2PracticeEndScreen",
             ), // 第二回合練習結束畫面
             round3Practice: document.getElementById("round3PracticeScreen"), // 第三回合練習畫面
             round3PracticeEnd: document.getElementById(
-              "round3PracticeEndScreen"
+              "round3PracticeEndScreen",
             ), // 第三回合練習結束畫面
             round3End: document.getElementById("round3EndScreen"), // 第三回合結束畫面
             round4Practice: document.getElementById("round4PracticeScreen"), // 第四回合練習畫面
             round4PracticeEnd: document.getElementById(
-              "round4PracticeEndScreen"
+              "round4PracticeEndScreen",
             ), // 第四回合練習結束畫面
             play: document.getElementById("playScreen"), // 遊戲畫面
             result: document.getElementById("resultScreen"), // 結果畫面
@@ -2008,7 +2010,7 @@
           this.elements.stimulus.classList.remove(
             "pop",
             "correct-flash",
-            "error-flash"
+            "error-flash",
           );
 
           // 重置人物狀態
@@ -2100,7 +2102,7 @@
               if (CONFIG.debugMode) {
                 const answer = stimulus === "fish" ? "按" : "不按";
                 console.log(
-                  `  ☀️ 白天 | 刺激物: ${stimulus} | 正確答案：${answer}`
+                  `  ☀️ 白天 | 刺激物: ${stimulus} | 正確答案：${answer}`,
                 );
               }
             }
@@ -2118,7 +2120,7 @@
               round === 1 ? (isGo ? "🧀" : "🐈‍⬛") : isGo ? "🐟" : "🦈";
             const personMsg = this.state.hasPerson ? " + 🚶人出現" : "";
             console.log(
-              `[第${round}回 試驗${this.state.currentTrial}] 刺激: ${this.state.currentStimulus} ${emoji}${personMsg}`
+              `[第${round}回 試驗${this.state.currentTrial}] 刺激: ${this.state.currentStimulus} ${emoji}${personMsg}`,
             );
           }
 
@@ -2205,7 +2207,7 @@
             console.log(
               `  → 按了空白鍵 | 判斷: ${
                 isCorrect ? "✓ 正確" : "✗ 錯誤"
-              } | RT: ${reactionTime}ms`
+              } | RT: ${reactionTime}ms`,
             );
           }
 
@@ -2223,7 +2225,7 @@
 
           if (CONFIG.debugMode) {
             console.log(
-              `  → 逾時沒按 | 判斷: ${isCorrect ? "✓ 正確" : "✗ 錯誤"}`
+              `  → 逾時沒按 | 判斷: ${isCorrect ? "✓ 正確" : "✗ 錯誤"}`,
             );
           }
 
@@ -2237,11 +2239,11 @@
         triggerFeedback: function (isSuccess) {
           this.elements.container.classList.remove(
             "feedback-success",
-            "feedback-error"
+            "feedback-error",
           );
           this.elements.stimulus.classList.remove(
             "correct-flash",
-            "error-flash"
+            "error-flash",
           );
           void this.elements.container.offsetWidth;
 
@@ -2334,7 +2336,7 @@
         prepareWMTest: function () {
           // 取得第一回合（非練習）的所有試驗
           const round1Trials = this.state.results.filter(
-            (r) => r.round === 1 && !this.state.isPractice
+            (r) => r.round === 1 && !this.state.isPractice,
           );
 
           // 根據 CONFIG.wmTestCount 取得最後 N 個刺激物
@@ -2647,7 +2649,7 @@
         prepareWMTest2: function () {
           // 取得第二回合（非練習）的所有試驗
           const round2Trials = this.state.results.filter(
-            (r) => r.round === 2 && !this.state.isPractice
+            (r) => r.round === 2 && !this.state.isPractice,
           );
 
           // 根據 CONFIG.wmTestCount 取得最後 N 個刺激物
@@ -2780,7 +2782,7 @@
          */
         updateWMButtonDisplay2: function (position) {
           const buttons = document.querySelectorAll(
-            "#wmPosition2Buttons .wm-position-btn"
+            "#wmPosition2Buttons .wm-position-btn",
           );
           const button = buttons[position];
           const iconElement = button.querySelector(".wm-position-icon");
@@ -2966,7 +2968,7 @@
          */
         prepareWMTest3: function () {
           const round3Trials = this.state.results.filter(
-            (r) => r.round === 3 && !this.state.isPractice
+            (r) => r.round === 3 && !this.state.isPractice,
           );
           const testCount = CONFIG.wmTestCount || 3;
           const lastN = round3Trials.slice(-testCount).map((r) => r.stimulus);
@@ -3026,7 +3028,7 @@
 
         updateWMButtonDisplay3: function (pos) {
           const btns = document.querySelectorAll(
-            "#wmPosition3Buttons .wm-position-btn"
+            "#wmPosition3Buttons .wm-position-btn",
           );
           const iconEl = btns[pos].querySelector(".wm-position-icon");
           const val = this.state.wmUserAnswer3[pos];
@@ -3104,7 +3106,7 @@
          */
         prepareWMTest4: function () {
           const round4Trials = this.state.results.filter(
-            (r) => r.round === 4 && !this.state.isPractice
+            (r) => r.round === 4 && !this.state.isPractice,
           );
           const testCount = CONFIG.wmTestCount || 3;
           // 根據是否晚上，加上前綴
@@ -3169,7 +3171,7 @@
 
         updateWMButtonDisplay4: function (pos) {
           const btns = document.querySelectorAll(
-            "#wmPosition4Buttons .wm-position-btn"
+            "#wmPosition4Buttons .wm-position-btn",
           );
           const iconEl = btns[pos].querySelector(".wm-position-icon");
           const val = this.state.wmUserAnswer4[pos];
@@ -3254,16 +3256,16 @@
         showFinalResult: function () {
           this.showScreen("result");
           const totalCorrect = this.state.results.filter(
-            (r) => r.correct === "yes"
+            (r) => r.correct === "yes",
           ).length;
           const validTrials = this.state.results.filter(
-            (r) => r.input === "Space" && r.correct === "yes"
+            (r) => r.input === "Space" && r.correct === "yes",
           );
           const avgRT =
             validTrials.length > 0
               ? Math.round(
                   validTrials.reduce((sum, r) => sum + r.rt, 0) /
-                    validTrials.length
+                    validTrials.length,
                 )
               : 0;
           this.elements.scoreDisplay.innerText = totalCorrect;
@@ -3286,7 +3288,7 @@
         // 切換顯示的畫面 (Screen Manager)
         showScreen: function (name) {
           Object.values(this.elements.screens).forEach((el) =>
-            el.classList.add("hidden")
+            el.classList.add("hidden"),
           );
           this.elements.screens[name].classList.remove("hidden");
         },
