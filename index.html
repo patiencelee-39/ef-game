@@ -1648,25 +1648,28 @@
       // 這樣以後要修改題數或時間，只要改這裡，不用去翻找下面的程式碼。
       const CONFIG = {
         practiceTrials: 0, // 練習題數 (建議: 3-5)
-        round1Trials: 5, // 第一回題數
-        round2PracticeTrials: 5, // [新增] 第二回練習題數
-        round2Trials: 5, // [新增] 第二回題數
-        round3PracticeTrials: 5, // [修改] 第三回練習題數
-        round3Trials: 5, // [修改] 第三回題數
-        round4PracticeTrials: 5, // [新增] 第四回練習題數
-        round4Trials: 5, // [新增] 第四回題數
+        round1Trials: 0, // 第一回題數
+        round2PracticeTrials: 0, // [新增] 第二回練習題數
+        round2Trials: 0, // [新增] 第二回題數
+        round3PracticeTrials: 0, // [修改] 第三回練習題數
+        round3Trials: 4, // [修改] 第三回題數
+        round4PracticeTrials: 0, // [新增] 第四回練習題數
+        round4Trials: 4, // [新增] 第四回題數
         stimulusDuration: 2000,
         isiMin: 800,
         isiMax: 1200,
+        probabilityMode: "fixed", // [新增] 機率模式：'random'(隨機) 或 'fixed'(固定數量)
         goRatio: 0.75,
-        personRatio: 0.5, // [新增] 第一回合人出現的機率
-        nightRatio: 0.7, // [新增] 第四回合晚上出現的機率
+        practiceGoRatio: 0.75, // [修改] 練習模式 Go 機率改為 75% (讓起司多一點，貓少一點)
+        personRatio: 0.75, // [新增] 第二回合人出現的機率
+        nightRatio: 0.75, // [新增] 第四回合晚上出現的機率
+        // [建議] 練習模式專用機率
+        practicePersonRatio: 0.5, // 練習時「人」出現機率較高，方便教學
+        practiceNightRatio: 0.5, // 練習時「晚上」出現機率較高
         debugMode: true,
-        wmTestCount: 5, // [新增] 工作記憶測試：測試最後幾個物件（可設定 1, 2, 3, 4, 5...）
-        wm1TestReverse: false, // [新增] 第一回合工作記憶測試：false=順向, true=逆向
-        wm2TestReverse: false, // [新增] 第二回合工作記憶測試：false=順向, true=逆向
-        wm3TestReverse: true, // [新增] 第三回合工作記憶測試：false=順向, true=逆向
-        wm4TestReverse: true, // [新增] 第四回合工作記憶測試：false=順向, true=逆向
+        wmTestCountMode: "fixed", // [新增] 工作記憶題數模式: 'fixed'(固定) 或 'random'(隨機)
+        wmTestCount: 4, // [新增] 工作記憶測試：'fixed'模式下的固定題數
+        wmReverseProbability: 0.5, // [新增] 工作記憶測試「逆向」的機率 (0 ~ 1)
       };
 
       // 2. SVG 資源庫
@@ -1790,12 +1793,19 @@
           startTime: 0,
           responded: false,
           timer: null,
+          isInitialized: false, // [新增] 遊戲是否已初始化 (用於產生一次性序列)
+          trialSequence: [], // [新增] 預先生成的試題序列
           // [新增] 工作記憶測試相關狀態
           wmLastThree: [], // 最後三個刺激物
           wmUserSelection: [], // 玩家選擇的順序
           // [新增] 工作記憶測試相關狀態（位置式版本）
           wmCorrectAnswer: [], // 正確答案序列
           wmUserAnswer: [], // 玩家答案序列（位置式）
+          wmReverseStatus: [], // [新增] 各回合WM測試是否逆向的狀態
+          wm1TestCount: 0, // [新增] 第一回合WM測試的實際題數
+          wm2TestCount: 0,
+          wm3TestCount: 0,
+          wm4TestCount: 0,
           wmStartTime: 0, // 工作記憶測試開始時間
           wmCorrect: false, // 是否答對
           // [新增] 第二回合工作記憶測試狀態
@@ -1811,6 +1821,38 @@
           wmCorrectAnswer4: [],
           wmUserAnswer4: [],
           wmStartTime4: 0,
+        },
+
+        // [新增] 初始化遊戲設定 (只執行一次)
+        initializeGame: function () {
+          if (this.state.isInitialized) return;
+
+          // 決定四個工作記憶回合是否為「逆向」
+          if (CONFIG.probabilityMode === "fixed") {
+            const totalWMTests = 4;
+            const reverseCount = Math.round(
+              totalWMTests * (CONFIG.wmReverseProbability || 0),
+            );
+            const statusArray = Array(totalWMTests)
+              .fill(false)
+              .map((_, i) => i < reverseCount);
+            this.state.wmReverseStatus = this.shuffleArray(statusArray);
+          } else {
+            // 'random' mode
+            this.state.wmReverseStatus = [
+              Math.random() < (CONFIG.wmReverseProbability || 0),
+              Math.random() < (CONFIG.wmReverseProbability || 0),
+              Math.random() < (CONFIG.wmReverseProbability || 0),
+              Math.random() < (CONFIG.wmReverseProbability || 0),
+            ];
+          }
+          this.state.isInitialized = true;
+          if (CONFIG.debugMode) {
+            console.log(
+              "🔄️ WM Reverse Sequence Initialized:",
+              this.state.wmReverseStatus,
+            );
+          }
         },
 
         // [新手教學] DOM 元素快取 (Caching)
@@ -1859,6 +1901,7 @@
           const inputEl = document.getElementById("playerId");
           // .trim() 去除前後空白，如果沒輸入就預設為 "NoName"
           this.state.participantId = inputEl.value.trim() || "NoName";
+          this.initializeGame();
           this.showScreen("intro");
         },
 
@@ -1970,9 +2013,76 @@
           this.initGameSession();
         },
 
+        // [新增] 洗牌演算法 (Fisher-Yates Shuffle)
+        shuffleArray: function (array) {
+          for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+          }
+          return array;
+        },
+
+        // [新增] 生成固定數量的試題序列
+        generateSequence: function () {
+          const count = this.state.totalTrials;
+          const isPractice = this.state.isPractice;
+          const round = this.state.currentRound;
+
+          // 1. 生成 Go 序列 (所有回合都用)
+          const goRatio = isPractice
+            ? CONFIG.practiceGoRatio || CONFIG.goRatio
+            : CONFIG.goRatio;
+          const goCount = Math.round(count * goRatio);
+          const goArray = Array(count)
+            .fill(false)
+            .map((_, i) => i < goCount);
+          this.shuffleArray(goArray);
+
+          // 2. 生成 Person 序列 (僅 Round 2)
+          let personArray = Array(count).fill(false);
+          if (round === 2) {
+            const pRatio = isPractice
+              ? CONFIG.practicePersonRatio || CONFIG.personRatio
+              : CONFIG.personRatio;
+            const pCount = Math.round(count * pRatio);
+            personArray = Array(count)
+              .fill(false)
+              .map((_, i) => i < pCount);
+            this.shuffleArray(personArray);
+          }
+
+          // 3. 生成 Night 序列 (僅 Round 4)
+          let nightArray = Array(count).fill(false);
+          if (round === 4) {
+            const nRatio = isPractice
+              ? CONFIG.practiceNightRatio || CONFIG.nightRatio
+              : CONFIG.nightRatio;
+            const nCount = Math.round(count * nRatio);
+            nightArray = Array(count)
+              .fill(false)
+              .map((_, i) => i < nCount);
+            this.shuffleArray(nightArray);
+          }
+
+          // 4. 組合序列
+          this.state.trialSequence = [];
+          for (let i = 0; i < count; i++) {
+            this.state.trialSequence.push({
+              isGo: goArray[i],
+              hasPerson: personArray[i],
+              isNightTime: nightArray[i],
+            });
+          }
+        },
+
         // [功能] 初始化單一回合
         // 每次開始新回合或練習時，都會呼叫這個函式來重置狀態。
         initGameSession: function () {
+          // [新增] 如果是固定模式，先生成序列
+          if (CONFIG.probabilityMode === "fixed") {
+            this.generateSequence();
+          }
+
           this.state.currentTrial = 0;
           this.state.score = 0;
           this.state.isPlaying = true;
@@ -2040,17 +2150,50 @@
         showStimulus: function () {
           let isGo, goStimulus, noGoStimulus;
 
+          // [新增] 取得固定序列資料 (如果是固定模式)
+          let fixedData = null;
+          if (
+            CONFIG.probabilityMode === "fixed" &&
+            this.state.trialSequence[this.state.currentTrial - 1]
+          ) {
+            fixedData = this.state.trialSequence[this.state.currentTrial - 1];
+          }
+
           if (this.state.currentRound === 1) {
             // 第一回合：純 Go/No-Go (無人)
             this.state.hasPerson = false;
-            isGo = Math.random() < CONFIG.goRatio;
+
+            if (fixedData) {
+              isGo = fixedData.isGo;
+            } else {
+              // [修改] 判斷是否為練習模式，使用對應的 Go 機率
+              const ratio = this.state.isPractice
+                ? CONFIG.practiceGoRatio || CONFIG.goRatio
+                : CONFIG.goRatio;
+              isGo = Math.random() < ratio;
+            }
+
             this.state.currentStimulus = isGo ? "cheese" : "cat";
             goStimulus = SVG_ASSETS.cheese;
             noGoStimulus = SVG_ASSETS.cat;
           } else if (this.state.currentRound === 2) {
             // 第二回合：DCCS (有人)
-            this.state.hasPerson = Math.random() < CONFIG.personRatio;
-            isGo = Math.random() < CONFIG.goRatio;
+            if (fixedData) {
+              this.state.hasPerson = fixedData.hasPerson;
+              isGo = fixedData.isGo;
+            } else {
+              // [修改] 判斷是否為練習模式，使用對應機率
+              const pRatio = this.state.isPractice
+                ? CONFIG.practicePersonRatio || CONFIG.personRatio
+                : CONFIG.personRatio;
+              this.state.hasPerson = Math.random() < pRatio;
+              // [修改] 練習模式 Go 機率 (第二回合也一併套用)
+              const ratio = this.state.isPractice
+                ? CONFIG.practiceGoRatio || CONFIG.goRatio
+                : CONFIG.goRatio;
+              isGo = Math.random() < ratio;
+            }
+
             this.state.currentStimulus = isGo ? "cheese" : "cat";
             goStimulus = SVG_ASSETS.cheese;
             noGoStimulus = SVG_ASSETS.cat;
@@ -2063,7 +2206,17 @@
           } else if (this.state.currentRound === 3) {
             // 第三回合：魚 vs. 鯊魚
             this.state.hasPerson = false;
-            isGo = Math.random() < CONFIG.goRatio;
+
+            if (fixedData) {
+              isGo = fixedData.isGo;
+            } else {
+              // [修改] 練習模式 Go 機率
+              const ratio = this.state.isPractice
+                ? CONFIG.practiceGoRatio || CONFIG.goRatio
+                : CONFIG.goRatio;
+              isGo = Math.random() < ratio;
+            }
+
             this.state.currentStimulus = isGo ? "fish" : "shark";
             goStimulus = SVG_ASSETS.fish;
             noGoStimulus = SVG_ASSETS.shark;
@@ -2073,12 +2226,27 @@
             // ==========================================
 
             // 步驟1：決定是否為晚上（根據 nightRatio 機率）
-            this.state.isNightTime = Math.random() < CONFIG.nightRatio;
+            if (fixedData) {
+              this.state.isNightTime = fixedData.isNightTime;
+            } else {
+              // 如果是練習模式，使用 practiceNightRatio，否則使用 nightRatio
+              const nRatio = this.state.isPractice
+                ? CONFIG.practiceNightRatio || CONFIG.nightRatio
+                : CONFIG.nightRatio;
+              this.state.isNightTime = Math.random() < nRatio;
+            }
 
-            // 步驟2：隨機選擇刺激物（魚或鯊魚）
-            const stimuli = ["fish", "shark"];
-            const stimulus =
-              stimuli[Math.floor(Math.random() * stimuli.length)];
+            // 步驟2：決定刺激物（魚或鯊魚），使用 Go 機率
+            if (fixedData) {
+              isGo = fixedData.isGo;
+            } else {
+              const ratio = this.state.isPractice
+                ? CONFIG.practiceGoRatio || CONFIG.goRatio
+                : CONFIG.goRatio;
+              isGo = Math.random() < ratio;
+            }
+
+            const stimulus = isGo ? "fish" : "shark";
 
             // 步驟3：根據時間設定背景和指示器
             if (this.state.isNightTime) {
@@ -2305,20 +2473,37 @@
           } else {
             if (this.state.currentRound === 1) {
               // [修改] 第一回合結束後，進入工作記憶測試
-              this.prepareWMTest();
-              this.showScreen("workingMemory");
+              // 如果設定為 0，則直接跳過
+              if (CONFIG.wmTestCount > 0) {
+                this.prepareWMTest();
+                this.showScreen("workingMemory");
+              } else {
+                this.continueAfterWM();
+              }
             } else if (this.state.currentRound === 2) {
               // [修改] 第二回合結束後，進入工作記憶測試
-              this.prepareWMTest2();
-              this.showScreen("workingMemory2");
+              if (CONFIG.wmTestCount > 0) {
+                this.prepareWMTest2();
+                this.showScreen("workingMemory2");
+              } else {
+                this.continueAfterWM2();
+              }
             } else if (this.state.currentRound === 3) {
               // [修改] 第三回合結束後，進入工作記憶測試
-              this.prepareWMTest3();
-              this.showScreen("workingMemory3");
+              if (CONFIG.wmTestCount > 0) {
+                this.prepareWMTest3();
+                this.showScreen("workingMemory3");
+              } else {
+                this.continueAfterWM3();
+              }
             } else if (this.state.currentRound === 4) {
               // [修改] 第四回合結束後，進入工作記憶測試
-              this.prepareWMTest4();
-              this.showScreen("workingMemory4");
+              if (CONFIG.wmTestCount > 0) {
+                this.prepareWMTest4();
+                this.showScreen("workingMemory4");
+              } else {
+                this.continueAfterWM4();
+              }
             }
           }
         },
@@ -2339,12 +2524,22 @@
             (r) => r.round === 1 && !this.state.isPractice,
           );
 
-          // 根據 CONFIG.wmTestCount 取得最後 N 個刺激物
-          const testCount = CONFIG.wmTestCount || 3;
+          // [修改] 決定本次測試的題數
+          let testCount;
+          if (CONFIG.wmTestCountMode === "random") {
+            // 隨機模式：在 1 ~ 當前回合題數 之間隨機
+            const maxCount = CONFIG.round1Trials || 1;
+            testCount = Math.floor(Math.random() * maxCount) + 1;
+          } else {
+            // 固定模式
+            testCount = CONFIG.wmTestCount > 0 ? CONFIG.wmTestCount : 1;
+          }
+          this.state.wm1TestCount = testCount;
+
           const lastN = round1Trials.slice(-testCount).map((r) => r.stimulus);
 
-          // 根據 CONFIG.wmTestReverse 決定順序
-          const isReverse = CONFIG.wm1TestReverse || false;
+          // [修改] 從預先生成的序列中讀取是否逆向
+          const isReverse = this.state.wmReverseStatus[0];
           this.state.wmCorrectAnswer = isReverse ? [...lastN].reverse() : lastN;
 
           // 初始化玩家答案（全部設為 null）
@@ -2370,8 +2565,8 @@
          * 更新工作記憶測試的題目文字
          */
         updateWMQuestion: function () {
-          const testCount = CONFIG.wmTestCount || 3;
-          const isReverse = CONFIG.wm1TestReverse || false;
+          const testCount = this.state.wm1TestCount;
+          const isReverse = this.state.wmReverseStatus[0];
           const questionElement = document.getElementById("wmQuestionText");
 
           if (questionElement) {
@@ -2400,7 +2595,7 @@
          */
         generateWMButtons: function () {
           const container = document.getElementById("wmPositionButtons");
-          const testCount = CONFIG.wmTestCount || 3;
+          const testCount = this.state.wm1TestCount;
 
           // 清空容器
           container.innerHTML = "";
@@ -2484,7 +2679,7 @@
          * 重選按鈕
          */
         resetWMTest: function () {
-          const testCount = CONFIG.wmTestCount || 3;
+          const testCount = this.state.wm1TestCount;
           this.state.wmUserAnswer = new Array(testCount).fill(null);
 
           // 更新所有按鈕顯示
@@ -2652,14 +2847,22 @@
             (r) => r.round === 2 && !this.state.isPractice,
           );
 
-          // 根據 CONFIG.wmTestCount 取得最後 N 個刺激物
-          const testCount = CONFIG.wmTestCount || 3;
+          // [修改] 決定本次測試的題數
+          let testCount;
+          if (CONFIG.wmTestCountMode === "random") {
+            const maxCount = CONFIG.round2Trials || 1;
+            testCount = Math.floor(Math.random() * maxCount) + 1;
+          } else {
+            testCount = CONFIG.wmTestCount > 0 ? CONFIG.wmTestCount : 1;
+          }
+          this.state.wm2TestCount = testCount;
+
           const lastN = round2Trials.slice(-testCount).map((r) => {
             return r.hasPerson ? "person_" + r.stimulus : r.stimulus;
           });
 
-          // 根據 CONFIG.wmTestReverse 決定順序
-          const isReverse = CONFIG.wm2TestReverse || false;
+          // [修改] 從預先生成的序列中讀取是否逆向
+          const isReverse = this.state.wmReverseStatus[1];
           this.state.wmCorrectAnswer2 = isReverse
             ? [...lastN].reverse()
             : lastN;
@@ -2687,8 +2890,8 @@
          * 更新第二回合工作記憶測試的題目文字
          */
         updateWMQuestion2: function () {
-          const testCount = CONFIG.wmTestCount || 3;
-          const isReverse = CONFIG.wm2TestReverse || false;
+          const testCount = this.state.wm2TestCount;
+          const isReverse = this.state.wmReverseStatus[1];
           const questionElement = document.getElementById("wmQuestion2Text");
 
           if (questionElement) {
@@ -2717,7 +2920,7 @@
          */
         generateWMButtons2: function () {
           const container = document.getElementById("wmPosition2Buttons");
-          const testCount = CONFIG.wmTestCount || 3;
+          const testCount = this.state.wm2TestCount;
 
           // 清空容器
           container.innerHTML = "";
@@ -2807,7 +3010,7 @@
          * 重選第二回合按鈕
          */
         resetWMTest2: function () {
-          const testCount = CONFIG.wmTestCount || 3;
+          const testCount = this.state.wm2TestCount;
           this.state.wmUserAnswer2 = new Array(testCount).fill(null);
 
           // 更新所有按鈕顯示
@@ -2970,10 +3173,19 @@
           const round3Trials = this.state.results.filter(
             (r) => r.round === 3 && !this.state.isPractice,
           );
-          const testCount = CONFIG.wmTestCount || 3;
-          const lastN = round3Trials.slice(-testCount).map((r) => r.stimulus);
-          const isReverse = CONFIG.wm3TestReverse || false;
+          // [修改] 決定本次測試的題數
+          let testCount;
+          if (CONFIG.wmTestCountMode === "random") {
+            const maxCount = CONFIG.round3Trials || 1;
+            testCount = Math.floor(Math.random() * maxCount) + 1;
+          } else {
+            testCount = CONFIG.wmTestCount > 0 ? CONFIG.wmTestCount : 1;
+          }
+          this.state.wm3TestCount = testCount;
 
+          const lastN = round3Trials.slice(-testCount).map((r) => r.stimulus);
+          // [修改] 從預先生成的序列中讀取是否逆向
+          const isReverse = this.state.wmReverseStatus[2];
           this.state.wmCorrectAnswer3 = isReverse
             ? [...lastN].reverse()
             : lastN;
@@ -2985,8 +3197,8 @@
         },
 
         updateWMQuestion3: function () {
-          const testCount = CONFIG.wmTestCount || 3;
-          const isReverse = CONFIG.wm3TestReverse || false;
+          const testCount = this.state.wm3TestCount;
+          const isReverse = this.state.wmReverseStatus[2];
           const el = document.getElementById("wmQuestion3Text");
           if (el) {
             const countText =
@@ -3000,7 +3212,7 @@
 
         generateWMButtons3: function () {
           const container = document.getElementById("wmPosition3Buttons");
-          const testCount = CONFIG.wmTestCount || 3;
+          const testCount = this.state.wm3TestCount;
           container.innerHTML = "";
           for (let i = 0; i < testCount; i++) {
             const btn = document.createElement("button");
@@ -3039,7 +3251,7 @@
         },
 
         resetWMTest3: function () {
-          const testCount = CONFIG.wmTestCount || 3;
+          const testCount = this.state.wm3TestCount;
           this.state.wmUserAnswer3 = new Array(testCount).fill(null);
           for (let i = 0; i < testCount; i++) this.updateWMButtonDisplay3(i);
         },
@@ -3080,14 +3292,45 @@
             display.innerHTML = `<div class="wm-result correct"><div style="font-size: 2em;">✓ 答對了！</div></div>`;
             audio.playCorrect();
           } else {
-            let html = `<div class="wm-result incorrect"><div style="font-size: 2em;">✗ 答錯了</div><div>正確答案：</div><div class="wm-comparison-items">`;
-            this.state.wmCorrectAnswer3.forEach((item, i) => {
-              html += `<div class="wm-comparison-item"><span style="color:var(--accent-yellow)">${
-                i + 1
-              }:</span><span>${icons[item]}</span></div>`;
+            // 答錯 - 顯示比對
+            let comparisonHTML = '<div class="wm-comparison">';
+
+            // 正確答案
+            comparisonHTML += '<div class="wm-comparison-row">';
+            comparisonHTML +=
+              '<div class="wm-comparison-label">正確答案：</div>';
+            comparisonHTML += '<div class="wm-comparison-items">';
+            this.state.wmCorrectAnswer3.forEach((item, index) => {
+              comparisonHTML += `
+        <div class="wm-comparison-item">
+          <span style="color: var(--accent-yellow);">${index + 1}:</span>
+          <span>${icons[item]}</span>
+        </div>
+      `;
             });
-            html += `</div></div>`;
-            display.innerHTML = html;
+            comparisonHTML += "</div></div>";
+
+            // 你的答案
+            comparisonHTML += '<div class="wm-comparison-row">';
+            comparisonHTML +=
+              '<div class="wm-comparison-label">你的答案：</div>';
+            comparisonHTML += '<div class="wm-comparison-items">';
+            this.state.wmUserAnswer3.forEach((item, index) => {
+              const isCorrect = item === this.state.wmCorrectAnswer3[index];
+              const className = isCorrect
+                ? "wm-comparison-item correct"
+                : "wm-comparison-item incorrect";
+              comparisonHTML += `
+        <div class="${className}">
+          <span style="color: var(--accent-yellow);">${index + 1}:</span>
+          <span>${icons[item]}</span>
+        </div>
+      `;
+            });
+            comparisonHTML += "</div></div>";
+            comparisonHTML += "</div>";
+
+            display.innerHTML = `<div class="wm-result incorrect"><div style="font-size: 2em; margin-bottom: 10px;">✗ 答錯了</div><div style="margin-top: 10px;">請對照下方的答案：</div></div>${comparisonHTML}`;
             audio.playError();
           }
           display.style.display = "block";
@@ -3108,13 +3351,21 @@
           const round4Trials = this.state.results.filter(
             (r) => r.round === 4 && !this.state.isPractice,
           );
-          const testCount = CONFIG.wmTestCount || 3;
+          // [修改] 決定本次測試的題數
+          let testCount;
+          if (CONFIG.wmTestCountMode === "random") {
+            const maxCount = CONFIG.round4Trials || 1;
+            testCount = Math.floor(Math.random() * maxCount) + 1;
+          } else {
+            testCount = CONFIG.wmTestCount > 0 ? CONFIG.wmTestCount : 1;
+          }
+          this.state.wm4TestCount = testCount;
           // 根據是否晚上，加上前綴
           const lastN = round4Trials.slice(-testCount).map((r) => {
             return r.isNightTime ? "night_" + r.stimulus : r.stimulus;
           });
-          const isReverse = CONFIG.wm4TestReverse || false;
-
+          // [修改] 從預先生成的序列中讀取是否逆向
+          const isReverse = this.state.wmReverseStatus[3];
           this.state.wmCorrectAnswer4 = isReverse
             ? [...lastN].reverse()
             : lastN;
@@ -3126,8 +3377,8 @@
         },
 
         updateWMQuestion4: function () {
-          const testCount = CONFIG.wmTestCount || 3;
-          const isReverse = CONFIG.wm4TestReverse || false;
+          const testCount = this.state.wm4TestCount;
+          const isReverse = this.state.wmReverseStatus[3];
           const el = document.getElementById("wmQuestion4Text");
           if (el) {
             const countText =
@@ -3141,7 +3392,7 @@
 
         generateWMButtons4: function () {
           const container = document.getElementById("wmPosition4Buttons");
-          const testCount = CONFIG.wmTestCount || 3;
+          const testCount = this.state.wm4TestCount;
           container.innerHTML = "";
           for (let i = 0; i < testCount; i++) {
             const btn = document.createElement("button");
@@ -3188,7 +3439,7 @@
         },
 
         resetWMTest4: function () {
-          const testCount = CONFIG.wmTestCount || 3;
+          const testCount = this.state.wm4TestCount;
           this.state.wmUserAnswer4 = new Array(testCount).fill(null);
           for (let i = 0; i < testCount; i++) this.updateWMButtonDisplay4(i);
         },
@@ -3234,14 +3485,45 @@
             display.innerHTML = `<div class="wm-result correct"><div style="font-size: 2em;">✓ 答對了！</div></div>`;
             audio.playCorrect();
           } else {
-            let html = `<div class="wm-result incorrect"><div style="font-size: 2em;">✗ 答錯了</div><div>正確答案：</div><div class="wm-comparison-items">`;
-            this.state.wmCorrectAnswer4.forEach((item, i) => {
-              html += `<div class="wm-comparison-item"><span style="color:var(--accent-yellow)">${
-                i + 1
-              }:</span><span>${icons[item]}</span></div>`;
+            // 答錯 - 顯示比對
+            let comparisonHTML = '<div class="wm-comparison">';
+
+            // 正確答案
+            comparisonHTML += '<div class="wm-comparison-row">';
+            comparisonHTML +=
+              '<div class="wm-comparison-label">正確答案：</div>';
+            comparisonHTML += '<div class="wm-comparison-items">';
+            this.state.wmCorrectAnswer4.forEach((item, index) => {
+              comparisonHTML += `
+        <div class="wm-comparison-item">
+          <span style="color: var(--accent-yellow);">${index + 1}:</span>
+          <span>${icons[item]}</span>
+        </div>
+      `;
             });
-            html += `</div></div>`;
-            display.innerHTML = html;
+            comparisonHTML += "</div></div>";
+
+            // 你的答案
+            comparisonHTML += '<div class="wm-comparison-row">';
+            comparisonHTML +=
+              '<div class="wm-comparison-label">你的答案：</div>';
+            comparisonHTML += '<div class="wm-comparison-items">';
+            this.state.wmUserAnswer4.forEach((item, index) => {
+              const isCorrect = item === this.state.wmCorrectAnswer4[index];
+              const className = isCorrect
+                ? "wm-comparison-item correct"
+                : "wm-comparison-item incorrect";
+              comparisonHTML += `
+        <div class="${className}">
+          <span style="color: var(--accent-yellow);">${index + 1}:</span>
+          <span>${icons[item]}</span>
+        </div>
+      `;
+            });
+            comparisonHTML += "</div></div>";
+            comparisonHTML += "</div>";
+
+            display.innerHTML = `<div class="wm-result incorrect"><div style="font-size: 2em; margin-bottom: 10px;">✗ 答錯了</div><div style="margin-top: 10px;">請對照下方的答案：</div></div>${comparisonHTML}`;
             audio.playError();
           }
           display.style.display = "block";
