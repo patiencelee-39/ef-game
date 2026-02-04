@@ -1647,27 +1647,27 @@
       // 使用 const 定義一個物件來存放所有設定。
       // 這樣以後要修改題數或時間，只要改這裡，不用去翻找下面的程式碼。
       const CONFIG = {
-        practiceTrials: 0, // 練習題數 (建議: 3-5)
-        round1Trials: 0, // 第一回題數
-        round2PracticeTrials: 0, // [新增] 第二回練習題數
-        round2Trials: 0, // [新增] 第二回題數
-        round3PracticeTrials: 0, // [修改] 第三回練習題數
-        round3Trials: 4, // [修改] 第三回題數
-        round4PracticeTrials: 0, // [新增] 第四回練習題數
-        round4Trials: 4, // [新增] 第四回題數
+        practiceTrials: 6, // 練習題數 (建議: 3-5)
+        round1Trials: 6, // 第一回題數
+        round2PracticeTrials: 6, // [新增] 第二回練習題數
+        round2Trials: 6, // [新增] 第二回題數
+        round3PracticeTrials: 6, // [修改] 第三回練習題數
+        round3Trials: 6, // [修改] 第三回題數
+        round4PracticeTrials: 6, // [新增] 第四回練習題數
+        round4Trials: 6, // [新增] 第四回題數
         stimulusDuration: 2000,
         isiMin: 800,
         isiMax: 1200,
-        probabilityMode: "fixed", // [新增] 機率模式：'random'(隨機) 或 'fixed'(固定數量)
+        probabilityMode: "random", // [新增] 機率模式：'random'(隨機) 或 'fixed'(固定數量)
         goRatio: 0.75,
-        practiceGoRatio: 0.75, // [修改] 練習模式 Go 機率改為 75% (讓起司多一點，貓少一點)
+        practiceGoRatio: 0.5, // [修改] 練習模式 Go 機率改為 75% (讓起司多一點，貓少一點)
         personRatio: 0.75, // [新增] 第二回合人出現的機率
         nightRatio: 0.75, // [新增] 第四回合晚上出現的機率
         // [建議] 練習模式專用機率
         practicePersonRatio: 0.5, // 練習時「人」出現機率較高，方便教學
         practiceNightRatio: 0.5, // 練習時「晚上」出現機率較高
         debugMode: true,
-        wmTestCountMode: "fixed", // [新增] 工作記憶題數模式: 'fixed'(固定) 或 'random'(隨機)
+        wmTestCountMode: "random", // [新增] 工作記憶題數模式: 'fixed'(固定) 或 'random'(隨機)
         wmTestCount: 4, // [新增] 工作記憶測試：'fixed'模式下的固定題數
         wmReverseProbability: 0.5, // [新增] 工作記憶測試「逆向」的機率 (0 ~ 1)
       };
