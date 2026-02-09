@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>等待室 - 執行功能遊戲</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .container {
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        max-width: 900px;
+        width: 100%;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .header h1 {
+        color: #667eea;
+        font-size: 2rem;
+        margin-bottom: 10px;
+      }
+
+      .room-code-display {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 15px;
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .room-code-display .label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+        margin-bottom: 10px;
+      }
+
+      .room-code-display .code {
+        font-size: 3rem;
+        font-weight: bold;
+        letter-spacing: 10px;
+        font-family: 'Courier New', monospace;
+      }
+
+      .room-code-display .copy-btn {
+        background: rgba(255, 255, 255, 0.2);
+        border: 2px solid white;
+        color: white;
+        padding: 10px 30px;
+        border-radius: 25px;
+        font-size: 1rem;
+        cursor: pointer;
+        margin-top: 15px;
+        transition: all 0.3s;
+      }
+
+      .room-code-display .copy-btn:hover {
+        background: white;
+        color: #667eea;
+      }
+
+      .section {
+        margin-bottom: 30px;
+      }
+
+      .section-title {
+        font-size: 1.2rem;
+        color: #333;
+        margin-bottom: 15px;
+        font-weight: 600;
+      }
+
+      .players-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+
+      .player-card {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        border-radius: 12px;
+        padding: 15px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: transform 0.2s;
+      }
+
+      .player-card:hover {
+        transform: translateY(-2px);
+      }
+
+      .player-card.host {
+        background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+      }
+
+      .player-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+      }
+
+      .player-info {
+        flex: 1;
+      }
+
+      .player-name {
+        font-weight: 600;
+        color: #2d3436;
+        margin-bottom: 3px;
+      }
+
+      .player-role {
+        font-size: 0.8rem;
+        color: #636e72;
+      }
+
+      .player-status {
+        font-size: 0.75rem;
+        padding: 3px 8px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.6);
+      }
+
+      .player-status.ready {
+        background: #55efc4;
+        color: #00b894;
+      }
+
+      .stages-info {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+
+      .stage-item {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        border-bottom: 1px solid #e9ecef;
+        gap: 12px;
+      }
+
+      .stage-item:last-child {
+        border-bottom: none;
+      }
+
+      .stage-icon {
+        font-size: 1.5rem;
+        width: 40px;
+        text-align: center;
+      }
+
+      .stage-details {
+        flex: 1;
+      }
+
+      .stage-name {
+        font-weight: 600;
+        color: #2d3436;
+      }
+
+      .stage-difficulty {
+        font-size: 0.85rem;
+        color: #636e72;
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+      }
+
+      .btn {
+        padding: 15px 40px;
+        border: none;
+        border-radius: 25px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+
+      .btn-primary:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+      }
+
+      .btn-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .btn-secondary {
+        background: #e9ecef;
+        color: #495057;
+      }
+
+      .btn-secondary:hover {
+        background: #dee2e6;
+      }
+
+      .ready-toggle {
+        background: linear-gradient(135deg, #55efc4 0%, #00b894 100%);
+      }
+
+      .ready-toggle.active {
+        background: linear-gradient(135deg, #dfe6e9 0%, #b2bec3 100%);
+      }
+
+      .waiting-message {
+        text-align: center;
+        padding: 20px;
+        color: #636e72;
+        font-size: 0.95rem;
+      }
+
+      .loading-dots {
+        display: inline-block;
+      }
+
+      .loading-dots span {
+        animation: blink 1.4s infinite;
+        animation-fill-mode: both;
+      }
+
+      .loading-dots span:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+
+      .loading-dots span:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+
+      @keyframes blink {
+        0%,
+        80%,
+        100% {
+          opacity: 0;
+        }
+        40% {
+          opacity: 1;
+        }
+      }
+
+      .toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #2d3436;
+        color: white;
+        padding: 15px 25px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        z-index: 1000;
+        display: none;
+      }
+
+      .toast.success {
+        background: #00b894;
+      }
+
+      .toast.show {
+        display: block;
+        animation: slideIn 0.3s ease;
+      }
+
+      @keyframes slideIn {
+        from {
+          transform: translateX(100%);
+        }
+        to {
+          transform: translateX(0);
+        }
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 25px;
+        }
+
+        .room-code-display .code {
+          font-size: 2rem;
+          letter-spacing: 5px;
+        }
+
+        .players-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .action-buttons {
+          flex-direction: column;
+        }
+
+        .btn {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🎮 遊戲等待室</h1>
+      </div>
+
+      <!-- 房間代碼 -->
+      <div class="room-code-display">
+        <div class="label">房間代碼</div>
+        <div class="code" id="roomCode">------</div>
+        <button class="copy-btn" onclick="copyRoomCode()">📋 複製代碼</button>
+      </div>
+
+      <!-- 玩家列表 -->
+      <div class="section">
+        <div class="section-title">👥 玩家 (<span id="playerCount">0</span>/8)</div>
+        <div class="players-grid" id="playersGrid">
+          <!-- 玩家卡片將動態生成 -->
+        </div>
+      </div>
+
+      <!-- 遊戲場地 -->
+      <div class="section">
+        <div class="section-title">🎯 遊戲場地</div>
+        <div class="stages-info" id="stagesInfo">
+          <!-- 場地資訊將動態生成 -->
+        </div>
+      </div>
+
+      <!-- 等待訊息 -->
+      <div class="waiting-message" id="waitingMessage">
+        等待房主開始遊戲<span class="loading-dots"><span>.</span><span>.</span><span>.</span></span>
+      </div>
+
+      <!-- 操作按鈕 -->
+      <div class="action-buttons">
+        <button class="btn btn-secondary" onclick="leaveRoom()">離開房間</button>
+        <button class="btn ready-toggle" id="readyBtn" onclick="toggleReady()">準備好了！</button>
+        <button
+          class="btn btn-primary"
+          id="startBtn"
+          onclick="startGame()"
+          style="display: none"
+          disabled
+        >
+          開始遊戲
+        </button>
+      </div>
+    </div>
+
+    <!-- Toast 通知 -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/utils/question-generator.js"></script>
+
+    <script>
+      let currentRoom = null;
+      let currentPlayerId = null;
+      let isHost = false;
+      let isReady = false;
+      let roomRef = null;
+
+      // 初始化
+      window.addEventListener('DOMContentLoaded', () => {
+        initializeLobby();
+      });
+
+      function initializeLobby() {
+        // 從 localStorage 獲取房間資訊
+        const roomData = localStorage.getItem('currentRoom');
+        const playerData = localStorage.getItem('currentPlayer');
+
+        if (!roomData || !playerData) {
+          showToast('未找到房間資訊，請重新加入', 'error');
+          setTimeout(() => {
+            window.location.href = '../index.html';
+          }, 2000);
+          return;
+        }
+
+        currentRoom = JSON.parse(roomData);
+        const player = JSON.parse(playerData);
+        currentPlayerId = player.id;
+        isHost = player.isHost;
+
+        // 設置房間代碼
+        document.getElementById('roomCode').textContent = currentRoom.code;
+
+        // 如果是房主，顯示開始按鈕
+        if (isHost) {
+          document.getElementById('startBtn').style.display = 'block';
+          document.getElementById('readyBtn').style.display = 'none';
+          document.getElementById('waitingMessage').textContent = '等待所有玩家準備就緒...';
+        }
+
+        // 監聽房間變化
+        roomRef = firebase.database().ref(`rooms/${currentRoom.code}`);
+        roomRef.on('value', (snapshot) => {
+          const roomData = snapshot.val();
+          if (!roomData) {
+            showToast('房間已關閉', 'error');
+            setTimeout(() => {
+              window.location.href = '../index.html';
+            }, 2000);
+            return;
+          }
+
+          updateLobby(roomData);
+        });
+      }
+
+      function updateLobby(roomData) {
+        // 更新玩家列表
+        const players = roomData.players || {};
+        const playersList = Object.entries(players).map(([id, data]) => ({
+          id,
+          ...data,
+        }));
+
+        const playersGrid = document.getElementById('playersGrid');
+        playersGrid.innerHTML = '';
+
+        playersList.forEach((player, index) => {
+          const card = document.createElement('div');
+          card.className = `player-card ${player.isHost ? 'host' : ''}`;
+
+          const avatarEmojis = ['🐱', '🐶', '🐼', '🦊', '🐨', '🐯', '🦁', '🐮'];
+          const emoji = avatarEmojis[index % avatarEmojis.length];
+
+          card.innerHTML = `
+            <div class="player-avatar">${emoji}</div>
+            <div class="player-info">
+              <div class="player-name">${player.name}</div>
+              <div class="player-role">${player.isHost ? '👑 房主' : '玩家'}</div>
+            </div>
+            <div class="player-status ${player.ready ? 'ready' : ''}">${
+              player.isHost ? '房主' : player.ready ? '✓ 準備' : '等待中'
+            }</div>
+          `;
+
+          playersGrid.appendChild(card);
+        });
+
+        document.getElementById('playerCount').textContent = playersList.length;
+
+        // 更新場地資訊
+        const stages = roomData.stages || [];
+        const stagesInfo = document.getElementById('stagesInfo');
+        stagesInfo.innerHTML = '';
+
+        stages.forEach((stage, index) => {
+          const stageItem = document.createElement('div');
+          stageItem.className = 'stage-item';
+          stageItem.innerHTML = `
+            <div class="stage-icon">${stage.icon}</div>
+            <div class="stage-details">
+              <div class="stage-name">${index + 1}. ${stage.name}</div>
+              <div class="stage-difficulty">難度: ${getDifficultyText(stage.difficulty)}</div>
+            </div>
+          `;
+          stagesInfo.appendChild(stageItem);
+        });
+
+        // 檢查是否可以開始遊戲（房主）
+        if (isHost) {
+          const allReady = playersList.every((p) => p.isHost || p.ready);
+          const hasEnoughPlayers = playersList.length >= 1;
+          document.getElementById('startBtn').disabled = !allReady || !hasEnoughPlayers;
+        }
+
+        // 檢查遊戲是否已開始
+        if (roomData.status === 'playing') {
+          // 跳轉到遊戲頁面
+          window.location.href = 'game.html';
+        }
+      }
+
+      function getDifficultyText(difficulty) {
+        const map = {
+          easy: '簡單 ⭐',
+          medium: '中等 ⭐⭐',
+          hard: '困難 ⭐⭐⭐',
+        };
+        return map[difficulty] || difficulty;
+      }
+
+      function copyRoomCode() {
+        const code = document.getElementById('roomCode').textContent;
+        navigator.clipboard.writeText(code).then(() => {
+          showToast('代碼已複製！', 'success');
+        });
+      }
+
+      function toggleReady() {
+        isReady = !isReady;
+        const btn = document.getElementById('readyBtn');
+
+        if (isReady) {
+          btn.textContent = '取消準備';
+          btn.classList.add('active');
+        } else {
+          btn.textContent = '準備好了！';
+          btn.classList.remove('active');
+        }
+
+        // 更新 Firebase
+        roomRef.child(`players/${currentPlayerId}/ready`).set(isReady);
+      }
+
+      function startGame() {
+        if (!isHost) return;
+
+        // 生成遊戲題目
+        const roomData = currentRoom;
+        const stages = roomData.stages || [];
+        const stageIds = stages.map((s) => s.id);
+
+        // 使用 QuestionGenerator 生成題目
+        const gameStages = window.QuestionGenerator.generateGameStages(stageIds, 10);
+
+        // 更新房間狀態
+        roomRef.update({
+          status: 'playing',
+          gameStages: gameStages,
+          startTime: Date.now(),
+        });
+
+        showToast('遊戲開始！', 'success');
+      }
+
+      function leaveRoom() {
+        if (confirm('確定要離開房間嗎？')) {
+          // 從 Firebase 移除玩家
+          if (roomRef && currentPlayerId) {
+            roomRef.child(`players/${currentPlayerId}`).remove();
+
+            // 如果是房主，刪除整個房間
+            if (isHost) {
+              roomRef.remove();
+            }
+          }
+
+          // 清除本地儲存
+          localStorage.removeItem('currentRoom');
+          localStorage.removeItem('currentPlayer');
+
+          // 返回首頁
+          window.location.href = '../index.html';
+        }
+      }
+
+      function showToast(message, type = 'success') {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.className = `toast ${type} show`;
+
+        setTimeout(() => {
+          toast.classList.remove('show');
+        }, 3000);
+      }
+
+      // 離開頁面時清理
+      window.addEventListener('beforeunload', () => {
+        if (roomRef) {
+          roomRef.off();
+        }
+      });
+    </script>
+  </body>
+</html>

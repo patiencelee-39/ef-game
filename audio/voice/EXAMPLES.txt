@@ -1,0 +1,20 @@
+音訊檔案命名範例 (Voice Guidance)
+=====================================
+
+✅ 正確範例：
+- voice-tutorial-intro.mp3
+- voice-stage-a-guide.mp3
+- voice-correct-feedback.mp3
+- voice-encouragement.mp3
+
+❌ 錯誤範例：
+- tutorialVoice.mp3 (camelCase)
+- stage_guide.mp3 (snake_case)
+- 教學語音.mp3 (中文)
+- voice1.mp3 (無意義)
+
+規則：
+1. 必須以 voice- 開頭
+2. 使用 kebab-case
+3. 描述語音內容用途
+4. 無中文、大寫字母

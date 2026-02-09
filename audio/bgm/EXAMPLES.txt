@@ -1,0 +1,20 @@
+音訊檔案命名範例 (Background Music)
+=====================================
+
+✅ 正確範例：
+- bgm-main-menu.mp3
+- bgm-stage-a.mp3
+- bgm-stage-b.mp3
+- bgm-victory.mp3
+
+❌ 錯誤範例：
+- mainMenu.mp3 (camelCase)
+- main_menu.mp3 (snake_case)
+- 主選單音樂.mp3 (中文)
+- music1.mp3 (無意義)
+
+規則：
+1. 必須以 bgm- 開頭
+2. 使用 kebab-case
+3. 描述清楚用途
+4. 無中文、大寫字母

@@ -1,0 +1,239 @@
+/* ====================================
+   執行功能訓練遊戲 - 主樣式
+   ==================================== */
+
+:root {
+  /* 主題色彩 */
+  --primary-color: #4caf50;
+  --secondary-color: #2196f3;
+  --success-color: #4caf50;
+  --error-color: #f44336;
+  --warning-color: #ff9800;
+
+  /* 場地主題色 */
+  --stage-a-color: #ffd54f; /* 起司森林 - 黃色 */
+  --stage-b-color: #81c784; /* 人類村莊 - 綠色 */
+  --stage-c-color: #64b5f6; /* 海洋世界 - 藍色 */
+  --stage-d-color: #9575cd; /* 晝夜迷宮 - 紫色 */
+
+  /* 間距 */
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 1rem;
+  --spacing-md: 1.5rem;
+  --spacing-lg: 2rem;
+  --spacing-xl: 3rem;
+
+  /* 字體 */
+  --font-size-xs: 0.875rem;
+  --font-size-sm: 1rem;
+  --font-size-md: 1.25rem;
+  --font-size-lg: 1.5rem;
+  --font-size-xl: 2rem;
+  --font-size-xxl: 3rem;
+
+  /* 圓角 */
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --border-radius-xl: 16px;
+
+  /* 陰影 */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* ====================================
+   基礎重置
+   ==================================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC',
+    'Helvetica Neue', Arial, sans-serif;
+  line-height: 1.6;
+  color: #333;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-md);
+}
+
+/* ====================================
+   容器
+   ==================================== */
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  background: white;
+  border-radius: var(--border-radius-xl);
+  box-shadow: var(--shadow-lg);
+  padding: var(--spacing-xl);
+}
+
+/* ====================================
+   標題
+   ==================================== */
+
+header {
+  text-align: center;
+  margin-bottom: var(--spacing-xl);
+}
+
+h1 {
+  font-size: var(--font-size-xxl);
+  color: var(--primary-color);
+  margin-bottom: var(--spacing-sm);
+}
+
+.subtitle {
+  font-size: var(--font-size-md);
+  color: #666;
+}
+
+/* ====================================
+   模式選擇卡片
+   ==================================== */
+
+.mode-selection {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+}
+
+.mode-card {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  text-align: center;
+  cursor: pointer;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.mode-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+}
+
+.mode-icon {
+  font-size: 4rem;
+  margin-bottom: var(--spacing-sm);
+}
+
+.mode-card h2 {
+  font-size: var(--font-size-lg);
+  margin-bottom: var(--spacing-xs);
+  color: #333;
+}
+
+.mode-card p {
+  color: #666;
+  margin-bottom: var(--spacing-md);
+}
+
+/* ====================================
+   按鈕
+   ==================================== */
+
+button {
+  font-family: inherit;
+  font-size: var(--font-size-md);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border: none;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+}
+
+.btn-primary {
+  background: var(--primary-color);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #45a049;
+  transform: scale(1.05);
+}
+
+.btn-secondary {
+  background: var(--secondary-color);
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #1976d2;
+  transform: scale(1.05);
+}
+
+/* ====================================
+   頁尾
+   ==================================== */
+
+footer {
+  text-align: center;
+  color: #999;
+  font-size: var(--font-size-xs);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid #eee;
+}
+
+/* ====================================
+   響應式設計
+   ==================================== */
+
+@media (max-width: 768px) {
+  .container {
+    padding: var(--spacing-md);
+  }
+
+  h1 {
+    font-size: var(--font-size-xl);
+  }
+
+  .mode-selection {
+    grid-template-columns: 1fr;
+  }
+
+  .mode-icon {
+    font-size: 3rem;
+  }
+}
+
+/* ====================================
+   工具類別
+   ==================================== */
+
+.text-center {
+  text-align: center;
+}
+.mt-sm {
+  margin-top: var(--spacing-sm);
+}
+.mt-md {
+  margin-top: var(--spacing-md);
+}
+.mt-lg {
+  margin-top: var(--spacing-lg);
+}
+.mb-sm {
+  margin-bottom: var(--spacing-sm);
+}
+.mb-md {
+  margin-bottom: var(--spacing-md);
+}
+.mb-lg {
+  margin-bottom: var(--spacing-lg);
+}

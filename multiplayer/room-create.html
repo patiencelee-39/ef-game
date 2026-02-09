@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>建立房間 - 執行功能訓練遊戲</title>
+    <link rel="stylesheet" href="../css/main.css" />
+    <style>
+      .stage-selector {
+        margin: 2rem 0;
+      }
+
+      .selected-stages {
+        min-height: 100px;
+        border: 2px dashed #ccc;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        background: #f9f9f9;
+      }
+
+      .selected-stages-empty {
+        text-align: center;
+        color: #999;
+        padding: 2rem;
+      }
+
+      .stage-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: white;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        margin: 0.5rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        cursor: move;
+      }
+
+      .stage-chip .emoji {
+        font-size: 1.5rem;
+      }
+
+      .stage-chip .remove-btn {
+        background: #f44336;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        cursor: pointer;
+        font-size: 0.875rem;
+      }
+
+      .available-stages {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+      }
+
+      .stage-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        text-align: center;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+      }
+
+      .stage-card:hover {
+        transform: translateY(-5px);
+      }
+
+      .stage-card.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .stage-card .emoji {
+        font-size: 3rem;
+        display: block;
+        margin-bottom: 0.5rem;
+      }
+
+      .form-group {
+        margin-bottom: 1.5rem;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+      }
+
+      .form-group input,
+      .form-group select {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 1rem;
+      }
+
+      .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .checkbox-group input[type='checkbox'] {
+        width: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>🏠 建立遊戲房間</h1>
+        <p class="subtitle">設定房間並邀請朋友一起遊玩</p>
+      </header>
+
+      <main>
+        <form id="createRoomForm">
+          <!-- 基本設定 -->
+          <section class="form-section">
+            <h2>📋 基本設定</h2>
+
+            <div class="form-group">
+              <label for="roomName">房間名稱</label>
+              <input type="text" id="roomName" value="我的練習房" required />
+            </div>
+
+            <div class="form-group">
+              <label for="roomCode">房間代碼（自動生成）</label>
+              <input type="text" id="roomCode" readonly />
+              <button type="button" id="regenerateCode" class="btn-secondary mt-sm">
+                🔄 重新生成
+              </button>
+            </div>
+
+            <div class="form-group checkbox-group">
+              <input type="checkbox" id="hasPassword" />
+              <label for="hasPassword">設定房間密碼</label>
+            </div>
+
+            <div class="form-group" id="passwordGroup" style="display: none">
+              <label for="password">密碼（4位數字）</label>
+              <input
+                type="password"
+                id="password"
+                pattern="[0-9]{4}"
+                maxlength="4"
+                placeholder="1234"
+              />
+            </div>
+          </section>
+
+          <!-- 遊戲場選擇 -->
+          <section class="form-section stage-selector">
+            <h2>🎮 遊戲場選擇（拖曳排序）</h2>
+
+            <div class="selected-stages" id="selectedStages">
+              <div class="selected-stages-empty">👆 請從下方選擇遊戲場（最多4個）</div>
+            </div>
+
+            <h3>可選擇的遊戲場：</h3>
+            <div class="available-stages" id="availableStages">
+              <div class="stage-card" data-stage="A">
+                <span class="emoji">🧀</span>
+                <div>場地A</div>
+                <div>起司森林</div>
+                <small>簡單</small>
+              </div>
+              <div class="stage-card" data-stage="B">
+                <span class="emoji">🧑</span>
+                <div>場地B</div>
+                <div>人類村莊</div>
+                <small>中等</small>
+              </div>
+              <div class="stage-card" data-stage="C">
+                <span class="emoji">🐟</span>
+                <div>場地C</div>
+                <div>海洋世界</div>
+                <small>中等</small>
+              </div>
+              <div class="stage-card" data-stage="D">
+                <span class="emoji">🌙</span>
+                <div>場地D</div>
+                <div>晝夜迷宮</div>
+                <small>困難</small>
+              </div>
+            </div>
+          </section>
+
+          <!-- 遊戲設定 -->
+          <section class="form-section">
+            <h2>⚙️ 遊戲設定</h2>
+
+            <div class="form-group">
+              <label for="questionsCount">每場地題數</label>
+              <select id="questionsCount">
+                <option value="5">5題</option>
+                <option value="10" selected>10題</option>
+                <option value="15">15題</option>
+                <option value="20">20題</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="countdownSeconds">倒數秒數</label>
+              <select id="countdownSeconds">
+                <option value="2">2秒</option>
+                <option value="3" selected>3秒</option>
+                <option value="4">4秒</option>
+                <option value="5">5秒</option>
+              </select>
+            </div>
+          </section>
+
+          <!-- 進階設定 -->
+          <section class="form-section">
+            <h2>🔧 進階設定</h2>
+
+            <div class="checkbox-group">
+              <input type="checkbox" id="showLeaderboard" checked />
+              <label for="showLeaderboard">顯示即時計分板</label>
+            </div>
+
+            <div class="checkbox-group">
+              <input type="checkbox" id="showAnswerStatus" checked />
+              <label for="showAnswerStatus">顯示答題狀態</label>
+            </div>
+
+            <div class="checkbox-group">
+              <input type="checkbox" id="showCompletionNotification" checked />
+              <label for="showCompletionNotification">顯示場地完成通知</label>
+            </div>
+
+            <div class="checkbox-group">
+              <input type="checkbox" id="allowLateJoin" />
+              <label for="allowLateJoin">允許中途加入</label>
+            </div>
+
+            <div class="checkbox-group">
+              <input type="checkbox" id="showFinalRanking" checked />
+              <label for="showFinalRanking">顯示最終排名</label>
+            </div>
+          </section>
+
+          <!-- 按鈕 -->
+          <div class="button-group" style="display: flex; gap: 1rem; margin-top: 2rem">
+            <button type="button" onclick="location.href = '../index.html'" class="btn-secondary">
+              返回
+            </button>
+            <button type="submit" class="btn-primary" style="flex: 1">建立房間</button>
+          </div>
+        </form>
+      </main>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+
+    <!-- 工具函式 -->
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/utils/constants.js"></script>
+    <script src="../js/utils/room-code.js"></script>
+    <script src="../js/utils/question-generator.js"></script>
+
+    <!-- 頁面邏輯 -->
+    <script src="../js/multiplayer/room-manager.js"></script>
+
+    <script>
+      // 頁面初始化
+      document.addEventListener('DOMContentLoaded', async () => {
+        // 生成房間代碼
+        const roomCode = await window.RoomCodeUtils.generateUnique();
+        document.getElementById('roomCode').value = window.RoomCodeUtils.format(roomCode);
+
+        // 密碼開關
+        document.getElementById('hasPassword').addEventListener('change', (e) => {
+          document.getElementById('passwordGroup').style.display = e.target.checked
+            ? 'block'
+            : 'none';
+        });
+
+        // 重新生成代碼
+        document.getElementById('regenerateCode').addEventListener('click', async () => {
+          const newCode = await window.RoomCodeUtils.generateUnique();
+          document.getElementById('roomCode').value = window.RoomCodeUtils.format(newCode);
+        });
+
+        // 遊戲場選擇邏輯
+        initStageSelector();
+
+        // 表單提交
+        document.getElementById('createRoomForm').addEventListener('submit', handleFormSubmit);
+      });
+
+      // 遊戲場選擇器初始化
+      let selectedStages = [];
+
+      function initStageSelector() {
+        const availableStages = document.getElementById('availableStages');
+        const selectedStagesContainer = document.getElementById('selectedStages');
+
+        // 點擊可選場地
+        availableStages.addEventListener('click', (e) => {
+          const card = e.target.closest('.stage-card');
+          if (!card || card.classList.contains('disabled')) return;
+
+          const stageId = card.dataset.stage;
+          addStage(stageId);
+        });
+      }
+
+      function addStage(stageId) {
+        if (selectedStages.length >= 4) {
+          alert('最多只能選擇4個遊戲場');
+          return;
+        }
+
+        if (selectedStages.includes(stageId)) {
+          alert('此遊戲場已選擇');
+          return;
+        }
+
+        selectedStages.push(stageId);
+        updateStageDisplay();
+      }
+
+      function removeStage(stageId) {
+        selectedStages = selectedStages.filter((id) => id !== stageId);
+        updateStageDisplay();
+      }
+
+      function updateStageDisplay() {
+        const container = document.getElementById('selectedStages');
+        const stageInfo = window.QuestionGenerator.GAME_STAGES;
+
+        if (selectedStages.length === 0) {
+          container.innerHTML =
+            '<div class="selected-stages-empty">👆 請從下方選擇遊戲場（最多4個）</div>';
+        } else {
+          container.innerHTML = selectedStages
+            .map((stageId) => {
+              const stage = stageInfo[stageId];
+              return `
+                        <div class="stage-chip" draggable="true" data-stage="${stageId}">
+                            <span class="emoji">${stage.icon}</span>
+                            <span>${stage.name}</span>
+                            <button type="button" class="remove-btn" onclick="removeStage('${stageId}')">✕</button>
+                        </div>
+                    `;
+            })
+            .join('');
+        }
+
+        // 更新可選場地狀態
+        document.querySelectorAll('.stage-card').forEach((card) => {
+          const stageId = card.dataset.stage;
+          if (selectedStages.includes(stageId)) {
+            card.classList.add('disabled');
+          } else {
+            card.classList.remove('disabled');
+          }
+        });
+      }
+
+      // 表單提交處理
+      async function handleFormSubmit(e) {
+        e.preventDefault();
+
+        if (selectedStages.length === 0) {
+          alert('請至少選擇一個遊戲場');
+          return;
+        }
+
+        const button = e.target.querySelector('button[type="submit"]');
+        button.disabled = true;
+        button.textContent = '建立中...';
+
+        try {
+          const roomData = collectFormData();
+          const roomCode = await window.RoomManager.createRoom(roomData);
+
+          // 跳轉到等待室
+          window.location.href = `waiting-room.html?code=${roomCode}`;
+        } catch (error) {
+          alert('建立房間失敗: ' + error.message);
+          button.disabled = false;
+          button.textContent = '建立房間';
+        }
+      }
+
+      function collectFormData() {
+        const roomCode = window.RoomCodeUtils.unformat(document.getElementById('roomCode').value);
+        const hasPassword = document.getElementById('hasPassword').checked;
+
+        return {
+          roomCode,
+          roomName: document.getElementById('roomName').value,
+          hasPassword,
+          password: hasPassword ? document.getElementById('password').value : null,
+          selectedStages,
+          questionsCount: parseInt(document.getElementById('questionsCount').value),
+          countdownSeconds: parseInt(document.getElementById('countdownSeconds').value),
+          displaySettings: {
+            showLeaderboard: document.getElementById('showLeaderboard').checked,
+            showAnswerStatus: document.getElementById('showAnswerStatus').checked,
+            showCompletionNotification: document.getElementById('showCompletionNotification')
+              .checked,
+            allowLateJoin: document.getElementById('allowLateJoin').checked,
+            showFinalRanking: document.getElementById('showFinalRanking').checked,
+          },
+        };
+      }
+    </script>
+  </body>
+</html>

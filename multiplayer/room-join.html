@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>加入房間 - 執行功能訓練遊戲</title>
+    <link rel="stylesheet" href="../css/main.css" />
+    <style>
+      .join-container {
+        max-width: 600px;
+        margin: 2rem auto;
+        padding: 2rem;
+      }
+
+      .code-input-group {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin: 2rem 0;
+      }
+
+      .code-input {
+        width: 60px;
+        height: 80px;
+        font-size: 2rem;
+        text-align: center;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        font-weight: bold;
+        text-transform: uppercase;
+        transition: all 0.3s;
+      }
+
+      .code-input:focus {
+        border-color: #4caf50;
+        outline: none;
+        transform: scale(1.05);
+      }
+
+      .code-separator {
+        display: flex;
+        align-items: center;
+        font-size: 2rem;
+        color: #999;
+        font-weight: bold;
+      }
+
+      .player-name-input {
+        width: 100%;
+        padding: 1rem;
+        font-size: 1.2rem;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        margin: 1rem 0;
+        transition: all 0.3s;
+      }
+
+      .player-name-input:focus {
+        border-color: #4caf50;
+        outline: none;
+      }
+
+      .join-status {
+        margin: 2rem 0;
+        padding: 1rem;
+        border-radius: 8px;
+        display: none;
+      }
+
+      .join-status.success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+
+      .join-status.error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+
+      .join-status.info {
+        background: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+      }
+
+      .room-info {
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin: 1rem 0;
+        display: none;
+      }
+
+      .room-info h3 {
+        margin-bottom: 1rem;
+        color: #333;
+      }
+
+      .room-info-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #dee2e6;
+      }
+
+      .room-info-item:last-child {
+        border-bottom: none;
+      }
+
+      .btn-group {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+      }
+
+      .btn-group button {
+        flex: 1;
+      }
+
+      .loading {
+        text-align: center;
+        padding: 1rem;
+        display: none;
+      }
+
+      .loading::after {
+        content: '';
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #4caf50;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>🔗 加入房間</h1>
+        <p class="subtitle">輸入房間代碼以加入遊戲</p>
+      </header>
+
+      <main class="join-container">
+        <div class="form-group">
+          <label for="playerName">您的名字</label>
+          <input
+            type="text"
+            id="playerName"
+            class="player-name-input"
+            placeholder="輸入您的名字"
+            maxlength="20"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>房間代碼</label>
+          <div class="code-input-group">
+            <input type="text" class="code-input" id="code1" maxlength="1" autocomplete="off" />
+            <input type="text" class="code-input" id="code2" maxlength="1" autocomplete="off" />
+            <input type="text" class="code-input" id="code3" maxlength="1" autocomplete="off" />
+            <span class="code-separator">-</span>
+            <input type="text" class="code-input" id="code4" maxlength="1" autocomplete="off" />
+            <input type="text" class="code-input" id="code5" maxlength="1" autocomplete="off" />
+            <input type="text" class="code-input" id="code6" maxlength="1" autocomplete="off" />
+          </div>
+        </div>
+
+        <div class="loading" id="loading">正在尋找房間...</div>
+
+        <div class="join-status" id="joinStatus"></div>
+
+        <div class="room-info" id="roomInfo">
+          <h3>📋 房間資訊</h3>
+          <div class="room-info-item">
+            <span>房主：</span>
+            <span id="roomHost">-</span>
+          </div>
+          <div class="room-info-item">
+            <span>玩家人數：</span>
+            <span id="playerCount">-</span>
+          </div>
+          <div class="room-info-item">
+            <span>關卡數量：</span>
+            <span id="stageCount">-</span>
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn-secondary" onclick="location.href = '../index.html'">返回首頁</button>
+          <button class="btn-primary" id="joinBtn" onclick="joinRoom()">加入房間</button>
+        </div>
+      </main>
+
+      <footer>
+        <p>&copy; 2026 執行功能訓練遊戲. All rights reserved.</p>
+      </footer>
+    </div>
+
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/utils/constants.js"></script>
+    <script src="../js/utils/room-code.js"></script>
+    <script>
+      // 代碼輸入自動跳轉
+      const codeInputs = document.querySelectorAll('.code-input');
+      codeInputs.forEach((input, index) => {
+        input.addEventListener('input', (e) => {
+          const value = e.target.value.toUpperCase();
+          e.target.value = value;
+
+          if (value && index < codeInputs.length - 1) {
+            codeInputs[index + 1].focus();
+          }
+        });
+
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Backspace' && !e.target.value && index > 0) {
+            codeInputs[index - 1].focus();
+          }
+        });
+
+        input.addEventListener('paste', (e) => {
+          e.preventDefault();
+          const pastedText = e.clipboardData.getData('text').toUpperCase().replace(/-/g, '');
+          const chars = pastedText.split('');
+
+          codeInputs.forEach((input, i) => {
+            if (chars[i]) {
+              input.value = chars[i];
+            }
+          });
+
+          if (chars.length > 0) {
+            const lastIndex = Math.min(chars.length - 1, codeInputs.length - 1);
+            codeInputs[lastIndex].focus();
+          }
+        });
+      });
+
+      function getRoomCode() {
+        const code = Array.from(codeInputs)
+          .map((input) => input.value)
+          .join('');
+        return code.substring(0, 3) + '-' + code.substring(3, 6);
+      }
+
+      function showStatus(message, type) {
+        const statusEl = document.getElementById('joinStatus');
+        statusEl.textContent = message;
+        statusEl.className = `join-status ${type}`;
+        statusEl.style.display = 'block';
+      }
+
+      function hideStatus() {
+        document.getElementById('joinStatus').style.display = 'none';
+      }
+
+      async function joinRoom() {
+        const playerName = document.getElementById('playerName').value.trim();
+        const roomCode = getRoomCode();
+
+        // 驗證輸入
+        if (!playerName) {
+          showStatus('❌ 請輸入您的名字', 'error');
+          return;
+        }
+
+        if (roomCode.replace('-', '').length !== 6) {
+          showStatus('❌ 請輸入完整的 6 位房間代碼', 'error');
+          return;
+        }
+
+        // 顯示載入狀態
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('joinBtn').disabled = true;
+        hideStatus();
+
+        try {
+          // 檢查房間是否存在
+          const roomRef = firebase.database().ref(`rooms/${roomCode}`);
+          const snapshot = await roomRef.once('value');
+
+          if (!snapshot.exists()) {
+            showStatus('❌ 房間不存在，請確認代碼是否正確', 'error');
+            return;
+          }
+
+          const roomData = snapshot.val();
+
+          // 檢查房間狀態
+          if (roomData.status === 'playing') {
+            showStatus('❌ 遊戲已開始，無法加入', 'error');
+            return;
+          }
+
+          if (roomData.status === 'finished') {
+            showStatus('❌ 遊戲已結束', 'error');
+            return;
+          }
+
+          // 檢查玩家數量
+          const currentPlayers = roomData.players ? Object.keys(roomData.players).length : 0;
+          const maxPlayers = roomData.settings?.maxPlayers || 4;
+
+          if (currentPlayers >= maxPlayers) {
+            showStatus(`❌ 房間已滿（${maxPlayers}/${maxPlayers}）`, 'error');
+            return;
+          }
+
+          // 顯示房間資訊
+          document.getElementById('roomHost').textContent = roomData.hostName || '未知';
+          document.getElementById('playerCount').textContent = `${currentPlayers}/${maxPlayers}`;
+          document.getElementById('stageCount').textContent = roomData.stages?.length || 0;
+          document.getElementById('roomInfo').style.display = 'block';
+
+          // 加入房間
+          const playerId = `player_${Date.now()}`;
+          await roomRef.child(`players/${playerId}`).set({
+            name: playerName,
+            joinedAt: firebase.database.ServerValue.TIMESTAMP,
+            ready: false,
+            score: 0,
+          });
+
+          showStatus('✅ 成功加入房間！正在進入遊戲...', 'success');
+
+          // 儲存玩家資訊到 localStorage
+          localStorage.setItem('currentRoomCode', roomCode);
+          localStorage.setItem('currentPlayerId', playerId);
+          localStorage.setItem('currentPlayerName', playerName);
+
+          // 延遲後跳轉到遊戲等待室
+          setTimeout(() => {
+            // TODO: 跳轉到遊戲等待室頁面
+            alert('功能開發中：將跳轉到遊戲等待室');
+            // location.href = `room-lobby.html?room=${roomCode}&player=${playerId}`;
+          }, 1500);
+        } catch (error) {
+          console.error('加入房間失敗:', error);
+          showStatus('❌ 加入房間失敗：' + error.message, 'error');
+        } finally {
+          document.getElementById('loading').style.display = 'none';
+          document.getElementById('joinBtn').disabled = false;
+        }
+      }
+
+      // Enter 鍵提交
+      document.getElementById('playerName').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          codeInputs[0].focus();
+        }
+      });
+
+      codeInputs[codeInputs.length - 1].addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          joinRoom();
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,14 +1,20 @@
 *.png
 .DS_Store
 .Rhistory
-index-0103v1.html
-index-0104v2.html
-index-0105v3-Claude.html
-index-0105v3-Gemini-v1.1.html
-index-0105v3-Gemini-v1.2.html
-index-0105v3-Gemini-v1.3.html
-index-0107v4.html
-index-0112v5.html
-index-0113v10.html
-index-0114v11.html
-index-0115v12.html
+# 報告文件
+*REPORT*.md
+*COMPLETION*.md
+*SUMMARY*.md
+*INVENTORY*.md
+*CONVENTION*.md
+*PLAN*.md
+*.backup
+VERIFICATION-REPORT.txt
+CONTRIBUTING.md
+
+# 測試檔案
+test-*.html
+test-*.js
+
+# Node 模組
+node_modules/

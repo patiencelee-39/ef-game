@@ -1,75 +1,112 @@
-最後更新日期：2026 年 01 月 15 日 星期四
+# 執行功能訓練遊戲
 
-# 執行功能訓練遊戲 (Executive Function Training Game)
+3-6歲聽障學齡前幼兒執行功能訓練遊戲
 
-## 📚 專案性質
+## 📋 專案資訊
 
-這是**中原大學特殊教育學系碩士班**的學術研究工具，
-作為實務報告（代替碩士論文）的一部分。
-本專案程式碼完全開源，旨在提供透明、安全的認知訓練工具。
+- **開發目標**：多人 Kahoot 風格 + 單人模式
+- **部署環境**：Firebase Hosting
+- **目標使用者**：3-6歲聽障學齡前幼兒
 
-## 🎯 用途說明與研究目的
+## 🚀 快速開始
 
-- **目標使用者**：聽障學童及需要執行功能訓練的學生。
-- **功能**：透過網頁互動遊戲進行認知能力訓練。
-- **研究目的**：訓練工作記憶、抑制控制、認知彈性，採用 Go/No-Go 與 DCCS 實驗典範。
+### 1. 設定 Firebase 配置
 
-## 🔒 隱私聲明
+編輯 `js/firebase-config.js`，填入您的 Firebase 配置資訊：
 
-- ❌ **不收集**任何個人資訊
-- ❌ **不使用** Cookies 或追蹤技術
-- ❌ 資料**不會上傳**到任何伺服器
-- ✅ 所有資料處理在使用者瀏覽器本地完成
-- ✅ 網站採用 Content Security Policy (CSP) 保護使用者安全
+```javascript
+const firebaseConfig = {
+  apiKey: '您的 API Key',
+  authDomain: '您的 Auth Domain',
+  databaseURL: '您的 Database URL',
+  projectId: '您的 Project ID',
+  storageBucket: '您的 Storage Bucket',
+  messagingSenderId: '您的 Sender ID',
+  appId: '您的 App ID',
+};
+```
 
-## 📊 資料處理與匯出功能
+### 2. 安裝 Firebase CLI
 
-本網站提供 CSV 匯出功能，僅用於研究資料分析。
+```bash
+npm install -g firebase-tools
+```
 
-- **觸發方式**：必須由使用者在遊戲結束後主動點擊按鈕。
-- **檔案內容**：僅包含遊戲表現統計（反應時間、正確率、試題類型），**不包含**任何個人識別資訊（PII）。
-- **安全性**：檔案由瀏覽器本地生成，不經過外部伺服器。
+### 3. 登入 Firebase
 
-## 🏫 研究機構
+```bash
+firebase login
+```
 
-中原大學特殊教育學系
-Chung Yuan Christian University, Department of Special Education
+### 4. 初始化專案
 
-## 📖 參考文獻 (References)
+```bash
+firebase init
+```
 
-#### 第一回合：抑制控制(Hall et al.)
+選擇：
 
-- Hall, M. L., Eigsti, I.-M., Bortfeld, H., & Lillo-Martin, D. (2017). Auditory deprivation does not impair executive function, but language deprivation might: Evidence from a parent-report measure in Deaf native signing children. _Journal of Deaf Studies and Deaf Education_, _22_(1), 9-21. https://doi.org/10.1093/deafed/enw054
+- Hosting
+- 使用現有專案
+- Public directory: `.`（當前目錄）
 
-- Hall, M. L., Eigsti, I.-M., Bortfeld, H., & Lillo-Martin, D. (2018). Executive function in deaf children: Auditory access and language access. _Journal of Speech, Language, and Hearing Research_, _61_(8), 1970-1988. https://doi.org/10.1044/2018_JSLHR-L-17-0281
+### 5. 本地測試
 
-#### 第二回合：認知彈性(Zelazo)
+```bash
+firebase serve
+```
 
-- Zelazo, P. (2006). The Dimensional Change Card Sort (DCCS): a method of assessing executive function in children. _Nature Protocols_, _1_, 297–301. https://doi.org/10.1038/nprot.2006.46
+### 6. 部署到 Firebase
 
-#### 第三回合：抑制控制(Goodwin et al.)
+```bash
+firebase deploy
+```
 
-- Goodwin, C., Carrigan, E., Walker, K., & Coppola, M. (2022). Language not auditory experience is related to parent-reported executive functioning in preschool-aged deaf and hard-of-hearing children. _Child Development_, _93_(1), 209-224. https://doi.org/10.1111/cdev.13677
+## 📂 檔案結構
 
-#### 第四回合：認知彈性(Zelazo)
+```
+execution-function-game/
+├── index.html                  # 起始頁面
+├── multiplayer/               # 多人模式
+├── singleplayer/              # 單人模式
+├── leaderboard/               # 排行榜
+├── management/                # 班級管理
+├── js/                        # JavaScript
+│   ├── firebase-config.js     # Firebase 配置（需填寫）
+│   ├── utils/                 # 工具函式
+│   ├── multiplayer/           # 多人邏輯
+│   ├── singleplayer/          # 單人邏輯
+│   ├── stages/                # 遊戲場邏輯
+│   └── sound/                 # 聲音系統
+├── css/                       # 樣式
+├── audio/                     # 音效檔案
+└── firebase.json              # Firebase 設定
+```
 
-- Zelazo, P. (2006). The Dimensional Change Card Sort (DCCS): a method of assessing executive function in children. _Nature Protocols_, _1_, 297–301. https://doi.org/10.1038/nprot.2006.46
+## 🎮 遊戲模式
 
-## 🎮 自行修改遊戲教學之先備知識
+### 多人模式（Kahoot 風格）
 
-本專案歡迎學術交流與修改使用。
+- 建立房間
+- 邀請朋友
+- 即時競賽
 
-1. **PAPAYA 電腦教學(16 分鐘)：**
-   <br>
-   <a href="https://youtu.be/FKXRiAiQFiY" target="_blank">程式與網頁開發者必備技能！Git 和 GitHub 零基礎快速上手
-   </a>
-   <!-- <img src="https://img.youtube.com/vi/FKXRiAiQFiY/0.jpg" alt="Git 教學" width="240"> -->
+### 單人模式
 
-2. **免費用 Gemini 寫 Vibe Coding**
-   <br>
-   <a href="https://www.gvm.com.tw/article/119853" target="_blank">VScode(Visual Studio Code)＋ Gemini Code Assist ＝ Vibe Coding</a>
+- 場地選擇
+- 加權計分
+- 徽章收集
 
-<!-- 3. **Vibe Coding 教學：** -->
-   <!-- <br> -->
-   <!-- <a href="https://youtu.be/LL0Zazm-qik" target="_blank">【寫好 Vibe Coding 的秘密】別人的 Vibe Coding 總是不會讓人失望!! Context7 MCP 如何安裝及使用 | 使用 10xRules.ai 寫出專案級提示詞</a> -->
-   <!-- <img src="https://img.youtube.com/vi/LL0Zazm-qik/0.jpg" alt="Vibe Code 教學" width="240"> -->
+## 📝 開發文件
+
+詳細需求請參考：`完整需求統整文件_最終版v2.0.md`
+
+## 🔒 安全性
+
+- Firebase 規則已設定
+- 本地資料使用 localStorage
+- 全球排行榜需使用者同意
+
+## 📧 聯絡資訊
+
+學術研究專案 - 2026

@@ -1,0 +1,36 @@
+{
+  "name": "execution-function-game",
+  "version": "2.3.0",
+  "description": "DCCS Executive Function Game - A neurocognitive assessment tool with multiplayer support",
+  "main": "index.html",
+  "scripts": {
+    "lint": "eslint . --ext .js",
+    "lint:fix": "eslint . --ext .js --fix",
+    "format": "prettier --write \"**/*.{js,html,css,json,md}\"",
+    "format:check": "prettier --check \"**/*.{js,html,css,json,md}\"",
+    "validate": "npm run lint && npm run format:check",
+    "validate:assets": "node scripts/validate-assets.js",
+    "test": "node test-specific.js && node test-deep.js",
+    "prepare": "husky"
+  },
+  "keywords": [
+    "dccs",
+    "cognitive",
+    "executive-function",
+    "psychology",
+    "assessment",
+    "multiplayer"
+  ],
+  "author": "Patience Lee",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "husky": "^9.0.11",
+    "prettier": "^3.2.5"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

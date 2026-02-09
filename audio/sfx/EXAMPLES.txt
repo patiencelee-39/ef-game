@@ -1,0 +1,20 @@
+音訊檔案命名範例 (Sound Effects)
+=====================================
+
+✅ 正確範例：
+- sfx-correct.mp3
+- sfx-wrong.mp3
+- sfx-button-click.mp3
+- sfx-countdown-tick.mp3
+
+❌ 錯誤範例：
+- correctSound.mp3 (camelCase)
+- button_click.mp3 (snake_case)
+- 正確音效.mp3 (中文)
+- sound1.mp3 (無意義)
+
+規則：
+1. 必須以 sfx- 開頭
+2. 使用 kebab-case
+3. 描述音效場景
+4. 無中文、大寫字母
