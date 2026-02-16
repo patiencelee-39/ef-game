@@ -9,7 +9,7 @@
  * 版本號更新時會自動清除舊快取。
  */
 
-var CACHE_VERSION = "efgame-20260216b";
+var CACHE_VERSION = "efgame-20260216c";
 var STATIC_CACHE = CACHE_VERSION + "-static";
 var PAGE_CACHE = CACHE_VERSION + "-pages";
 

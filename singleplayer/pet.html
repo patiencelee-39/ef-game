@@ -1041,6 +1041,19 @@
       }
     </style>
     <link rel="stylesheet" href="../css/components/navbar.css" />
+    <!-- ===== Scripts（依賴鏈載入順序）===== -->
+    <script defer src="../js/game-config.js"></script>
+    <script defer src="../js/utils/storage.js"></script>
+    <script defer src="../js/utils/level-calculator.js"></script>
+    <script defer src="../js/shop/pet-config.js"></script>
+    <script defer src="../js/shop/pet-manager.js"></script>
+    <script defer src="../js/shop/sticker-config.js"></script>
+    <script defer src="../js/shop/sticker-manager.js"></script>
+    <script defer src="../js/shop/avatar-config.js"></script>
+    <script defer src="../js/shop/avatar-manager.js"></script>
+    <script defer src="../js/shared/focus-trap.js"></script>
+    <script defer src="../js/shared/navbar.js"></script>
+    <script defer src="../js/shared/landscape-hint.js"></script>
   </head>
   <body>
     <header class="pet-header">
@@ -1219,17 +1232,6 @@
         </div>
       </div>
     </div>
-
-    <!-- ===== Scripts（依賴鏈載入順序）===== -->
-    <script src="../js/game-config.js"></script>
-    <script src="../js/utils/storage.js"></script>
-    <script src="../js/utils/level-calculator.js"></script>
-    <script src="../js/shop/pet-config.js"></script>
-    <script src="../js/shop/pet-manager.js"></script>
-    <script src="../js/shop/sticker-config.js"></script>
-    <script src="../js/shop/sticker-manager.js"></script>
-    <script src="../js/shop/avatar-config.js"></script>
-    <script src="../js/shop/avatar-manager.js"></script>
 
     <script>
       /* =========================================
@@ -2119,8 +2121,5 @@
           }
         });
     </script>
-    <script src="../js/shared/focus-trap.js"></script>
-    <script src="../js/shared/navbar.js"></script>
-    <script src="../js/shared/landscape-hint.js"></script>
   </body>
 </html>

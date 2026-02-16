@@ -551,6 +551,14 @@
       }
     </style>
     <link rel="stylesheet" href="../css/components/navbar.css" />
+    <!-- === JS 依賴（載入順序重要）=== -->
+    <script defer src="../js/game-config.js"></script>
+    <script defer src="../js/utils/storage.js"></script>
+    <script defer src="../js/utils/level-calculator.js"></script>
+    <script defer src="../js/shop/sticker-config.js"></script>
+    <script defer src="../js/shop/sticker-manager.js"></script>
+    <script defer src="../js/shared/navbar.js"></script>
+    <script defer src="../js/shared/landscape-hint.js"></script>
   </head>
   <body>
     <!-- === 頂部狀態列 === -->
@@ -644,13 +652,6 @@
         <button class="btn-detail-close" onclick="closeDetail()">關閉</button>
       </div>
     </div>
-
-    <!-- === JS 依賴（載入順序重要）=== -->
-    <script src="../js/game-config.js"></script>
-    <script src="../js/utils/storage.js"></script>
-    <script src="../js/utils/level-calculator.js"></script>
-    <script src="../js/shop/sticker-config.js"></script>
-    <script src="../js/shop/sticker-manager.js"></script>
 
     <script>
       // =========================================
@@ -919,7 +920,5 @@
           if (e.target === this) closeDetail();
         });
     </script>
-    <script src="../js/shared/navbar.js"></script>
-    <script src="../js/shared/landscape-hint.js"></script>
   </body>
 </html>

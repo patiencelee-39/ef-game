@@ -250,6 +250,16 @@
         flex-shrink: 0;
       }
     </style>
+    <!-- === 依賴 === -->
+    <script defer src="../js/game-config.js"></script>
+    <script defer src="../js/adventure-maps-config.js"></script>
+    <script defer src="../js/utils/storage.js"></script>
+    <script defer src="../js/utils/level-calculator.js"></script>
+    <script defer src="../js/utils/badge-checker.js"></script>
+    <script defer src="../js/singleplayer/progress-tracker.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+    <script defer src="../js/shared/navbar.js"></script>
+    <script defer src="../js/shared/landscape-hint.js"></script>
   </head>
   <body>
     <main class="stats-page" id="main-content">
@@ -293,15 +303,6 @@
         <div id="badgeContent"></div>
       </div>
     </main>
-
-    <!-- === 依賴 === -->
-    <script src="../js/game-config.js"></script>
-    <script src="../js/adventure-maps-config.js"></script>
-    <script src="../js/utils/storage.js"></script>
-    <script src="../js/utils/level-calculator.js"></script>
-    <script src="../js/utils/badge-checker.js"></script>
-    <script src="../js/singleplayer/progress-tracker.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 
     <script>
       (function () {
@@ -732,7 +733,5 @@
         }
       })();
     </script>
-    <script src="../js/shared/navbar.js"></script>
-    <script src="../js/shared/landscape-hint.js"></script>
   </body>
 </html>

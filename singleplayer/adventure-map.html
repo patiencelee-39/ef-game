@@ -501,6 +501,20 @@
       }
     </style>
     <link rel="stylesheet" href="../css/components/navbar.css" />
+    <!-- === JS 依賴（載入順序重要）=== -->
+    <script defer src="../js/game-config.js"></script>
+    <script defer src="../js/adventure-maps-config.js"></script>
+    <script defer src="../js/utils/storage.js"></script>
+    <script defer src="../js/utils/score-calculator.js"></script>
+    <script defer src="../js/utils/level-calculator.js"></script>
+    <script defer src="../js/utils/badge-checker.js"></script>
+    <script defer src="../js/singleplayer/progress-tracker.js"></script>
+    <script defer src="../js/singleplayer/mode-controller.js"></script>
+    <script defer src="../js/sound-config.js"></script>
+    <script defer src="../js/shared/audio-player.js"></script>
+    <script defer src="../js/shared/focus-trap.js"></script>
+    <script defer src="../js/shared/navbar.js"></script>
+    <script defer src="../js/shared/landscape-hint.js"></script>
   </head>
   <body>
     <!-- === 頂部狀態列 === -->
@@ -758,18 +772,6 @@
         </div>
       </div>
     </main>
-
-    <!-- === JS 依賴（載入順序重要）=== -->
-    <script src="../js/game-config.js"></script>
-    <script src="../js/adventure-maps-config.js"></script>
-    <script src="../js/utils/storage.js"></script>
-    <script src="../js/utils/score-calculator.js"></script>
-    <script src="../js/utils/level-calculator.js"></script>
-    <script src="../js/utils/badge-checker.js"></script>
-    <script src="../js/singleplayer/progress-tracker.js"></script>
-    <script src="../js/singleplayer/mode-controller.js"></script>
-    <script src="../js/sound-config.js"></script>
-    <script src="../js/shared/audio-player.js"></script>
 
     <script>
       // =========================================
@@ -1200,8 +1202,5 @@
         }, 500);
       }
     </script>
-    <script src="../js/shared/focus-trap.js"></script>
-    <script src="../js/shared/navbar.js"></script>
-    <script src="../js/shared/landscape-hint.js"></script>
   </body>
 </html>

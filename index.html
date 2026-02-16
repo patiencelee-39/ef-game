@@ -29,6 +29,15 @@
     <link rel="stylesheet" href="css/main.css" />
     <link rel="stylesheet" href="css/components/navbar.css" />
     <link rel="stylesheet" href="css/components/landscape-hint.css" />
+
+    <!-- Firebase SDK (defer: 與 HTML 解析並行下載，按順序執行) -->
+    <script defer src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script defer src="js/firebase-config.js"></script>
+    <script defer src="js/shared/navbar.js"></script>
+    <script defer src="js/shared/landscape-hint.js"></script>
   </head>
   <body>
     <div class="container">
@@ -82,17 +91,6 @@
         </p>
       </footer>
     </div>
-
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-
-    <!-- Firebase 配置 -->
-    <script src="js/firebase-config.js"></script>
-    <script src="js/shared/navbar.js"></script>
-    <script src="js/shared/landscape-hint.js"></script>
 
     <!-- Service Worker 註冊 -->
     <script>

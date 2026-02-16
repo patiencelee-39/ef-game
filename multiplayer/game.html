@@ -603,6 +603,38 @@
         }
       }
     </style>
+    <!-- Firebase SDK -->
+    <script defer src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <!-- Firebase config -->
+    <script defer src="../js/firebase-config.js"></script>
+    <!-- Game config -->
+    <script defer src="../js/game-config.js"></script>
+    <script defer src="../js/adaptive/difficulty-provider.js"></script>
+    <script defer src="../js/adaptive/simple-adaptive-engine.js"></script>
+    <script defer src="../js/svg-assets.js"></script>
+    <!-- Utils -->
+    <script defer src="../js/utils/storage.js"></script>
+    <script defer src="../js/utils/score-calculator.js"></script>
+    <script defer src="../js/utils/level-calculator.js"></script>
+    <script defer src="../js/utils/badge-checker.js"></script>
+    <script defer src="../js/utils/question-generator.js"></script>
+    <!-- Shared components -->
+    <script defer src="../js/sound-config.js"></script>
+    <script defer src="../js/shared/audio-player.js"></script>
+    <script defer src="../js/shared/countdown.js"></script>
+    <script defer src="../js/shared/focus-trap.js"></script>
+    <script defer src="../js/shared/feedback-overlay.js"></script>
+    <script defer src="../js/shared/working-memory.js"></script>
+    <script defer src="../js/shared/completion-notify.js"></script>
+    <script defer src="../js/shared/game-session-builder.js"></script>
+    <!-- Singleplayer core (reused) -->
+    <script defer src="../js/singleplayer/progress-tracker.js"></script>
+    <script defer src="../js/singleplayer/mode-controller.js"></script>
+    <!-- Multiplayer sync -->
+    <script defer src="../js/multiplayer/game-sync.js"></script>
+    <script defer src="../js/shared/landscape-hint.js"></script>
   </head>
 
   <body>
@@ -754,44 +786,6 @@
         跳過等待，直接看結果
       </button>
     </div>
-
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-
-    <!-- Firebase config -->
-    <script src="../js/firebase-config.js"></script>
-
-    <!-- Game config -->
-    <script src="../js/game-config.js"></script>
-    <script src="../js/adaptive/difficulty-provider.js"></script>
-    <script src="../js/adaptive/simple-adaptive-engine.js"></script>
-    <script src="../js/svg-assets.js"></script>
-
-    <!-- Utils -->
-    <script src="../js/utils/storage.js"></script>
-    <script src="../js/utils/score-calculator.js"></script>
-    <script src="../js/utils/level-calculator.js"></script>
-    <script src="../js/utils/badge-checker.js"></script>
-    <script src="../js/utils/question-generator.js"></script>
-
-    <!-- Shared components -->
-    <script src="../js/sound-config.js"></script>
-    <script src="../js/shared/audio-player.js"></script>
-    <script src="../js/shared/countdown.js"></script>
-    <script src="../js/shared/focus-trap.js"></script>
-    <script src="../js/shared/feedback-overlay.js"></script>
-    <script src="../js/shared/working-memory.js"></script>
-    <script src="../js/shared/completion-notify.js"></script>
-    <script src="../js/shared/game-session-builder.js"></script>
-
-    <!-- Singleplayer core (reused) -->
-    <script src="../js/singleplayer/progress-tracker.js"></script>
-    <script src="../js/singleplayer/mode-controller.js"></script>
-
-    <!-- Multiplayer sync -->
-    <script src="../js/multiplayer/game-sync.js"></script>
 
     <script>
       /**
@@ -1598,6 +1592,5 @@
         return { onPress: onPress, pause: pause, resume: resume };
       })();
     </script>
-    <script src="../js/shared/landscape-hint.js"></script>
   </body>
 </html>

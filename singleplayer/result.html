@@ -584,6 +584,34 @@
       }
     </style>
     <link rel="stylesheet" href="../css/components/navbar.css" />
+    <!-- ==================== 模組載入 ==================== -->
+    <!-- ==================== Firebase SDK ==================== -->
+    <script defer src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script defer src="../js/firebase-config.js"></script>
+    <!-- ==================== 遊戲核心 ==================== -->
+    <script defer src="../js/game-config.js"></script>
+    <script defer src="../js/adventure-maps-config.js"></script>
+    <script defer src="../js/utils/storage.js"></script>
+    <script defer src="../js/utils/score-calculator.js"></script>
+    <script defer src="../js/utils/level-calculator.js"></script>
+    <script defer src="../js/utils/badge-checker.js"></script>
+    <script defer src="../js/sound-config.js"></script>
+    <script defer src="../js/shared/audio-player.js"></script>
+    <script defer src="../js/singleplayer/progress-tracker.js"></script>
+    <script defer src="../js/singleplayer/mode-controller.js"></script>
+    <!-- ==================== 分析報告依賴 ==================== -->
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+    <script defer src="../js/utils/constants.js"></script>
+    <script defer src="../js/shared/csv-report.js"></script>
+    <script defer src="../js/shared/leaderboard-writer.js"></script>
+    <script defer src="../js/shared/firestore-leaderboard.js"></script>
+    <script defer src="../js/shared/navbar.js"></script>
+    <script defer src="../js/shared/landscape-hint.js"></script>
   </head>
 
   <body>
@@ -605,37 +633,6 @@
       <!-- === 底部按鈕 === -->
       <div class="result-actions" id="resultActions"></div>
     </main>
-
-    <!-- ==================== 模組載入 ==================== -->
-    <script src="../js/game-config.js"></script>
-    <script src="../js/adventure-maps-config.js"></script>
-
-    <script src="../js/utils/storage.js"></script>
-    <script src="../js/utils/score-calculator.js"></script>
-    <script src="../js/utils/level-calculator.js"></script>
-    <script src="../js/utils/badge-checker.js"></script>
-
-    <script src="../js/sound-config.js"></script>
-    <script src="../js/shared/audio-player.js"></script>
-
-    <script src="../js/singleplayer/progress-tracker.js"></script>
-    <script src="../js/singleplayer/mode-controller.js"></script>
-
-    <!-- ==================== 分析報告依賴 ==================== -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
-    <script src="../js/utils/constants.js"></script>
-    <script src="../js/shared/csv-report.js"></script>
-    <script src="../js/shared/leaderboard-writer.js"></script>
-
-    <!-- ==================== Firestore 上傳依賴 ==================== -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    <script src="../js/firebase-config.js"></script>
-    <script src="../js/shared/firestore-leaderboard.js"></script>
 
     <!-- ==================== 結算控制器 ==================== -->
     <script>
@@ -1889,7 +1886,5 @@
         return { init: init };
       })();
     </script>
-    <script src="../js/shared/navbar.js"></script>
-    <script src="../js/shared/landscape-hint.js"></script>
   </body>
 </html>

@@ -423,6 +423,13 @@
       }
     </style>
     <link rel="stylesheet" href="../css/components/navbar.css" />
+    <script defer src="../js/game-config.js"></script>
+    <script defer src="../js/utils/storage.js"></script>
+    <script defer src="../js/utils/level-calculator.js"></script>
+    <script defer src="../js/shop/avatar-config.js"></script>
+    <script defer src="../js/shop/avatar-manager.js"></script>
+    <script defer src="../js/shared/navbar.js"></script>
+    <script defer src="../js/shared/landscape-hint.js"></script>
   </head>
   <body>
     <header class="shop-header">
@@ -481,12 +488,6 @@
         <div class="buy-actions" id="popup-actions"></div>
       </div>
     </div>
-
-    <script src="../js/game-config.js"></script>
-    <script src="../js/utils/storage.js"></script>
-    <script src="../js/utils/level-calculator.js"></script>
-    <script src="../js/shop/avatar-config.js"></script>
-    <script src="../js/shop/avatar-manager.js"></script>
 
     <script>
       var currentCategory = "frame";
@@ -702,7 +703,5 @@
           if (e.target === this) closePopup();
         });
     </script>
-    <script src="../js/shared/navbar.js"></script>
-    <script src="../js/shared/landscape-hint.js"></script>
   </body>
 </html>
