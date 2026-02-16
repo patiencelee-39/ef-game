@@ -28,7 +28,7 @@
 .landscape-overlay__title {
   font-size: 1.4rem;
   font-weight: 800;
-  color: #fff;
+  color: #a8edea;
   background: linear-gradient(135deg, #a8edea, #fed6e3);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
