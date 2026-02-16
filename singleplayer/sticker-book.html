@@ -1,0 +1,925 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;"
+    />
+    <title>貼紙圖鑑 — 執行功能訓練遊戲</title>
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="../manifest.json" />
+    <meta name="theme-color" content="#302b63" />
+    <link rel="stylesheet" href="../css/themes/base.css" />
+    <link rel="stylesheet" href="../css/main.css" />
+    <link rel="stylesheet" href="../css/components/landscape-hint.css" />
+    <style>
+      ==================================== */ body {
+        padding: 0;
+        margin: 0;
+        overflow-x: hidden;
+        background: var(--bg-dark);
+        color: var(--text-white);
+      }
+
+      /* --- 頂部狀態列 --- */
+      .sticker-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 16px;
+        background: rgba(26, 35, 50, 0.92);
+        backdrop-filter: blur(8px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .btn-back {
+        background: none;
+        border: none;
+        color: var(--text-white);
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 8px;
+        transition: background var(--transition-fast);
+        min-width: var(--touch-target-min);
+        min-height: var(--touch-target-min);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .btn-back:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .header-title {
+        font-size: var(--font-size-lg);
+        font-weight: 700;
+      }
+
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .stars-display {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: var(--font-size-md);
+        color: var(--accent-yellow);
+        font-weight: 700;
+      }
+
+      /* --- 主要內容區 --- */
+      .sticker-main {
+        margin-top: 60px;
+        padding: 16px;
+        padding-bottom: 100px;
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      /* --- 統計卡片 --- */
+      .stats-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: var(--border-radius-xl);
+        padding: 20px;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+
+      .stats-progress {
+        font-size: var(--font-size-xl);
+        font-weight: 900;
+        margin-bottom: 8px;
+      }
+
+      .stats-bar-outer {
+        width: 100%;
+        height: 12px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 6px;
+        overflow: hidden;
+        margin-bottom: 8px;
+      }
+
+      .stats-bar-inner {
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          var(--primary-blue),
+          var(--accent-yellow)
+        );
+        border-radius: 6px;
+        transition: width var(--transition-normal);
+      }
+
+      .stats-detail {
+        font-size: var(--font-size-xs);
+        color: var(--text-light);
+      }
+
+      /* --- 開包按鈕區 --- */
+      .open-pack-section {
+        text-align: center;
+        margin-bottom: 24px;
+      }
+
+      .btn-open-pack {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 16px 32px;
+        font-size: var(--font-size-lg);
+        font-weight: 900;
+        border: none;
+        border-radius: var(--border-radius-xl);
+        cursor: pointer;
+        min-height: var(--touch-target-min);
+        transition: all var(--transition-normal);
+        background: linear-gradient(135deg, #f39c12, #e67e22);
+        color: #fff;
+        box-shadow: 0 4px 15px rgba(243, 156, 18, 0.4);
+      }
+
+      .btn-open-pack:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(243, 156, 18, 0.5);
+      }
+
+      .btn-open-pack:active:not(:disabled) {
+        transform: scale(0.96);
+      }
+
+      .btn-open-pack:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        background: #555;
+        box-shadow: none;
+      }
+
+      .pack-cost {
+        font-size: var(--font-size-sm);
+        color: var(--text-light);
+        margin-top: 8px;
+      }
+
+      /* --- 分類 Tab --- */
+      .category-tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .category-tab {
+        flex-shrink: 0;
+        padding: 8px 16px;
+        font-size: var(--font-size-sm);
+        font-weight: 600;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 20px;
+        background: none;
+        color: var(--text-light);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        min-height: 40px;
+      }
+
+      .category-tab.active {
+        background: var(--primary-blue);
+        color: #fff;
+        border-color: var(--primary-blue);
+      }
+
+      .category-tab:hover:not(.active) {
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      /* --- 貼紙網格 --- */
+      .sticker-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 12px;
+      }
+
+      .sticker-cell {
+        aspect-ratio: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--border-radius-lg);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.03);
+        transition: all var(--transition-fast);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .sticker-cell.owned {
+        border-color: rgba(255, 255, 255, 0.25);
+        background: rgba(255, 255, 255, 0.06);
+      }
+
+      .sticker-cell.not-owned {
+        opacity: 0.35;
+        filter: grayscale(1);
+      }
+
+      .sticker-cell:hover {
+        transform: scale(1.05);
+      }
+
+      .sticker-emoji {
+        font-size: 2.5rem;
+        line-height: 1;
+        margin-bottom: 4px;
+      }
+
+      .sticker-name {
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-align: center;
+        color: var(--text-light);
+      }
+
+      .sticker-cell.not-owned .sticker-emoji {
+        filter: brightness(0.3);
+      }
+
+      .sticker-cell.not-owned .sticker-name {
+        color: #555;
+      }
+
+      /* 稀有度邊框光暈 */
+      .sticker-cell.owned.rarity-rare {
+        border-color: rgba(52, 152, 219, 0.6);
+        box-shadow: 0 0 8px rgba(52, 152, 219, 0.2);
+      }
+
+      .sticker-cell.owned.rarity-legendary {
+        border-color: rgba(243, 156, 18, 0.7);
+        box-shadow: 0 0 12px rgba(243, 156, 18, 0.3);
+        animation: legendary-glow 3s ease-in-out infinite;
+      }
+
+      @keyframes legendary-glow {
+        0%,
+        100% {
+          box-shadow: 0 0 8px rgba(243, 156, 18, 0.2);
+        }
+        50% {
+          box-shadow: 0 0 16px rgba(243, 156, 18, 0.5);
+        }
+      }
+
+      /* 稀有度角標 */
+      .rarity-badge {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+
+      /* 鎖定狀態 */
+      .sticker-cell.locked {
+        opacity: 0.3;
+        filter: grayscale(1);
+        pointer-events: none;
+      }
+
+      .sticker-lock-badge {
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        font-size: 0.9rem;
+        line-height: 1;
+        z-index: 2;
+      }
+
+      .sticker-unlock-label {
+        font-size: 0.55rem;
+        color: rgba(255, 255, 255, 0.7);
+        margin-top: 2px;
+      }
+
+      /* 「?」未知貼紙圖示 */
+      .sticker-cell.not-owned .sticker-emoji::after {
+        content: "？";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -60%);
+        font-size: 1.8rem;
+        color: rgba(255, 255, 255, 0.2);
+      }
+
+      /* --- 開包結果 Overlay --- */
+      .pack-result-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 300;
+        background: rgba(0, 0, 0, 0.8);
+        align-items: center;
+        justify-content: center;
+      }
+
+      .pack-result-overlay.visible {
+        display: flex;
+      }
+
+      .pack-result-card {
+        background: #1e2d3d;
+        border: 2px solid rgba(255, 255, 255, 0.15);
+        border-radius: var(--border-radius-xl);
+        padding: 40px 32px;
+        max-width: 320px;
+        width: 90%;
+        text-align: center;
+        animation: pack-reveal 0.5s ease-out;
+      }
+
+      @keyframes pack-reveal {
+        0% {
+          opacity: 0;
+          transform: scale(0.5) rotateY(90deg);
+        }
+        60% {
+          transform: scale(1.1) rotateY(0deg);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1) rotateY(0deg);
+        }
+      }
+
+      .pack-result-emoji {
+        font-size: 5rem;
+        line-height: 1.2;
+        margin-bottom: 16px;
+        animation: sticker-bounce 0.6s ease-out 0.3s both;
+      }
+
+      @keyframes sticker-bounce {
+        0% {
+          transform: scale(0);
+        }
+        60% {
+          transform: scale(1.3);
+        }
+        80% {
+          transform: scale(0.9);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      .pack-result-name {
+        font-size: var(--font-size-xl);
+        font-weight: 900;
+        margin-bottom: 4px;
+      }
+
+      .pack-result-rarity {
+        font-size: var(--font-size-sm);
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+
+      .pack-result-desc {
+        font-size: var(--font-size-sm);
+        color: var(--text-light);
+        margin-bottom: 4px;
+      }
+
+      .pack-result-status {
+        font-size: var(--font-size-md);
+        font-weight: 700;
+        margin-bottom: 20px;
+      }
+
+      .pack-result-status.is-new {
+        color: var(--accent-yellow);
+      }
+
+      .pack-result-status.is-dupe {
+        color: var(--text-light);
+      }
+
+      .btn-result-close {
+        padding: 12px 32px;
+        font-size: var(--font-size-md);
+        font-weight: 700;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        min-height: var(--touch-target-min);
+        background: var(--primary-blue);
+        color: #fff;
+        transition: background var(--transition-fast);
+      }
+
+      .btn-result-close:hover {
+        background: #2980b9;
+      }
+
+      /* --- 貼紙詳情 Popup --- */
+      .sticker-detail-popup {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 250;
+        background: rgba(0, 0, 0, 0.6);
+        align-items: center;
+        justify-content: center;
+      }
+
+      .sticker-detail-popup.visible {
+        display: flex;
+      }
+
+      .sticker-detail-card {
+        background: #1e2d3d;
+        border: 2px solid rgba(255, 255, 255, 0.15);
+        border-radius: var(--border-radius-xl);
+        padding: 32px 24px;
+        max-width: 300px;
+        width: 85%;
+        text-align: center;
+        animation: popup-in 0.3s ease-out;
+      }
+
+      @keyframes popup-in {
+        0% {
+          opacity: 0;
+          transform: scale(0.9) translateY(20px);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1) translateY(0);
+        }
+      }
+
+      .detail-emoji {
+        font-size: 4rem;
+        margin-bottom: 12px;
+      }
+
+      .detail-name {
+        font-size: var(--font-size-xl);
+        font-weight: 900;
+        margin-bottom: 4px;
+      }
+
+      .detail-rarity {
+        font-size: var(--font-size-sm);
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+
+      .detail-desc {
+        font-size: var(--font-size-sm);
+        color: var(--text-light);
+        margin-bottom: 16px;
+      }
+
+      .btn-detail-close {
+        padding: 10px 24px;
+        font-size: var(--font-size-sm);
+        font-weight: 600;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-light);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        min-height: 44px;
+      }
+
+      /* --- 響應式 --- */
+      @media (max-width: 400px) {
+        .sticker-grid {
+          grid-template-columns: repeat(3, 1fr);
+          gap: 8px;
+        }
+        .sticker-emoji {
+          font-size: 2rem;
+        }
+        .sticker-name {
+          font-size: 0.6rem;
+        }
+      }
+
+      @media (min-width: 601px) {
+        .sticker-grid {
+          grid-template-columns: repeat(5, 1fr);
+        }
+      }
+    </style>
+    <link rel="stylesheet" href="../css/components/navbar.css" />
+  </head>
+  <body>
+    <!-- === 頂部狀態列 === -->
+    <header class="sticker-header">
+      <div class="header-left">
+        <button class="btn-back" onclick="goBack()" aria-label="返回探險地圖">
+          ←
+        </button>
+        <span class="header-title">📖 貼紙圖鑑</span>
+      </div>
+      <div class="header-right">
+        <div class="stars-display">⭐ <span id="available-stars">0</span></div>
+      </div>
+    </header>
+
+    <!-- === 主要內容 === -->
+    <main class="sticker-main" id="main-content">
+      <h1 class="sr-only">貼紙圖鑑</h1>
+      <!-- 統計卡片 -->
+      <div class="stats-card">
+        <div class="stats-progress" id="stats-progress">0 / 23</div>
+        <div class="stats-bar-outer">
+          <div class="stats-bar-inner" id="stats-bar" style="width: 0%"></div>
+        </div>
+        <div class="stats-detail" id="stats-detail">收集進度 0%</div>
+      </div>
+
+      <!-- 開包按鈕 -->
+      <div class="open-pack-section">
+        <button
+          class="btn-open-pack"
+          id="btn-open-pack"
+          onclick="handleOpenPack()"
+        >
+          🎁 開啟貼紙包
+        </button>
+        <div class="pack-cost" id="pack-cost">花費 3 ⭐ 開啟一包</div>
+      </div>
+
+      <!-- 分類 Tab -->
+      <div class="category-tabs" id="category-tabs">
+        <button
+          class="category-tab active"
+          data-category="all"
+          onclick="filterByCategory('all')"
+        >
+          📋 全部
+        </button>
+        <!-- 由 JS 動態生成分類按鈕 -->
+      </div>
+
+      <!-- 貼紙網格 -->
+      <div class="sticker-grid" id="sticker-grid">
+        <!-- 由 JS 動態渲染 -->
+      </div>
+    </main>
+
+    <!-- === 開包結果 Overlay === -->
+    <div
+      class="pack-result-overlay"
+      id="pack-result-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label="開包結果"
+    >
+      <div class="pack-result-card">
+        <div class="pack-result-emoji" id="result-emoji">🎁</div>
+        <div class="pack-result-name" id="result-name">—</div>
+        <div class="pack-result-rarity" id="result-rarity">—</div>
+        <div class="pack-result-desc" id="result-desc">—</div>
+        <div class="pack-result-status" id="result-status">—</div>
+        <button class="btn-result-close" onclick="closePackResult()">
+          好的！
+        </button>
+      </div>
+    </div>
+
+    <!-- === 貼紙詳情 Popup === -->
+    <div
+      class="sticker-detail-popup"
+      id="sticker-detail-popup"
+      role="dialog"
+      aria-modal="true"
+      aria-label="貼紙詳情"
+    >
+      <div class="sticker-detail-card">
+        <div class="detail-emoji" id="detail-emoji">—</div>
+        <div class="detail-name" id="detail-name">—</div>
+        <div class="detail-rarity" id="detail-rarity">—</div>
+        <div class="detail-desc" id="detail-desc">—</div>
+        <button class="btn-detail-close" onclick="closeDetail()">關閉</button>
+      </div>
+    </div>
+
+    <!-- === JS 依賴（載入順序重要）=== -->
+    <script src="../js/game-config.js"></script>
+    <script src="../js/utils/storage.js"></script>
+    <script src="../js/utils/level-calculator.js"></script>
+    <script src="../js/shop/sticker-config.js"></script>
+    <script src="../js/shop/sticker-manager.js"></script>
+
+    <script>
+      // =========================================
+      // 貼紙圖鑑頁面控制
+      // =========================================
+
+      var currentCategory = "all";
+
+      // ─── 初始化 ───
+
+      document.addEventListener("DOMContentLoaded", function () {
+        buildCategoryTabs();
+        refreshAll();
+      });
+
+      // ─── 返回 ───
+
+      function goBack() {
+        if (
+          document.referrer &&
+          document.referrer.indexOf("adventure-map") !== -1
+        ) {
+          history.back();
+        } else {
+          window.location.href = "adventure-map.html";
+        }
+      }
+
+      // ─── 刷新全部 UI ───
+
+      function refreshAll() {
+        updateStarsDisplay();
+        updateStats();
+        updateOpenPackButton();
+        renderStickerGrid(currentCategory);
+      }
+
+      // ─── 星星顯示 ───
+
+      function updateStarsDisplay() {
+        var available = getAvailableStars();
+        document.getElementById("available-stars").textContent = available;
+      }
+
+      // ─── 統計卡片 ───
+
+      function updateStats() {
+        var stats = StickerManager.getCollectionStats();
+        document.getElementById("stats-progress").textContent =
+          stats.totalOwned + " / " + stats.totalDefined;
+        document.getElementById("stats-bar").style.width =
+          stats.completionPercent + "%";
+        document.getElementById("stats-detail").textContent =
+          "收集進度 " +
+          stats.completionPercent +
+          "%　｜　已解鎖 " +
+          stats.totalUnlocked +
+          " / " +
+          stats.totalDefined +
+          "　｜　已開 " +
+          stats.openedPacks +
+          " 包";
+      }
+
+      // ─── 開包按鈕狀態 ───
+
+      function updateOpenPackButton() {
+        var check = StickerManager.canOpenPack();
+        var btn = document.getElementById("btn-open-pack");
+        btn.disabled = !check.canOpen;
+
+        var costText = document.getElementById("pack-cost");
+        if (StickerManager.isCollectionComplete()) {
+          costText.textContent = "🎉 已全部收集完成！";
+          btn.disabled = true;
+          btn.textContent = "🏆 圖鑑全滿";
+        } else if (!check.canOpen) {
+          costText.textContent =
+            "星星不足（需要 " +
+            check.cost +
+            " ⭐，目前 " +
+            check.available +
+            " ⭐）";
+        } else {
+          costText.textContent = "花費 " + check.cost + " ⭐ 開啟一包";
+        }
+      }
+
+      // ─── 分類 Tab ───
+
+      function buildCategoryTabs() {
+        var container = document.getElementById("category-tabs");
+        // 「全部」按鈕已在 HTML 中
+
+        var categories = getAllCategories();
+        categories.forEach(function (cat) {
+          var btn = document.createElement("button");
+          btn.className = "category-tab";
+          btn.dataset.category = cat.id;
+          btn.textContent = cat.label;
+          btn.onclick = function () {
+            filterByCategory(cat.id);
+          };
+          container.appendChild(btn);
+        });
+      }
+
+      function filterByCategory(categoryId) {
+        currentCategory = categoryId;
+
+        // 更新 tab 樣式
+        document.querySelectorAll(".category-tab").forEach(function (tab) {
+          tab.classList.toggle("active", tab.dataset.category === categoryId);
+        });
+
+        renderStickerGrid(categoryId);
+      }
+
+      // ─── 貼紙網格渲染 ───
+
+      function renderStickerGrid(category) {
+        var grid = document.getElementById("sticker-grid");
+        grid.innerHTML = "";
+
+        var filter = category === "all" ? null : category;
+        var items = StickerManager.getAllStickersWithStatus(filter);
+
+        items.forEach(function (item) {
+          var cell = document.createElement("div");
+
+          // 判斷狀態：locked > not-owned > owned
+          var stateClass;
+          if (item.locked) {
+            stateClass = "locked";
+          } else if (item.owned) {
+            stateClass = "owned";
+          } else {
+            stateClass = "not-owned";
+          }
+
+          cell.className =
+            "sticker-cell " + stateClass + " rarity-" + item.sticker.rarity;
+
+          // 🔒 鎖定標示
+          if (item.locked) {
+            var lockBadge = document.createElement("div");
+            lockBadge.className = "sticker-lock-badge";
+            lockBadge.textContent = "🔒";
+            cell.appendChild(lockBadge);
+          }
+
+          // 稀有度角標
+          if (item.owned && item.sticker.rarity !== "common") {
+            var badge = document.createElement("div");
+            badge.className = "rarity-badge";
+            badge.style.background = item.rarity.color;
+            cell.appendChild(badge);
+          }
+
+          // emoji
+          var emoji = document.createElement("div");
+          emoji.className = "sticker-emoji";
+          if (item.locked) {
+            emoji.textContent = "🔒";
+          } else {
+            emoji.textContent = item.owned ? item.sticker.emoji : "❓";
+          }
+          cell.appendChild(emoji);
+
+          // 名稱 / 解鎖提示
+          var name = document.createElement("div");
+          name.className = "sticker-name";
+          if (item.locked) {
+            name.textContent = "Lv." + item.requiredLevel + " 解鎖";
+          } else {
+            name.textContent = item.owned ? item.sticker.name : "???";
+          }
+          cell.appendChild(name);
+
+          // 點擊事件（已擁有才顯示詳情）
+          if (item.owned) {
+            cell.addEventListener("click", function () {
+              showDetail(item.sticker);
+            });
+          }
+
+          grid.appendChild(cell);
+        });
+      }
+
+      // ─── 開包 ───
+
+      function handleOpenPack() {
+        var result = StickerManager.openPack();
+
+        if (!result.success) {
+          alert(result.reason);
+          return;
+        }
+
+        // 顯示結果
+        var first = result.results[0];
+        var sticker = first.sticker;
+        var rarity = STICKER_RARITY[sticker.rarity];
+
+        document.getElementById("result-emoji").textContent = sticker.emoji;
+        document.getElementById("result-name").textContent = sticker.name;
+        document.getElementById("result-rarity").textContent = rarity.label;
+        document.getElementById("result-rarity").style.color = rarity.color;
+        document.getElementById("result-desc").textContent = sticker.desc;
+
+        var statusEl = document.getElementById("result-status");
+        if (first.isNew) {
+          statusEl.textContent = "✨ 新收藏！";
+          statusEl.className = "pack-result-status is-new";
+        } else {
+          statusEl.textContent = "已擁有（重複）";
+          statusEl.className = "pack-result-status is-dupe";
+        }
+
+        // 顯示 overlay
+        document.getElementById("pack-result-overlay").classList.add("visible");
+
+        // 刷新背景資料
+        refreshAll();
+      }
+
+      function closePackResult() {
+        document
+          .getElementById("pack-result-overlay")
+          .classList.remove("visible");
+      }
+
+      // ─── 貼紙詳情 ───
+
+      function showDetail(sticker) {
+        var rarity = STICKER_RARITY[sticker.rarity];
+
+        document.getElementById("detail-emoji").textContent = sticker.emoji;
+        document.getElementById("detail-name").textContent = sticker.name;
+        document.getElementById("detail-rarity").textContent = rarity.label;
+        document.getElementById("detail-rarity").style.color = rarity.color;
+        document.getElementById("detail-desc").textContent = sticker.desc;
+
+        document
+          .getElementById("sticker-detail-popup")
+          .classList.add("visible");
+      }
+
+      function closeDetail() {
+        document
+          .getElementById("sticker-detail-popup")
+          .classList.remove("visible");
+      }
+
+      // 點擊 overlay 外部關閉
+      document
+        .getElementById("pack-result-overlay")
+        .addEventListener("click", function (e) {
+          if (e.target === this) closePackResult();
+        });
+
+      document
+        .getElementById("sticker-detail-popup")
+        .addEventListener("click", function (e) {
+          if (e.target === this) closeDetail();
+        });
+    </script>
+    <script src="../js/shared/navbar.js"></script>
+    <script src="../js/shared/landscape-hint.js"></script>
+  </body>
+</html>

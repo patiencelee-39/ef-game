@@ -1,0 +1,139 @@
+/* ============================================
+   底部導覽列 — navbar.css
+   ============================================
+   六項：冒險、競賽、排行、養雞場、商店、設定
+   固定在底部，遊戲畫面在上方
+   ============================================ */
+
+/* --- 導覽列容器 --- */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 9000;
+  display: flex;
+  justify-content: space-around;
+  align-items: stretch;
+  height: 60px;
+  background: rgba(20, 20, 40, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.3);
+  padding: 0;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+/* --- 各導覽項目 --- */
+.bottom-nav__item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.68rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  padding: 4px 0;
+}
+
+.bottom-nav__item:hover {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.bottom-nav__item.active {
+  color: #ffd700;
+}
+
+/* --- 圖示 --- */
+.bottom-nav__icon {
+  font-size: 1.4rem;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+.bottom-nav__item.active .bottom-nav__icon {
+  transform: scale(1.1);
+}
+
+/* --- 文字標籤 --- */
+.bottom-nav__label {
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* --- active 指示點 --- */
+.bottom-nav__item.active::after {
+  content: "";
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #ffd700;
+}
+
+/* --- 頁面底部留白（避免內容被 navbar 蓋住）--- */
+body.has-navbar {
+  padding-bottom: calc(64px + env(safe-area-inset-bottom, 0));
+}
+
+/* --- 遊戲進行中隱藏導覽列 --- */
+body.game-playing .bottom-nav {
+  display: none;
+}
+
+body.game-playing {
+  padding-bottom: 0;
+}
+
+/* --- 淺色主題適配 --- */
+.bottom-nav--light {
+  background: rgba(255, 255, 255, 0.95);
+  border-top-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.08);
+}
+
+.bottom-nav--light .bottom-nav__item {
+  color: rgba(0, 0, 0, 0.35);
+}
+
+.bottom-nav--light .bottom-nav__item:hover {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.bottom-nav--light .bottom-nav__item.active {
+  color: #667eea;
+}
+
+.bottom-nav--light .bottom-nav__item.active::after {
+  background: #667eea;
+}
+
+/* --- 響應式：大螢幕稍微放大 --- */
+@media (min-width: 768px) {
+  .bottom-nav {
+    max-width: 600px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 16px 16px 0 0;
+  }
+
+  .bottom-nav__item {
+    font-size: 0.72rem;
+  }
+
+  .bottom-nav__icon {
+    font-size: 1.5rem;
+  }
+}

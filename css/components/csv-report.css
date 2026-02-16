@@ -1,0 +1,250 @@
+/* ═══════════════════════════════════════════════════════════════
+ * csv-report.css — CSV 分析報告元件樣式
+ *
+ * 使用位置：result.html, class.html, live.html
+ * 命名慣例：BEM — .csv-report__*
+ * ═══════════════════════════════════════════════════════════════ */
+
+/* ── 容器 ── */
+.csv-report {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+/* ── 概覽卡片列 ── */
+.csv-report__overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.csv-report__stat-card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px 8px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s;
+}
+
+.csv-report__stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+}
+
+.csv-report__stat-emoji {
+  font-size: 2em;
+  margin-bottom: 4px;
+}
+
+.csv-report__stat-value {
+  font-size: 1.5em;
+  font-weight: 700;
+  color: #333;
+}
+
+.csv-report__stat-label {
+  font-size: 0.85em;
+  color: #777;
+  margin-top: 4px;
+}
+
+/* ── 區塊（用於 PDF 分頁控制）── */
+.csv-report__section {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+/* ── 參與者摘要 ── */
+.csv-report__participants {
+  text-align: center;
+  font-size: 0.9em;
+  color: #666;
+  margin-bottom: 20px;
+  padding: 8px 16px;
+  background: rgba(102, 126, 234, 0.06);
+  border-radius: 8px;
+}
+
+/* ── 回合標題 ── */
+.csv-report__round-header {
+  font-size: 1.3em;
+  font-weight: 700;
+  color: #333;
+  margin: 28px 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 3px solid #667eea;
+}
+
+/* ── 圖表區塊 ── */
+.csv-report__chart-box {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.csv-report__chart-box h3 {
+  margin: 0 0 12px;
+  font-size: 1.1em;
+  color: #555;
+}
+
+.csv-report__chart-box canvas {
+  width: 100% !important;
+  height: auto !important;
+}
+
+/* ── 工作記憶結果 ── */
+.csv-report__wm-results {
+  margin-bottom: 16px;
+}
+
+/* ── 檔案上傳區（給 class.html 使用）── */
+.csv-report__upload-zone {
+  border: 2px dashed #667eea;
+  border-radius: 12px;
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    border-color 0.3s,
+    background 0.3s;
+  background: rgba(102, 126, 234, 0.04);
+}
+
+.csv-report__upload-zone:hover,
+.csv-report__upload-zone.dragover {
+  border-color: #4a5cc5;
+  background: rgba(102, 126, 234, 0.1);
+}
+
+.csv-report__upload-zone p {
+  color: #667eea;
+  font-size: 1.1em;
+  font-weight: 600;
+}
+
+.csv-report__upload-zone small {
+  color: #999;
+  display: block;
+  margin-top: 8px;
+}
+
+/* ── 動作按鈕 ── */
+.csv-report__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
+}
+
+.csv-report__btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.csv-report__btn--primary {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+}
+
+.csv-report__btn--export {
+  background: linear-gradient(135deg, #4caf50, #66bb6a);
+  color: white;
+}
+
+.csv-report__btn--secondary {
+  background: #f0f0f0;
+  color: #555;
+}
+
+/* ── PDF 匯出時的列印優化 ── */
+@media print {
+  .csv-report__upload-zone,
+  .csv-report__btn,
+  .mode-tabs,
+  .live-footer,
+  .action-buttons,
+  .result-actions {
+    display: none !important;
+  }
+
+  .csv-report,
+  .csv-report__stat-card,
+  .csv-report__chart-box {
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
+
+  .csv-report__chart-box {
+    page-break-inside: avoid;
+  }
+
+  .csv-report__round-header {
+    page-break-after: avoid;
+  }
+
+  body {
+    background: white !important;
+    color: #000 !important;
+  }
+}
+
+/* ── 深色主題兼容 ── */
+@media (prefers-color-scheme: dark) {
+  .csv-report__stat-card,
+  .csv-report__chart-box {
+    background: #1e1e2e;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  }
+
+  .csv-report__stat-value {
+    color: #e0e0e0;
+  }
+
+  .csv-report__stat-label {
+    color: #aaa;
+  }
+
+  .csv-report__round-header {
+    color: #e0e0e0;
+    border-color: #764ba2;
+  }
+
+  .csv-report__chart-box h3 {
+    color: #bbb;
+  }
+}
+
+/* ── 響應式 ── */
+@media (max-width: 480px) {
+  .csv-report__overview {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .csv-report__stat-emoji {
+    font-size: 1.6em;
+  }
+
+  .csv-report__stat-value {
+    font-size: 1.2em;
+  }
+
+  .csv-report__chart-box {
+    padding: 12px;
+  }
+}

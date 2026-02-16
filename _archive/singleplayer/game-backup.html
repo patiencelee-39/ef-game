@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>遊戲中 - 執行功能遊戲</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        overflow: hidden;
+        user-select: none;
+      }
+
+      .game-container {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        padding: 20px;
+      }
+
+      /* 頂部資訊欄 */
+      .top-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        padding: 15px 25px;
+        margin-bottom: 20px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .stage-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .stage-icon {
+        font-size: 2rem;
+      }
+
+      .stage-details h2 {
+        font-size: 1.2rem;
+        color: #2d3436;
+        margin-bottom: 3px;
+      }
+
+      .stage-progress {
+        font-size: 0.9rem;
+        color: #636e72;
+      }
+
+      .score-display {
+        text-align: right;
+      }
+
+      .score-label {
+        font-size: 0.85rem;
+        color: #636e72;
+        margin-bottom: 3px;
+      }
+
+      .score-value {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: #667eea;
+      }
+
+      /* 主遊戲區域 */
+      .game-area {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+
+      .stimulus-display {
+        background: white;
+        border-radius: 30px;
+        width: 400px;
+        height: 400px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12rem;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        transition: all 0.2s;
+        position: relative;
+      }
+
+      .stimulus-display.day-context {
+        background: linear-gradient(135deg, #74b9ff 0%, #a29bfe 100%);
+      }
+
+      .stimulus-display.night-context {
+        background: linear-gradient(135deg, #2d3436 0%, #0984e3 100%);
+      }
+
+      .stimulus-display.correct {
+        animation: correct 0.5s;
+      }
+
+      .stimulus-display.wrong {
+        animation: wrong 0.5s;
+      }
+
+      @keyframes correct {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.1);
+          box-shadow: 0 0 50px rgba(85, 239, 196, 0.8);
+        }
+      }
+
+      @keyframes wrong {
+        0%,
+        100% {
+          transform: translateX(0);
+        }
+        25% {
+          transform: translateX(-20px);
+        }
+        75% {
+          transform: translateX(20px);
+        }
+      }
+
+      .context-indicator {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        font-size: 3rem;
+        opacity: 0.3;
+      }
+
+      /* 計時器 */
+      .timer {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 50%;
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #667eea;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .timer.warning {
+        color: #ff7675;
+        animation: pulse 1s infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.1);
+        }
+      }
+
+      /* 反饋訊息 */
+      .feedback {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 3rem;
+        font-weight: bold;
+        opacity: 0;
+        pointer-events: none;
+        text-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      }
+
+      .feedback.show {
+        animation: feedbackShow 0.8s;
+      }
+
+      @keyframes feedbackShow {
+        0% {
+          opacity: 0;
+          transform: translate(-50%, -50%) scale(0.5);
+        }
+        50% {
+          opacity: 1;
+          transform: translate(-50%, -50%) scale(1.2);
+        }
+        100% {
+          opacity: 0;
+          transform: translate(-50%, -50%) scale(1);
+        }
+      }
+
+      /* 底部控制區 */
+      .bottom-bar {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        padding: 20px;
+      }
+
+      .control-hint {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        padding: 20px 40px;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .control-hint.active {
+        background: linear-gradient(135deg, #55efc4 0%, #00b894 100%);
+        color: white;
+        transform: scale(1.05);
+      }
+
+      .key-display {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+
+      .key-label {
+        font-size: 0.9rem;
+        opacity: 0.8;
+      }
+
+      /* 讀秒準備 */
+      .countdown-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      }
+
+      .countdown-number {
+        font-size: 15rem;
+        font-weight: bold;
+        color: white;
+        animation: countdownPulse 1s ease-in-out;
+      }
+
+      @keyframes countdownPulse {
+        0% {
+          transform: scale(0);
+          opacity: 0;
+        }
+        50% {
+          transform: scale(1.2);
+          opacity: 1;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      /* 載入中 */
+      .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        color: white;
+      }
+
+      .loading-spinner {
+        border: 5px solid rgba(255, 255, 255, 0.3);
+        border-top: 5px solid white;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        animation: spin 1s linear infinite;
+        margin-bottom: 20px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      @media (max-width: 768px) {
+        .stimulus-display {
+          width: 280px;
+          height: 280px;
+          font-size: 8rem;
+        }
+
+        .top-bar {
+          flex-direction: column;
+          gap: 15px;
+          text-align: center;
+        }
+
+        .control-hint {
+          padding: 15px 25px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="game-container">
+      <!-- 頂部資訊 -->
+      <div class="top-bar">
+        <div class="stage-info">
+          <div class="stage-icon" id="stageIcon">🧀</div>
+          <div class="stage-details">
+            <h2 id="stageName">場地A：起司森林</h2>
+            <div class="stage-progress">
+              題目 <span id="currentQuestion">1</span> /
+              <span id="totalQuestions">10</span>
+            </div>
+          </div>
+        </div>
+        <div class="score-display">
+          <div class="score-label">目前分數</div>
+          <div class="score-value" id="scoreValue">0</div>
+        </div>
+      </div>
+
+      <!-- 主遊戲區 -->
+      <div class="game-area">
+        <div class="timer" id="timer">3.0</div>
+        <div class="stimulus-display" id="stimulusDisplay">
+          <div class="context-indicator" id="contextIndicator"></div>
+          <div id="stimulusEmoji">🧀</div>
+        </div>
+        <div class="feedback" id="feedback">✓</div>
+      </div>
+
+      <!-- 底部控制提示 -->
+      <div class="bottom-bar">
+        <div class="control-hint" id="spaceHint">
+          <div class="key-display">空白鍵</div>
+          <div class="key-label">按下</div>
+        </div>
+        <div class="control-hint">
+          <div class="key-display">不按</div>
+          <div class="key-label">等待時間結束</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 讀秒準備 -->
+    <div class="countdown-overlay" id="countdownOverlay" style="display: none">
+      <div class="countdown-number" id="countdownNumber">3</div>
+    </div>
+
+    <!-- 載入中 -->
+    <div class="loading-overlay" id="loadingOverlay">
+      <div class="loading-spinner"></div>
+      <div>載入遊戲中...</div>
+    </div>
+
+    <!-- 語音 -->
+    <audio id="audioPlayer"></audio>
+
+    <!-- 載入遊戲邏輯 -->
+    <script src="../js/utils/question-generator.js"></script>
+
+    <script>
+      // 遊戲狀態
+      let gameState = {
+        stage: null,
+        currentQuestionIndex: 0,
+        questions: [],
+        score: 0,
+        answers: [],
+        startTime: null,
+      };
+
+      let questionTimer = null;
+      let questionStartTime = null;
+      const QUESTION_TIME_LIMIT = 3000; // 3秒
+
+      // 初始化
+      window.addEventListener("DOMContentLoaded", () => {
+        initializeGame();
+      });
+
+      function initializeGame() {
+        // 從 localStorage 獲取選擇的關卡
+        const savedStage = localStorage.getItem("selectedStage");
+        if (!savedStage) {
+          alert("未找到關卡資訊");
+          window.location.href = "stage-select.html";
+          return;
+        }
+
+        gameState.stage = JSON.parse(savedStage);
+        gameState.startTime = Date.now();
+
+        // 生成題目
+        const stageId = gameState.stage.id;
+        gameState.questions = window.QuestionGenerator.generateStageQuestions(
+          stageId,
+          10,
+        );
+
+        // 更新場地資訊
+        document.getElementById("stageIcon").textContent = gameState.stage.icon;
+        document.getElementById("stageName").textContent = gameState.stage.name;
+        document.getElementById("totalQuestions").textContent =
+          gameState.questions.length;
+
+        // 隱藏載入畫面，開始讀秒
+        document.getElementById("loadingOverlay").style.display = "none";
+        startCountdown();
+      }
+
+      // 開始讀秒
+      function startCountdown() {
+        const overlay = document.getElementById("countdownOverlay");
+        const number = document.getElementById("countdownNumber");
+        overlay.style.display = "flex";
+
+        let count = 3;
+        number.textContent = count;
+
+        const interval = setInterval(() => {
+          count--;
+          if (count > 0) {
+            number.textContent = count;
+            number.style.animation = "none";
+            setTimeout(() => {
+              number.style.animation = "countdownPulse 1s ease-in-out";
+            }, 10);
+          } else {
+            clearInterval(interval);
+            overlay.style.display = "none";
+            showQuestion();
+          }
+        }, 1000);
+      }
+
+      // 顯示題目
+      function showQuestion() {
+        const question = gameState.questions[gameState.currentQuestionIndex];
+
+        if (!question) {
+          endGame();
+          return;
+        }
+
+        // 更新題目進度
+        document.getElementById("currentQuestion").textContent =
+          gameState.currentQuestionIndex + 1;
+
+        // 更新刺激物
+        const display = document.getElementById("stimulusDisplay");
+        document.getElementById("stimulusEmoji").textContent = question.emoji;
+
+        // 處理晝夜背景
+        display.classList.remove("day-context", "night-context");
+        const contextIndicator = document.getElementById("contextIndicator");
+
+        if (question.dayNight === "day") {
+          display.classList.add("day-context");
+          contextIndicator.textContent = "☀️";
+        } else if (question.dayNight === "night") {
+          display.classList.add("night-context");
+          contextIndicator.textContent = "🌙";
+        } else {
+          contextIndicator.textContent = "";
+        }
+
+        // 開始計時
+        questionStartTime = Date.now();
+        startQuestionTimer();
+      }
+
+      // 題目計時器
+      function startQuestionTimer() {
+        const timerDisplay = document.getElementById("timer");
+        let timeLeft = QUESTION_TIME_LIMIT;
+
+        questionTimer = setInterval(() => {
+          timeLeft = QUESTION_TIME_LIMIT - (Date.now() - questionStartTime);
+
+          if (timeLeft <= 0) {
+            clearInterval(questionTimer);
+            handleAnswer("nopress");
+          } else {
+            timerDisplay.textContent = (timeLeft / 1000).toFixed(1);
+            if (timeLeft < 1000) {
+              timerDisplay.classList.add("warning");
+            } else {
+              timerDisplay.classList.remove("warning");
+            }
+          }
+        }, 50);
+      }
+
+      // 處理答案
+      function handleAnswer(action) {
+        if (!questionTimer) return; // 已經回答過
+
+        clearInterval(questionTimer);
+        questionTimer = null;
+
+        const question = gameState.questions[gameState.currentQuestionIndex];
+        const reactionTime = Date.now() - questionStartTime;
+        const isCorrect = action === question.correctAction;
+
+        // 記錄答案
+        gameState.answers.push({
+          questionId: question.id,
+          stimulusType: question.stimulusType,
+          correctAction: question.correctAction,
+          userAction: action,
+          isCorrect: isCorrect,
+          reactionTime: reactionTime,
+        });
+
+        // 更新分數
+        if (isCorrect) {
+          const timeBonus = Math.max(
+            0,
+            Math.floor((QUESTION_TIME_LIMIT - reactionTime) / 100),
+          );
+          gameState.score += 10 + timeBonus;
+        }
+
+        document.getElementById("scoreValue").textContent = gameState.score;
+
+        // 顯示反饋
+        showFeedback(isCorrect);
+
+        // 動畫效果
+        const display = document.getElementById("stimulusDisplay");
+        display.classList.add(isCorrect ? "correct" : "wrong");
+        setTimeout(() => {
+          display.classList.remove("correct", "wrong");
+        }, 500);
+
+        // 下一題
+        setTimeout(() => {
+          gameState.currentQuestionIndex++;
+          showQuestion();
+        }, 1000);
+      }
+
+      // 顯示反饋
+      function showFeedback(isCorrect) {
+        const feedback = document.getElementById("feedback");
+        feedback.textContent = isCorrect ? "✓" : "✗";
+        feedback.style.color = isCorrect ? "#00b894" : "#ff7675";
+        feedback.classList.add("show");
+
+        setTimeout(() => {
+          feedback.classList.remove("show");
+        }, 800);
+
+        // 播放反饋音效
+        playFeedbackSound(isCorrect);
+      }
+
+      // 結束遊戲
+      function endGame() {
+        const endTime = Date.now();
+        const totalTime = endTime - gameState.startTime;
+
+        // 計算統計
+        const totalQuestions = gameState.answers.length;
+        const correctAnswers = gameState.answers.filter(
+          (a) => a.isCorrect,
+        ).length;
+        const accuracy = ((correctAnswers / totalQuestions) * 100).toFixed(1);
+
+        // 儲存結果
+        const resultData = {
+          stage: gameState.stage,
+          score: gameState.score,
+          accuracy: parseFloat(accuracy),
+          totalQuestions: totalQuestions,
+          correctAnswers: correctAnswers,
+          totalTime: totalTime,
+          answers: gameState.answers,
+          completedAt: Date.now(),
+        };
+
+        localStorage.setItem("singleplayerResult", JSON.stringify(resultData));
+
+        // 跳轉到結果頁面
+        window.location.href = "result.html";
+      }
+
+      // 播放語音
+      function playFeedbackSound(isCorrect) {
+        const audio = document.getElementById("audioPlayer");
+        if (isCorrect) {
+          const correctSounds = [
+            "../audio/voice/voice-feedback-correct-01.wav",
+            "../audio/voice/voice-feedback-correct-02.wav",
+            "../audio/voice/voice-feedback-correct-03.wav",
+          ];
+          audio.src =
+            correctSounds[Math.floor(Math.random() * correctSounds.length)];
+        } else {
+          const wrongSounds = [
+            "../audio/voice/voice-feedback-wrong-01.wav",
+            "../audio/voice/voice-feedback-wrong-02.wav",
+          ];
+          audio.src =
+            wrongSounds[Math.floor(Math.random() * wrongSounds.length)];
+        }
+        audio.play().catch((e) => console.log("音效播放失敗:", e));
+      }
+
+      // 鍵盤事件
+      document.addEventListener("keydown", (e) => {
+        if (e.code === "Space" && questionTimer) {
+          e.preventDefault();
+          document.getElementById("spaceHint").classList.add("active");
+          handleAnswer("press");
+        }
+      });
+
+      document.addEventListener("keyup", (e) => {
+        if (e.code === "Space") {
+          document.getElementById("spaceHint").classList.remove("active");
+        }
+      });
+
+      // 防止意外離開
+      window.addEventListener("beforeunload", (e) => {
+        if (questionTimer) {
+          e.preventDefault();
+          e.returnValue = "";
+        }
+      });
+    </script>
+  </body>
+</html>

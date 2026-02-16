@@ -42,14 +42,14 @@ firebase.initializeApp(firebaseConfig);
 
 // 初始化服務
 const database = firebase.database();
-const firestore = firebase.firestore();
 const auth = firebase.auth();
+const firestore = firebase.firestore();
 
 // 匯出供其他檔案使用
 window.firebaseServices = {
   database,
-  firestore,
   auth,
+  firestore,
   config: firebaseConfig,
 };
 
@@ -58,7 +58,53 @@ auth
   .signInAnonymously()
   .then(() => {
     console.log("✅ 匿名登入成功");
+
+    // 啟動定期清理過期房間（每5分鐘檢查一次）
+    startRoomCleanup();
   })
   .catch((error) => {
     console.error("❌ 匿名登入失敗:", error);
   });
+
+// 清理過期房間
+function startRoomCleanup() {
+  // 立即執行一次清理
+  cleanupExpiredRooms();
+
+  // 每10分鐘清理一次
+  setInterval(cleanupExpiredRooms, 10 * 60 * 1000);
+}
+
+async function cleanupExpiredRooms() {
+  try {
+    const now = Date.now();
+    const roomsRef = database.ref("rooms");
+
+    // 查詢所有房間
+    const snapshot = await roomsRef.once("value");
+    const rooms = snapshot.val();
+
+    if (!rooms) return;
+
+    let deletedCount = 0;
+    const deletePromises = [];
+
+    // 檢查每個房間是否過期
+    Object.entries(rooms).forEach(([roomCode, roomData]) => {
+      if (roomData.expiresAt && roomData.expiresAt < now) {
+        console.log(`🗑️ 刪除過期房間: ${roomCode}`);
+        deletePromises.push(roomsRef.child(roomCode).remove());
+        deletedCount++;
+      }
+    });
+
+    // 執行所有刪除操作
+    await Promise.all(deletePromises);
+
+    if (deletedCount > 0) {
+      console.log(`✅ 已清理 ${deletedCount} 個過期房間`);
+    }
+  } catch (error) {
+    console.error("❌ 清理過期房間失敗:", error);
+  }
+}

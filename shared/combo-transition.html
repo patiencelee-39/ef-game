@@ -1,0 +1,258 @@
+<!--
+  ============================================
+  組合過場 — HTML Template
+  ============================================
+  對應需求文件：§2.5, §2.8（階段 4）
+  載入方式：DOM Fragment（E2:b）
+  說明：此檔案由遊戲流程控制器載入，
+       插入到 game.html 的指定容器中。
+       不是獨立頁面，不需 <html><head> 等結構。
+       多人模式與自由選擇模式共用。
+
+  過場內容（§2.8）：
+    1. 🎊 上一組合完成提示
+    2. 即將進入的組合名稱
+    3. ⚠️ 規則說明（Go / No-Go 對應）
+    4. [🔊 聽規則說明] 按鈕
+    5. [開始] 按鈕（各自按 → 各自倒數）
+  ============================================
+-->
+
+<div class="combo-transition" role="region" aria-label="組合過場">
+  <!-- === 完成提示 === -->
+  <div class="combo-transition-header">
+    <p class="combo-complete-msg" aria-live="polite">
+      🎊 <span class="prev-combo-name">組合1</span> 全部完成！
+    </p>
+  </div>
+
+  <!-- === 即將進入 === -->
+  <div class="combo-transition-next">
+    <p class="combo-next-label">即將進入：</p>
+    <h2 class="combo-next-name">
+      <span class="next-field-icon">🐭</span>
+      <span class="next-field-name">小老鼠</span>
+      ×
+      <span class="next-rule-name">規則二</span>
+    </h2>
+  </div>
+
+  <!-- === 規則說明 === -->
+  <div class="combo-transition-rules">
+    <p class="combo-rule-warning">⚠️ 注意！規則改變了：</p>
+    <div class="combo-rule-detail">
+      <div class="combo-rule-row">
+        <span class="rule-stimulus-icon go-stimulus-icon">🧀</span>
+        <span class="rule-stimulus-label go-stimulus-label">起司</span>
+        <span class="rule-arrow">→</span>
+        <span class="rule-action go-action">不要按</span>
+      </div>
+      <div class="combo-rule-row">
+        <span class="rule-stimulus-icon nogo-stimulus-icon">😺</span>
+        <span class="rule-stimulus-label nogo-stimulus-label">貓咪</span>
+        <span class="rule-arrow">→</span>
+        <span class="rule-action nogo-action">按空白鍵</span>
+      </div>
+    </div>
+    <!-- WM 提示（若該組合啟用 WM，顯示此區塊） -->
+    <div class="combo-wm-notice" style="display: none">
+      <p>🧠 本組合含工作記憶測驗</p>
+    </div>
+  </div>
+
+  <!-- === 操作按鈕 === -->
+  <div class="combo-transition-actions">
+    <button class="combo-listen-btn btn btn-secondary" type="button">
+      🔊 聽規則說明
+    </button>
+    <button class="combo-start-btn btn btn-primary" type="button">
+      ▶️ 開始
+      <span
+        style="display: block; font-size: 0.7rem; opacity: 0.6; margin-top: 4px"
+        >（或按空白鍵）</span
+      >
+    </button>
+  </div>
+</div>
+
+<!--
+  ============================================
+  組合過場內嵌樣式
+  ============================================
+-->
+<style>
+  .combo-transition {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    padding: 40px 24px;
+    max-width: 520px;
+    margin: 0 auto;
+    text-align: center;
+    animation: combo-fade-in 0.5s ease-out;
+  }
+
+  @keyframes combo-fade-in {
+    0% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* --- 完成提示 --- */
+  .combo-transition-header {
+    width: 100%;
+  }
+
+  .combo-complete-msg {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--success-green, #2ecc71);
+    padding: 12px 20px;
+    border-radius: 8px;
+    background: rgba(46, 204, 113, 0.15);
+    border: 2px solid rgba(46, 204, 113, 0.3);
+  }
+
+  /* --- 即將進入 --- */
+  .combo-transition-next {
+    width: 100%;
+  }
+
+  .combo-next-label {
+    font-size: 1rem;
+    color: var(--text-light, #aaa);
+    margin-bottom: 8px;
+  }
+
+  .combo-next-name {
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: var(--text-white, #fff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .next-field-icon {
+    font-size: 2rem;
+  }
+
+  /* --- 規則說明 --- */
+  .combo-transition-rules {
+    width: 100%;
+    padding: 20px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .combo-rule-warning {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #f39c12;
+    margin-bottom: 16px;
+  }
+
+  .combo-rule-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .combo-rule-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    font-size: 1.2rem;
+    color: var(--text-white, #fff);
+  }
+
+  .rule-stimulus-icon {
+    font-size: 2rem;
+  }
+
+  .rule-stimulus-label {
+    font-weight: 600;
+    min-width: 60px;
+  }
+
+  .rule-arrow {
+    color: var(--text-light, #aaa);
+    font-weight: 700;
+  }
+
+  .go-action {
+    color: var(--success-green, #2ecc71);
+    font-weight: 700;
+  }
+
+  .nogo-action {
+    color: var(--error-red, #e74c3c);
+    font-weight: 700;
+  }
+
+  /* WM 提示 */
+  .combo-wm-notice {
+    margin-top: 12px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    background: rgba(52, 152, 219, 0.15);
+    border: 1px solid rgba(52, 152, 219, 0.3);
+    color: #3498db;
+    font-weight: 600;
+  }
+
+  /* --- 操作按鈕 --- */
+  .combo-transition-actions {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .combo-listen-btn {
+    padding: 10px 24px;
+    font-size: 1rem;
+    border-radius: 8px;
+  }
+
+  .combo-start-btn {
+    padding: 14px 48px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    border-radius: 8px;
+    min-width: 180px;
+  }
+
+  /* === 響應式 === */
+  @media (max-width: 480px) {
+    .combo-transition {
+      padding: 24px 16px;
+      gap: 16px;
+    }
+
+    .combo-next-name {
+      font-size: 1.4rem;
+    }
+
+    .combo-rule-row {
+      font-size: 1rem;
+    }
+
+    .rule-stimulus-icon {
+      font-size: 1.5rem;
+    }
+
+    .combo-start-btn {
+      width: 100%;
+    }
+  }
+</style>

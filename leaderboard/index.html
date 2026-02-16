@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; connect-src 'self'"
+    />
+    <title>排行榜 - 執行功能訓練遊戲</title>
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="../manifest.json" />
+    <meta name="theme-color" content="#302b63" />
+    <link rel="stylesheet" href="../css/themes/base.css" />
+    <link rel="stylesheet" href="../css/components/landscape-hint.css" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --font-sans:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei",
+          "PingFang TC", "Helvetica Neue", Arial, sans-serif;
+      }
+
+      body {
+        font-family: var(--font-sans);
+        background: linear-gradient(
+          135deg,
+          #0f0c29 0%,
+          #302b63 50%,
+          #24243e 100%
+        );
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px 16px;
+        color: #e8e8e8;
+      }
+
+      .chooser-page {
+        max-width: 680px;
+        width: 100%;
+      }
+
+      /* === 頂部 === */
+      .page-header {
+        text-align: center;
+        margin-bottom: 28px;
+      }
+
+      .page-header h1 {
+        font-size: 1.75rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #ffd700, #ffaa00);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 8px;
+      }
+
+      .page-header .subtitle {
+        font-size: 0.92rem;
+        color: rgba(255, 255, 255, 0.55);
+        line-height: 1.5;
+      }
+
+      /* === 三張卡片 === */
+      .lb-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        margin-bottom: 28px;
+      }
+
+      .lb-card {
+        position: relative;
+        display: flex;
+        gap: 16px;
+        padding: 20px;
+        border-radius: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.04);
+        cursor: pointer;
+        transition: all 0.25s ease;
+        text-decoration: none;
+        color: inherit;
+      }
+
+      .lb-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      }
+
+      .lb-card:active {
+        transform: translateY(0);
+      }
+
+      /* 各卡片顏色 */
+      .lb-card--global {
+        border-color: rgba(255, 215, 0, 0.35);
+      }
+      .lb-card--global:hover {
+        border-color: rgba(255, 215, 0, 0.6);
+        background: rgba(255, 215, 0, 0.06);
+      }
+
+      .lb-card--class {
+        border-color: rgba(76, 175, 80, 0.35);
+      }
+      .lb-card--class:hover {
+        border-color: rgba(76, 175, 80, 0.6);
+        background: rgba(76, 175, 80, 0.06);
+      }
+
+      .lb-card--live {
+        border-color: rgba(102, 126, 234, 0.35);
+      }
+      .lb-card--live:hover {
+        border-color: rgba(102, 126, 234, 0.6);
+        background: rgba(102, 126, 234, 0.06);
+      }
+
+      /* 左側 icon */
+      .lb-card__icon {
+        flex-shrink: 0;
+        width: 56px;
+        height: 56px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+      }
+
+      .lb-card--global .lb-card__icon {
+        background: rgba(255, 215, 0, 0.12);
+      }
+      .lb-card--class .lb-card__icon {
+        background: rgba(76, 175, 80, 0.12);
+      }
+      .lb-card--live .lb-card__icon {
+        background: rgba(102, 126, 234, 0.12);
+      }
+
+      /* 右側內容 */
+      .lb-card__body {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .lb-card__title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-bottom: 4px;
+      }
+
+      .lb-card__desc {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.6);
+        line-height: 1.5;
+        margin-bottom: 8px;
+      }
+
+      .lb-card__tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .lb-tag {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        background: rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.65);
+      }
+
+      .lb-card--global .lb-tag {
+        background: rgba(255, 215, 0, 0.1);
+        color: rgba(255, 215, 0, 0.85);
+      }
+      .lb-card--class .lb-tag {
+        background: rgba(76, 175, 80, 0.1);
+        color: rgba(76, 175, 80, 0.85);
+      }
+      .lb-card--live .lb-tag {
+        background: rgba(102, 126, 234, 0.1);
+        color: rgba(102, 126, 234, 0.85);
+      }
+
+      /* 箭頭 */
+      .lb-card__arrow {
+        flex-shrink: 0;
+        align-self: center;
+        font-size: 1.2rem;
+        color: rgba(255, 255, 255, 0.25);
+        transition:
+          color 0.2s,
+          transform 0.2s;
+      }
+
+      .lb-card:hover .lb-card__arrow {
+        color: rgba(255, 255, 255, 0.6);
+        transform: translateX(3px);
+      }
+
+      /* === 差異比較表 === */
+      .comparison {
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        overflow: hidden;
+        margin-bottom: 24px;
+      }
+
+      .comparison__header {
+        padding: 14px 20px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        background: rgba(255, 255, 255, 0.04);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        text-align: center;
+      }
+
+      .comparison__table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.82rem;
+      }
+
+      .comparison__table th,
+      .comparison__table td {
+        padding: 10px 12px;
+        text-align: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .comparison__table th {
+        background: rgba(255, 255, 255, 0.03);
+        color: rgba(255, 255, 255, 0.7);
+        font-weight: 600;
+        font-size: 0.78rem;
+      }
+
+      .comparison__table td:first-child {
+        text-align: left;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.7);
+        white-space: nowrap;
+      }
+
+      .comparison__table tr:last-child td {
+        border-bottom: none;
+      }
+
+      .check {
+        color: #4caf50;
+      }
+      .dash {
+        color: rgba(255, 255, 255, 0.2);
+      }
+
+      /* === 底部按鈕 === */
+      .back-btn {
+        display: block;
+        width: 100%;
+        padding: 14px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.05);
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: center;
+        text-decoration: none;
+      }
+
+      .back-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+      }
+
+      /* === 響應式 === */
+      @media (max-width: 480px) {
+        body {
+          padding: 16px 12px;
+        }
+        .lb-card {
+          padding: 16px 14px;
+          gap: 12px;
+        }
+        .lb-card__icon {
+          width: 48px;
+          height: 48px;
+          font-size: 1.5rem;
+        }
+        .lb-card__title {
+          font-size: 1rem;
+        }
+        .comparison__table {
+          font-size: 0.75rem;
+        }
+        .comparison__table th,
+        .comparison__table td {
+          padding: 8px 6px;
+        }
+      }
+    </style>
+    <link rel="stylesheet" href="../css/components/navbar.css" />
+  </head>
+
+  <body>
+    <main class="chooser-page" id="main-content">
+      <!-- === 頂部標題 === -->
+      <div class="page-header">
+        <h1>📊 排行榜</h1>
+        <p class="subtitle">
+          選擇要查看的排行榜類型，兩種排行榜適用於不同教學情境
+        </p>
+      </div>
+
+      <!-- === 二軌排行榜卡片 === -->
+      <div class="lb-cards">
+        <!-- 1. 世界排行榜 -->
+        <a class="lb-card lb-card--global" href="world.html">
+          <div class="lb-card__icon">🌐</div>
+          <div class="lb-card__body">
+            <div class="lb-card__title">世界排行榜</div>
+            <div class="lb-card__desc">
+              跨班級、跨學校的整體排名。完成遊戲後即可上傳成績，與全世界的玩家一較高下！
+            </div>
+            <div class="lb-card__tags">
+              <span class="lb-tag">永久伺服器保存</span>
+            </div>
+          </div>
+          <div class="lb-card__arrow" aria-hidden="true">›</div>
+        </a>
+
+        <!-- 2. 班級排行榜 -->
+        <a class="lb-card lb-card--class" href="class.html">
+          <div class="lb-card__icon">📋</div>
+          <div class="lb-card__body">
+            <div class="lb-card__title">班級排行榜</div>
+            <div class="lb-card__desc">
+              老師建立專屬看板，學生透過代碼 / QR Code /
+              連結上傳成績。支援即時排行與 CSV 匯入分析兩種模式。
+            </div>
+            <div class="lb-card__tags">
+              <span class="lb-tag">即時收集</span>
+              <span class="lb-tag">CSV 匯入</span>
+              <span class="lb-tag">老師管理</span>
+            </div>
+          </div>
+          <div class="lb-card__arrow" aria-hidden="true">›</div>
+        </a>
+      </div>
+
+      <!-- === 二者差異比較表 === -->
+      <div class="comparison">
+        <div class="comparison__header">📋 兩種排行榜差異比較</div>
+        <table class="comparison__table">
+          <caption class="sr-only">
+            世界排行榜與班級排行榜差異比較
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">比較項目</th>
+              <th scope="col">🌐 世界</th>
+              <th scope="col">📋 班級</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>🔑 登入方式</td>
+              <td>免登入（匿名）</td>
+              <td>匿名（輸入代碼）</td>
+            </tr>
+            <tr>
+              <td>👥 排名範圍</td>
+              <td>全世界所有玩家</td>
+              <td>同看板學生</td>
+            </tr>
+            <tr>
+              <td>📦 資料收集</td>
+              <td>自行上傳</td>
+              <td>代碼 / QR / 連結 / CSV</td>
+            </tr>
+            <tr>
+              <td>🗄️ 資料保存</td>
+              <td>同名覆蓋（上傳即取代）</td>
+              <td>永久（老師可管理）</td>
+            </tr>
+            <tr>
+              <td>📊 分析功能</td>
+              <td>分數・正確率・RT</td>
+              <td>分數・正確率・RT・CSV 深度分析</td>
+            </tr>
+            <tr>
+              <td>🎯 適用場景</td>
+              <td>跨校激勵・個人挑戰</td>
+              <td>班級觀察・教學評估</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- === 返回按鈕 === -->
+      <a class="back-btn" href="../index.html">🏠 回首頁</a>
+    </main>
+    <script src="../js/shared/navbar.js"></script>
+    <script src="../js/shared/landscape-hint.js"></script>
+  </body>
+</html>

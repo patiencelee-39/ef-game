@@ -1,0 +1,107 @@
+{
+  "rules": {
+    "rooms": {
+      ".read": "auth != null",
+
+      "$roomCode": {
+        ".read": "auth != null",
+        ".indexOn": ["createdAt", "status", "expiresAt"],
+
+        // --- 房間基本資訊（房主可寫全部，其他人有限寫入）---
+        "roomCode": {
+          ".write": "auth != null && (!data.exists() || data.parent().child('hostId').val() === auth.uid)"
+        },
+        "roomName": {
+          ".write": "auth != null && data.parent().child('hostId').val() === auth.uid"
+        },
+        "hostId": {
+          ".write": "auth != null && (!data.exists() || data.parent().child('hostId').val() === auth.uid || data.parent().child('players').child(data.val()).child('online').val() === false)"
+        },
+        "hasPassword": {
+          ".write": "auth != null && data.parent().child('hostId').val() === auth.uid"
+        },
+        "passwordHash": {
+          ".write": "auth != null && data.parent().child('hostId').val() === auth.uid"
+        },
+        "hostJoinedGame": {
+          ".write": "auth != null && data.parent().child('hostId').val() === auth.uid"
+        },
+        "createdAt": { ".write": "auth != null && !data.exists()" },
+        "expiresAt": {
+          ".write": "auth != null && (!data.exists() || data.parent().child('hostId').val() === auth.uid)"
+        },
+        "status": {
+          ".write": "auth != null && data.parent().child('hostId').val() === auth.uid"
+        },
+        "gameStarted": {
+          ".write": "auth != null && data.parent().child('hostId').val() === auth.uid"
+        },
+        "countdownSeconds": {
+          ".write": "auth != null && data.parent().child('hostId').val() === auth.uid"
+        },
+
+        // --- 遊戲設定（僅房主）---
+        "gameSettings": {
+          ".write": "auth != null && data.parent().child('hostId').val() === auth.uid"
+        },
+        "gameCombos": {
+          ".write": "auth != null && data.parent().child('hostId').val() === auth.uid"
+        },
+        "displaySettings": {
+          ".write": "auth != null && data.parent().child('hostId').val() === auth.uid"
+        },
+
+        // --- 遊戲狀態（僅房主可寫）---
+        "gameState": {
+          ".write": "auth != null && data.parent().child('hostId').val() === auth.uid"
+        },
+
+        // --- 遊戲場地順序（僅房主可寫）---
+        "stageOrder": {
+          ".write": "auth != null && data.parent().child('hostId').val() === auth.uid"
+        },
+        "gameStages": {
+          ".write": "auth != null && data.parent().child('hostId').val() === auth.uid"
+        },
+        "startTime": {
+          ".write": "auth != null && data.parent().child('hostId').val() === auth.uid"
+        },
+        "isGameStarted": {
+          ".write": "auth != null && data.parent().child('hostId').val() === auth.uid"
+        },
+
+        // --- 玩家答題記錄（各自只能寫自己的）---
+        "answers": {
+          "$uid": {
+            ".read": "auth != null",
+            ".write": "auth != null && ($uid === auth.uid || data.parent().parent().child('hostId').val() === auth.uid)"
+          }
+        },
+
+        // --- 玩家成績（各自只能寫自己的）---
+        "scores": {
+          "$uid": {
+            ".read": "auth != null",
+            ".write": "auth != null && ($uid === auth.uid || data.parent().parent().child('hostId').val() === auth.uid)"
+          }
+        },
+
+        // --- 遊戲結果（各自只能寫自己的）---
+        "results": {
+          "$uid": {
+            ".read": "auth != null",
+            ".write": "auth != null && ($uid === auth.uid || data.parent().parent().child('hostId').val() === auth.uid)"
+          }
+        },
+
+        // --- 玩家資料（各自只能改自己的）---
+        "players": {
+          "$uid": {
+            ".read": "auth != null",
+            ".write": "auth != null && ($uid === auth.uid || data.parent().parent().child('hostId').val() === auth.uid)"
+          }
+        }
+      }
+    }
+  }
+}

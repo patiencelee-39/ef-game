@@ -1,0 +1,1145 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://www.googleapis.com" crossorigin />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app"
+    />
+    <title>教師管理後台 - 執行功能訓練遊戲</title>
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="../manifest.json" />
+    <meta name="theme-color" content="#302b63" />
+    <link rel="stylesheet" href="../css/themes/base.css" />
+    <link rel="stylesheet" href="../css/main.css" />
+    <link rel="stylesheet" href="../css/components/navbar.css" />
+    <link rel="stylesheet" href="../css/components/landscape-hint.css" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei",
+          "PingFang TC", "Helvetica Neue", Arial, sans-serif;
+        background: linear-gradient(
+          135deg,
+          #0f0c29 0%,
+          #302b63 50%,
+          #24243e 100%
+        );
+        min-height: 100vh;
+        color: #e8e8e8;
+      }
+
+      /* === 頁面容器 === */
+      .admin-page {
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 24px 16px 120px;
+      }
+
+      /* === 標題 === */
+      .admin-page > h1 {
+        text-align: center;
+        font-size: 1.5rem;
+        font-weight: 800;
+        margin-bottom: 8px;
+        background: linear-gradient(135deg, #c9b1ff, #fed6e3);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .admin-subtitle {
+        text-align: center;
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.65);
+        margin-bottom: 24px;
+      }
+
+      /* === 快捷導航 === */
+      .quick-nav {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .quick-nav__btn {
+        padding: 8px 14px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.06);
+        color: rgba(255, 255, 255, 0.75);
+        font-size: 0.85rem;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition:
+          background 0.2s,
+          border-color 0.2s;
+      }
+      .quick-nav__btn:hover {
+        background: rgba(255, 255, 255, 0.12);
+        border-color: rgba(255, 255, 255, 0.25);
+      }
+
+      /* === 統計卡片 === */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+      .stat-card {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 14px;
+        padding: 16px 12px;
+        text-align: center;
+        backdrop-filter: blur(8px);
+      }
+      .stat-card__icon {
+        font-size: 1.6rem;
+        margin-bottom: 6px;
+      }
+      .stat-card__value {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #fff;
+        line-height: 1.2;
+      }
+      .stat-card__label {
+        font-size: 0.78rem;
+        color: rgba(255, 255, 255, 0.7);
+        margin-top: 4px;
+      }
+
+      /* === 區塊 === */
+      .admin-section {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 18px 16px;
+        margin-bottom: 16px;
+        backdrop-filter: blur(8px);
+      }
+      .admin-section h2 {
+        font-size: 1rem;
+        font-weight: 700;
+        margin: 0 0 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #fff;
+      }
+
+      /* === 班級管理 === */
+      .class-form {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 14px;
+      }
+      .class-form__input {
+        flex: 1;
+        padding: 10px 14px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.06);
+        color: #fff;
+        font-size: 0.92rem;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+      .class-form__input::placeholder {
+        color: rgba(255, 255, 255, 0.35);
+      }
+      .class-form__input:focus {
+        border-color: rgba(155, 89, 182, 0.5);
+      }
+      .class-form__btn {
+        padding: 10px 16px;
+        border: none;
+        border-radius: 10px;
+        background: rgba(155, 89, 182, 0.25);
+        color: #c9a0dc;
+        font-size: 0.88rem;
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background 0.2s;
+      }
+      .class-form__btn:hover {
+        background: rgba(155, 89, 182, 0.4);
+      }
+
+      .class-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .class-chip {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 14px;
+        background: rgba(255, 255, 255, 0.04);
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+      }
+      .class-chip__info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.92rem;
+      }
+      .class-chip__count {
+        font-size: 0.78rem;
+        color: rgba(255, 255, 255, 0.65);
+      }
+      .class-chip__del {
+        width: 32px;
+        height: 32px;
+        border: none;
+        border-radius: 8px;
+        background: rgba(231, 76, 60, 0.12);
+        color: #e74c3c;
+        font-size: 0.9rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+      }
+      .class-chip__del:hover {
+        background: rgba(231, 76, 60, 0.3);
+      }
+
+      /* === 學生列表 === */
+      .student-table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .student-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+      }
+      .student-table th {
+        padding: 8px 10px;
+        text-align: left;
+        font-size: 0.78rem;
+        color: rgba(255, 255, 255, 0.7);
+        font-weight: 600;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        white-space: nowrap;
+      }
+      .student-table td {
+        padding: 9px 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        color: rgba(255, 255, 255, 0.85);
+      }
+      .student-table tr:hover td {
+        background: rgba(255, 255, 255, 0.03);
+      }
+      .student-table .rank-medal {
+        font-size: 1.1rem;
+      }
+
+      /* === 篩選列 === */
+      .filter-row {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+      }
+      .filter-chip {
+        padding: 5px 12px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 8px;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .filter-chip.active {
+        background: rgba(155, 89, 182, 0.2);
+        border-color: rgba(155, 89, 182, 0.5);
+        color: #c9a0dc;
+        font-weight: 600;
+      }
+
+      /* === 空狀態 === */
+      .empty-state {
+        text-align: center;
+        padding: 28px 16px;
+        color: rgba(255, 255, 255, 0.65);
+      }
+      .empty-state__icon {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+      }
+      .empty-state__text {
+        font-size: 0.88rem;
+        line-height: 1.5;
+      }
+
+      /* === 資料管理按鈕 === */
+      .admin-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 10px;
+        font-size: 0.92rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition:
+          opacity 0.2s,
+          transform 0.1s;
+        margin-bottom: 10px;
+      }
+      .admin-btn:last-child {
+        margin-bottom: 0;
+      }
+      .admin-btn:active {
+        transform: scale(0.97);
+      }
+      .admin-btn--export {
+        background: rgba(52, 152, 219, 0.2);
+        color: #3498db;
+        border: 1px solid rgba(52, 152, 219, 0.3);
+      }
+      .admin-btn--import {
+        background: rgba(46, 204, 113, 0.2);
+        color: #2ecc71;
+        border: 1px solid rgba(46, 204, 113, 0.3);
+      }
+      .admin-btn--danger {
+        background: rgba(231, 76, 60, 0.15);
+        color: #e74c3c;
+        border: 1px solid rgba(231, 76, 60, 0.25);
+      }
+
+      /* === Toast === */
+      .admin-toast {
+        position: fixed;
+        bottom: 90px;
+        left: 50%;
+        transform: translateX(-50%) translateY(20px);
+        background: rgba(0, 0, 0, 0.85);
+        color: #fff;
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-size: 0.88rem;
+        z-index: 9999;
+        opacity: 0;
+        pointer-events: none;
+        transition:
+          opacity 0.3s,
+          transform 0.3s;
+        backdrop-filter: blur(8px);
+      }
+      .admin-toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+
+      /* === 確認彈窗 === */
+      .confirm-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s;
+      }
+      .confirm-overlay.show {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .confirm-dialog {
+        background: #2a2a4a;
+        border-radius: 16px;
+        padding: 28px 24px 20px;
+        max-width: 320px;
+        width: 90%;
+        text-align: center;
+      }
+      .confirm-dialog__icon {
+        font-size: 2.5rem;
+        margin-bottom: 12px;
+      }
+      .confirm-dialog__title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: #fff;
+      }
+      .confirm-dialog__msg {
+        font-size: 0.88rem;
+        color: rgba(255, 255, 255, 0.6);
+        margin-bottom: 20px;
+        line-height: 1.5;
+      }
+      .confirm-dialog__actions {
+        display: flex;
+        gap: 10px;
+      }
+      .confirm-dialog__btn {
+        flex: 1;
+        padding: 10px;
+        border: none;
+        border-radius: 10px;
+        font-size: 0.92rem;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .confirm-dialog__btn--cancel {
+        background: rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.7);
+      }
+      .confirm-dialog__btn--danger {
+        background: #e74c3c;
+        color: #fff;
+      }
+
+      /* === 隱藏 file input === */
+      #importFileInput {
+        display: none;
+      }
+
+      /* === 響應式 === */
+      @media (max-width: 400px) {
+        .stats-grid {
+          gap: 8px;
+        }
+        .stat-card {
+          padding: 12px 8px;
+        }
+        .stat-card__value {
+          font-size: 1.5rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="admin-page" id="main-content">
+      <h1>🏫 教師管理後台</h1>
+      <p class="admin-subtitle">
+        班級管理 · 學生進度 · 資料匯出
+        <span id="authStatus" style="font-size: 0.75rem">⏳ 連線中…</span>
+      </p>
+
+      <!-- === 快捷導航 === -->
+      <div class="quick-nav">
+        <a class="quick-nav__btn" href="../leaderboard/class.html">
+          🏆 班級排行榜
+        </a>
+        <a class="quick-nav__btn" href="../multiplayer/room-create.html">
+          🎮 建立房間
+        </a>
+        <a class="quick-nav__btn" href="../settings/index.html"> ⚙️ 設定 </a>
+      </div>
+
+      <!-- === 統計摘要 === -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-card__icon">👩‍🎓</div>
+          <div class="stat-card__value" id="statStudents">0</div>
+          <div class="stat-card__label">學生人數</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__icon">🏅</div>
+          <div class="stat-card__value" id="statClasses">0</div>
+          <div class="stat-card__label">班級數</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__icon">🎮</div>
+          <div class="stat-card__value" id="statGames">0</div>
+          <div class="stat-card__label">總遊戲場次</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__icon">💯</div>
+          <div class="stat-card__value" id="statAvgAcc">-</div>
+          <div class="stat-card__label">平均準確率</div>
+        </div>
+      </div>
+
+      <!-- === 班級管理 === -->
+      <div class="admin-section">
+        <h2>📚 班級管理</h2>
+        <div class="class-form">
+          <input
+            type="text"
+            id="newClassName"
+            class="class-form__input"
+            placeholder="輸入班級名稱（如：向日葵班）"
+            maxlength="20"
+            aria-label="新班級名稱"
+          />
+          <button class="class-form__btn" id="btnAddClass">➕ 新增</button>
+        </div>
+        <div class="class-list" id="classList">
+          <!-- 動態產生 -->
+        </div>
+      </div>
+
+      <!-- === 學生學習進度 === -->
+      <div class="admin-section">
+        <h2>🧑‍🎓 學生學習進度</h2>
+        <div class="filter-row" id="filterRow">
+          <!-- 動態產生篩選按鈕 -->
+        </div>
+        <div id="studentArea">
+          <div class="empty-state">
+            <div class="empty-state__icon">📭</div>
+            <p class="empty-state__text">
+              尚無學生資料<br />學生完成遊戲後，資料將自動出現於此
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- === 資料管理 === -->
+      <div class="admin-section">
+        <h2>💾 資料管理</h2>
+        <button class="admin-btn admin-btn--export" id="btnExport">
+          📥 匯出所有資料 (JSON)
+        </button>
+        <button class="admin-btn admin-btn--import" id="btnImport">
+          📤 匯入資料 (JSON)
+        </button>
+        <button
+          class="admin-btn admin-btn--danger"
+          id="btnClearAll"
+          style="
+            background: rgba(100, 100, 200, 0.2);
+            border: 1px solid rgba(150, 150, 220, 0.3);
+          "
+        >
+          🔄 重新整理
+        </button>
+        <input type="file" id="importFileInput" accept=".json" />
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="admin-toast" id="toast" role="status" aria-live="polite"></div>
+
+    <!-- 確認彈窗 -->
+    <div class="confirm-overlay" id="confirmOverlay" role="dialog" aria-modal="true" aria-label="確認操作">
+      <div class="confirm-dialog">
+        <div class="confirm-dialog__icon" id="confirmIcon">⚠️</div>
+        <div class="confirm-dialog__title" id="confirmTitle">確認操作</div>
+        <div class="confirm-dialog__msg" id="confirmMsg">確定嗎？</div>
+        <div class="confirm-dialog__actions">
+          <button
+            class="confirm-dialog__btn confirm-dialog__btn--cancel"
+            id="confirmCancel"
+          >
+            取消
+          </button>
+          <button
+            class="confirm-dialog__btn confirm-dialog__btn--danger"
+            id="confirmOk"
+          >
+            確定
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- === Scripts === -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/shared/firestore-leaderboard.js"></script>
+    <script>
+      /**
+       * ============================================
+       * 教師管理後台控制器 v2
+       * ============================================
+       * 資料來源：
+       *   - 班級看板：Firestore classLeaderboards（via FirestoreLeaderboard）
+       *   - 學生成績：Firestore entries（via getClassBoardEntries）
+       *   - 本地匯出/匯入：保留 JSON 功能
+       * ============================================
+       */
+      (function () {
+        "use strict";
+
+        // =========================================
+        // 狀態
+        // =========================================
+        var _boards = []; // 教師的所有看板
+        var _currentBoardId = null; // 當前選中的看板
+        var _allEntries = []; // 當前看板的所有成績
+        var _isLoggedIn = false;
+
+        // =========================================
+        // DOM refs
+        // =========================================
+        var els = {};
+
+        function cacheDom() {
+          els = {
+            statStudents: document.getElementById("statStudents"),
+            statClasses: document.getElementById("statClasses"),
+            statGames: document.getElementById("statGames"),
+            statAvgAcc: document.getElementById("statAvgAcc"),
+            boardNameInput: document.getElementById("newClassName"),
+            btnAddClass: document.getElementById("btnAddClass"),
+            classList: document.getElementById("classList"),
+            filterRow: document.getElementById("filterRow"),
+            studentArea: document.getElementById("studentArea"),
+            btnExport: document.getElementById("btnExport"),
+            btnImport: document.getElementById("btnImport"),
+            btnClearAll: document.getElementById("btnClearAll"),
+            importFileInput: document.getElementById("importFileInput"),
+            toast: document.getElementById("toast"),
+            authStatus: document.getElementById("authStatus"),
+          };
+        }
+
+        // =========================================
+        // Firebase 驗證
+        // =========================================
+        function initAuth() {
+          firebase.auth().onAuthStateChanged(function (user) {
+            if (user) {
+              _isLoggedIn = true;
+              if (els.authStatus) {
+                els.authStatus.textContent = "✅ 已連線";
+                els.authStatus.style.color = "#81c784";
+              }
+              loadBoards();
+            } else {
+              // 匿名登入
+              firebase
+                .auth()
+                .signInAnonymously()
+                .catch(function (err) {
+                  console.error("❌ 匿名登入失敗:", err);
+                  if (els.authStatus) {
+                    els.authStatus.textContent = "❌ 連線失敗";
+                    els.authStatus.style.color = "#e74c3c";
+                  }
+                  showToast("❌ Firebase 連線失敗，部分功能可能無法使用");
+                });
+            }
+          });
+        }
+
+        // =========================================
+        // 看板（班級）管理
+        // =========================================
+        function loadBoards() {
+          FirestoreLeaderboard.getMyBoards()
+            .then(function (boards) {
+              _boards = boards;
+              renderAll();
+            })
+            .catch(function (err) {
+              console.error("❌ 載入看板失敗:", err);
+              showToast("❌ 載入班級看板失敗");
+            });
+        }
+
+        function addBoard() {
+          var name = (els.boardNameInput.value || "").trim();
+          if (!name) {
+            showToast("⚠️ 請輸入班級名稱");
+            return;
+          }
+          // 重名檢查
+          for (var i = 0; i < _boards.length; i++) {
+            if (_boards[i].boardName === name) {
+              showToast("⚠️ 此班級名稱已存在");
+              return;
+            }
+          }
+          els.btnAddClass.disabled = true;
+          els.btnAddClass.textContent = "建立中…";
+
+          FirestoreLeaderboard.createClassBoard(name)
+            .then(function (board) {
+              els.boardNameInput.value = "";
+              showToast("✅ 已建立班級「" + name + "」\n代碼：" + board.code);
+              loadBoards();
+            })
+            .catch(function (err) {
+              showToast("❌ 建立失敗：" + err.message);
+            })
+            .finally(function () {
+              els.btnAddClass.disabled = false;
+              els.btnAddClass.textContent = "➕ 新增";
+            });
+        }
+
+        function deleteBoard(boardId, boardName) {
+          showConfirm(
+            "🗑️",
+            "刪除班級看板",
+            "確定要刪除「" +
+              boardName +
+              "」嗎？\n所有學生成績將一併刪除，此操作無法復原。",
+            function () {
+              FirestoreLeaderboard.deleteClassBoard(boardId)
+                .then(function () {
+                  if (_currentBoardId === boardId) {
+                    _currentBoardId = null;
+                    _allEntries = [];
+                  }
+                  showToast("✅ 已刪除「" + boardName + "」");
+                  loadBoards();
+                })
+                .catch(function (err) {
+                  showToast("❌ 刪除失敗：" + err.message);
+                });
+            },
+          );
+        }
+
+        function renderBoards() {
+          if (_boards.length === 0) {
+            els.classList.innerHTML =
+              '<div class="empty-state" style="padding:16px">' +
+              '<p class="empty-state__text">尚未建立班級看板<br>點擊上方「➕ 新增」建立第一個班級</p>' +
+              "</div>";
+            return;
+          }
+
+          var html = "";
+          for (var i = 0; i < _boards.length; i++) {
+            var b = _boards[i];
+            html +=
+              '<div class="class-chip" data-board-id="' +
+              _escAttr(b.boardId) +
+              '">' +
+              '<div class="class-chip__info">' +
+              "<span>📖</span>" +
+              "<span>" +
+              _escHtml(b.boardName) +
+              "</span>" +
+              '<span class="class-chip__count">' +
+              '代碼：<strong style="color:#c9a0dc;letter-spacing:1px;">' +
+              _escHtml(b.code) +
+              "</strong>" +
+              " · " +
+              (b.entryCount || 0) +
+              " 筆成績</span>" +
+              "</div>" +
+              '<button class="class-chip__del" data-board-id="' +
+              _escAttr(b.boardId) +
+              '" data-board-name="' +
+              _escAttr(b.boardName) +
+              '" title="刪除">🗑️</button>' +
+              "</div>";
+          }
+          els.classList.innerHTML = html;
+        }
+
+        // =========================================
+        // 篩選（選擇看板）
+        // =========================================
+        function renderFilters() {
+          var html =
+            '<button class="filter-chip' +
+            (_currentBoardId === null ? " active" : "") +
+            '" data-filter="all">全部</button>';
+
+          for (var i = 0; i < _boards.length; i++) {
+            var b = _boards[i];
+            html +=
+              '<button class="filter-chip' +
+              (_currentBoardId === b.boardId ? " active" : "") +
+              '" data-filter="' +
+              _escAttr(b.boardId) +
+              '">' +
+              _escHtml(b.boardName) +
+              "</button>";
+          }
+          els.filterRow.innerHTML = html;
+        }
+
+        // =========================================
+        // 學生成績
+        // =========================================
+        function loadEntries(boardId) {
+          _currentBoardId = boardId;
+          els.studentArea.innerHTML =
+            '<div class="empty-state" style="padding:20px">' +
+            '<p class="empty-state__text">⏳ 載入中…</p></div>';
+
+          if (!boardId) {
+            // 全部模式：載入所有看板的成績
+            var promises = _boards.map(function (b) {
+              return FirestoreLeaderboard.getClassBoardEntries(b.boardId).then(
+                function (entries) {
+                  entries.forEach(function (e) {
+                    e._boardName = b.boardName;
+                  });
+                  return entries;
+                },
+              );
+            });
+            Promise.all(promises)
+              .then(function (results) {
+                _allEntries = [];
+                results.forEach(function (arr) {
+                  _allEntries = _allEntries.concat(arr);
+                });
+                renderStudents();
+                updateStats();
+              })
+              .catch(function (err) {
+                console.error("❌ 載入成績失敗:", err);
+                els.studentArea.innerHTML =
+                  '<div class="empty-state" style="padding:20px">' +
+                  '<p class="empty-state__text">❌ 載入失敗：' +
+                  _escHtml(err.message) +
+                  "</p></div>";
+              });
+          } else {
+            var boardObj = _boards.find(function (b) {
+              return b.boardId === boardId;
+            });
+            FirestoreLeaderboard.getClassBoardEntries(boardId)
+              .then(function (entries) {
+                entries.forEach(function (e) {
+                  e._boardName = boardObj ? boardObj.boardName : "未知";
+                });
+                _allEntries = entries;
+                renderStudents();
+                updateStats();
+              })
+              .catch(function (err) {
+                console.error("❌ 載入成績失敗:", err);
+                els.studentArea.innerHTML =
+                  '<div class="empty-state" style="padding:20px">' +
+                  '<p class="empty-state__text">❌ 載入失敗</p></div>';
+              });
+          }
+        }
+
+        function renderStudents() {
+          if (_allEntries.length === 0) {
+            els.studentArea.innerHTML =
+              '<div class="empty-state">' +
+              '<div class="empty-state__icon">📭</div>' +
+              '<p class="empty-state__text">' +
+              "尚無學生成績<br>學生在結算頁面上傳後，成績將出現於此" +
+              "</p></div>";
+            return;
+          }
+
+          // 排序：分數降序
+          var sorted = _allEntries.slice().sort(function (a, b) {
+            return (b.score || 0) - (a.score || 0);
+          });
+
+          var html =
+            '<div class="student-table-wrap"><table class="student-table">' +
+            "<thead><tr>" +
+            "<th>#</th><th>暱稱</th><th>班級</th><th>分數</th><th>準確率</th><th>平均RT</th><th>⭐</th>" +
+            "</tr></thead><tbody>";
+
+          for (var i = 0; i < sorted.length; i++) {
+            var s = sorted[i];
+            var rankText = "";
+            if (i === 0) rankText = '<span class="rank-medal">🥇</span>';
+            else if (i === 1) rankText = '<span class="rank-medal">🥈</span>';
+            else if (i === 2) rankText = '<span class="rank-medal">🥉</span>';
+            else rankText = String(i + 1);
+
+            var accDisplay =
+              s.accuracy != null
+                ? (typeof s.accuracy === "number" && s.accuracy <= 1
+                    ? Math.round(s.accuracy * 100)
+                    : Math.round(s.accuracy)) + "%"
+                : "-";
+
+            html +=
+              "<tr>" +
+              "<td>" +
+              rankText +
+              "</td>" +
+              "<td>" +
+              _escHtml(s.nickname || "匿名") +
+              "</td>" +
+              "<td>" +
+              _escHtml(s._boardName || "-") +
+              "</td>" +
+              "<td>" +
+              (s.score || 0) +
+              "</td>" +
+              "<td>" +
+              accDisplay +
+              "</td>" +
+              "<td>" +
+              (s.avgRT ? Math.round(s.avgRT) + "ms" : "-") +
+              "</td>" +
+              "<td>" +
+              (s.stars || 0) +
+              "</td>" +
+              "</tr>";
+          }
+
+          html += "</tbody></table></div>";
+          els.studentArea.innerHTML = html;
+        }
+
+        // =========================================
+        // 統計摘要
+        // =========================================
+        function updateStats() {
+          var totalGames = _allEntries.length;
+          var totalAcc = 0;
+          var accCount = 0;
+          for (var i = 0; i < _allEntries.length; i++) {
+            var acc = _allEntries[i].accuracy;
+            if (acc != null) {
+              // 統一為百分比
+              totalAcc += typeof acc === "number" && acc <= 1 ? acc * 100 : acc;
+              accCount++;
+            }
+          }
+          var avgAcc = accCount > 0 ? Math.round(totalAcc / accCount) : 0;
+
+          // 學生人數去重（按 nickname）
+          var uniqueNames = {};
+          for (var j = 0; j < _allEntries.length; j++) {
+            var name = _allEntries[j].nickname || "匿名";
+            uniqueNames[name] = true;
+          }
+
+          els.statStudents.textContent = Object.keys(uniqueNames).length;
+          els.statClasses.textContent = _boards.length;
+          els.statGames.textContent = totalGames;
+          els.statAvgAcc.textContent = accCount > 0 ? avgAcc + "%" : "-";
+        }
+
+        // =========================================
+        // 資料管理（JSON 匯出/匯入）
+        // =========================================
+        function handleExport() {
+          if (_allEntries.length === 0 && _boards.length === 0) {
+            showToast("⚠️ 沒有可匯出的資料");
+            return;
+          }
+          var data = {
+            exportDate: new Date().toISOString(),
+            boards: _boards.map(function (b) {
+              return {
+                boardId: b.boardId,
+                boardName: b.boardName,
+                code: b.code,
+              };
+            }),
+            entries: _allEntries,
+            version: "6.0-firestore",
+          };
+          var blob = new Blob([JSON.stringify(data, null, 2)], {
+            type: "application/json",
+          });
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement("a");
+          a.href = url;
+          a.download =
+            "efgame-teacher-" + new Date().toISOString().slice(0, 10) + ".json";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          showToast("✅ 資料已匯出（含 " + _allEntries.length + " 筆成績）");
+        }
+
+        function handleImport(e) {
+          var file = e.target.files && e.target.files[0];
+          if (!file) return;
+          if (!file.name.endsWith(".json")) {
+            showToast("❌ 請選擇 .json 檔案");
+            els.importFileInput.value = "";
+            return;
+          }
+          var reader = new FileReader();
+          reader.onload = function (ev) {
+            try {
+              var data = JSON.parse(ev.target.result);
+              // 向後相容：舊版匯出格式
+              if (data.classes && !data.boards) {
+                showToast(
+                  "ℹ️ 偵測到舊版格式。班級名稱已載入，但學生資料需從雲端讀取。",
+                );
+              } else if (data.boards) {
+                showToast(
+                  "✅ 匯入成功！看板資訊已載入。\n注意：雲端資料以 Firestore 為準。",
+                );
+              }
+              loadBoards(); // 重新從 Firestore 載入
+            } catch (err) {
+              showToast("❌ 匯入失敗：" + err.message);
+            }
+          };
+          reader.readAsText(file);
+          els.importFileInput.value = "";
+        }
+
+        function handleRefresh() {
+          showToast("🔄 重新載入中…");
+          loadBoards();
+        }
+
+        // =========================================
+        // Toast
+        // =========================================
+        var _toastTimer = null;
+        function showToast(msg) {
+          if (_toastTimer) clearTimeout(_toastTimer);
+          els.toast.textContent = msg;
+          els.toast.classList.add("show");
+          _toastTimer = setTimeout(function () {
+            els.toast.classList.remove("show");
+          }, 3000);
+        }
+
+        // =========================================
+        // 確認彈窗
+        // =========================================
+        function showConfirm(icon, title, msg, onOk) {
+          var overlay = document.getElementById("confirmOverlay");
+          document.getElementById("confirmIcon").textContent = icon;
+          document.getElementById("confirmTitle").textContent = title;
+          document.getElementById("confirmMsg").textContent = msg;
+          overlay.classList.add("show");
+
+          var okBtn = document.getElementById("confirmOk");
+          var cancelBtn = document.getElementById("confirmCancel");
+
+          function cleanup() {
+            overlay.classList.remove("show");
+            okBtn.removeEventListener("click", onConfirm);
+            cancelBtn.removeEventListener("click", onCancel);
+          }
+          function onConfirm() {
+            cleanup();
+            if (onOk) onOk();
+          }
+          function onCancel() {
+            cleanup();
+          }
+          okBtn.addEventListener("click", onConfirm);
+          cancelBtn.addEventListener("click", onCancel);
+        }
+
+        // =========================================
+        // Util
+        // =========================================
+        function _escHtml(s) {
+          var div = document.createElement("div");
+          div.textContent = s;
+          return div.innerHTML;
+        }
+        function _escAttr(s) {
+          return s
+            .replace(/&/g, "&amp;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+        }
+
+        // =========================================
+        // 事件綁定
+        // =========================================
+        function bindEvents() {
+          // 新增看板
+          els.btnAddClass.addEventListener("click", addBoard);
+          els.boardNameInput.addEventListener("keydown", function (e) {
+            if (e.key === "Enter") addBoard();
+          });
+
+          // 刪除看板（事件委派）
+          els.classList.addEventListener("click", function (e) {
+            var btn = e.target.closest(".class-chip__del");
+            if (!btn) return;
+            var boardId = btn.getAttribute("data-board-id");
+            var boardName = btn.getAttribute("data-board-name");
+            if (boardId) deleteBoard(boardId, boardName);
+          });
+
+          // 篩選（事件委派）
+          els.filterRow.addEventListener("click", function (e) {
+            var chip = e.target.closest(".filter-chip");
+            if (!chip) return;
+            var filter = chip.getAttribute("data-filter");
+            if (filter === "all") {
+              _currentBoardId = null;
+            } else {
+              _currentBoardId = filter;
+            }
+            renderFilters();
+            loadEntries(_currentBoardId);
+          });
+
+          // 匯出
+          els.btnExport.addEventListener("click", handleExport);
+
+          // 匯入（改為重新整理）
+          els.btnImport.addEventListener("click", function () {
+            els.importFileInput.click();
+          });
+          els.importFileInput.addEventListener("change", handleImport);
+
+          // 清除改為重新整理
+          els.btnClearAll.addEventListener("click", handleRefresh);
+        }
+
+        // =========================================
+        // 渲染全部
+        // =========================================
+        function renderAll() {
+          renderBoards();
+          renderFilters();
+          // 自動載入所有看板的成績
+          loadEntries(_currentBoardId);
+        }
+
+        // =========================================
+        // Init
+        // =========================================
+        function init() {
+          cacheDom();
+          bindEvents();
+          initAuth();
+        }
+
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", init);
+        } else {
+          init();
+        }
+      })();
+    </script>
+    <script src="../js/shared/navbar.js"></script>
+    <script src="../js/shared/landscape-hint.js"></script>
+  </body>
+</html>

@@ -1,0 +1,26 @@
+{
+  "name": "執行功能訓練遊戲",
+  "short_name": "EF Game",
+  "description": "3-6歲聽障學齡前幼兒專用執行功能訓練遊戲",
+  "start_url": "/index.html",
+  "id": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f0c29",
+  "theme_color": "#302b63",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

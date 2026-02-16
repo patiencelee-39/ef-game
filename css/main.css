@@ -1,70 +1,48 @@
-/* ====================================
-   執行功能訓練遊戲 - 主樣式
-   ==================================== */
-
-:root {
-  /* 主題色彩 */
-  --primary-color: #4caf50;
-  --secondary-color: #2196f3;
-  --success-color: #4caf50;
-  --error-color: #f44336;
-  --warning-color: #ff9800;
-
-  /* 場地主題色 */
-  --stage-a-color: #ffd54f; /* 起司森林 - 黃色 */
-  --stage-b-color: #81c784; /* 人類村莊 - 綠色 */
-  --stage-c-color: #64b5f6; /* 海洋世界 - 藍色 */
-  --stage-d-color: #9575cd; /* 晝夜迷宮 - 紫色 */
-
-  /* 間距 */
-  --spacing-xs: 0.5rem;
-  --spacing-sm: 1rem;
-  --spacing-md: 1.5rem;
-  --spacing-lg: 2rem;
-  --spacing-xl: 3rem;
-
-  /* 字體 */
-  --font-size-xs: 0.875rem;
-  --font-size-sm: 1rem;
-  --font-size-md: 1.25rem;
-  --font-size-lg: 1.5rem;
-  --font-size-xl: 2rem;
-  --font-size-xxl: 3rem;
-
-  /* 圓角 */
-  --border-radius-sm: 4px;
-  --border-radius-md: 8px;
-  --border-radius-lg: 12px;
-  --border-radius-xl: 16px;
-
-  /* 陰影 */
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.15);
-  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.2);
-}
+/* ============================================
+   執行功能訓練遊戲 — 主樣式 v4.5
+   ============================================
+   載入順序：base.css → theme-*.css → main.css
+   本檔負責：重置、佈局、共用元件、響應式、工具類
+   ============================================ */
 
 /* ====================================
    基礎重置
    ==================================== */
 
-* {
+*,
+*::before,
+*::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
 body {
   font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC',
-    'Helvetica Neue', Arial, sans-serif;
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei",
+    "PingFang TC", "Helvetica Neue", Arial, sans-serif;
   line-height: 1.6;
-  color: #333;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: var(--text-light);
+  background-color: var(--bg-dark);
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: var(--spacing-md);
+  /* 防止 iOS 滾動彈跳 */
+  overscroll-behavior: none;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
 }
 
 /* ====================================
@@ -74,10 +52,12 @@ body {
 .container {
   width: 100%;
   max-width: 1200px;
-  background: white;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--border-radius-xl);
   box-shadow: var(--shadow-lg);
   padding: var(--spacing-xl);
+  backdrop-filter: blur(10px);
 }
 
 /* ====================================
@@ -91,13 +71,118 @@ header {
 
 h1 {
   font-size: var(--font-size-xxl);
-  color: var(--primary-color);
+  color: var(--text-white);
   margin-bottom: var(--spacing-sm);
+  text-shadow: 0 2px 10px rgba(52, 152, 219, 0.5);
+}
+
+h2 {
+  font-size: var(--font-size-xl);
+  color: var(--text-white);
+  margin-bottom: var(--spacing-sm);
+}
+
+h3 {
+  font-size: var(--font-size-lg);
+  color: var(--text-white);
+  margin-bottom: var(--spacing-xs);
 }
 
 .subtitle {
   font-size: var(--font-size-md);
-  color: #666;
+  color: var(--text-light);
+}
+
+/* ====================================
+   全局焦點指示器（a11y）
+   ==================================== */
+
+*:focus-visible {
+  outline: 3px solid var(--accent-yellow);
+  outline-offset: 2px;
+}
+
+/* 螢幕閱讀器專用（僅視覺隱藏） */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ====================================
+   按鈕（幼兒友善：≥ 56×56px 觸控區）
+   ==================================== */
+
+button,
+.btn {
+  font-family: inherit;
+  font-size: var(--font-size-lg);
+  min-width: var(--touch-target-min);
+  min-height: var(--touch-target-min);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border: none;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+  /* 防止雙擊縮放 */
+  touch-action: manipulation;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-blue) 0%, #2980b9 100%);
+  color: var(--text-white);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+.btn-primary:hover,
+.btn-primary:focus-visible {
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(52, 152, 219, 0.5);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, var(--practice-teal) 0%, #16a085 100%);
+  color: var(--text-white);
+  box-shadow: 0 4px 12px rgba(26, 188, 156, 0.3);
+}
+
+.btn-secondary:hover,
+.btn-secondary:focus-visible {
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(26, 188, 156, 0.5);
+}
+
+.btn-secondary:active {
+  transform: scale(0.98);
+}
+
+.btn-combo {
+  background: linear-gradient(
+    135deg,
+    var(--current-combo-color) 0%,
+    rgba(0, 0, 0, 0.2) 100%
+  );
+  color: var(--text-white);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.btn-disabled,
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
 }
 
 /* ====================================
@@ -112,70 +197,154 @@ h1 {
 }
 
 .mode-card {
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: var(--bg-dark);
+  border: 2px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--border-radius-lg);
   padding: var(--spacing-lg);
   text-align: center;
   cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  display: block;
   transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
+    transform var(--transition-normal),
+    box-shadow var(--transition-normal),
+    border-color var(--transition-normal);
 }
 
-.mode-card:hover {
+.mode-card:hover,
+.mode-card:focus-visible {
   transform: translateY(-5px);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-glow);
+  border-color: var(--primary-blue);
+  outline: none;
 }
 
 .mode-icon {
-  font-size: 4rem;
+  font-size: var(--font-size-display);
   margin-bottom: var(--spacing-sm);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
 }
 
 .mode-card h2 {
   font-size: var(--font-size-lg);
   margin-bottom: var(--spacing-xs);
-  color: #333;
+  color: var(--text-white);
 }
 
 .mode-card p {
-  color: #666;
+  color: var(--text-light);
   margin-bottom: var(--spacing-md);
 }
 
 /* ====================================
-   按鈕
+   回饋動畫（§4.4.8）
    ==================================== */
 
-button {
-  font-family: inherit;
-  font-size: var(--font-size-md);
-  padding: var(--spacing-sm) var(--spacing-lg);
-  border: none;
-  border-radius: var(--border-radius-md);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: 600;
+/* --- 遊戲區域邊框回饋 --- */
+
+.correct-feedback {
+  border: 6px solid var(--success-green) !important;
+  animation: pulse-green 0.3s ease-out;
 }
 
-.btn-primary {
-  background: var(--primary-color);
-  color: white;
+@keyframes pulse-green {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 15px rgba(46, 204, 113, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(46, 204, 113, 0);
+  }
 }
 
-.btn-primary:hover {
-  background: #45a049;
-  transform: scale(1.05);
+.incorrect-feedback {
+  border: 6px solid var(--error-red) !important;
+  animation: shake-red 0.2s ease-in-out;
 }
 
-.btn-secondary {
-  background: var(--secondary-color);
-  color: white;
+@keyframes shake-red {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-15px);
+  }
+  75% {
+    transform: translateX(15px);
+  }
 }
 
-.btn-secondary:hover {
-  background: #1976d2;
-  transform: scale(1.05);
+/* --- 刺激物本體動畫 --- */
+
+.correct-flash {
+  animation: pulse-correct 0.5s ease-out;
+  filter: drop-shadow(0 0 20px var(--success-green));
+}
+
+@keyframes pulse-correct {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.3);
+    filter: brightness(1.5);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.error-flash {
+  animation: shake-error 0.4s ease-in-out;
+  filter: drop-shadow(0 0 20px var(--error-red));
+}
+
+@keyframes shake-error {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: translateX(-10px) rotate(-5deg);
+  }
+  75% {
+    transform: translateX(10px) rotate(5deg);
+  }
+}
+
+/* ====================================
+   條件提示（§4.4.7）
+   ==================================== */
+
+/* 小老鼠混合 — 沒人（規則 A）*/
+.context-no-person {
+  border: 4px solid var(--current-combo-color);
+}
+
+/* 小老鼠混合 — 有人（規則 B）*/
+.context-has-person {
+  border: 6px solid var(--person-border);
+  box-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+}
+
+/* 釣魚混合 — 白天（規則 A）*/
+.context-day {
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  border: 4px solid var(--day-border);
+}
+
+/* 釣魚混合 — 晚上（規則 B）*/
+.context-night {
+  background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+  border: 6px solid var(--night-border);
+  box-shadow: 0 0 30px rgba(243, 156, 18, 0.4);
 }
 
 /* ====================================
@@ -184,17 +353,24 @@ button {
 
 footer {
   text-align: center;
-  color: #999;
+  color: var(--text-light);
   font-size: var(--font-size-xs);
   padding-top: var(--spacing-lg);
-  border-top: 1px solid #eee;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  opacity: 0.7;
 }
 
 /* ====================================
    響應式設計
+   斷點：480px（手機）、768px（平板，主要裝置）
    ==================================== */
 
-@media (max-width: 768px) {
+/* 手機（≤ 480px）*/
+@media (max-width: 480px) {
+  body {
+    padding: var(--spacing-sm);
+  }
+
   .container {
     padding: var(--spacing-md);
   }
@@ -212,12 +388,29 @@ footer {
   }
 }
 
+/* 平板以上（> 768px）*/
+@media (min-width: 769px) {
+  .container {
+    padding: var(--spacing-xl);
+  }
+}
+
 /* ====================================
    工具類別
    ==================================== */
 
 .text-center {
   text-align: center;
+}
+.text-left {
+  text-align: left;
+}
+.text-right {
+  text-align: right;
+}
+
+.mt-xs {
+  margin-top: var(--spacing-xs);
 }
 .mt-sm {
   margin-top: var(--spacing-sm);
@@ -228,6 +421,13 @@ footer {
 .mt-lg {
   margin-top: var(--spacing-lg);
 }
+.mt-xl {
+  margin-top: var(--spacing-xl);
+}
+
+.mb-xs {
+  margin-bottom: var(--spacing-xs);
+}
 .mb-sm {
   margin-bottom: var(--spacing-sm);
 }
@@ -236,4 +436,255 @@ footer {
 }
 .mb-lg {
   margin-bottom: var(--spacing-lg);
+}
+.mb-xl {
+  margin-bottom: var(--spacing-xl);
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* 螢幕閱讀器專用（a11y）*/
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ====================================
+   倒數動畫（§2.7 — countdown.js）
+   ==================================== */
+
+.countdown-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  background-color: rgba(0, 0, 0, 0.85);
+  transition: background-color 0.3s ease;
+}
+
+.countdown-number {
+  font-size: 120px;
+  font-weight: 900;
+  line-height: 1;
+  text-align: center;
+  user-select: none;
+}
+
+.countdown-pop {
+  animation: countdown-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes countdown-pop {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.countdown-go-flash {
+  animation: countdown-go-flash 0.5s ease-in-out;
+}
+
+@keyframes countdown-go-flash {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  25% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 0.3;
+  }
+}
+
+.countdown-hint {
+  margin-top: var(--spacing-lg, 24px);
+  font-size: var(--font-size-lg, 1.25rem);
+  color: #fff;
+  text-align: center;
+  user-select: none;
+}
+
+.countdown-blink {
+  animation: countdown-blink 1s ease-in-out infinite;
+}
+
+@keyframes countdown-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* ====================================
+   回饋疊加圖示（§2.5 — feedback-overlay.js）
+   ==================================== */
+
+.feedback-badge {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 900;
+  pointer-events: none;
+  animation: feedback-badge-in 0.3s ease-out;
+}
+
+.feedback-icon {
+  font-size: 64px;
+  line-height: 1;
+}
+
+.feedback-label {
+  font-size: var(--font-size-lg, 1.25rem);
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes feedback-badge-in {
+  0% {
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
+
+/* ====================================
+   完成通知 Toast（§2.6, §2.8 — completion-notify.js）
+   ==================================== */
+
+.completion-toast-container {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.completion-toast {
+  padding: 12px 20px;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: 700;
+  font-size: var(--font-size-md, 1rem);
+  pointer-events: auto;
+  opacity: 0;
+  transform: translateX(100%);
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s ease;
+  max-width: 320px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.completion-toast.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.completion-toast.hiding {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+/* 一般完成 — 半透明藍 */
+.completion-toast--normal {
+  background: rgba(33, 150, 243, 0.9);
+}
+
+/* 全部完成 — 金色 */
+.completion-toast--all {
+  background: rgba(255, 152, 0, 0.9);
+}
+
+/* 所有玩家完成 — 金色加粗邊 */
+.completion-toast--everyone {
+  background: rgba(255, 152, 0, 0.95);
+  border: 2px solid #fff;
+}
+
+/* ============================================
+   無障礙：Skip Navigation 連結
+   ============================================ */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  z-index: 99999;
+  background: var(--primary-gold, #ffd700);
+  color: #000;
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: 0 0 8px 8px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.skip-link:focus {
+  position: fixed;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  width: auto;
+  height: auto;
+  overflow: visible;
+}
+
+/* ============================================
+   無障礙：prefers-reduced-motion
+   前庭障礙使用者停用所有動畫 / 過渡
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

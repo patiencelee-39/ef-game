@@ -1,0 +1,1207 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;"
+    />
+    <title>探險地圖 — 執行功能訓練遊戲</title>
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="../manifest.json" />
+    <meta name="theme-color" content="#302b63" />
+    <link rel="stylesheet" href="../css/themes/base.css" />
+    <link rel="stylesheet" href="../css/main.css" />
+    <link rel="stylesheet" href="../css/components/landscape-hint.css" />
+    <style>
+      ==================================== */ body {
+        padding: 0;
+        margin: 0;
+        overflow: hidden;
+        background: var(--bg-dark);
+      }
+
+      /* --- 頂部狀態列 --- */
+      .adventure-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 16px;
+        background: rgba(26, 35, 50, 0.92);
+        backdrop-filter: blur(8px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .btn-back {
+        background: none;
+        border: none;
+        color: var(--text-white);
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 8px;
+        transition: background var(--transition-fast);
+        min-width: var(--touch-target-min);
+        min-height: var(--touch-target-min);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .btn-back:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .header-title {
+        font-size: var(--font-size-lg);
+        font-weight: 700;
+        color: var(--text-white);
+      }
+
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .stars-display {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: var(--font-size-md);
+        color: var(--accent-yellow);
+        font-weight: 700;
+      }
+
+      .level-display {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: var(--font-size-sm);
+        color: var(--text-light);
+        background: rgba(255, 255, 255, 0.08);
+        padding: 4px 12px;
+        border-radius: 20px;
+      }
+
+      .btn-sticker-book {
+        background: none;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: var(--accent-yellow);
+        font-size: 1.2rem;
+        cursor: pointer;
+        padding: 4px 10px;
+        border-radius: 20px;
+        transition: all var(--transition-fast);
+        min-width: 40px;
+        min-height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .btn-sticker-book:hover {
+        background: rgba(255, 215, 0, 0.15);
+        border-color: var(--accent-yellow);
+      }
+
+      .btn-shop {
+        background: none;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: var(--accent-yellow);
+        font-size: 1.2rem;
+        cursor: pointer;
+        padding: 4px 10px;
+        border-radius: 20px;
+        transition: all var(--transition-fast);
+        min-width: 40px;
+        min-height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .btn-shop:hover {
+        background: rgba(255, 215, 0, 0.15);
+        border-color: var(--accent-yellow);
+      }
+
+      .btn-pet {
+        background: none;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: var(--accent-yellow);
+        font-size: 1.2rem;
+        cursor: pointer;
+        padding: 4px 10px;
+        border-radius: 20px;
+        transition: all var(--transition-fast);
+        min-width: 40px;
+        min-height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .btn-pet:hover {
+        background: rgba(255, 215, 0, 0.15);
+        border-color: var(--accent-yellow);
+      }
+
+      /* --- 地圖容器 --- */
+      /* bottom 計算：map-tabs 高度(48px) + navbar 高度(64px) + safe-area */
+      .map-viewport {
+        position: fixed;
+        top: 56px;
+        left: 0;
+        right: 0;
+        bottom: calc(48px + 64px + env(safe-area-inset-bottom, 0px));
+        overflow: hidden;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .map-container {
+        position: relative;
+        width: 100%;
+        max-width: 1200px;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+      }
+
+      .map-bg {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: contain;
+      }
+
+      /* --- 探險點疊加層 --- */
+      .points-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+      }
+
+      .adventure-point {
+        position: absolute;
+        pointer-events: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        cursor: pointer;
+        transition: transform var(--transition-fast);
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+        /* button reset */
+        background: none;
+        border: none;
+        padding: 0;
+        margin: 0;
+        font: inherit;
+        color: inherit;
+      }
+
+      .adventure-point:active {
+        transform: scale(0.92);
+      }
+
+      .point-circle {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 900;
+        border: 3px solid rgba(255, 255, 255, 0.5);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        transition: all var(--transition-normal);
+      }
+
+      .point-label {
+        margin-top: 4px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: var(--text-white);
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+        white-space: nowrap;
+        text-align: center;
+        max-width: 80px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      /* 狀態：locked */
+      .point-locked .point-circle {
+        background: rgba(100, 100, 100, 0.7);
+        border-color: rgba(150, 150, 150, 0.5);
+        color: #888;
+      }
+
+      .point-locked {
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+
+      .adventure-point:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+
+      /* 狀態：current */
+      .point-current .point-circle {
+        background: linear-gradient(135deg, #f39c12, #e67e22);
+        border-color: #fff;
+        color: #fff;
+        animation: point-pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes point-pulse {
+        0%,
+        100% {
+          box-shadow: 0 0 0 0 rgba(243, 156, 18, 0.7);
+        }
+        50% {
+          box-shadow: 0 0 20px 8px rgba(243, 156, 18, 0.3);
+        }
+      }
+
+      /* 狀態：passed */
+      .point-passed .point-circle {
+        background: linear-gradient(135deg, var(--success-green), #27ae60);
+        border-color: rgba(255, 255, 255, 0.8);
+        color: #fff;
+      }
+
+      .point-stars {
+        font-size: 0.65rem;
+        color: var(--accent-yellow);
+        margin-top: 2px;
+      }
+
+      /* --- 地圖選擇 Tabs --- */
+      /* 位於 navbar(64px) 上方 */
+      .map-tabs {
+        position: fixed;
+        bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+        left: 0;
+        right: 0;
+        z-index: 100;
+        display: flex;
+        background: rgba(26, 35, 50, 0.95);
+        backdrop-filter: blur(8px);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .map-tab {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 8px;
+        background: none;
+        border: none;
+        color: var(--text-light);
+        font-size: var(--font-size-sm);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        min-height: var(--touch-target-min);
+        position: relative;
+      }
+
+      .map-tab.active {
+        color: var(--primary-blue);
+        font-weight: 700;
+      }
+
+      .map-tab.active::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 20%;
+        right: 20%;
+        height: 3px;
+        background: var(--primary-blue);
+        border-radius: 0 0 3px 3px;
+      }
+
+      .map-tab.locked {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      .map-tab-icon {
+        font-size: 1.5rem;
+        margin-bottom: 2px;
+      }
+
+      .map-tab-label {
+        font-size: 0.75rem;
+      }
+
+      .tab-free-select {
+        background: linear-gradient(
+          135deg,
+          rgba(52, 152, 219, 0.1),
+          rgba(52, 152, 219, 0.05)
+        );
+      }
+
+      /* --- 探險點 info popup --- */
+      .point-info-popup {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 200;
+        background: rgba(0, 0, 0, 0.6);
+        align-items: center;
+        justify-content: center;
+      }
+
+      .point-info-popup.visible {
+        display: flex;
+      }
+
+      .point-info-card {
+        background: #1e2d3d;
+        border: 2px solid rgba(255, 255, 255, 0.15);
+        border-radius: var(--border-radius-xl);
+        padding: 32px 24px;
+        max-width: 360px;
+        width: 90%;
+        text-align: center;
+        animation: popup-in 0.3s ease-out;
+      }
+
+      @keyframes popup-in {
+        0% {
+          opacity: 0;
+          transform: scale(0.9) translateY(20px);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1) translateY(0);
+        }
+      }
+
+      .point-info-title {
+        font-size: var(--font-size-xl);
+        font-weight: 900;
+        color: var(--text-white);
+        margin-bottom: 12px;
+      }
+
+      .point-info-details {
+        font-size: var(--font-size-md);
+        color: var(--text-light);
+        margin-bottom: 8px;
+      }
+
+      .point-info-wm {
+        font-size: var(--font-size-sm);
+        color: var(--wm-color);
+        font-weight: 600;
+        margin-bottom: 16px;
+      }
+
+      .point-info-best {
+        font-size: var(--font-size-sm);
+        color: var(--text-light);
+        margin-bottom: 20px;
+        padding: 8px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+      }
+
+      .point-info-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+      }
+
+      .point-info-actions button {
+        padding: 12px 24px;
+        font-size: var(--font-size-md);
+        font-weight: 700;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        min-width: 120px;
+        min-height: var(--touch-target-min);
+        transition: all var(--transition-fast);
+      }
+
+      .btn-play {
+        background: var(--success-green);
+        color: #fff;
+      }
+
+      .btn-play:hover {
+        background: #27ae60;
+      }
+
+      .btn-cancel {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-light);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .btn-cancel:hover {
+        background: rgba(255, 255, 255, 0.15);
+      }
+
+      /* --- 響應式 --- */
+      @media (max-width: 480px) {
+        .point-circle {
+          width: 44px;
+          height: 44px;
+          font-size: 1.2rem;
+        }
+
+        .point-label {
+          font-size: 0.6rem;
+        }
+
+        .header-title {
+          font-size: var(--font-size-md);
+        }
+      }
+
+      @media (min-width: 769px) {
+        .point-circle {
+          width: 64px;
+          height: 64px;
+          font-size: 1.8rem;
+        }
+      }
+    </style>
+    <link rel="stylesheet" href="../css/components/navbar.css" />
+  </head>
+  <body>
+    <!-- === 頂部狀態列 === -->
+    <header class="adventure-header">
+      <div class="header-left">
+        <button
+          class="btn-back"
+          onclick="ModeController.goToHome()"
+          aria-label="返回首頁"
+        >
+          ←
+        </button>
+        <span class="header-title" id="header-title">🐭 小老鼠冒險</span>
+      </div>
+      <div class="header-right">
+        <button
+          class="btn-pet"
+          onclick="window.location.href = 'pet.html'"
+          aria-label="我的小雞"
+          title="🐔 我的小雞"
+        >
+          🐔
+        </button>
+        <button
+          class="btn-shop"
+          onclick="window.location.href = 'avatar-shop.html'"
+          aria-label="換裝商店"
+          title="🛍️ 換裝商店"
+        >
+          🛍️
+        </button>
+        <button
+          class="btn-sticker-book"
+          onclick="window.location.href = 'sticker-book.html'"
+          aria-label="貼紙圖鑑"
+          title="📖 貼紙圖鑑"
+        >
+          📖
+        </button>
+        <div class="level-display" id="level-display">
+          <span class="level-icon">🥚</span>
+          <span class="level-name">蛋寶寶</span>
+          <span
+            class="level-label"
+            style="
+              font-size: 0.65rem;
+              color: rgba(255, 255, 255, 0.7);
+              margin-left: 4px;
+            "
+            >小雞等級</span
+          >
+        </div>
+        <div class="stars-display">⭐ <span id="total-stars">0</span></div>
+      </div>
+    </header>
+
+    <main id="main-content">
+      <h1 class="sr-only">探險地圖</h1>
+
+      <!-- === 地圖視窗 === -->
+      <div class="map-viewport" id="map-viewport">
+        <div class="map-container" id="map-container">
+          <img
+            class="map-bg"
+            id="map-bg"
+            src="../images/adventure-map.svg"
+            alt="探險地圖"
+            draggable="false"
+          />
+          <!-- 探險點疊加層（由 JS 動態生成） -->
+          <div class="points-overlay" id="points-overlay"></div>
+        </div>
+      </div>
+
+      <!-- === 底部 Tab 列 === -->
+      <nav class="map-tabs" id="map-tabs">
+        <button class="map-tab active" data-map="0" id="tab-map-0">
+          <span class="map-tab-icon">🐭</span>
+          <span class="map-tab-label">小老鼠冒險</span>
+        </button>
+        <button class="map-tab" data-map="1" id="tab-map-1">
+          <span class="map-tab-icon">🐟</span>
+          <span class="map-tab-label">釣魚冒險</span>
+        </button>
+        <button
+          class="map-tab tab-free-select"
+          data-map="free"
+          id="tab-free-select"
+        >
+          <span class="map-tab-icon">🆓</span>
+          <span class="map-tab-label">自由選擇</span>
+        </button>
+      </nav>
+
+      <!-- === 探險點 Info Popup === -->
+      <div
+        class="point-info-popup"
+        id="point-info-popup"
+        role="dialog"
+        aria-modal="true"
+        aria-label="探險點資訊"
+      >
+        <div class="point-info-card">
+          <h3 class="point-info-title" id="popup-title">① 規則一</h3>
+          <p class="point-info-details" id="popup-details">
+            🐭 小老鼠 × 規則一
+          </p>
+          <p class="point-info-wm" id="popup-wm" style="display: none">
+            🧠 含工作記憶測驗
+          </p>
+          <div class="point-info-best" id="popup-best" style="display: none">
+            <p>🏆 最佳紀錄：<span id="popup-best-score">0</span> 分</p>
+            <p>⭐ 已獲星星：<span id="popup-best-stars">0</span></p>
+          </div>
+          <div class="point-info-actions">
+            <button class="btn-cancel" onclick="closePointInfo()">取消</button>
+            <button
+              class="btn-play"
+              id="popup-play-btn"
+              onclick="playCurrentPoint()"
+            >
+              ▶️ 開始
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- === 首次進入身份輸入對話框 === -->
+      <div
+        id="identityModal"
+        role="dialog"
+        aria-modal="true"
+        aria-label="輸入身份資訊"
+        style="
+          display: none;
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.7);
+          z-index: 9999;
+          display: none;
+          align-items: center;
+          justify-content: center;
+          padding: 16px;
+        "
+      >
+        <div
+          style="
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border-radius: 20px;
+            padding: 28px 24px;
+            max-width: 360px;
+            width: 100%;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+          "
+        >
+          <div style="text-align: center; margin-bottom: 20px">
+            <div style="font-size: 2.5rem; margin-bottom: 8px">👋</div>
+            <h2 style="color: #fff; font-size: 1.2rem; margin: 0 0 6px">
+              歡迎來到探險地圖！
+            </h2>
+            <p
+              style="
+                color: rgba(255, 255, 255, 0.55);
+                font-size: 0.85rem;
+                margin: 0;
+                line-height: 1.4;
+              "
+            >
+              請輸入你的資料，排行榜會用到喔
+            </p>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 14px">
+            <div>
+              <label
+                for="idNickname"
+                style="
+                  display: block;
+                  color: rgba(255, 255, 255, 0.7);
+                  font-size: 0.8rem;
+                  font-weight: 600;
+                  margin-bottom: 4px;
+                "
+                >📝 暱稱 / 座號</label
+              >
+              <input
+                id="idNickname"
+                type="text"
+                placeholder="例如：小明 或 5號"
+                maxlength="20"
+                style="
+                  width: 100%;
+                  padding: 10px 14px;
+                  border-radius: 10px;
+                  border: 1px solid rgba(255, 255, 255, 0.15);
+                  background: rgba(255, 255, 255, 0.06);
+                  color: #fff;
+                  font-size: 1rem;
+                  outline: none;
+                  box-sizing: border-box;
+                "
+              />
+            </div>
+            <div>
+              <label
+                for="idClass"
+                style="
+                  display: block;
+                  color: rgba(255, 255, 255, 0.7);
+                  font-size: 0.8rem;
+                  font-weight: 600;
+                  margin-bottom: 4px;
+                "
+                >🏫 班級</label
+              >
+              <input
+                id="idClass"
+                type="text"
+                placeholder="例如：大班 或 中A班"
+                maxlength="20"
+                style="
+                  width: 100%;
+                  padding: 10px 14px;
+                  border-radius: 10px;
+                  border: 1px solid rgba(255, 255, 255, 0.15);
+                  background: rgba(255, 255, 255, 0.06);
+                  color: #fff;
+                  font-size: 1rem;
+                  outline: none;
+                  box-sizing: border-box;
+                "
+              />
+            </div>
+            <button
+              id="idSubmit"
+              style="
+                margin-top: 4px;
+                padding: 12px;
+                border-radius: 12px;
+                border: none;
+                background: linear-gradient(135deg, #4caf50, #27ae60);
+                color: #fff;
+                font-size: 1rem;
+                font-weight: 700;
+                cursor: pointer;
+                transition: transform 0.15s;
+              "
+            >
+              ✅ 開始探險！
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- === JS 依賴（載入順序重要）=== -->
+    <script src="../js/game-config.js"></script>
+    <script src="../js/adventure-maps-config.js"></script>
+    <script src="../js/utils/storage.js"></script>
+    <script src="../js/utils/score-calculator.js"></script>
+    <script src="../js/utils/level-calculator.js"></script>
+    <script src="../js/utils/badge-checker.js"></script>
+    <script src="../js/singleplayer/progress-tracker.js"></script>
+    <script src="../js/singleplayer/mode-controller.js"></script>
+    <script src="../js/sound-config.js"></script>
+    <script src="../js/shared/audio-player.js"></script>
+
+    <script>
+      // =========================================
+      // 探險地圖頁面控制
+      // =========================================
+
+      var currentViewMapIndex = 0;
+      var selectedPointData = null;
+
+      // ─── 探險點座標（百分比，相對於地圖圖片）───
+      // 座標會在地圖圖片載入後套用
+      // 每張地圖 6 個點沿白色路徑分佈
+      var POINT_POSITIONS = {
+        mouse: [
+          { left: "15%", top: "72%" },
+          { left: "30%", top: "58%" },
+          { left: "48%", top: "68%" },
+          { left: "62%", top: "52%" },
+          { left: "75%", top: "62%" },
+          { left: "88%", top: "45%" },
+        ],
+        fishing: [
+          { left: "12%", top: "70%" },
+          { left: "28%", top: "55%" },
+          { left: "42%", top: "65%" },
+          { left: "58%", top: "48%" },
+          { left: "72%", top: "58%" },
+          { left: "85%", top: "42%" },
+        ],
+      };
+
+      // ─── 初始化 ───
+
+      document.addEventListener("DOMContentLoaded", function () {
+        // 🔊 初始化音訊
+        if (typeof AudioPlayer !== "undefined" && AudioPlayer.init) {
+          AudioPlayer.init();
+        }
+        _initMap();
+      });
+
+      function _showIdentityModal(callback) {
+        var modal = document.getElementById("identityModal");
+        modal.style.display = "flex";
+        FocusTrap.activate(modal);
+        var inputNick = document.getElementById("idNickname");
+        var inputClass = document.getElementById("idClass");
+        var btnSubmit = document.getElementById("idSubmit");
+
+        // 自動 focus
+        setTimeout(function () {
+          inputNick.focus();
+        }, 200);
+
+        // --- 正式提交 ---
+        btnSubmit.addEventListener("click", function () {
+          var nick = inputNick.value.trim();
+          var cls = inputClass.value.trim();
+          if (!nick) {
+            inputNick.style.borderColor = "#e74c3c";
+            inputNick.setAttribute("placeholder", "請輸入暱稱或座號");
+            inputNick.focus();
+            return;
+          }
+          // 建立 / 更新 profile
+          var profile = getPlayerProfile();
+          if (profile) {
+            profile.nickname = nick;
+            profile.seatNumber = nick;
+            profile.playerClass = cls || "未分班";
+            savePlayerProfile(profile);
+          } else {
+            var p = initPlayerProfile(nick, nick, cls || "未分班");
+          }
+          modal.style.display = "none";
+          FocusTrap.deactivate();
+          if (callback) callback();
+        });
+
+        // --- 取消（訪客模式 00NoName）---
+        function _enterGuestMode() {
+          // 啟用 sessionStorage 模式 → 關閉分頁即自動消失
+          if (typeof enableGuestSessionMode === "function") {
+            enableGuestSessionMode();
+          }
+          initPlayerProfile(GUEST_NICKNAME, GUEST_NICKNAME, "訪客");
+          modal.style.display = "none";
+          FocusTrap.deactivate();
+
+          if (callback) callback();
+        }
+
+        // --- 點擊背景半透明區域 = 取消（訪客模式 00NoName）---
+        modal.addEventListener("click", function (e) {
+          if (e.target === modal) {
+            _enterGuestMode();
+          }
+        });
+
+        // Enter 鍵提交
+        [inputNick, inputClass].forEach(function (el) {
+          el.addEventListener("keydown", function (e) {
+            if (e.key === "Enter") btnSubmit.click();
+          });
+        });
+      }
+
+      function _initMap() {
+        // 教師覆寫檢查
+        if (ProgressTracker.checkTeacherOverride()) {
+          ProgressTracker.applyTeacherOverride();
+        }
+
+        updateHeaderInfo();
+        setupMapTabs();
+        renderMap(0);
+        scrollToCurrentPoint();
+      }
+
+      // ─── Header 更新 ───
+
+      function updateHeaderInfo() {
+        var totalStars = getTotalStars();
+        var availableStars = getAvailableStars();
+        document.getElementById("total-stars").textContent = totalStars;
+
+        // 若有花費過星星，顯示可用/總計
+        var profile = getPlayerProfile();
+        if (profile && (profile.spentStars || 0) > 0) {
+          document.getElementById("total-stars").textContent =
+            availableStars + "/" + totalStars;
+        }
+
+        var levelDef = getLevelByStars(totalStars);
+        if (levelDef) {
+          document.querySelector(".level-icon").textContent = levelDef.icon;
+          document.querySelector(".level-name").textContent = levelDef.name;
+        }
+      }
+
+      // ─── Tab 控制 ───
+
+      function setupMapTabs() {
+        var progress = getAdventureProgress();
+
+        // 地圖 2 解鎖檢查
+        var map2Unlocked =
+          progress.currentMapIndex >= 1 || isMapAllPassed("mouse");
+        var tab1 = document.getElementById("tab-map-1");
+        if (!map2Unlocked) {
+          tab1.classList.add("locked");
+        }
+
+        // 自由選擇解鎖檢查
+        var freeTab = document.getElementById("tab-free-select");
+        if (!ProgressTracker.isFreeSelectAvailable()) {
+          freeTab.classList.add("locked");
+        }
+
+        // Tab 點擊事件
+        document
+          .getElementById("map-tabs")
+          .addEventListener("click", function (e) {
+            var tab = e.target.closest(".map-tab");
+            if (!tab || tab.classList.contains("locked")) return;
+
+            var mapIndex = tab.dataset.map;
+
+            if (mapIndex === "free") {
+              ModeController.goToFreeSelect();
+              return;
+            }
+
+            var idx = parseInt(mapIndex, 10);
+            switchMap(idx);
+          });
+      }
+
+      function switchMap(mapIndex) {
+        currentViewMapIndex = mapIndex;
+
+        // 更新 tab 狀態
+        document.querySelectorAll(".map-tab").forEach(function (t) {
+          t.classList.remove("active");
+        });
+        var activeTab = document.getElementById("tab-map-" + mapIndex);
+        if (activeTab) activeTab.classList.add("active");
+
+        // 更新標題
+        var mapDef = ADVENTURE_MAPS[mapIndex];
+        document.getElementById("header-title").textContent =
+          mapDef.icon + " " + mapDef.name;
+
+        // 切換地圖背景 SVG
+        var mapBg = document.getElementById("map-bg");
+        var MAP_SVG_FILES = [
+          "../images/adventure-map.svg", // map 0: 小老鼠
+          "../images/adventure-map2.svg", // map 1: 釣魚
+        ];
+        if (mapBg && MAP_SVG_FILES[mapIndex]) {
+          mapBg.src = MAP_SVG_FILES[mapIndex];
+        }
+
+        renderMap(mapIndex);
+      }
+
+      // ─── 鎖定探險點暗示圖案 ───
+
+      /** 根據 field + rule 取得對應的刺激物 emoji，用於鎖定狀態暗示 */
+      function _getPointHintIcon(fieldId, ruleId) {
+        var iconMap = {
+          mouse: { rule1: "🧀", rule2: "😺", mixed: "🔀" },
+          fishing: { rule1: "🐟", rule2: "🦈", mixed: "🔀" },
+        };
+        var fieldIcons = iconMap[fieldId];
+        if (fieldIcons && fieldIcons[ruleId]) return fieldIcons[ruleId];
+        // fallback → 使用 GAME_CONFIG field icon
+        var f = GAME_CONFIG.FIELDS[fieldId];
+        return f ? f.icon : "❓";
+      }
+
+      // ─── 地圖渲染 ───
+
+      function renderMap(mapIndex) {
+        var overlay = document.getElementById("points-overlay");
+        overlay.innerHTML = "";
+
+        var statuses = ProgressTracker.getAllPointStatuses();
+        var mapDef = ADVENTURE_MAPS[mapIndex];
+        var mapPoints = statuses.filter(function (s) {
+          return s.mapId === mapDef.id;
+        });
+
+        var positions = POINT_POSITIONS[mapDef.id];
+
+        mapPoints.forEach(function (point, idx) {
+          var pos = positions[idx] || { left: "50%", top: "50%" };
+
+          var el = document.createElement("button");
+          el.type = "button";
+          el.className = "adventure-point point-" + point.status;
+          el.style.left = pos.left;
+          el.style.top = pos.top;
+          el.style.transform = "translate(-50%, -50%)";
+          el.dataset.pointIndex = idx;
+          el.dataset.mapIndex = mapIndex;
+
+          // 無障礙標籤
+          var pointName = point.pointLabel.replace(/[①②③④⑤⑥⑦⑧⑨⑩⑪⑫]\s*/, "");
+          if (point.status === "locked") {
+            el.setAttribute("aria-label", pointName + "（尚未解鎖）");
+            el.setAttribute("aria-disabled", "true");
+            el.disabled = true;
+          } else if (point.status === "current") {
+            el.setAttribute("aria-label", pointName + "（目前關卡）");
+          } else {
+            var totalStars = point.starsEarned + point.wmStarsEarned;
+            el.setAttribute(
+              "aria-label",
+              pointName + "（已通過，" + totalStars + " 星）",
+            );
+          }
+
+          // 圓形按鈕
+          var circle = document.createElement("div");
+          circle.className = "point-circle";
+          circle.setAttribute("aria-hidden", "true");
+
+          if (point.status === "locked") {
+            // 鎖定的探險點：顯示規則對應的刺激物圖案（作為暗示）
+            circle.textContent = _getPointHintIcon(point.field, point.rule);
+            circle.style.filter = "grayscale(0.7) brightness(0.7)";
+          } else if (point.status === "current") {
+            circle.textContent = idx + 1 + mapIndex * 6;
+          } else {
+            circle.textContent = "⭐";
+          }
+
+          el.appendChild(circle);
+
+          // 標籤
+          var label = document.createElement("div");
+          label.className = "point-label";
+          label.setAttribute("aria-hidden", "true");
+          label.textContent = pointName;
+          el.appendChild(label);
+
+          // 已通過的星星數
+          if (
+            point.status === "passed" &&
+            point.starsEarned + point.wmStarsEarned > 0
+          ) {
+            var starsEl = document.createElement("div");
+            starsEl.className = "point-stars";
+            starsEl.setAttribute("aria-hidden", "true");
+            starsEl.textContent =
+              "⭐×" + (point.starsEarned + point.wmStarsEarned);
+            el.appendChild(starsEl);
+          }
+
+          // 點擊事件（locked 已 disabled，不需額外判斷）
+          if (point.status !== "locked") {
+            el.addEventListener("click", function () {
+              showPointInfo(point, idx, mapIndex);
+            });
+          }
+
+          overlay.appendChild(el);
+        });
+      }
+
+      // ─── 探險點 Info Popup ───
+
+      function showPointInfo(point, pointIndex, mapIndex) {
+        // 🔊 點擊音效
+        if (typeof AudioPlayer !== "undefined" && AudioPlayer.playSfx) {
+          AudioPlayer.playSfx(
+            typeof getSoundFile === "function"
+              ? getSoundFile("sfx.buttonClick")
+              : null,
+            { synthPreset: "click" },
+          );
+        }
+
+        selectedPointData = {
+          point: point,
+          pointIndex: pointIndex,
+          mapIndex: mapIndex,
+        };
+
+        var fieldConfig = GAME_CONFIG.FIELDS[point.field];
+        var fieldName = fieldConfig ? fieldConfig.name : point.field;
+
+        document.getElementById("popup-title").textContent = point.pointLabel;
+        document.getElementById("popup-details").textContent =
+          (fieldConfig ? fieldConfig.icon : "") +
+          " " +
+          fieldName +
+          " × " +
+          point.rule;
+
+        // WM 提示
+        var wmEl = document.getElementById("popup-wm");
+        wmEl.style.display = point.hasWM ? "block" : "none";
+
+        // 最佳紀錄
+        var bestEl = document.getElementById("popup-best");
+        if (point.bestScore > 0) {
+          bestEl.style.display = "block";
+          document.getElementById("popup-best-score").textContent =
+            point.bestScore;
+          document.getElementById("popup-best-stars").textContent =
+            point.starsEarned + point.wmStarsEarned;
+        } else {
+          bestEl.style.display = "none";
+        }
+
+        // 開始按鈕文字
+        var playBtn = document.getElementById("popup-play-btn");
+        playBtn.textContent =
+          point.status === "passed" ? "🔄 再玩一次" : "▶️ 開始";
+
+        document.getElementById("point-info-popup").classList.add("visible");
+        FocusTrap.activate(document.getElementById("point-info-popup"));
+      }
+
+      function closePointInfo() {
+        document.getElementById("point-info-popup").classList.remove("visible");
+        FocusTrap.deactivate();
+        selectedPointData = null;
+      }
+
+      function playCurrentPoint() {
+        // 🔊 開始遊戲音效
+        if (typeof AudioPlayer !== "undefined" && AudioPlayer.playSfx) {
+          AudioPlayer.playSfx(
+            typeof getSoundFile === "function"
+              ? getSoundFile("sfx.pageTransition")
+              : null,
+            { synthPreset: "transition" },
+          );
+        }
+
+        var pointOverride = null;
+
+        // 若使用者選擇的是已通過的關卡（重玩），需傳遞指定的探險點
+        if (selectedPointData && selectedPointData.point) {
+          var status = selectedPointData.point.status;
+          pointOverride = {
+            mapIndex: selectedPointData.mapIndex,
+            pointIndex: selectedPointData.pointIndex,
+          };
+        }
+
+        closePointInfo();
+
+        // 遊戲開始前檢查身份資料
+        var profile = getPlayerProfile();
+        if (!profile || !profile.nickname) {
+          _showIdentityModal(function () {
+            updateHeaderInfo();
+            ModeController.startAdventureGame(pointOverride);
+          });
+        } else {
+          ModeController.startAdventureGame(pointOverride);
+        }
+      }
+
+      // 點擊 popup 外部關閉
+      document
+        .getElementById("point-info-popup")
+        .addEventListener("click", function (e) {
+          if (e.target === this) closePointInfo();
+        });
+
+      // ─── 自動滾動到當前點 ───
+
+      function scrollToCurrentPoint() {
+        setTimeout(function () {
+          var currentEl = document.querySelector(".point-current");
+          if (currentEl) {
+            currentEl.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+              inline: "center",
+            });
+          }
+        }, 500);
+      }
+    </script>
+    <script src="../js/shared/focus-trap.js"></script>
+    <script src="../js/shared/navbar.js"></script>
+    <script src="../js/shared/landscape-hint.js"></script>
+  </body>
+</html>

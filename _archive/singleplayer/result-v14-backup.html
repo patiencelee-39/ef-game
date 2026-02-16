@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>遊戲結果 - 執行功能遊戲</title>
+    <link rel="stylesheet" href="../css/main.css" />
+    <style>
+      body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .container {
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        max-width: 700px;
+        width: 100%;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .celebration {
+        font-size: 5rem;
+        margin-bottom: 20px;
+        animation: bounce 1s ease-in-out;
+      }
+
+      @keyframes bounce {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-30px);
+        }
+      }
+
+      .header h1 {
+        color: #667eea;
+        font-size: 2rem;
+        margin-bottom: 10px;
+      }
+
+      .score-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 20px;
+        padding: 30px;
+        text-align: center;
+        margin-bottom: 25px;
+      }
+
+      .score-card .label {
+        font-size: 1rem;
+        opacity: 0.9;
+        margin-bottom: 10px;
+      }
+
+      .score-card .value {
+        font-size: 4rem;
+        font-weight: bold;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-bottom: 25px;
+      }
+
+      .stat-card {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+      }
+
+      .stat-icon {
+        font-size: 2rem;
+        margin-bottom: 8px;
+      }
+
+      .stat-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #2d3436;
+        margin-bottom: 5px;
+      }
+
+      .stat-label {
+        font-size: 0.85rem;
+        color: #636e72;
+      }
+
+      .accuracy-bar {
+        background: #e9ecef;
+        border-radius: 25px;
+        height: 40px;
+        overflow: hidden;
+        margin-bottom: 20px;
+      }
+
+      .accuracy-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #55efc4 0%, #00b894 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        transition: width 2s ease-out;
+      }
+
+      .badges {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+      }
+
+      .badge {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+      }
+
+      .badge-gold {
+        background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+        color: #2d3436;
+      }
+
+      .badge-silver {
+        background: linear-gradient(135deg, #dfe6e9 0%, #b2bec3 100%);
+        color: #2d3436;
+      }
+
+      .actions {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        padding: 15px 35px;
+        border: none;
+        border-radius: 25px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+      }
+
+      .btn-secondary {
+        background: #e9ecef;
+        color: #495057;
+      }
+
+      .btn-secondary:hover {
+        background: #dee2e6;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 25px;
+        }
+
+        .score-card .value {
+          font-size: 3rem;
+        }
+
+        .actions {
+          flex-direction: column;
+        }
+
+        .btn {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <div class="celebration" id="celebration">🎉</div>
+        <h1>恭喜完成！</h1>
+        <p id="stageName"></p>
+      </div>
+
+      <!-- 分數卡片 -->
+      <div class="score-card">
+        <div class="label">最終分數</div>
+        <div class="value" id="finalScore">0</div>
+      </div>
+
+      <!-- 獲得獎章 -->
+      <div class="badges" id="badgesSection"></div>
+
+      <!-- 統計資訊 -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">🎯</div>
+          <div class="stat-value" id="accuracyValue">0%</div>
+          <div class="stat-label">準確率</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">⚡</div>
+          <div class="stat-value" id="avgTimeValue">0s</div>
+          <div class="stat-label">平均反應時間</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">✓</div>
+          <div class="stat-value" id="correctValue">0</div>
+          <div class="stat-label">答對題數</div>
+        </div>
+      </div>
+
+      <!-- 準確率分析 -->
+      <div class="accuracy-bar">
+        <div class="accuracy-fill" id="accuracyBar" style="width: 0%">0%</div>
+      </div>
+
+      <!-- 操作按鈕 -->
+      <div class="actions">
+        <button
+          class="btn btn-secondary"
+          onclick="window.location.href = '../index.html'"
+        >
+          返回首頁
+        </button>
+        <button
+          class="btn btn-secondary"
+          onclick="window.location.href = 'stage-select.html'"
+        >
+          選擇關卡
+        </button>
+        <button class="btn btn-primary" onclick="playAgain()">
+          🔄 再玩一次
+        </button>
+      </div>
+    </div>
+
+    <script>
+      let resultData = null;
+
+      // 初始化
+      window.addEventListener("DOMContentLoaded", () => {
+        loadResults();
+      });
+
+      function loadResults() {
+        // 從 localStorage 獲取結果
+        const savedResult = localStorage.getItem("singleplayerResult");
+        if (!savedResult) {
+          alert("未找到遊戲結果");
+          window.location.href = "stage-select.html";
+          return;
+        }
+
+        resultData = JSON.parse(savedResult);
+        displayResults();
+      }
+
+      function displayResults() {
+        // 場地名稱
+        document.getElementById("stageName").textContent =
+          resultData.stage.name;
+
+        // 分數
+        document.getElementById("finalScore").textContent = resultData.score;
+        document.getElementById("accuracyValue").textContent =
+          resultData.accuracy.toFixed(1) + "%";
+        document.getElementById("correctValue").textContent =
+          `${resultData.correctAnswers}/${resultData.totalQuestions}`;
+
+        // 計算平均反應時間
+        const avgTime =
+          resultData.answers.reduce((sum, a) => sum + a.reactionTime, 0) /
+          resultData.answers.length;
+        document.getElementById("avgTimeValue").textContent =
+          (avgTime / 1000).toFixed(2) + "s";
+
+        // 準確率進度條動畫
+        setTimeout(() => {
+          const bar = document.getElementById("accuracyBar");
+          bar.style.width = resultData.accuracy + "%";
+          bar.textContent = resultData.accuracy.toFixed(1) + "%";
+        }, 300);
+
+        // 獲得獎章
+        displayBadges();
+
+        // 慶祝動畫
+        if (resultData.accuracy >= 90) {
+          document.getElementById("celebration").textContent = "🏆";
+        } else if (resultData.accuracy >= 70) {
+          document.getElementById("celebration").textContent = "🎉";
+        } else {
+          document.getElementById("celebration").textContent = "💪";
+        }
+
+        // 儲存最佳成績
+        saveBestScore();
+      }
+
+      function displayBadges() {
+        const badges = [];
+
+        // 根據表現給予獎章
+        if (resultData.accuracy === 100) {
+          badges.push({ text: "🎯 完美表現", class: "badge-gold" });
+        } else if (resultData.accuracy >= 90) {
+          badges.push({ text: "⭐ 優秀表現", class: "badge-gold" });
+        } else if (resultData.accuracy >= 70) {
+          badges.push({ text: "👍 良好表現", class: "badge-silver" });
+        }
+
+        // 速度獎章
+        const avgTime =
+          resultData.answers.reduce((sum, a) => sum + a.reactionTime, 0) /
+          resultData.answers.length;
+        if (avgTime < 1000) {
+          badges.push({ text: "⚡ 閃電反應", class: "badge-gold" });
+        } else if (avgTime < 1500) {
+          badges.push({ text: "🚀 快速反應", class: "badge-silver" });
+        }
+
+        // 完成獎章
+        badges.push({ text: "✅ 挑戰完成", class: "badge-silver" });
+
+        // 顯示獎章
+        const badgesSection = document.getElementById("badgesSection");
+        if (badges.length > 0) {
+          badges.forEach((badge) => {
+            const span = document.createElement("span");
+            span.className = `badge ${badge.class}`;
+            span.textContent = badge.text;
+            badgesSection.appendChild(span);
+          });
+        }
+      }
+
+      function saveBestScore() {
+        // 儲存最佳成績到 localStorage
+        const bestScoresKey = "bestScores";
+        const bestScores = JSON.parse(
+          localStorage.getItem(bestScoresKey) || "{}",
+        );
+
+        const stageId = resultData.stage.id;
+        if (
+          !bestScores[stageId] ||
+          resultData.score > bestScores[stageId].score
+        ) {
+          bestScores[stageId] = {
+            score: resultData.score,
+            accuracy: resultData.accuracy,
+            completedAt: resultData.completedAt,
+          };
+          localStorage.setItem(bestScoresKey, JSON.stringify(bestScores));
+        }
+      }
+
+      function playAgain() {
+        // 清除遊戲記錄
+        localStorage.removeItem("singleplayerResult");
+
+        // 跳轉到遊戲頁面
+        localStorage.setItem("selectedStage", JSON.stringify(resultData.stage));
+        window.location.href = "game.html";
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,193 @@
+/* ============================================
+   排行表共用樣式 — ranking.css
+   ============================================
+   供 RankingRenderer.render() 使用
+   班級排行看板、多人結算、世界排行榜共用
+   ============================================ */
+
+/* --- 排行表格 --- */
+.ranking-table {
+  --ranking-cols: 60px 1fr 90px 90px 100px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.ranking-header {
+  display: grid;
+  grid-template-columns: var(--ranking-cols);
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.ranking-row {
+  display: grid;
+  grid-template-columns: var(--ranking-cols);
+  padding: 0.75rem 1rem;
+  background: #fff;
+  border-bottom: 1px solid #eee;
+  transition: background 0.2s;
+  font-size: 0.9rem;
+  align-items: center;
+}
+
+.ranking-row:hover {
+  background: #f8f9fa;
+}
+
+.ranking-row:last-child {
+  border-bottom: none;
+}
+
+.ranking-row--highlight {
+  background: #fff9c4 !important;
+  border-left: 3px solid #ffd700;
+}
+
+/* --- 儲存格 --- */
+.ranking-cell {
+  padding: 0 4px;
+}
+
+.ranking-cell--rank {
+  font-weight: 700;
+  font-size: 1.1em;
+  text-align: center;
+}
+
+.ranking-cell--rank.gold {
+  color: #ffd700;
+}
+
+.ranking-cell--rank.silver {
+  color: #aaa;
+}
+
+.ranking-cell--rank.bronze {
+  color: #cd7f32;
+}
+
+.ranking-cell--name {
+  font-weight: 600;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ranking-cell--score {
+  text-align: center;
+  font-weight: 700;
+  color: #4caf50;
+}
+
+.ranking-cell--acc {
+  text-align: center;
+}
+
+.ranking-cell--rt {
+  text-align: center;
+  color: #667eea;
+}
+
+.ranking-cell--stars {
+  text-align: center;
+  font-weight: 700;
+  color: #ff9800;
+}
+
+.ranking-cell--level {
+  text-align: center;
+}
+
+.ranking-cell--time {
+  text-align: center;
+  font-size: 0.8em;
+  color: #999;
+}
+
+.ranking-cell--action {
+  text-align: center;
+}
+
+/* --- 刪除按鈕 --- */
+.ranking-delete-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.ranking-delete-btn:hover {
+  background: rgba(244, 67, 54, 0.1);
+}
+
+/* --- 空狀態 --- */
+.ranking-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #999;
+}
+
+.ranking-empty__icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.ranking-empty p {
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+/* --- 統計卡片 --- */
+.ranking-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.ranking-stat-card {
+  background: #fff;
+  padding: 1rem;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.ranking-stat-card__icon {
+  font-size: 1.5rem;
+}
+
+.ranking-stat-card__val {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #333;
+  margin: 4px 0;
+}
+
+.ranking-stat-card__lbl {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+/* --- RWD --- */
+@media (max-width: 600px) {
+  .ranking-header,
+  .ranking-row {
+    font-size: 0.82rem;
+    padding: 0.6rem 0.75rem;
+  }
+
+  .ranking-cell--rt,
+  .ranking-cell--time {
+    display: none;
+  }
+}

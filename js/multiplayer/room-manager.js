@@ -2,15 +2,6 @@
 // 房間管理器
 // ====================================
 
-// 引入常數
-const {
-  ROOM_EXPIRY_TIME_MS,
-  RANDOM_NICKNAME_MAX,
-  ROOM_STATUS,
-  DEFAULT_HOST_NICKNAME,
-  DEFAULT_PLAYER_NICKNAME_PREFIX,
-} = window.GameConstants;
-
 class RoomManager {
   constructor() {
     this.database = firebase.database();
@@ -26,7 +17,7 @@ class RoomManager {
     try {
       const user = this.auth.currentUser;
       if (!user) {
-        throw new Error('請先登入');
+        throw new Error("請先登入");
       }
 
       const {
@@ -34,6 +25,7 @@ class RoomManager {
         roomName,
         hasPassword,
         password,
+        hostJoinsGame = true,
         selectedStages,
         questionsCount,
         countdownSeconds,
@@ -43,7 +35,7 @@ class RoomManager {
       // 生成題目序列
       const gameStages = window.QuestionGenerator.generateGameStages(
         selectedStages,
-        questionsCount
+        questionsCount,
       );
 
       // 準備房間資料
@@ -55,8 +47,8 @@ class RoomManager {
         hasPassword,
         passwordHash: hasPassword ? this.hashPassword(password) : null,
         createdAt: Date.now(),
-        expiresAt: Date.now() + ROOM_EXPIRY_TIME_MS,
-        status: ROOM_STATUS.WAITING,
+        expiresAt: Date.now() + window.GameConstants.ROOM_EXPIRY_TIME_MS,
+        status: window.GameConstants.ROOM_STATUS.WAITING,
 
         // 遊戲開始狀態
         isGameStarted: false,
@@ -69,32 +61,34 @@ class RoomManager {
         displaySettings,
 
         // 玩家資料
-        players: {
-          [user.uid]: {
-            nickname: DEFAULT_HOST_NICKNAME,
-            isHost: true,
-            online: true,
-            joinedAt: Date.now(),
-            currentStageIndex: 0,
-            currentQuestion: 0,
-            completedStages: [],
-            stageStatus: {},
-            totalScore: 0,
-            totalStars: 0,
-            totalCorrect: 0,
-            totalQuestions: 0,
-            accuracy: 0,
-          },
-        },
+        players: hostJoinsGame
+          ? {
+              [user.uid]: {
+                nickname: window.GameConstants.DEFAULT_HOST_NICKNAME,
+                isHost: true,
+                online: true,
+                joinedAt: Date.now(),
+                currentStageIndex: 0,
+                currentQuestion: 0,
+                completedStages: [],
+                stageStatus: {},
+                totalScore: 0,
+                totalStars: 0,
+                totalCorrect: 0,
+                totalQuestions: 0,
+                accuracy: 0,
+              },
+            }
+          : {},
       };
 
       // 寫入 Firebase
       await this.database.ref(`rooms/${roomCode}`).set(room);
 
-      console.log('✅ 房間建立成功:', roomCode);
+      console.log("✅ 房間建立成功:", roomCode);
       return roomCode;
     } catch (error) {
-      console.error('❌ 建立房間失敗:', error);
+      console.error("❌ 建立房間失敗:", error);
       throw error;
     }
   }
@@ -109,13 +103,15 @@ class RoomManager {
     try {
       const user = this.auth.currentUser;
       if (!user) {
-        throw new Error('請先登入');
+        throw new Error("請先登入");
       }
 
       // 檢查房間是否存在
-      const roomSnapshot = await this.database.ref(`rooms/${roomCode}`).once('value');
+      const roomSnapshot = await this.database
+        .ref(`rooms/${roomCode}`)
+        .once("value");
       if (!roomSnapshot.exists()) {
-        throw new Error('房間不存在');
+        throw new Error("房間不存在");
       }
 
       const room = roomSnapshot.val();
@@ -123,26 +119,28 @@ class RoomManager {
       // 檢查密碼
       if (room.hasPassword) {
         if (!password) {
-          throw new Error('此房間需要密碼');
+          throw new Error("此房間需要密碼");
         }
         if (this.hashPassword(password) !== room.passwordHash) {
-          throw new Error('密碼錯誤');
+          throw new Error("密碼錯誤");
         }
       }
 
       // 檢查是否已開始且不允許中途加入
       if (room.isGameStarted && !room.displaySettings.allowLateJoin) {
-        throw new Error('遊戲已開始，不允許中途加入');
+        throw new Error("遊戲已開始，不允許中途加入");
       }
 
       // 檢查是否已過期
       if (Date.now() > room.expiresAt) {
-        throw new Error('房間已過期');
+        throw new Error("房間已過期");
       }
 
       // 加入房間
       const playerData = {
-        nickname: DEFAULT_PLAYER_NICKNAME_PREFIX + Math.floor(Math.random() * RANDOM_NICKNAME_MAX),
+        nickname:
+          window.GameConstants.DEFAULT_PLAYER_NICKNAME_PREFIX +
+          Math.floor(Math.random() * window.GameConstants.RANDOM_NICKNAME_MAX),
         isHost: false,
         online: true,
         joinedAt: Date.now(),
@@ -157,12 +155,14 @@ class RoomManager {
         accuracy: 0,
       };
 
-      await this.database.ref(`rooms/${roomCode}/players/${user.uid}`).set(playerData);
+      await this.database
+        .ref(`rooms/${roomCode}/players/${user.uid}`)
+        .set(playerData);
 
-      console.log('✅ 加入房間成功:', roomCode);
+      console.log("✅ 加入房間成功:", roomCode);
       return roomCode;
     } catch (error) {
-      console.error('❌ 加入房間失敗:', error);
+      console.error("❌ 加入房間失敗:", error);
       throw error;
     }
   }
@@ -175,9 +175,11 @@ class RoomManager {
       const user = this.auth.currentUser;
       if (!user) return;
 
-      await this.database.ref(`rooms/${roomCode}/players/${user.uid}/nickname`).set(nickname);
+      await this.database
+        .ref(`rooms/${roomCode}/players/${user.uid}/nickname`)
+        .set(nickname);
     } catch (error) {
-      console.error('更新暱稱失敗:', error);
+      console.error("更新暱稱失敗:", error);
     }
   }
 
@@ -188,27 +190,29 @@ class RoomManager {
     try {
       const user = this.auth.currentUser;
       if (!user) {
-        throw new Error('請先登入');
+        throw new Error("請先登入");
       }
 
       // 檢查是否為房主
-      const roomSnapshot = await this.database.ref(`rooms/${roomCode}`).once('value');
+      const roomSnapshot = await this.database
+        .ref(`rooms/${roomCode}`)
+        .once("value");
       const room = roomSnapshot.val();
 
       if (room.hostId !== user.uid) {
-        throw new Error('只有房主可以開始遊戲');
+        throw new Error("只有房主可以開始遊戲");
       }
 
       // 更新狀態
       await this.database.ref(`rooms/${roomCode}`).update({
         isGameStarted: true,
-        status: ROOM_STATUS.PLAYING,
+        status: window.GameConstants.ROOM_STATUS.PLAYING,
       });
 
-      console.log('✅ 遊戲開始');
+      console.log("✅ 遊戲開始");
       return true;
     } catch (error) {
-      console.error('❌ 開始遊戲失敗:', error);
+      console.error("❌ 開始遊戲失敗:", error);
       throw error;
     }
   }
@@ -222,9 +226,9 @@ class RoomManager {
       if (!user) return;
 
       await this.database.ref(`rooms/${roomCode}/players/${user.uid}`).remove();
-      console.log('✅ 離開房間');
+      console.log("✅ 離開房間");
     } catch (error) {
-      console.error('離開房間失敗:', error);
+      console.error("離開房間失敗:", error);
     }
   }
 
@@ -233,7 +237,7 @@ class RoomManager {
    */
   onRoomChange(roomCode, callback) {
     const ref = this.database.ref(`rooms/${roomCode}`);
-    ref.on('value', (snapshot) => {
+    ref.on("value", (snapshot) => {
       if (snapshot.exists()) {
         callback(snapshot.val());
       } else {
@@ -242,7 +246,7 @@ class RoomManager {
     });
 
     // 返回取消監聽的函式
-    return () => ref.off('value');
+    return () => ref.off("value");
   }
 
   /**

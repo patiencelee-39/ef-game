@@ -2,13 +2,27 @@
 <html lang="zh-TW">
   <head>
     <meta charset="UTF-8" />
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://www.googleapis.com" crossorigin />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' https://www.gstatic.com https://www.googleapis.com 'unsafe-inline'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com; style-src 'self' 'unsafe-inline';"
+      content="default-src 'self'; script-src 'self' https://www.gstatic.com https://www.googleapis.com https://*.firebasedatabase.app 'unsafe-inline'; connect-src 'self' https://www.gstatic.com https://*.firebaseio.com https://*.firebasedatabase.app https://*.googleapis.com wss://*.firebaseio.com wss://*.firebasedatabase.app; style-src 'self' 'unsafe-inline';"
     />
     <title>執行功能訓練遊戲</title>
+    <meta name="description" content="專為 3–6 歲聽障幼兒設計的執行功能訓練遊戲，包含 Go/No-Go、認知彈性及工作記憶訓練。" />
+    <meta property="og:title" content="執行功能訓練遊戲" />
+    <meta property="og:description" content="專為 3–6 歲聽障幼兒設計的認知訓練遊戲" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://efgame-634af.web.app/" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="favicon.svg" />
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#302b63" />
+    <link rel="stylesheet" href="css/themes/base.css" />
     <link rel="stylesheet" href="css/main.css" />
+    <link rel="stylesheet" href="css/components/navbar.css" />
+    <link rel="stylesheet" href="css/components/landscape-hint.css" />
   </head>
   <body>
     <div class="container">
@@ -17,48 +31,70 @@
         <p class="subtitle">3-6歲聽障學齡前幼兒專用</p>
       </header>
 
-      <main class="mode-selection">
-        <div class="mode-card" onclick="location.href = 'multiplayer/room-create.html'">
-          <div class="mode-icon">👥</div>
+      <main class="mode-selection" id="main-content">
+        <a class="mode-card" href="multiplayer/room-create.html">
+          <div class="mode-icon" aria-hidden="true">👥</div>
           <h2>多人模式</h2>
           <p>與朋友一起競賽</p>
-          <button class="btn-primary">建立房間</button>
-        </div>
+          <span class="btn-primary" aria-hidden="true">建立房間</span>
+        </a>
 
-        <div class="mode-card" onclick="location.href = 'multiplayer/room-join.html'">
-          <div class="mode-icon">🔗</div>
+        <a class="mode-card" href="multiplayer/room-join.html">
+          <div class="mode-icon" aria-hidden="true">🔗</div>
           <h2>加入房間</h2>
           <p>輸入房間代碼加入</p>
-          <button class="btn-secondary">加入遊戲</button>
-        </div>
+          <span class="btn-secondary" aria-hidden="true">加入遊戲</span>
+        </a>
 
-        <div class="mode-card" onclick="location.href = 'singleplayer/stage-select.html'">
-          <div class="mode-icon">🌟</div>
+        <a class="mode-card" href="singleplayer/adventure-map.html">
+          <div class="mode-icon" aria-hidden="true">🌟</div>
           <h2>單人模式</h2>
           <p>挑戰自己的極限</p>
-          <button class="btn-primary">開始遊戲</button>
-        </div>
+          <span class="btn-primary" aria-hidden="true">開始遊戲</span>
+        </a>
 
-        <div class="mode-card" onclick="location.href = 'leaderboard/class.html'">
-          <div class="mode-icon">🏆</div>
+        <a class="mode-card" href="leaderboard/index.html">
+          <div class="mode-icon" aria-hidden="true">🏆</div>
           <h2>排行榜</h2>
-          <p>查看班級排名</p>
-          <button class="btn-secondary">查看排名</button>
-        </div>
+          <p>全球・班級・即時排行</p>
+          <span class="btn-secondary" aria-hidden="true">查看排名</span>
+        </a>
       </main>
 
       <footer>
         <p>© 2026 執行功能訓練遊戲 | 學術研究專案</p>
+        <p style="margin-top: 6px">
+          <a
+            href="privacy.html"
+            style="
+              color: rgba(168, 237, 234, 0.85);
+              font-size: 0.8rem;
+              text-decoration: none;
+            "
+            >隱私權政策</a
+          >
+        </p>
       </footer>
     </div>
 
     <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 
     <!-- Firebase 配置 -->
     <script src="js/firebase-config.js"></script>
+    <script src="js/shared/navbar.js"></script>
+    <script src="js/shared/landscape-hint.js"></script>
+
+    <!-- Service Worker 註冊 -->
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("/sw.js").catch(function (err) {
+          console.warn("SW 註冊失敗:", err);
+        });
+      }
+    </script>
   </body>
 </html>

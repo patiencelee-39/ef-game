@@ -1,0 +1,63 @@
+/* ============================================
+   橫向螢幕提示 Overlay
+   ============================================
+   當行動裝置螢幕橫放時，顯示「請將裝置直立」提示。
+   僅在寬度 ≤ 900px 且 landscape 方向時啟用。
+   桌面螢幕不受影響。
+   ============================================ */
+
+.landscape-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 20px;
+  text-align: center;
+  padding: 24px;
+}
+
+.landscape-overlay__icon {
+  font-size: 64px;
+  animation: landscape-rotate 2s ease-in-out infinite;
+}
+
+.landscape-overlay__title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(135deg, #a8edea, #fed6e3);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.landscape-overlay__msg {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.6;
+  max-width: 280px;
+}
+
+@keyframes landscape-rotate {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-30deg);
+  }
+  75% {
+    transform: rotate(30deg);
+  }
+}
+
+/* 只在行動裝置 (≤900px) + 橫向時顯示 */
+@media screen and (max-width: 900px) and (orientation: landscape) {
+  .landscape-overlay {
+    display: flex;
+  }
+}

@@ -1,0 +1,838 @@
+#!/usr/bin/env python3
+"""Write the new multiplayer/game.html file."""
+
+import os
+
+TARGET = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "multiplayer", "game.html"
+)
+
+CONTENT = r'''<!doctype html>
+<html lang="zh-TW" data-theme="field-primary">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app"
+    />
+    <title>''' + "執行功能訓練遊戲 — 多人模式" + r'''</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../css/themes/base.css" />
+    <link rel="stylesheet" href="../css/main.css" />
+
+    <style>
+      /* ====================================
+       ''' + "多人遊戲頁面專用樣式" + r'''
+       ==================================== */
+
+      .game-page {
+        width: 100%;
+        max-width: 640px;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        margin: 0 auto;
+        padding: 0;
+      }
+
+      .game-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 16px;
+        background: rgba(0, 0, 0, 0.3);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        flex-shrink: 0;
+      }
+
+      .game-header-title {
+        font-size: var(--font-size-md);
+        font-weight: 700;
+        color: var(--text-white);
+        text-align: center;
+        flex: 1;
+      }
+
+      .header-btn {
+        background: none;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: var(--text-white);
+        font-size: 1.4rem;
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        min-height: 44px;
+        border-radius: var(--border-radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        cursor: pointer;
+      }
+
+      .game-play-area {
+        flex: 1;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        background: var(--bg-dark);
+        border: 3px solid rgba(255, 255, 255, 0.1);
+        border-radius: var(--border-radius-lg);
+        margin: 8px;
+      }
+
+      .trial-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 16px;
+        background: rgba(0, 0, 0, 0.2);
+        flex-shrink: 0;
+      }
+
+      .round-label { font-size: var(--font-size-sm); font-weight: 700; color: var(--accent-yellow); white-space: nowrap; }
+      .trial-counter { font-size: var(--font-size-sm); color: var(--text-light); white-space: nowrap; }
+      .progress-bar-container { flex: 1; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; }
+      .progress-bar { height: 100%; background: linear-gradient(90deg, var(--success-green), var(--primary-blue)); border-radius: 4px; transition: width 0.3s ease; width: 0%; }
+
+      .stimulus-container { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; min-height: 200px; border-radius: var(--border-radius-md); margin: 8px; transition: border-color 0.3s ease, background 0.3s ease; overflow: hidden; }
+      #backgroundLayer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; display: flex; align-items: center; justify-content: center; }
+      #backgroundLayer svg { width: 100%; height: 100%; object-fit: cover; }
+      #contextIndicator { position: absolute; top: 12px; right: 12px; width: 60px; height: 60px; z-index: 5; display: none; }
+      #contextIndicator svg { width: 100%; height: 100%; }
+      #stimulus { position: relative; z-index: 10; width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; transition: transform 0.2s ease; }
+      #stimulus svg { width: 100%; height: 100%; }
+
+      .control-area { padding: 12px 16px; text-align: center; flex-shrink: 0; }
+      .btn-key { width: 100%; max-width: 400px; min-height: var(--touch-target-game); font-size: var(--font-size-lg); font-weight: 700; background: linear-gradient(135deg, var(--primary-blue) 0%, #2980b9 100%); color: var(--text-white); border: none; border-radius: var(--border-radius-lg); box-shadow: 0 4px 12px rgba(52,152,219,0.3); cursor: pointer; touch-action: manipulation; transition: transform 0.1s ease; }
+      .btn-key:active { transform: scale(0.96); }
+      .btn-key:disabled { opacity: 0.4; cursor: not-allowed; }
+      .key-hint { display: block; font-size: var(--font-size-xs); font-weight: 400; opacity: 0.7; margin-top: 4px; }
+
+      .screen { display: none; }
+      .screen.active { display: flex; flex-direction: column; flex: 1; }
+
+      .rule-intro { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; padding: 24px; text-align: center; animation: fade-in 0.4s ease-out; }
+      @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+      .rule-intro h2 { font-size: var(--font-size-xl); color: var(--text-white); }
+      .rule-box-group { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 360px; }
+      .rule-box { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 16px; border-radius: var(--border-radius-md); font-size: var(--font-size-lg); }
+      .rule-box--go { background: rgba(46,204,113,0.15); border: 2px solid rgba(46,204,113,0.3); }
+      .rule-box--nogo { background: rgba(231,76,60,0.15); border: 2px solid rgba(231,76,60,0.3); }
+      .rule-stim-icon { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+      .rule-stim-icon svg { width: 100%; height: 100%; }
+      .rule-action-text { font-weight: 700; font-size: var(--font-size-lg); }
+      .rule-action-text--go { color: var(--success-green); }
+      .rule-action-text--nogo { color: var(--error-red); }
+      .wm-notice-tag { padding: 8px 16px; border-radius: 6px; background: rgba(92,107,192,0.15); border: 1px solid rgba(92,107,192,0.3); color: var(--wm-color); font-weight: 600; }
+      .context-notice { font-size: var(--font-size-sm); color: var(--text-light); max-width: 300px; }
+
+      #pause-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1500; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 24px; }
+      #pause-overlay.active { display: flex; }
+      #pause-overlay h2 { font-size: var(--font-size-xxl); color: var(--text-white); }
+
+      #wm-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 800; background: var(--bg-dark); overflow-y: auto; }
+      #combo-transition-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 800; background: var(--bg-dark); overflow-y: auto; display: flex; align-items: center; justify-content: center; }
+
+      .spectator-dashboard {
+        flex: 1; padding: 24px; overflow-y: auto;
+        display: flex; flex-direction: column; gap: 20px;
+      }
+      .spectator-dashboard h2 { font-size: 1.6rem; text-align: center; color: var(--text-white); }
+      .spectator-player-list { display: flex; flex-direction: column; gap: 12px; }
+      .spectator-player-card {
+        background: rgba(255,255,255,0.08); border-radius: 12px; padding: 16px;
+        display: flex; align-items: center; gap: 16px;
+      }
+      .spectator-player-card .avatar { font-size: 2rem; }
+      .spectator-player-card .info { flex: 1; }
+      .spectator-player-card .name { font-weight: 700; color: var(--text-white); margin-bottom: 4px; }
+      .spectator-player-card .status { font-size: 0.85rem; color: var(--text-light); }
+      .spectator-player-card .score { font-size: 1.3rem; font-weight: 700; color: var(--accent-yellow); }
+
+      @media (max-width: 480px) {
+        .game-play-area { margin: 4px; }
+        #stimulus { width: 100px; height: 100px; }
+        .rule-stim-icon { width: 48px; height: 48px; }
+      }
+      @media (min-width: 769px) {
+        #stimulus { width: 140px; height: 140px; }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="game-page">
+      <div class="game-header">
+        <button id="btnBack" class="header-btn" aria-label="''' + "返回" + r'''" title="''' + "返回" + r'''">&#x2190;</button>
+        <div id="headerTitle" class="game-header-title">''' + "多人模式 — 載入中…" + r'''</div>
+        <button id="btnPause" class="header-btn" aria-label="''' + "暫停" + r'''" title="''' + "暫停" + r'''">&#x23F8;</button>
+      </div>
+
+      <div class="game-play-area" id="gameContainer">
+        <div id="rule-intro-screen" class="screen">
+          <div class="rule-intro">
+            <h2 id="ruleIntroTitle"></h2>
+            <div id="ruleIntroBoxes" class="rule-box-group"></div>
+            <div id="ruleIntroContext" class="context-notice hidden"></div>
+            <div id="ruleIntroWM" class="wm-notice-tag hidden">&#x1F9E0; ''' + "本組含工作記憶測驗" + r'''</div>
+            <button id="btnRuleStart" class="btn btn-primary">&#x25B6;&#xFE0F; ''' + "開始" + r'''</button>
+          </div>
+        </div>
+
+        <div id="play-screen" class="screen">
+          <div class="trial-info">
+            <span id="roundLabel" class="round-label"></span>
+            <span class="trial-counter">
+              <span id="trialCurrent">0</span> / <span id="trialTotal">0</span>
+            </span>
+            <div class="progress-bar-container">
+              <div id="progressBar" class="progress-bar"></div>
+            </div>
+          </div>
+          <div class="stimulus-container" id="stimulusContainer">
+            <div id="backgroundLayer"></div>
+            <div id="contextIndicator"></div>
+            <div id="stimulus"></div>
+          </div>
+          <div class="control-area">
+            <button id="btnSpace" class="btn-key" disabled>
+              <span id="btnLabel">''' + "準備中…" + r'''</span>
+              <span class="key-hint">''' + "按空白鍵 或 點此" + r'''</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="spectator-screen" class="screen">
+          <div class="spectator-dashboard">
+            <h2>&#x1F441;&#xFE0F; ''' + "觀戰模式" + r'''</h2>
+            <p style="text-align:center;color:var(--text-light);">''' + "即時查看所有玩家進度" + r'''</p>
+            <div id="spectatorPlayerList" class="spectator-player-list">
+              <p style="text-align:center;color:var(--text-light);">''' + "等待玩家資料…" + r'''</p>
+            </div>
+            <div style="text-align:center;margin-top:1rem;">
+              <button class="btn btn-secondary" onclick="location.href='../index.html'">&#x1F6AA; ''' + "離開" + r'''</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="wm-container" class="hidden"></div>
+        <div id="combo-transition-container" class="hidden"></div>
+
+        <div id="pause-overlay">
+          <h2>&#x23F8; ''' + "暫停" + r'''</h2>
+          <p style="color: var(--text-light)">''' + "遊戲已暫停，按下方按鈕繼續" + r'''</p>
+          <button id="btnResume" class="btn btn-primary">&#x25B6;&#xFE0F; ''' + "繼續" + r'''</button>
+          <button id="btnQuit" class="btn btn-secondary" style="margin-top: 8px">&#x1F6AA; ''' + "結束遊戲" + r'''</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+
+    <!-- Firebase config -->
+    <script src="../js/firebase-config.js"></script>
+
+    <!-- Game config -->
+    <script src="../js/game-config.js"></script>
+    <script src="../js/adaptive/difficulty-provider.js"></script>
+    <script src="../js/adaptive/simple-adaptive-engine.js"></script>
+    <script src="../js/svg-assets.js"></script>
+
+    <!-- Utils -->
+    <script src="../js/utils/storage.js"></script>
+    <script src="../js/utils/score-calculator.js"></script>
+    <script src="../js/utils/level-calculator.js"></script>
+    <script src="../js/utils/badge-checker.js"></script>
+    <script src="../js/utils/question-generator.js"></script>
+
+    <!-- Shared components -->
+    <script src="../js/shared/audio-player.js"></script>
+    <script src="../js/shared/countdown.js"></script>
+    <script src="../js/shared/feedback-overlay.js"></script>
+    <script src="../js/shared/working-memory.js"></script>
+    <script src="../js/shared/completion-notify.js"></script>
+    <script src="../js/shared/game-session-builder.js"></script>
+
+    <!-- Singleplayer core (reused) -->
+    <script src="../js/singleplayer/progress-tracker.js"></script>
+    <script src="../js/singleplayer/mode-controller.js"></script>
+
+    <script>
+    /**
+     * MultiplayerBridge - Firebase sync layer for multiplayer mode
+     */
+    var MultiplayerBridge = (function () {
+      "use strict";
+
+      var _roomCode = null;
+      var _playerRole = null;
+      var _playerId = null;
+      var _roomRef = null;
+      var _roomData = null;
+
+      function parseRoomInfo() {
+        var params = new URLSearchParams(window.location.search);
+        _roomCode = params.get("room");
+        _playerRole = params.get("role") || "player";
+
+        if (!_roomCode) {
+          alert("Missing room code");
+          location.href = "../index.html";
+          return false;
+        }
+
+        try {
+          var playerData = JSON.parse(localStorage.getItem("currentPlayer") || "{}");
+          _playerId = playerData.id || null;
+        } catch (e) {
+          _playerId = null;
+        }
+
+        var user = firebase.auth().currentUser;
+        if (user) { _playerId = user.uid; }
+
+        console.log("Multiplayer: room=" + _roomCode + " role=" + _playerRole + " id=" + _playerId);
+        return true;
+      }
+
+      function initRoom() {
+        _roomRef = firebase.database().ref("rooms/" + _roomCode);
+
+        _roomRef.on("value", function (snapshot) {
+          _roomData = snapshot.val();
+          if (!_roomData) {
+            alert("Room closed");
+            location.href = "../index.html";
+            return;
+          }
+          if (_playerRole === "spectator") {
+            updateSpectatorDashboard();
+          }
+        });
+
+        if (_playerId && _playerRole === "player") {
+          _roomRef.child("players/" + _playerId + "/online").onDisconnect().set(false);
+        }
+      }
+
+      function broadcastState(stateObj) {
+        if (!_roomRef || !_playerId || _playerRole !== "player") return;
+        _roomRef.child("players/" + _playerId).update({
+          currentProgress: stateObj.progress || 0,
+          currentScore: stateObj.score || 0,
+          currentCombo: stateObj.comboName || "",
+          online: true,
+          lastUpdate: Date.now(),
+        });
+      }
+
+      function recordAnswer(trialRecord) {
+        if (!_roomRef || !_playerId || _playerRole !== "player") return;
+        _roomRef.child("answers/" + _playerId).push({
+          stimulus: trialRecord.stimulus || "",
+          isCorrect: trialRecord.isCorrect || false,
+          rt: trialRecord.rt || null,
+          timestamp: Date.now(),
+        });
+      }
+
+      function recordFinalScore(resultObj) {
+        if (!_roomRef || !_playerId || _playerRole !== "player") return;
+        _roomRef.child("scores/" + _playerId).set({
+          totalScore: resultObj.totalScore || 0,
+          totalCorrect: resultObj.totalCorrect || 0,
+          totalTrials: resultObj.totalTrials || 0,
+          accuracy: resultObj.accuracy || 0,
+          finishedAt: Date.now(),
+        });
+
+        localStorage.setItem("gameResult", JSON.stringify({
+          score: resultObj.totalScore || 0,
+          accuracy: resultObj.accuracy || 0,
+          correctAnswers: resultObj.totalCorrect || 0,
+          totalQuestions: resultObj.totalTrials || 0,
+          totalTime: resultObj.totalTime || 0,
+          answers: resultObj.answers || [],
+          playerId: _playerId,
+        }));
+      }
+
+      function updateSpectatorDashboard() {
+        if (!_roomData || !_roomData.players) return;
+        var listEl = document.getElementById("spectatorPlayerList");
+        if (!listEl) return;
+
+        var avatars = ["\uD83D\uDC31","\uD83D\uDC36","\uD83D\uDC3C","\uD83E\uDD8A","\uD83D\uDC28","\uD83D\uDC2F","\uD83E\uDD81","\uD83D\uDC2E"];
+        var players = _roomData.players;
+        var html = "";
+        var idx = 0;
+
+        for (var uid in players) {
+          if (!players.hasOwnProperty(uid)) continue;
+          var p = players[uid];
+          var emoji = avatars[idx % avatars.length];
+          var statusText = p.online ? (p.currentCombo || "Playing") : "Offline";
+          var scoreText = p.currentScore || 0;
+
+          html += '<div class="spectator-player-card">';
+          html += '<div class="avatar">' + emoji + '</div>';
+          html += '<div class="info">';
+          html += '<div class="name">' + (p.nickname || "Player") + '</div>';
+          html += '<div class="status">' + statusText + '</div>';
+          html += '</div>';
+          html += '<div class="score">' + scoreText + ' \u2B50</div>';
+          html += '</div>';
+          idx++;
+        }
+
+        if (html === "") {
+          html = '<p style="text-align:center;color:var(--text-light);">No players yet</p>';
+        }
+        listEl.innerHTML = html;
+      }
+
+      function goToResult() {
+        if (_roomRef) _roomRef.off();
+        location.href = "result.html?room=" + _roomCode;
+      }
+
+      return {
+        parseRoomInfo: parseRoomInfo,
+        initRoom: initRoom,
+        broadcastState: broadcastState,
+        recordAnswer: recordAnswer,
+        recordFinalScore: recordFinalScore,
+        goToResult: goToResult,
+        getRole: function () { return _playerRole; },
+        getRoomCode: function () { return _roomCode; },
+        getPlayerId: function () { return _playerId; },
+      };
+    })();
+    </script>
+
+    <script>
+    /**
+     * GameController - Multiplayer game flow controller
+     * Based on singleplayer GameController IIFE + Firebase sync
+     */
+    var GameController = (function () {
+      "use strict";
+
+      var dom = {};
+
+      function cacheDom() {
+        dom.headerTitle = document.getElementById("headerTitle");
+        dom.btnBack = document.getElementById("btnBack");
+        dom.btnPause = document.getElementById("btnPause");
+        dom.ruleIntroScreen = document.getElementById("rule-intro-screen");
+        dom.ruleIntroTitle = document.getElementById("ruleIntroTitle");
+        dom.ruleIntroBoxes = document.getElementById("ruleIntroBoxes");
+        dom.ruleIntroContext = document.getElementById("ruleIntroContext");
+        dom.ruleIntroWM = document.getElementById("ruleIntroWM");
+        dom.btnRuleStart = document.getElementById("btnRuleStart");
+        dom.playScreen = document.getElementById("play-screen");
+        dom.roundLabel = document.getElementById("roundLabel");
+        dom.trialCurrent = document.getElementById("trialCurrent");
+        dom.trialTotal = document.getElementById("trialTotal");
+        dom.progressBar = document.getElementById("progressBar");
+        dom.stimContainer = document.getElementById("stimulusContainer");
+        dom.bgLayer = document.getElementById("backgroundLayer");
+        dom.ctxIndicator = document.getElementById("contextIndicator");
+        dom.stimulus = document.getElementById("stimulus");
+        dom.btnSpace = document.getElementById("btnSpace");
+        dom.btnLabel = document.getElementById("btnLabel");
+        dom.gameContainer = document.getElementById("gameContainer");
+        dom.wmContainer = document.getElementById("wm-container");
+        dom.comboTransition = document.getElementById("combo-transition-container");
+        dom.pauseOverlay = document.getElementById("pause-overlay");
+        dom.btnResume = document.getElementById("btnResume");
+        dom.btnQuit = document.getElementById("btnQuit");
+        dom.spectatorScreen = document.getElementById("spectator-screen");
+      }
+
+      var _combos = [];
+      var _comboIndex = 0;
+      var _questions = [];
+      var _trialIndex = 0;
+      var _trialResults = [];
+      var _responded = false;
+      var _stimOnTime = 0;
+      var _isPlaying = false;
+      var _isPaused = false;
+      var _isiTimerId = null;
+      var _stimTimerId = null;
+      var _totalCorrect = 0;
+      var _totalTrials = 0;
+
+      function showScreen(el) {
+        var screens = dom.gameContainer.querySelectorAll(".screen");
+        for (var i = 0; i < screens.length; i++) {
+          screens[i].classList.remove("active");
+        }
+        if (el) el.classList.add("active");
+      }
+
+      function getActionLabel(fieldId) {
+        return fieldId === "fishing" ? "\uD83C\uDFA3 Pull!" : "\uD83D\uDDB1\uFE0F Catch!";
+      }
+
+      function clearStimulus() {
+        dom.stimulus.innerHTML = "";
+        dom.bgLayer.innerHTML = "";
+        dom.ctxIndicator.style.display = "none";
+      }
+
+      function beginCombo() {
+        var combo = _combos[_comboIndex];
+        _trialIndex = 0;
+        _trialResults = [];
+        _responded = false;
+
+        _questions = QuestionGenerator.generateQuestions(
+          combo.fieldId,
+          combo.ruleId,
+          false
+        );
+
+        dom.trialTotal.textContent = _questions.length;
+        showRuleIntro(combo);
+      }
+
+      function showRuleIntro(combo) {
+        var field = GAME_CONFIG.FIELDS[combo.fieldId];
+        var rule = field.rules[combo.ruleId];
+
+        dom.ruleIntroTitle.textContent = field.icon + " " + rule.name;
+
+        var boxesHtml = "";
+        if (combo.ruleId === "mixed") {
+          boxesHtml = '<div class="rule-box rule-box--go">Mixed rules</div>';
+          dom.ruleIntroContext.textContent =
+            "Context A: " + rule.contextA.label + " | Context B: " + rule.contextB.label;
+          dom.ruleIntroContext.classList.remove("hidden");
+        } else {
+          var goStim = rule.go.stimulus;
+          var nogoStim = rule.noGo.stimulus;
+          var goSvg = typeof SVGAssets !== "undefined" ? SVGAssets.get(goStim, combo.fieldId) : goStim;
+          var nogoSvg = typeof SVGAssets !== "undefined" ? SVGAssets.get(nogoStim, combo.fieldId) : nogoStim;
+
+          boxesHtml =
+            '<div class="rule-box rule-box--go">' +
+              '<div class="rule-stim-icon">' + goSvg + '</div>' +
+              '<span class="rule-action-text rule-action-text--go">\u2192 ' + getActionLabel(combo.fieldId) + '</span>' +
+            '</div>' +
+            '<div class="rule-box rule-box--nogo">' +
+              '<div class="rule-stim-icon">' + nogoSvg + '</div>' +
+              '<span class="rule-action-text rule-action-text--nogo">\u2192 \u270B Don\'t press</span>' +
+            '</div>';
+          dom.ruleIntroContext.classList.add("hidden");
+        }
+        dom.ruleIntroBoxes.innerHTML = boxesHtml;
+        dom.ruleIntroWM.classList.add("hidden");
+
+        showScreen(dom.ruleIntroScreen);
+
+        dom.btnRuleStart.onclick = function () {
+          beginTrials();
+        };
+      }
+
+      function beginTrials() {
+        var combo = _combos[_comboIndex];
+        dom.roundLabel.textContent =
+          GAME_CONFIG.FIELDS[combo.fieldId].icon + " " +
+          GAME_CONFIG.FIELDS[combo.fieldId].rules[combo.ruleId].name;
+        dom.btnLabel.textContent = getActionLabel(combo.fieldId);
+        dom.progressBar.style.width = "0%";
+        dom.trialCurrent.textContent = "0";
+
+        showScreen(dom.playScreen);
+        _isPlaying = true;
+        dom.btnSpace.disabled = true;
+
+        var _dp = DifficultyProvider.getTrialParams({
+          fieldId: combo.fieldId,
+          ruleId: combo.ruleId,
+        });
+        Countdown.start({
+          container: dom.gameContainer,
+          seconds: _dp.countdownSeconds,
+          onComplete: function () { nextTrial(); },
+        });
+      }
+
+      function nextTrial() {
+        if (_trialIndex >= _questions.length) { endCombo(); return; }
+        if (_isPaused) return;
+
+        var question = _questions[_trialIndex];
+        var combo = _combos[_comboIndex];
+
+        dom.trialCurrent.textContent = _trialIndex + 1;
+        dom.progressBar.style.width = ((_trialIndex + 1) / _questions.length) * 100 + "%";
+
+        var _tp = DifficultyProvider.getTrialParams({
+          fieldId: combo.fieldId, ruleId: combo.ruleId,
+          trialIndex: _trialIndex, totalTrials: _questions.length, history: _trialResults,
+        });
+
+        var isiMs = _trialIndex === 0 ? 200 : _tp.isiMinMs + Math.random() * (_tp.isiMaxMs - _tp.isiMinMs);
+
+        clearStimulus();
+        dom.btnSpace.disabled = true;
+        _responded = false;
+
+        _isiTimerId = setTimeout(function () {
+          if (_isPaused) return;
+          presentStimulus(question, combo, _tp.stimulusDurationMs);
+        }, isiMs);
+      }
+
+      function presentStimulus(question, combo, duration) {
+        if (typeof SVGAssets !== "undefined") {
+          dom.bgLayer.innerHTML = SVGAssets.getBackground(combo.fieldId) || "";
+        }
+
+        if (question.context) {
+          dom.ctxIndicator.style.display = "block";
+          if (typeof SVGAssets !== "undefined") {
+            dom.ctxIndicator.innerHTML = SVGAssets.getContext(question.context, combo.fieldId) || "";
+          }
+        }
+
+        if (typeof SVGAssets !== "undefined") {
+          dom.stimulus.innerHTML = SVGAssets.get(question.stimulus, combo.fieldId) || "?";
+        } else {
+          dom.stimulus.textContent = question.stimulus;
+        }
+
+        dom.btnSpace.disabled = false;
+        _stimOnTime = Date.now();
+
+        _stimTimerId = setTimeout(function () {
+          if (!_responded) {
+            _responded = true;
+            var result = question.isGo ? "miss" : "correctRejection";
+            recordTrial(question, result, null);
+            showFeedback(result);
+          }
+        }, duration);
+      }
+
+      function onPress() {
+        if (_responded) return;
+        _responded = true;
+        clearTimeout(_stimTimerId);
+
+        var question = _questions[_trialIndex];
+        var rt = Date.now() - _stimOnTime;
+        var result = question.isGo ? "hit" : "falseAlarm";
+        recordTrial(question, result, rt);
+        showFeedback(result);
+      }
+
+      function recordTrial(question, result, rt) {
+        var isCorrect = result === "hit" || result === "correctRejection";
+        if (isCorrect) _totalCorrect++;
+        _totalTrials++;
+
+        var record = {
+          trialIndex: _trialIndex,
+          stimulus: question.stimulus,
+          context: question.context || null,
+          isGo: question.isGo,
+          correctAction: question.correctAction,
+          result: result,
+          isCorrect: isCorrect,
+          rt: rt,
+          timestamp: Date.now(),
+        };
+        _trialResults.push(record);
+
+        DifficultyProvider.onTrialComplete(record);
+
+        MultiplayerBridge.recordAnswer(record);
+        MultiplayerBridge.broadcastState({
+          progress: Math.round(((_trialIndex + 1) / _questions.length) * 100),
+          score: _totalCorrect,
+          comboName: _combos[_comboIndex] ? _combos[_comboIndex].displayName : "",
+        });
+      }
+
+      function showFeedback(result) {
+        var combo = _combos[_comboIndex];
+        var _fp = DifficultyProvider.getTrialParams({ fieldId: combo.fieldId, ruleId: combo.ruleId });
+
+        FeedbackOverlay.show({
+          gameContainer: dom.stimContainer,
+          stimulusEl: dom.stimulus,
+          result: result,
+          duration: _fp.feedbackDurationMs,
+          onComplete: function () {
+            _trialIndex++;
+            nextTrial();
+          },
+        });
+      }
+
+      function endCombo() {
+        _isPlaying = false;
+
+        DifficultyProvider.onSessionComplete({
+          fieldId: _combos[_comboIndex].fieldId,
+          ruleId: _combos[_comboIndex].ruleId,
+          trialResults: _trialResults,
+          wmResult: null,
+          passed: false,
+        });
+
+        _comboIndex++;
+        if (_comboIndex < _combos.length) {
+          beginCombo();
+        } else {
+          finishGame();
+        }
+      }
+
+      function finishGame() {
+        var accuracy = _totalTrials > 0 ? (_totalCorrect / _totalTrials * 100) : 0;
+
+        MultiplayerBridge.recordFinalScore({
+          totalScore: _totalCorrect,
+          totalCorrect: _totalCorrect,
+          totalTrials: _totalTrials,
+          accuracy: accuracy,
+          totalTime: 0,
+          answers: _trialResults,
+        });
+
+        MultiplayerBridge.goToResult();
+      }
+
+      function pause() {
+        if (!_isPlaying || _isPaused) return;
+        _isPaused = true;
+        clearTimeout(_isiTimerId);
+        clearTimeout(_stimTimerId);
+        dom.pauseOverlay.classList.add("active");
+      }
+
+      function resume() {
+        if (!_isPaused) return;
+        _isPaused = false;
+        dom.pauseOverlay.classList.remove("active");
+        if (_isPlaying) nextTrial();
+      }
+
+      function init() {
+        cacheDom();
+
+        if (!MultiplayerBridge.parseRoomInfo()) return;
+        MultiplayerBridge.initRoom();
+
+        if (typeof SimpleAdaptiveEngine !== "undefined") {
+          DifficultyProvider.setEngine(SimpleAdaptiveEngine);
+        }
+        DifficultyProvider.reset();
+
+        var role = MultiplayerBridge.getRole();
+
+        if (role === "spectator") {
+          dom.headerTitle.textContent = "Spectator Mode";
+          showScreen(dom.spectatorScreen);
+          return;
+        }
+
+        dom.headerTitle.textContent = "Multiplayer";
+
+        var roomRef = firebase.database().ref("rooms/" + MultiplayerBridge.getRoomCode());
+        roomRef.once("value").then(function (snapshot) {
+          var roomData = snapshot.val();
+          if (!roomData) {
+            alert("Room data not found");
+            location.href = "../index.html";
+            return;
+          }
+
+          var stages = roomData.gameStages || [];
+          if (stages.length === 0) {
+            _combos = [
+              { fieldId: "mouse", ruleId: "rule1", displayName: "Mouse Rule1" },
+              { fieldId: "mouse", ruleId: "rule2", displayName: "Mouse Rule2" },
+            ];
+          } else {
+            _combos = stages.map(function (stage) {
+              var fieldId = (stage.id === "A" || stage.id === "B") ? "mouse" : "fishing";
+              var ruleId = (stage.id === "A" || stage.id === "C") ? "rule1" :
+                           (stage.id === "B" || stage.id === "D") ? "rule2" : "mixed";
+              return {
+                fieldId: fieldId,
+                ruleId: ruleId,
+                displayName: (stage.icon || "") + " " + (stage.name || ""),
+              };
+            });
+          }
+
+          beginCombo();
+        });
+
+        dom.btnSpace.addEventListener("click", function () {
+          if (_isPlaying && !_responded) onPress();
+        });
+
+        document.addEventListener("keydown", function (e) {
+          if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+          if (e.code === "Space") {
+            e.preventDefault();
+            if (_isPlaying && !_responded) onPress();
+          }
+          if (e.code === "Escape" && _isPlaying && !_isPaused) pause();
+        });
+
+        dom.btnPause.addEventListener("click", function () { if (_isPlaying) pause(); });
+        dom.btnResume.addEventListener("click", resume);
+        dom.btnQuit.addEventListener("click", function () {
+          if (confirm("Quit game?")) {
+            _isPlaying = false;
+            location.href = "../index.html";
+          }
+        });
+        dom.btnBack.addEventListener("click", function () {
+          if (_isPlaying) { pause(); } else { location.href = "../index.html"; }
+        });
+
+        window.addEventListener("beforeunload", function (e) {
+          if (_isPlaying) { e.preventDefault(); e.returnValue = ""; }
+        });
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        firebase.auth().onAuthStateChanged(function (user) {
+          if (user) {
+            init();
+          }
+        });
+      });
+
+      return { onPress: onPress, pause: pause, resume: resume };
+    })();
+    </script>
+  </body>
+</html>
+'''
+
+with open(TARGET, "w", encoding="utf-8") as f:
+    f.write(CONTENT)
+
+print(f"Written {len(CONTENT)} bytes to {TARGET}")

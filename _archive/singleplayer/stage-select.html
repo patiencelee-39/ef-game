@@ -207,11 +207,19 @@
             <span class="emoji">🟡</span>
             中等
           </div>
-          <div class="difficulty-tab" data-difficulty="hard" onclick="filterByDifficulty('hard')">
+          <div
+            class="difficulty-tab"
+            data-difficulty="hard"
+            onclick="filterByDifficulty('hard')"
+          >
             <span class="emoji">🔴</span>
             困難
           </div>
-          <div class="difficulty-tab" data-difficulty="all" onclick="filterByDifficulty('all')">
+          <div
+            class="difficulty-tab"
+            data-difficulty="all"
+            onclick="filterByDifficulty('all')"
+          >
             <span class="emoji">⭐</span>
             全部
           </div>
@@ -239,7 +247,9 @@
             </div>
           </div>
           <div class="action-buttons">
-            <button class="btn-secondary" onclick="deselectStage()">取消選擇</button>
+            <button class="btn-secondary" onclick="deselectStage()">
+              取消選擇
+            </button>
             <button class="btn-primary" onclick="startGame()">開始遊戲</button>
           </div>
         </div>
@@ -248,7 +258,12 @@
         <div class="stages-grid" id="stagesGrid"></div>
 
         <div class="action-buttons" style="margin-top: 2rem">
-          <button class="btn-secondary" onclick="location.href = '../index.html'">返回首頁</button>
+          <button
+            class="btn-secondary"
+            onclick="location.href = '../index.html'"
+          >
+            返回首頁
+          </button>
         </div>
       </main>
 
@@ -263,128 +278,120 @@
       // 關卡資料
       const stages = [
         {
-          id: 'stage-1-cheese',
-          name: '起司規則',
-          emoji: '🧀',
-          description: '學習起司分類的基本規則',
-          difficulty: 'easy',
+          id: "A",
+          name: "場地A：起司森林",
+          icon: "🧀",
+          description: "學習起司分類的基本規則",
+          difficulty: "easy",
           questions: 10,
-          rule: 'cheese',
           locked: false,
         },
         {
-          id: 'stage-2-person',
-          name: '人物規則',
-          emoji: '👤',
-          description: '練習辨識不同的人物特徵',
-          difficulty: 'easy',
+          id: "B",
+          name: "場地B：人類村莊",
+          icon: "🧑",
+          description: "練習辨識不同的人物特徵",
+          difficulty: "medium",
           questions: 10,
-          rule: 'person',
           locked: false,
         },
         {
-          id: 'stage-3-fish',
-          name: '魚規則',
-          emoji: '🐟',
-          description: '挑戰魚類分類的進階規則',
-          difficulty: 'medium',
+          id: "C",
+          name: "場地C：海洋世界",
+          icon: "🐟",
+          description: "挑戰魚類分類的進階規則",
+          difficulty: "medium",
           questions: 12,
-          rule: 'fish',
           locked: false,
         },
         {
-          id: 'stage-4-mixed-easy',
-          name: '混合練習（簡單）',
-          emoji: '🎯',
-          description: '結合起司和人物規則',
-          difficulty: 'medium',
+          id: "D",
+          name: "場地D：晝夜迷宮",
+          icon: "🌙",
+          description: "結合日夜情境的挑戰",
+          difficulty: "hard",
           questions: 15,
-          rule: 'mixed',
           locked: false,
         },
         {
-          id: 'stage-5-switch',
-          name: '規則切換',
-          emoji: '🔄',
-          description: '快速切換不同的分類規則',
-          difficulty: 'hard',
+          id: "E",
+          name: "場地E：轉換星球",
+          icon: "🔄",
+          description: "快速切換不同的分類規則",
+          difficulty: "hard",
           questions: 20,
-          rule: 'switch',
           locked: false,
         },
         {
-          id: 'stage-6-mixed-hard',
-          name: '混合練習（困難）',
-          emoji: '💪',
-          description: '結合所有規則的終極挑戰',
-          difficulty: 'hard',
+          id: "F",
+          name: "場地F：耐力賽道",
+          icon: "💪",
+          description: "結合所有規則的終極挑戰",
+          difficulty: "hard",
           questions: 25,
-          rule: 'mixed',
           locked: false,
         },
         {
-          id: 'stage-7-speedrun',
-          name: '速度挑戰',
-          emoji: '⚡',
-          description: '限時完成所有題目',
-          difficulty: 'hard',
+          id: "G",
+          name: "場地G：極速挑戰",
+          icon: "⚡",
+          description: "終極速度與準確度的考驗",
+          difficulty: "hard",
           questions: 30,
-          rule: 'mixed',
-          locked: true,
-          unlockCondition: '完成前 6 關',
+          locked: false,
         },
         {
-          id: 'stage-8-master',
-          name: '大師關卡',
-          emoji: '👑',
-          description: '終極挑戰，考驗您的極限',
-          difficulty: 'hard',
+          id: "H",
+          name: "場地H：大師考驗",
+          icon: "👑",
+          description: "終極挑戰，考驗您的極限",
+          difficulty: "hard",
           questions: 50,
-          rule: 'mixed',
-          locked: true,
-          unlockCondition: '所有關卡達到 90 分',
+          locked: false,
         },
       ];
 
-      let currentFilter = 'easy';
+      let currentFilter = "easy";
       let selectedStage = null;
 
       // 載入最高分數
       function loadBestScores() {
-        const scores = JSON.parse(localStorage.getItem('bestScores') || '{}');
+        const scores = JSON.parse(localStorage.getItem("bestScores") || "{}");
         return scores;
       }
 
       // 渲染關卡
-      function renderStages(filter = 'all') {
-        const grid = document.getElementById('stagesGrid');
+      function renderStages(filter = "all") {
+        const grid = document.getElementById("stagesGrid");
         const bestScores = loadBestScores();
 
         const filteredStages =
-          filter === 'all' ? stages : stages.filter((s) => s.difficulty === filter);
+          filter === "all"
+            ? stages
+            : stages.filter((s) => s.difficulty === filter);
 
         grid.innerHTML = filteredStages
           .map((stage) => {
             const bestScore = bestScores[stage.id] || 0;
-            const lockedClass = stage.locked ? 'locked' : '';
+            const lockedClass = stage.locked ? "locked" : "";
 
             return `
             <div class="stage-card ${lockedClass}" onclick="selectStage('${stage.id}')">
-              ${stage.locked ? '<span class="lock-icon">🔒</span>' : ''}
-              <div class="emoji">${stage.emoji}</div>
+              ${stage.locked ? '<span class="lock-icon">🔒</span>' : ""}
+              <div class="emoji">${stage.icon}</div>
               <h3>${stage.name}</h3>
               <p class="description">${stage.description}</p>
               <div style="text-align: center">
                 <span class="difficulty-badge ${stage.difficulty}">
-                  ${stage.difficulty === 'easy' ? '簡單' : stage.difficulty === 'medium' ? '中等' : '困難'}
+                  ${stage.difficulty === "easy" ? "簡單" : stage.difficulty === "medium" ? "中等" : "困難"}
                 </span>
               </div>
-              ${stage.locked ? `<p style="text-align: center; color: #999; margin-top: 0.5rem; font-size: 0.85rem;">🔒 ${stage.unlockCondition}</p>` : ''}
-              ${!stage.locked && bestScore > 0 ? `<div class="best-score">🏆 最高分：${bestScore} 分</div>` : ''}
+              ${stage.locked ? `<p style="text-align: center; color: #999; margin-top: 0.5rem; font-size: 0.85rem;">🔒 ${stage.unlockCondition}</p>` : ""}
+              ${!stage.locked && bestScore > 0 ? `<div class="best-score">🏆 最高分：${bestScore} 分</div>` : ""}
             </div>
           `;
           })
-          .join('');
+          .join("");
       }
 
       // 篩選難度
@@ -392,12 +399,12 @@
         currentFilter = difficulty;
 
         // 更新按鈕狀態
-        document.querySelectorAll('.difficulty-tab').forEach((tab) => {
-          tab.classList.remove('active');
+        document.querySelectorAll(".difficulty-tab").forEach((tab) => {
+          tab.classList.remove("active");
         });
         document
           .querySelector(`.difficulty-tab[data-difficulty="${difficulty}"]`)
-          .classList.add('active');
+          .classList.add("active");
 
         renderStages(difficulty);
       }
@@ -419,23 +426,29 @@
         const bestScores = loadBestScores();
         const bestScore = bestScores[stageId] || 0;
 
-        document.getElementById('stageName').textContent = stage.name;
-        document.getElementById('stageDifficulty').textContent =
-          stage.difficulty === 'easy' ? '簡單' : stage.difficulty === 'medium' ? '中等' : '困難';
-        document.getElementById('questionCount').textContent = stage.questions;
-        document.getElementById('bestScore').textContent =
-          bestScore > 0 ? `${bestScore} 分` : '尚未挑戰';
+        document.getElementById("stageName").textContent = stage.name;
+        document.getElementById("stageDifficulty").textContent =
+          stage.difficulty === "easy"
+            ? "簡單"
+            : stage.difficulty === "medium"
+              ? "中等"
+              : "困難";
+        document.getElementById("questionCount").textContent = stage.questions;
+        document.getElementById("bestScore").textContent =
+          bestScore > 0 ? `${bestScore} 分` : "尚未挑戰";
 
-        document.getElementById('selectedInfo').classList.add('show');
+        document.getElementById("selectedInfo").classList.add("show");
 
         // 滾動到資訊區
-        document.getElementById('selectedInfo').scrollIntoView({ behavior: 'smooth' });
+        document
+          .getElementById("selectedInfo")
+          .scrollIntoView({ behavior: "smooth" });
       }
 
       // 取消選擇
       function deselectStage() {
         selectedStage = null;
-        document.getElementById('selectedInfo').classList.remove('show');
+        document.getElementById("selectedInfo").classList.remove("show");
       }
 
       // 開始遊戲
@@ -443,11 +456,10 @@
         if (!selectedStage) return;
 
         // 儲存選擇的關卡到 localStorage
-        localStorage.setItem('selectedStage', JSON.stringify(selectedStage));
+        localStorage.setItem("selectedStage", JSON.stringify(selectedStage));
 
-        alert('功能開發中：將跳轉到遊戲頁面');
-        // TODO: 跳轉到遊戲頁面
-        // location.href = `../game.html?stage=${selectedStage.id}`;
+        // 跳轉到單人遊戲頁面
+        location.href = "game.html";
       }
 
       // 初始化

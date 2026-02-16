@@ -1,0 +1,813 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>執行功能訓練遊戲 - 單人模式</title>
+
+    <style>
+      /* ========== CSS 變數 ========== */
+      :root {
+        /* 背景與文字 */
+        --bg-dark: #1a2332;
+        --text-white: #ecf0f1;
+
+        /* 主要功能色 */
+        --primary-blue: #3498db;
+        --success-green: #2ecc71;
+        --error-red: #e74c3c;
+        --accent-yellow: #f1c40f;
+
+        /* 回合代表色 */
+        --round1-orange: #e67e22;
+        --round2-red: #e74c3c;
+        --round3-purple: #9b59b6;
+        --round4-navy: #34495e;
+        --practice-cyan: #1abc9c;
+      }
+
+      /* ========== 基礎樣式 ========== */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "微軟正黑體", "Segoe UI", sans-serif;
+        background-color: var(--bg-dark);
+        color: var(--text-white);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        user-select: none;
+      }
+
+      /* ========== 畫面容器 ========== */
+      .screen {
+        display: block;
+        width: 100%;
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      .screen.hidden {
+        display: none !important;
+      }
+
+      /* ========== 遊戲區域 ========== */
+      .game-area {
+        background: rgba(52, 73, 94, 0.95);
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(10px);
+        position: relative;
+        border: 5px solid transparent;
+        transition: border-color 0.3s;
+      }
+
+      /* ========== 回合標籤 ========== */
+      .round-label {
+        display: inline-block;
+        padding: 8px 20px;
+        border-radius: 20px;
+        font-size: 1rem;
+        font-weight: bold;
+        margin-bottom: 15px;
+      }
+
+      .round-practice {
+        background: var(--practice-cyan);
+        color: white;
+      }
+
+      .round1-badge {
+        background: var(--round1-orange);
+        color: white;
+      }
+
+      .round2-badge {
+        background: var(--round2-red);
+        color: white;
+      }
+
+      .round3-badge {
+        background: var(--round3-purple);
+        color: white;
+      }
+
+      .round4-badge {
+        background: var(--round4-navy);
+        color: white;
+      }
+
+      /* ========== 試驗進度 ========== */
+      .trial-info {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .trial-display {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--accent-yellow);
+      }
+
+      .progress-bar-container {
+        width: 100%;
+        height: 8px;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 10px;
+        overflow: hidden;
+        margin-top: 10px;
+      }
+
+      .progress-bar {
+        height: 100%;
+        background: var(--primary-blue);
+        transition:
+          width 0.3s,
+          background 0.3s;
+        border-radius: 10px;
+      }
+
+      /* ========== 刺激物容器 ========== */
+      .stimulus-container {
+        position: relative;
+        width: 350px;
+        height: 450px;
+        margin: 30px auto;
+      }
+
+      .background-layer {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+      }
+
+      .stimulus {
+        position: absolute;
+        width: 150px;
+        height: 150px;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10;
+        transition: transform 0.2s;
+      }
+
+      .stimulus.pop {
+        animation: popIn 0.3s ease-out;
+      }
+
+      @keyframes popIn {
+        0% {
+          transform: translateX(-50%) scale(0);
+        }
+        50% {
+          transform: translateX(-50%) scale(1.1);
+        }
+        100% {
+          transform: translateX(-50%) scale(1);
+        }
+      }
+
+      .stimulus.correct-flash {
+        animation: correctPulse 0.5s;
+      }
+
+      @keyframes correctPulse {
+        0%,
+        100% {
+          filter: brightness(1);
+        }
+        50% {
+          filter: brightness(1.5) drop-shadow(0 0 20px var(--success-green));
+        }
+      }
+
+      .stimulus.error-flash {
+        animation: errorShake 0.5s;
+      }
+
+      @keyframes errorShake {
+        0%,
+        100% {
+          transform: translateX(-50%) translateY(0);
+        }
+        25% {
+          transform: translateX(-50%) translateY(-10px);
+        }
+        75% {
+          transform: translateX(-50%) translateY(10px);
+        }
+      }
+
+      /* ========== Person 指示器 ========== */
+      #personIndicator {
+        position: absolute;
+        width: 180px;
+        height: 180px;
+        top: 50px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 5;
+        display: none;
+        opacity: 0.85;
+      }
+
+      /* ========== 控制按鈕 ========== */
+      .control-area {
+        text-align: center;
+        margin-top: 30px;
+      }
+
+      .btn {
+        background: linear-gradient(135deg, var(--primary-blue), #2980b9);
+        color: white;
+        border: none;
+        padding: 15px 40px;
+        border-radius: 30px;
+        font-size: 1.2rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+      }
+
+      .btn:active {
+        transform: translateY(0);
+      }
+
+      .key-hint {
+        display: block;
+        font-size: 0.85rem;
+        opacity: 0.8;
+        margin-bottom: 5px;
+      }
+
+      /* ========== 開始畫面 ========== */
+      .start-screen {
+        text-align: center;
+        padding: 50px 30px;
+      }
+
+      .start-screen h1 {
+        font-size: 2.5rem;
+        margin-bottom: 20px;
+        color: var(--primary-blue);
+      }
+
+      .start-screen p {
+        font-size: 1.1rem;
+        margin-bottom: 30px;
+        color: #95a5a6;
+      }
+
+      .input-group {
+        margin: 30px 0;
+      }
+
+      .input-group input {
+        padding: 12px 20px;
+        border: 2px solid var(--primary-blue);
+        border-radius: 10px;
+        font-size: 1rem;
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        width: 100%;
+        max-width: 300px;
+      }
+
+      .input-group input::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+      }
+
+      /* ========== 介紹畫面 ========== */
+      .intro-screen {
+        text-align: center;
+        padding: 40px 30px;
+      }
+
+      .intro-screen h2 {
+        font-size: 2rem;
+        margin-bottom: 20px;
+      }
+
+      .intro-screen p {
+        font-size: 1.1rem;
+        line-height: 1.8;
+        margin-bottom: 15px;
+      }
+
+      .rule-box {
+        background: rgba(0, 0, 0, 0.3);
+        padding: 20px;
+        border-radius: 15px;
+        margin: 20px 0;
+        border-left: 5px solid var(--accent-yellow);
+      }
+
+      /* ========== 工作記憶測試 ========== */
+      .wm-test-screen {
+        text-align: center;
+        padding: 40px 30px;
+      }
+
+      .wm-question {
+        font-size: 1.5rem;
+        margin-bottom: 30px;
+        line-height: 1.6;
+      }
+
+      .wm-position-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        flex-wrap: wrap;
+        margin: 30px 0;
+      }
+
+      .wm-position-btn {
+        background: rgba(52, 152, 219, 0.2);
+        border: 3px solid var(--primary-blue);
+        border-radius: 15px;
+        padding: 20px;
+        cursor: pointer;
+        transition: all 0.3s;
+        min-width: 100px;
+      }
+
+      .wm-position-btn:hover {
+        background: rgba(52, 152, 219, 0.4);
+        transform: scale(1.05);
+      }
+
+      .wm-position-number {
+        font-size: 1rem;
+        font-weight: bold;
+        color: var(--accent-yellow);
+        margin-bottom: 10px;
+      }
+
+      .wm-position-icon {
+        font-size: 2.5rem;
+      }
+
+      .wm-position-icon.unknown {
+        opacity: 0.5;
+      }
+
+      .wm-result {
+        margin-top: 30px;
+        padding: 20px;
+        border-radius: 15px;
+      }
+
+      .wm-result.correct {
+        background: rgba(46, 204, 113, 0.2);
+        border: 2px solid var(--success-green);
+      }
+
+      .wm-result.incorrect {
+        background: rgba(231, 76, 60, 0.2);
+        border: 2px solid var(--error-red);
+      }
+
+      /* ========== 結果畫面 ========== */
+      .result-screen {
+        text-align: center;
+        padding: 40px 30px;
+      }
+
+      .result-screen h2 {
+        font-size: 2.5rem;
+        margin-bottom: 30px;
+        color: var(--success-green);
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin: 30px 0;
+      }
+
+      .stat-card {
+        background: rgba(0, 0, 0, 0.3);
+        padding: 25px;
+        border-radius: 15px;
+        border: 2px solid var(--primary-blue);
+      }
+
+      .stat-label {
+        font-size: 0.9rem;
+        color: #95a5a6;
+        margin-bottom: 10px;
+      }
+
+      .stat-value {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: var(--accent-yellow);
+      }
+
+      /* ========== 響應式設計 ========== */
+      @media (max-width: 768px) {
+        .stimulus-container {
+          width: 280px;
+          height: 380px;
+        }
+
+        .stimulus {
+          width: 120px;
+          height: 120px;
+        }
+
+        #personIndicator {
+          width: 150px;
+          height: 150px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ========== 開始畫面 ========== -->
+    <div id="startScreen" class="screen hidden">
+      <div class="start-screen">
+        <h1>🎮 執行功能訓練遊戲</h1>
+        <p>中原大學特殊教育學系研究專案</p>
+
+        <div class="rule-box" style="margin: 20px auto; max-width: 500px">
+          <p><strong>🔒 隱私權聲明：</strong></p>
+          <p style="font-size: 0.95rem; margin-top: 10px">
+            本測驗為純前端運作，數據僅暫存於瀏覽器中。
+          </p>
+        </div>
+
+        <div class="input-group">
+          <label
+            for="playerId"
+            style="
+              display: block;
+              margin-bottom: 10px;
+              font-size: 1rem;
+              opacity: 0.8;
+            "
+          >
+            請輸入座號+姓名：
+          </label>
+          <input
+            type="text"
+            id="playerId"
+            placeholder="例如：01王小明"
+            maxlength="20"
+            autocomplete="off"
+          />
+        </div>
+
+        <button
+          class="btn"
+          onclick="
+            console.log('按鈕被點擊');
+            game.showTutorial();
+            console.log('showTutorial 執行完畢');
+          "
+        >
+          開始遊戲
+        </button>
+      </div>
+    </div>
+
+    <!-- ========== 介紹畫面 ========== -->
+    <div id="introScreen" class="screen hidden">
+      <div class="intro-screen">
+        <h2>🎯 遊戲說明</h2>
+
+        <div class="rule-box">
+          <p><strong>遊戲規則：</strong></p>
+          <p>🧀 看到起司 → 按空白鍵</p>
+          <p>🐈‍⬛ 看到貓咪 → 不要按</p>
+        </div>
+
+        <p>準備好了嗎？我們先來練習幾題！</p>
+
+        <button class="btn" onclick="game.startPractice()">開始練習</button>
+      </div>
+    </div>
+
+    <!-- ========== 遊戲畫面 ========== -->
+    <div id="playScreen" class="screen hidden">
+      <div class="game-area">
+        <!-- 回合標籤 -->
+        <div class="trial-info">
+          <div id="roundLabel" class="round-label">練習模式</div>
+          <div class="trial-display">
+            第 <span id="trialDisplay">0</span> /
+            <span id="totalDisplay">0</span> 題
+          </div>
+          <div class="progress-bar-container">
+            <div id="progressBar" class="progress-bar" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <!-- 刺激物容器 -->
+        <div class="stimulus-container">
+          <div id="backgroundLayer" class="background-layer"></div>
+          <div id="personIndicator"></div>
+          <div id="stimulus" class="stimulus"></div>
+        </div>
+
+        <!-- 控制按鈕 -->
+        <div class="control-area">
+          <button id="btnSpace" class="btn" onclick="game.handleInput()">
+            <span class="key-hint">按空白鍵(或點此)</span>
+            <span>蒐集起司</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== 第二回合介紹 ========== -->
+    <div id="round2Intro" class="screen hidden">
+      <div class="intro-screen">
+        <h2>🎯 第二回合：難度升級</h2>
+
+        <div class="rule-box">
+          <p><strong>新規則：</strong></p>
+          <p><strong>沒有人時：</strong></p>
+          <p>🧀 起司 → 按 | 🐈‍⬛ 貓咪 → 不按</p>
+          <p style="margin-top: 15px">
+            <strong>有人出現時（規則相反）：</strong>
+          </p>
+          <p>🧀 起司 → 不按 | 🐈‍⬛ 貓咪 → 按</p>
+        </div>
+
+        <button class="btn" onclick="game.startRound2Practice()">
+          開始第二回合練習
+        </button>
+      </div>
+    </div>
+
+    <!-- ========== 第二回合練習說明（佔位用） ========== -->
+    <div id="round2Practice" class="screen hidden" style="display: none">
+      <!-- 此畫面保留給未來擴充使用 -->
+    </div>
+
+    <!-- ========== 工作記憶測試 (第一回合) ========== -->
+    <div id="wmTestScreen" class="screen hidden">
+      <div class="wm-test-screen">
+        <h2>🧠 工作記憶測試</h2>
+        <div id="wmQuestionText" class="wm-question"></div>
+
+        <div id="wmPositionButtons" class="wm-position-buttons"></div>
+
+        <div class="control-area">
+          <button
+            class="btn"
+            onclick="game.resetWMTest()"
+            style="background: #95a5a6; margin-right: 10px"
+          >
+            重選
+          </button>
+          <button id="wmConfirmBtn" class="btn" onclick="game.checkWMAnswer()">
+            確認答案
+          </button>
+          <button
+            id="wmContinueBtn"
+            class="btn"
+            onclick="game.continueAfterWM()"
+            style="display: none"
+          >
+            繼續遊戲
+          </button>
+        </div>
+
+        <div id="wmResultDisplay" style="display: none"></div>
+      </div>
+    </div>
+
+    <!-- ========== 工作記憶測試 (第二回合) ========== -->
+    <div id="wmTest2Screen" class="screen hidden">
+      <div class="wm-test-screen">
+        <h2>🧠 工作記憶測試</h2>
+        <div id="wmQuestion2Text" class="wm-question"></div>
+
+        <div id="wmPosition2Buttons" class="wm-position-buttons"></div>
+
+        <div class="control-area">
+          <button
+            class="btn"
+            onclick="game.resetWMTest2()"
+            style="background: #95a5a6; margin-right: 10px"
+          >
+            重選
+          </button>
+          <button
+            id="wmConfirm2Btn"
+            class="btn"
+            onclick="game.checkWMAnswer2()"
+          >
+            確認答案
+          </button>
+          <button
+            id="wmContinue2Btn"
+            class="btn"
+            onclick="game.continueAfterWM2()"
+            style="display: none"
+          >
+            繼續遊戲
+          </button>
+        </div>
+
+        <div id="wmResult2Display" style="display: none"></div>
+      </div>
+    </div>
+
+    <!-- ========== 第三回合練習 ========== -->
+    <div id="round3Practice" class="screen hidden">
+      <div class="intro-screen">
+        <h2>🎯 第三回合：海洋冒險</h2>
+
+        <div class="rule-box">
+          <p><strong>新場景：</strong></p>
+          <p>🐟 魚 → 按 | 🦈 鯊魚 → 不按</p>
+        </div>
+
+        <button class="btn" onclick="game.startRound3Practice()">
+          開始第三回合練習
+        </button>
+      </div>
+    </div>
+
+    <!-- ========== 工作記憶測試 (第三回合) ========== -->
+    <div id="wmTest3Screen" class="screen hidden">
+      <div class="wm-test-screen">
+        <h2>🧠 工作記憶測試</h2>
+        <div id="wmQuestion3Text" class="wm-question"></div>
+
+        <div id="wmPosition3Buttons" class="wm-position-buttons"></div>
+
+        <div class="control-area">
+          <button
+            class="btn"
+            onclick="game.resetWMTest3()"
+            style="background: #95a5a6; margin-right: 10px"
+          >
+            重選
+          </button>
+          <button
+            id="wmConfirm3Btn"
+            class="btn"
+            onclick="game.checkWMAnswer3()"
+          >
+            確認答案
+          </button>
+          <button
+            id="wmContinue3Btn"
+            class="btn"
+            onclick="game.continueAfterWM3()"
+            style="display: none"
+          >
+            繼續遊戲
+          </button>
+        </div>
+
+        <div id="wmResult3Display" style="display: none"></div>
+      </div>
+    </div>
+
+    <!-- ========== 第四回合練習 ========== -->
+    <div id="round4Practice" class="screen hidden">
+      <div class="intro-screen">
+        <h2>🎯 第四回合：日夜變化</h2>
+
+        <div class="rule-box">
+          <p><strong>進階規則：</strong></p>
+          <p><strong>白天：</strong> 🐟 魚 → 按 | 🦈 鯊魚 → 不按</p>
+          <p style="margin-top: 15px"><strong>晚上（月亮出現）：</strong></p>
+          <p>任何情況都 → 不按</p>
+        </div>
+
+        <button class="btn" onclick="game.startRound4Practice()">
+          開始第四回合練習
+        </button>
+      </div>
+    </div>
+
+    <!-- ========== 工作記憶測試 (第四回合) ========== -->
+    <div id="wmTest4Screen" class="screen hidden">
+      <div class="wm-test-screen">
+        <h2>🧠 工作記憶測試</h2>
+        <div id="wmQuestion4Text" class="wm-question"></div>
+
+        <div id="wmPosition4Buttons" class="wm-position-buttons"></div>
+
+        <div class="control-area">
+          <button
+            class="btn"
+            onclick="game.resetWMTest4()"
+            style="background: #95a5a6; margin-right: 10px"
+          >
+            重選
+          </button>
+          <button
+            id="wmConfirm4Btn"
+            class="btn"
+            onclick="game.checkWMAnswer4()"
+          >
+            確認答案
+          </button>
+          <button
+            id="wmContinue4Btn"
+            class="btn"
+            onclick="game.continueAfterWM4()"
+            style="display: none"
+          >
+            繼續遊戲
+          </button>
+        </div>
+
+        <div id="wmResult4Display" style="display: none"></div>
+      </div>
+    </div>
+
+    <!-- ========== 結果畫面 ========== -->
+    <div id="resultScreen" class="screen hidden">
+      <div class="result-screen">
+        <h2>🎉 遊戲完成！</h2>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">總正確數</div>
+            <div id="scoreDisplay" class="stat-value">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">平均反應時間</div>
+            <div id="avgTimeDisplay" class="stat-value">0ms</div>
+          </div>
+        </div>
+
+        <div style="margin-top: 30px">
+          <button class="btn" onclick="game.exportData()">
+            📥 匯出研究資料 (CSV)
+          </button>
+          <button
+            class="btn"
+            onclick="location.reload()"
+            style="background: #95a5a6; margin-left: 10px"
+          >
+            🔄 重新開始
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== 引入所有模組 ========== -->
+    <script src="../js/game-config.js"></script>
+    <script src="../js/svg-assets.js"></script>
+    <script src="../js/audio-controller.js"></script>
+    <script src="../js/game-logic.js"></script>
+
+    <!-- ========== 初始化遊戲 ========== -->
+    <script>
+      // 將 GameLogic 指定給全域變數 game，方便 HTML onclick 使用
+      const game = GameLogic;
+
+      // 頁面載入後顯示開始畫面
+      document.addEventListener("DOMContentLoaded", () => {
+        document.getElementById("startScreen").classList.remove("hidden");
+      });
+
+      // 鍵盤事件監聽
+      document.addEventListener("keydown", (e) => {
+        if (e.code === "Space" && game.state.isPlaying) {
+          e.preventDefault();
+          game.handleInput();
+        }
+      });
+
+      // 防止意外離開
+      window.addEventListener("beforeunload", (e) => {
+        if (game.state.isPlaying) {
+          e.preventDefault();
+          e.returnValue = "";
+        }
+      });
+
+      // Debug 輸出
+      console.log("✓ 單人遊戲系統已載入");
+      console.log("CONFIG:", CONFIG);
+      console.log("GameLogic:", GameLogic);
+    </script>
+  </body>
+</html>

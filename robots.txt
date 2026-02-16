@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /index.html
+Allow: /privacy.html
+Disallow: /singleplayer/
+Disallow: /multiplayer/
+Disallow: /management/
+Disallow: /settings/
+Disallow: /leaderboard/
+Disallow: /_archive/
+
+Sitemap: https://efgame-634af.web.app/sitemap.xml

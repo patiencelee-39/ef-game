@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;"
+    />
+    <title>隱私權政策 - 執行功能訓練遊戲</title>
+    <meta name="description" content="執行功能訓練遊戲隱私權政策 — 說明資料收集、使用與保護方式。" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#302b63" />
+    <link rel="stylesheet" href="css/themes/base.css" />
+    <link rel="stylesheet" href="css/main.css" />
+    <link rel="stylesheet" href="css/components/navbar.css" />
+    <link rel="stylesheet" href="css/components/landscape-hint.css" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei",
+          "PingFang TC", "Helvetica Neue", Arial, sans-serif;
+        background: linear-gradient(
+          135deg,
+          #0f0c29 0%,
+          #302b63 50%,
+          #24243e 100%
+        );
+        min-height: 100vh;
+        color: #e8e8e8;
+      }
+
+      .privacy-page {
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 24px 16px 120px;
+      }
+
+      /* === 返回按鈕 === */
+      .privacy-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: rgba(255, 255, 255, 0.6);
+        text-decoration: none;
+        font-size: 0.9rem;
+        margin-bottom: 16px;
+        transition: color 0.2s;
+      }
+      .privacy-back:hover {
+        color: #fff;
+      }
+
+      /* === 標題 === */
+      .privacy-page h1 {
+        text-align: center;
+        font-size: 1.5rem;
+        font-weight: 800;
+        margin-bottom: 8px;
+        background: linear-gradient(135deg, #a8edea, #fed6e3);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .privacy-update {
+        text-align: center;
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.65);
+        margin-bottom: 24px;
+      }
+
+      /* === 區塊卡片 === */
+      .privacy-section {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 18px 16px;
+        margin-bottom: 16px;
+        backdrop-filter: blur(8px);
+      }
+      .privacy-section h2 {
+        font-size: 1rem;
+        font-weight: 700;
+        margin: 0 0 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #fff;
+      }
+      .privacy-section p,
+      .privacy-section li {
+        font-size: 0.9rem;
+        line-height: 1.7;
+        color: rgba(255, 255, 255, 0.8);
+      }
+      .privacy-section ul {
+        list-style: none;
+        padding: 0;
+        margin: 8px 0 0;
+      }
+      .privacy-section ul li {
+        padding: 4px 0 4px 20px;
+        position: relative;
+      }
+      .privacy-section ul li::before {
+        content: "•";
+        position: absolute;
+        left: 4px;
+        color: #ffd700;
+        font-weight: bold;
+      }
+
+      .privacy-highlight {
+        background: rgba(255, 215, 0, 0.1);
+        border: 1px solid rgba(255, 215, 0, 0.2);
+        border-radius: 12px;
+        padding: 14px 16px;
+        margin: 12px 0 0;
+      }
+      .privacy-highlight p {
+        color: #ffd700 !important;
+        font-weight: 600;
+        font-size: 0.88rem !important;
+      }
+
+      /* === 聯絡 === */
+      .privacy-contact {
+        text-align: center;
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.7);
+        margin-top: 24px;
+        line-height: 1.6;
+      }
+      .privacy-contact a {
+        color: #a8edea;
+        text-decoration: none;
+      }
+      .privacy-contact a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="privacy-page" id="main-content">
+      <a href="settings/index.html" class="privacy-back">← 返回設定</a>
+
+      <h1>🔒 隱私權政策</h1>
+      <p class="privacy-update">最後更新日期：2026 年 2 月 15 日</p>
+
+      <!-- ==================== -->
+      <!-- 📋 總覽               -->
+      <!-- ==================== -->
+      <div class="privacy-section">
+        <h2>📋 總覽</h2>
+        <p>
+          「執行功能訓練遊戲」是一款專為 3–6
+          歲聽障學齡前幼兒設計的學術研究專案。我們非常重視使用者隱私，尤其針對未成年兒童的個人資料保護。本政策說明我們如何蒐集、使用及保護您的資料。
+        </p>
+      </div>
+
+      <!-- ==================== -->
+      <!-- 👶 兒童隱私           -->
+      <!-- ==================== -->
+      <div class="privacy-section">
+        <h2>👶 兒童隱私保護</h2>
+        <p>
+          本應用程式的目標使用者可能為 16 歲以下兒童，因此我們採取以下特別措施：
+        </p>
+        <ul>
+          <li>
+            學生帳號<strong>不使用 Google 登入</strong>，僅以匿名方式進行遊戲
+          </li>
+          <li>學生不需要提供任何個人識別資訊（姓名、電子郵件等）</li>
+          <li>所有學生遊戲紀錄以<strong>匿名暱稱</strong>呈現</li>
+          <li>僅教師帳號可選擇使用 Google 登入進行班級管理</li>
+        </ul>
+        <div class="privacy-highlight">
+          <p>⚠️ 本應用程式不會蒐集任何兒童的個人識別資訊。</p>
+        </div>
+      </div>
+
+      <!-- ==================== -->
+      <!-- 💾 資料蒐集           -->
+      <!-- ==================== -->
+      <div class="privacy-section">
+        <h2>💾 資料蒐集與儲存</h2>
+        <p>我們蒐集的資料類型及儲存方式如下：</p>
+        <ul>
+          <li>
+            <strong>本機儲存（localStorage）</strong
+            >：遊戲偏好設定、音量設定、寵物狀態、裝扮選擇等，這些資料僅儲存在您的裝置上，不會傳送至任何伺服器
+          </li>
+          <li>
+            <strong>雲端資料庫（Firebase Firestore / Realtime Database）</strong
+            >：排行榜分數紀錄（僅包含暱稱與分數）、多人遊戲房間狀態、班級排行榜資料
+          </li>
+          <li>
+            <strong>教師帳號</strong>：若選擇 Google 登入，將儲存 Google
+            帳號的顯示名稱與電子郵件，用於班級管理功能
+          </li>
+        </ul>
+      </div>
+
+      <!-- ==================== -->
+      <!-- 🎯 資料用途           -->
+      <!-- ==================== -->
+      <div class="privacy-section">
+        <h2>🎯 資料使用目的</h2>
+        <p>蒐集的資料僅用於以下用途：</p>
+        <ul>
+          <li>提供遊戲功能（排行榜、多人遊戲配對、自適應難度調整）</li>
+          <li>儲存遊戲進度與偏好設定</li>
+          <li>學術研究分析（僅使用匿名化、去識別化資料）</li>
+          <li>教師進行班級管理與學生進度追蹤</li>
+        </ul>
+        <div class="privacy-highlight">
+          <p>📊 本專案為學術研究用途，所有研究資料皆經過去識別化處理。</p>
+        </div>
+      </div>
+
+      <!-- ==================== -->
+      <!-- 🔐 資料安全           -->
+      <!-- ==================== -->
+      <div class="privacy-section">
+        <h2>🔐 資料安全</h2>
+        <p>我們採取以下措施保護您的資料：</p>
+        <ul>
+          <li>使用 Firebase Security Rules 限制資料存取權限</li>
+          <li>所有網路傳輸使用 HTTPS 加密</li>
+          <li>實施 Content Security Policy（CSP）防止跨站腳本攻擊</li>
+          <li>敏感資料不儲存於前端程式碼中</li>
+        </ul>
+      </div>
+
+      <!-- ==================== -->
+      <!-- 🌐 第三方服務         -->
+      <!-- ==================== -->
+      <div class="privacy-section">
+        <h2>🌐 第三方服務</h2>
+        <p>本應用程式使用以下第三方服務：</p>
+        <ul>
+          <li>
+            <strong>Google Firebase</strong
+            >：提供資料庫、身份驗證及網頁託管服務。Firebase 的隱私權政策請參閱
+            <a
+              href="https://firebase.google.com/support/privacy"
+              target="_blank"
+              rel="noopener noreferrer"
+              style="color: #a8edea"
+              >Firebase Privacy Policy</a
+            >
+          </li>
+        </ul>
+        <p style="margin-top: 8px">
+          我們不使用任何追蹤工具（如 Google
+          Analytics）、廣告服務或社群媒體追蹤器。
+        </p>
+      </div>
+
+      <!-- ==================== -->
+      <!-- ✏️ 權利               -->
+      <!-- ==================== -->
+      <div class="privacy-section">
+        <h2>✏️ 您的權利</h2>
+        <p>您隨時可以：</p>
+        <ul>
+          <li>在設定頁面清除本機遊戲資料（localStorage）</li>
+          <li>要求刪除排行榜上的紀錄</li>
+          <li>要求取得我們所持有之關於您的所有資料副本</li>
+          <li>要求我們停止使用您的資料</li>
+        </ul>
+      </div>
+
+      <!-- ==================== -->
+      <!-- 📝 政策更新           -->
+      <!-- ==================== -->
+      <div class="privacy-section">
+        <h2>📝 政策更新</h2>
+        <p>
+          本隱私權政策可能不定期修訂。重大變更時，我們將在應用程式中公告通知。建議您定期檢閱本政策以瞭解最新內容。
+        </p>
+      </div>
+
+      <!-- 聯絡 -->
+      <p class="privacy-contact">
+        如有任何隱私相關問題，請聯絡開發者：<br />
+        Patience Lee ｜ 學術研究專案
+      </p>
+    </main>
+
+    <script src="js/shared/navbar.js"></script>
+    <script src="js/shared/landscape-hint.js"></script>
+  </body>
+</html>

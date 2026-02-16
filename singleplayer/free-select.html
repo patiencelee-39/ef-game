@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;"
+    />
+    <title>自由選擇 — 執行功能訓練遊戲</title>
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="../manifest.json" />
+    <meta name="theme-color" content="#302b63" />
+    <link rel="stylesheet" href="../css/themes/base.css" />
+    <link rel="stylesheet" href="../css/main.css" />
+    <link rel="stylesheet" href="../css/components/landscape-hint.css" />
+    <style>
+      ==================================== */ body {
+        padding: var(--spacing-md);
+      }
+
+      .free-select-container {
+        max-width: 720px;
+        margin: 0 auto;
+      }
+
+      /* --- Header --- */
+      .fs-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: var(--spacing-lg);
+      }
+
+      .btn-back {
+        background: none;
+        border: none;
+        color: var(--text-white);
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 8px;
+        min-width: var(--touch-target-min);
+        min-height: var(--touch-target-min);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background var(--transition-fast);
+      }
+
+      .btn-back:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .fs-title {
+        font-size: var(--font-size-xxl);
+        color: var(--text-white);
+        font-weight: 900;
+      }
+
+      /* --- 遊戲場選擇 --- */
+      .section-label {
+        font-size: var(--font-size-md);
+        color: var(--text-light);
+        margin-bottom: var(--spacing-xs);
+        font-weight: 600;
+      }
+
+      .field-selector {
+        display: flex;
+        gap: 12px;
+        margin-bottom: var(--spacing-md);
+        flex-wrap: wrap;
+      }
+
+      .field-btn {
+        flex: 1;
+        min-width: 140px;
+        padding: 16px;
+        border-radius: var(--border-radius-lg);
+        border: 2px solid rgba(255, 255, 255, 0.15);
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-white);
+        font-size: var(--font-size-lg);
+        font-weight: 700;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        text-align: center;
+        min-height: var(--touch-target-min);
+      }
+
+      .field-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.3);
+      }
+
+      .field-btn.selected {
+        border-color: var(--primary-blue);
+        background: rgba(52, 152, 219, 0.2);
+      }
+
+      /* --- 規則選擇 --- */
+      .rule-selector {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: var(--spacing-md);
+      }
+
+      .rule-option {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: var(--border-radius-md);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.03);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        min-height: var(--touch-target-min);
+        /* button reset */
+        font: inherit;
+        color: inherit;
+        text-align: left;
+        width: 100%;
+      }
+
+      .rule-option:hover {
+        background: rgba(255, 255, 255, 0.06);
+      }
+
+      .rule-option.selected {
+        border-color: var(--primary-blue);
+        background: rgba(52, 152, 219, 0.15);
+      }
+
+      .rule-checkbox {
+        width: 24px;
+        height: 24px;
+        border-radius: 4px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition: all var(--transition-fast);
+      }
+
+      .rule-option.selected .rule-checkbox {
+        background: var(--primary-blue);
+        border-color: var(--primary-blue);
+      }
+
+      .rule-option.selected .rule-checkbox::after {
+        content: "✓";
+        color: #fff;
+        font-weight: 900;
+        font-size: 14px;
+      }
+
+      .rule-info {
+        flex: 1;
+      }
+
+      .rule-name {
+        font-size: var(--font-size-md);
+        color: var(--text-white);
+        font-weight: 600;
+      }
+
+      .rule-desc {
+        font-size: var(--font-size-xs);
+        color: var(--text-light);
+        margin-top: 2px;
+      }
+
+      /* --- WM 開關 --- */
+      .wm-toggle-section {
+        margin-bottom: var(--spacing-md);
+        padding: 16px;
+        border-radius: var(--border-radius-lg);
+        background: rgba(92, 107, 192, 0.1);
+        border: 1px solid rgba(92, 107, 192, 0.2);
+      }
+
+      .wm-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        /* button reset */
+        background: none;
+        border: none;
+        padding: 0;
+        font: inherit;
+        color: inherit;
+        width: 100%;
+      }
+
+      .wm-label {
+        font-size: var(--font-size-md);
+        color: var(--text-white);
+        font-weight: 600;
+      }
+
+      .toggle-switch {
+        width: 52px;
+        height: 28px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 14px;
+        position: relative;
+        transition: background var(--transition-fast);
+        cursor: pointer;
+      }
+
+      .toggle-switch.active {
+        background: var(--wm-color);
+      }
+
+      .toggle-switch::after {
+        content: "";
+        position: absolute;
+        width: 22px;
+        height: 22px;
+        background: #fff;
+        border-radius: 50%;
+        top: 3px;
+        left: 3px;
+        transition: transform var(--transition-fast);
+      }
+
+      .toggle-switch.active::after {
+        transform: translateX(24px);
+      }
+
+      /* --- 題數選擇 --- */
+      .question-count-section {
+        margin-bottom: var(--spacing-lg);
+      }
+
+      .count-slider-row {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .count-slider {
+        flex: 1;
+        -webkit-appearance: none;
+        appearance: none;
+        height: 6px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 3px;
+        outline: none;
+      }
+
+      .count-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: var(--primary-blue);
+        cursor: pointer;
+      }
+
+      .count-value {
+        font-size: var(--font-size-lg);
+        color: var(--accent-yellow);
+        font-weight: 900;
+        min-width: 50px;
+        text-align: center;
+      }
+
+      /* --- 組合預覽 --- */
+      .combo-preview {
+        margin-bottom: var(--spacing-md);
+        padding: 16px;
+        border-radius: var(--border-radius-lg);
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .combo-list {
+        list-style: none;
+        padding: 0;
+      }
+
+      .combo-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        color: var(--text-light);
+        font-size: var(--font-size-sm);
+      }
+
+      .combo-item:last-child {
+        border-bottom: none;
+      }
+
+      .combo-item-name {
+        font-weight: 600;
+        color: var(--text-white);
+      }
+
+      .combo-item-meta {
+        font-size: var(--font-size-xs);
+        color: var(--text-light);
+      }
+
+      .no-combo-msg {
+        text-align: center;
+        color: var(--text-light);
+        font-size: var(--font-size-sm);
+        padding: 16px;
+      }
+
+      /* --- 開始按鈕 --- */
+      .btn-start-game {
+        width: 100%;
+        padding: 16px;
+        font-size: var(--font-size-lg);
+        font-weight: 900;
+        border-radius: var(--border-radius-lg);
+        border: none;
+        background: var(--success-green);
+        color: #fff;
+        cursor: pointer;
+        min-height: var(--touch-target-min);
+        transition: all var(--transition-fast);
+      }
+
+      .btn-start-game:hover {
+        background: #27ae60;
+      }
+
+      .btn-start-game:disabled {
+        background: rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.3);
+        cursor: not-allowed;
+      }
+
+      /* --- 響應式 --- */
+      @media (max-width: 480px) {
+        .fs-title {
+          font-size: var(--font-size-xl);
+        }
+
+        .field-btn {
+          min-width: 100px;
+          padding: 12px;
+          font-size: var(--font-size-md);
+        }
+      }
+    </style>
+    <link rel="stylesheet" href="../css/components/navbar.css" />
+  </head>
+  <body>
+    <main class="free-select-container" id="main-content">
+      <!-- Header -->
+      <div class="fs-header">
+        <button
+          class="btn-back"
+          onclick="ModeController.goToAdventureMap()"
+          aria-label="返回探險地圖"
+        >
+          ←
+        </button>
+        <h1 class="fs-title">🆓 自由選擇</h1>
+      </div>
+
+      <!-- 遊戲場選擇 -->
+      <p class="section-label">選擇遊戲場</p>
+      <div class="field-selector" id="field-selector">
+        <button
+          class="field-btn"
+          data-field="mouse"
+          onclick="toggleField('mouse')"
+        >
+          🐭 小老鼠
+        </button>
+        <button
+          class="field-btn"
+          data-field="fishing"
+          onclick="toggleField('fishing')"
+        >
+          🐟 釣魚
+        </button>
+      </div>
+
+      <!-- 規則選擇 -->
+      <p class="section-label">選擇規則</p>
+      <div class="rule-selector" id="rule-selector">
+        <button
+          class="rule-option"
+          type="button"
+          data-rule="rule1"
+          onclick="toggleRule('rule1')"
+          role="checkbox"
+          aria-checked="false"
+        >
+          <div class="rule-checkbox" aria-hidden="true"></div>
+          <div class="rule-info">
+            <div class="rule-name">規則一（建立規則）</div>
+            <div class="rule-desc">訓練抑制控制</div>
+          </div>
+        </button>
+        <button
+          class="rule-option"
+          type="button"
+          data-rule="rule2"
+          onclick="toggleRule('rule2')"
+          role="checkbox"
+          aria-checked="false"
+        >
+          <div class="rule-checkbox" aria-hidden="true"></div>
+          <div class="rule-info">
+            <div class="rule-name">規則二（規則轉換）</div>
+            <div class="rule-desc">訓練認知彈性</div>
+          </div>
+        </button>
+        <button
+          class="rule-option"
+          type="button"
+          data-rule="mixed"
+          onclick="toggleRule('mixed')"
+          role="checkbox"
+          aria-checked="false"
+        >
+          <div class="rule-checkbox" aria-hidden="true"></div>
+          <div class="rule-info">
+            <div class="rule-name">混合規則</div>
+            <div class="rule-desc">訓練工作記憶 + 認知彈性</div>
+          </div>
+        </button>
+      </div>
+
+      <!-- WM 開關 -->
+      <div class="wm-toggle-section">
+        <button
+          type="button"
+          class="wm-toggle"
+          onclick="toggleWM()"
+          role="switch"
+          aria-checked="false"
+          aria-label="工作記憶測驗"
+        >
+          <span class="wm-label">🧠 工作記憶測驗</span>
+          <div class="toggle-switch" id="wm-toggle" aria-hidden="true"></div>
+        </button>
+      </div>
+
+      <!-- 題數 -->
+      <div class="question-count-section">
+        <p class="section-label">每規則題數</p>
+        <div class="count-slider-row">
+          <input
+            type="range"
+            class="count-slider"
+            id="count-slider"
+            min="6"
+            max="30"
+            step="2"
+            value="6"
+            aria-label="每規則題數"
+            oninput="updateQuestionCount(this.value)"
+          />
+          <span class="count-value" id="count-value">6</span>
+        </div>
+      </div>
+
+      <!-- 組合預覽 -->
+      <div class="combo-preview">
+        <p class="section-label">組合預覽</p>
+        <ul class="combo-list" id="combo-list">
+          <li class="no-combo-msg">請選擇遊戲場和規則</li>
+        </ul>
+      </div>
+
+      <!-- 開始按鈕 -->
+      <button
+        class="btn-start-game"
+        id="btn-start"
+        disabled
+        onclick="startGame()"
+      >
+        ▶️ 開始遊戲
+      </button>
+    </main>
+
+    <!-- JS 依賴 -->
+    <script src="../js/game-config.js"></script>
+    <script src="../js/adventure-maps-config.js"></script>
+    <script src="../js/utils/storage.js"></script>
+    <script src="../js/utils/score-calculator.js"></script>
+    <script src="../js/utils/level-calculator.js"></script>
+    <script src="../js/utils/badge-checker.js"></script>
+    <script src="../js/shared/game-session-builder.js"></script>
+    <script src="../js/singleplayer/progress-tracker.js"></script>
+    <script src="../js/singleplayer/mode-controller.js"></script>
+
+    <script>
+      // =========================================
+      // 自由選擇頁面控制
+      // =========================================
+
+      var selectedFields = [];
+      var selectedRules = [];
+      var wmEnabled = false;
+      var questionCount = 6;
+
+      // ─── 遊戲場 Toggle ───
+      function toggleField(fieldId) {
+        var idx = selectedFields.indexOf(fieldId);
+        if (idx === -1) {
+          selectedFields.push(fieldId);
+        } else {
+          selectedFields.splice(idx, 1);
+        }
+
+        document.querySelectorAll(".field-btn").forEach(function (btn) {
+          btn.classList.toggle(
+            "selected",
+            selectedFields.indexOf(btn.dataset.field) !== -1,
+          );
+        });
+
+        updatePreview();
+      }
+
+      // ─── 規則 Toggle ───
+      function toggleRule(ruleId) {
+        var idx = selectedRules.indexOf(ruleId);
+        if (idx === -1) {
+          selectedRules.push(ruleId);
+        } else {
+          selectedRules.splice(idx, 1);
+        }
+
+        document.querySelectorAll(".rule-option").forEach(function (opt) {
+          var isSelected = selectedRules.indexOf(opt.dataset.rule) !== -1;
+          opt.classList.toggle("selected", isSelected);
+          opt.setAttribute("aria-checked", isSelected ? "true" : "false");
+        });
+
+        updatePreview();
+      }
+
+      // ─── WM Toggle ───
+      function toggleWM() {
+        wmEnabled = !wmEnabled;
+        document
+          .getElementById("wm-toggle")
+          .classList.toggle("active", wmEnabled);
+        // 更新 ARIA switch 狀態
+        var wmBtn = document.querySelector(".wm-toggle");
+        if (wmBtn)
+          wmBtn.setAttribute("aria-checked", wmEnabled ? "true" : "false");
+        updatePreview();
+      }
+
+      // ─── 題數更新 ───
+      function updateQuestionCount(val) {
+        questionCount = parseInt(val, 10);
+        document.getElementById("count-value").textContent = questionCount;
+        updatePreview();
+      }
+
+      // ─── 組合預覽 ───
+      function updatePreview() {
+        var combos = buildCombos();
+        var list = document.getElementById("combo-list");
+        var startBtn = document.getElementById("btn-start");
+
+        if (combos.length === 0) {
+          list.innerHTML = '<li class="no-combo-msg">請選擇遊戲場和規則</li>';
+          startBtn.disabled = true;
+          return;
+        }
+
+        startBtn.disabled = false;
+        list.innerHTML = "";
+
+        combos.forEach(function (combo, idx) {
+          var li = document.createElement("li");
+          li.className = "combo-item";
+
+          var fieldConfig = GAME_CONFIG.FIELDS[combo.fieldId];
+          var ruleName =
+            combo.ruleId === "rule1"
+              ? "規則一"
+              : combo.ruleId === "rule2"
+                ? "規則二"
+                : "混合規則";
+
+          var actualCount =
+            combo.ruleId === "mixed"
+              ? questionCount * GAME_CONFIG.QUESTIONS.MIXED_MULTIPLIER
+              : questionCount;
+
+          li.innerHTML =
+            '<span class="combo-item-name">' +
+            (idx + 1) +
+            ". " +
+            (fieldConfig ? fieldConfig.icon : "") +
+            " " +
+            (fieldConfig ? fieldConfig.name : combo.fieldId) +
+            " × " +
+            ruleName +
+            (combo.hasWM ? " 🧠" : "") +
+            "</span>" +
+            '<span class="combo-item-meta">' +
+            actualCount +
+            "題</span>";
+
+          list.appendChild(li);
+        });
+      }
+
+      // ─── 建立組合 ───
+      function buildCombos() {
+        var combos = [];
+        selectedFields.forEach(function (fieldId) {
+          selectedRules.forEach(function (ruleId) {
+            combos.push({
+              fieldId: fieldId,
+              ruleId: ruleId,
+              hasWM: wmEnabled,
+              questionCount: questionCount,
+            });
+          });
+        });
+        return combos;
+      }
+
+      // ─── 開始遊戲 ───
+      function startGame() {
+        var combos = buildCombos();
+        if (combos.length === 0) return;
+        ModeController.startFreeSelectGame(combos);
+      }
+
+      // ─── 初始化 ───
+      document.addEventListener("DOMContentLoaded", function () {
+        // 確認是否有自由選擇權限
+        if (!ProgressTracker.isFreeSelectAvailable()) {
+          alert("🔒 " + FREE_SELECT_UNLOCK.message);
+          ModeController.goToAdventureMap();
+          return;
+        }
+
+        // 讀取偏好題數
+        var savedCount = getQuestionCountPreference();
+        if (savedCount) {
+          questionCount = savedCount;
+          document.getElementById("count-slider").value = savedCount;
+          document.getElementById("count-value").textContent = savedCount;
+        }
+      });
+    </script>
+    <script src="../js/shared/navbar.js"></script>
+    <script src="../js/shared/landscape-hint.js"></script>
+  </body>
+</html>

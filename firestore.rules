@@ -1,0 +1,88 @@
+rules_version = '2';
+
+// ====================================
+// Firestore 安全規則
+// ====================================
+// 對應：排行榜系統（二軌制）
+//
+// 用途：
+//   1. 📋 班級排行榜（classLeaderboards）— 持久化，老師不刪就一直在
+//   2. 🌐 世界排行榜（worldLeaderboard）— 匿名上傳，覆蓋或過期刪除
+// ====================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─────────────────────────────────
+    // 📋 班級排行榜（持久化，老師管理）
+    // 路徑：/classLeaderboards/{boardId}/entries/{entryId}
+    // boardId = 老師建立時自動產生的 ID
+    // ─────────────────────────────────
+    match /classLeaderboards/{boardId} {
+      // ✅ 看板元資料：任何已驗證用戶可讀取
+      allow read: if request.auth != null;
+
+      // ✅ 建立看板：已驗證用戶可建立（記錄 ownerId）
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasAll(['ownerId', 'boardName', 'createdAt'])
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.boardName is string
+        && request.resource.data.boardName.size() >= 1
+        && request.resource.data.boardName.size() <= 50;
+
+      // ✅ 更新/刪除：僅看板擁有者
+      allow update, delete: if request.auth != null
+        && resource.data.ownerId == request.auth.uid;
+
+      match /entries/{entryId} {
+        // ✅ 任何已驗證用戶可讀取（持有代碼/連結即可看）
+        allow read: if request.auth != null;
+
+        // ✅ 任何已驗證用戶可寫入（學生匿名上傳）
+        allow create, update: if request.auth != null
+          && request.resource.data.keys().hasAll(['nickname', 'score', 'accuracy', 'uploadedAt'])
+          && request.resource.data.nickname is string
+          && request.resource.data.nickname.size() >= 1
+          && request.resource.data.nickname.size() <= 20
+          && request.resource.data.score is int
+          && request.resource.data.score >= 0
+          && request.resource.data.score <= 99999
+          && request.resource.data.keys().size() <= 15;
+
+        // ✅ 刪除：看板擁有者 或 上傳者本人
+        allow delete: if request.auth != null
+          && (get(/databases/$(database)/documents/classLeaderboards/$(boardId)).data.ownerId == request.auth.uid
+              || resource.data.uid == request.auth.uid);
+      }
+    }
+
+    // ─────────────────────────────────
+    // 🌐 世界排行榜（匿名即可上傳，覆蓋或過期刪除）
+    // 路徑：/worldLeaderboard/{docId}
+    // docId = auth.uid（匿名 UID）
+    // ─────────────────────────────────
+    match /worldLeaderboard/{docId} {
+      // ✅ 任何已驗證用戶可讀取排行榜
+      allow read: if request.auth != null;
+
+      // ✅ 已驗證用戶可建立/更新自己的資料
+      allow create, update: if request.auth != null
+        && docId == request.auth.uid
+        && request.resource.data.nickname is string
+        && request.resource.data.nickname.size() >= 1
+        && request.resource.data.nickname.size() <= 20
+        && request.resource.data.keys().size() <= 20;
+
+      // ✅ 只能刪除自己的資料
+      allow delete: if request.auth != null
+        && docId == request.auth.uid;
+    }
+
+    // ─────────────────────────────────
+    // 🚫 其他所有集合：預設拒絕
+    // ─────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

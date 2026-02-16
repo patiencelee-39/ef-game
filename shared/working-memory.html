@@ -1,0 +1,246 @@
+<!--
+  ============================================
+  工作記憶測驗 — HTML Template
+  ============================================
+  對應需求文件：§3.4, Flow-13
+  載入方式：DOM Fragment（E1:b）
+  說明：此檔案由 working-memory.js 的 init() 載入，
+       插入到 game.html 的指定容器中。
+       不是獨立頁面，不需 <html><head> 等結構。
+
+  UI 結構：
+    1. 方向指示（順向/逆向）
+    2. 位置按鈕格（最多 6 個 toggle 按鈕）
+    3. 確認按鈕
+    4. 結果顯示區域
+  ============================================
+-->
+
+<div class="wm-test" role="region" aria-label="工作記憶測驗">
+  <!-- === 方向指示 === -->
+  <div class="wm-header">
+    <p class="wm-direction-label" aria-live="polite">👉 請照順序點選！</p>
+    <p class="wm-instruction">點擊按鈕切換答案：❓ → 刺激物A → 刺激物B → ❓</p>
+  </div>
+
+  <!-- === 位置按鈕格 === -->
+  <div class="wm-grid" role="group" aria-label="記憶位置按鈕">
+    <!--
+      最多 6 個按鈕（由 JS 動態控制顯示數量）
+      每個按鈕支援 toggle 循環點擊
+    -->
+    <button
+      class="wm-position-btn"
+      type="button"
+      data-position="0"
+      data-toggle-index="0"
+      aria-label="位置 1"
+    >
+      ❓
+    </button>
+    <button
+      class="wm-position-btn"
+      type="button"
+      data-position="1"
+      data-toggle-index="0"
+      aria-label="位置 2"
+    >
+      ❓
+    </button>
+    <button
+      class="wm-position-btn"
+      type="button"
+      data-position="2"
+      data-toggle-index="0"
+      aria-label="位置 3"
+    >
+      ❓
+    </button>
+    <button
+      class="wm-position-btn"
+      type="button"
+      data-position="3"
+      data-toggle-index="0"
+      aria-label="位置 4"
+    >
+      ❓
+    </button>
+    <button
+      class="wm-position-btn"
+      type="button"
+      data-position="4"
+      data-toggle-index="0"
+      aria-label="位置 5"
+    >
+      ❓
+    </button>
+    <button
+      class="wm-position-btn"
+      type="button"
+      data-position="5"
+      data-toggle-index="0"
+      aria-label="位置 6"
+    >
+      ❓
+    </button>
+  </div>
+
+  <!-- === 確認按鈕 === -->
+  <div class="wm-actions">
+    <button class="wm-confirm-btn btn btn-primary" type="button" disabled>
+      ✅ 確認
+    </button>
+  </div>
+
+  <!-- === 結果顯示區域 === -->
+  <div class="wm-result" style="display: none" role="status" aria-live="polite">
+    <!-- 由 working-memory.js 動態填入結果 -->
+  </div>
+</div>
+
+<!--
+  ============================================
+  WM 測驗內嵌樣式（隨 template 載入）
+  ============================================
+  注意：此區塊使用 <style> 標籤確保 template 載入時
+  樣式即生效，不需額外引入 CSS 檔案。
+  ============================================
+-->
+<style>
+  .wm-test {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    padding: 32px 16px;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  .wm-header {
+    text-align: center;
+  }
+
+  .wm-direction-label {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text-white, #fff);
+  }
+
+  .wm-instruction {
+    font-size: 0.9rem;
+    color: var(--text-light, #aaa);
+  }
+
+  /* --- 位置按鈕格 --- */
+  .wm-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .wm-position-btn {
+    width: 80px;
+    height: 80px;
+    font-size: 2.5rem;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    cursor: pointer;
+    transition:
+      transform 0.15s ease,
+      border-color 0.2s ease,
+      background-color 0.2s ease;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .wm-position-btn:hover {
+    transform: scale(1.08);
+    border-color: rgba(255, 255, 255, 0.6);
+  }
+
+  .wm-position-btn:active {
+    transform: scale(0.95);
+  }
+
+  /* Toggle 後有選擇的按鈕 */
+  .wm-position-btn[data-toggle-index="1"],
+  .wm-position-btn[data-toggle-index="2"] {
+    border-color: var(--primary, #3498db);
+    background: rgba(52, 152, 219, 0.2);
+  }
+
+  /* 系統亮起中 */
+  .wm-position-btn.wm-highlight {
+    border-color: #f39c12;
+    background: rgba(243, 156, 18, 0.3);
+    animation: wm-glow 0.8s ease-in-out;
+    pointer-events: none;
+  }
+
+  @keyframes wm-glow {
+    0% {
+      box-shadow: 0 0 0 0 rgba(243, 156, 18, 0.7);
+    }
+    50% {
+      box-shadow: 0 0 20px 8px rgba(243, 156, 18, 0.4);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(243, 156, 18, 0);
+    }
+  }
+
+  /* --- 確認按鈕 --- */
+  .wm-actions {
+    display: flex;
+    justify-content: center;
+  }
+
+  .wm-confirm-btn {
+    padding: 12px 48px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    border-radius: 8px;
+    transition: opacity 0.2s ease;
+  }
+
+  .wm-confirm-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* --- 結果區域 --- */
+  .wm-result {
+    width: 100%;
+    padding: 16px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-white, #fff);
+  }
+
+  .wm-result-summary p {
+    margin: 4px 0;
+    font-size: 1rem;
+  }
+
+  /* === 響應式 === */
+  @media (max-width: 480px) {
+    .wm-position-btn {
+      width: 64px;
+      height: 64px;
+      font-size: 2rem;
+    }
+
+    .wm-direction-label {
+      font-size: 1.25rem;
+    }
+  }
+</style>

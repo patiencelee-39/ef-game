@@ -1,0 +1,708 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;"
+    />
+    <title>換裝商店 — 執行功能訓練遊戲</title>
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="../manifest.json" />
+    <meta name="theme-color" content="#302b63" />
+    <link rel="stylesheet" href="../css/themes/base.css" />
+    <link rel="stylesheet" href="../css/main.css" />
+    <link rel="stylesheet" href="../css/components/landscape-hint.css" />
+    <style>
+      ==================================== */ body {
+        padding: 0;
+        margin: 0;
+        overflow-x: hidden;
+        background: var(--bg-dark);
+        color: var(--text-white);
+      }
+
+      .shop-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 16px;
+        background: rgba(26, 35, 50, 0.92);
+        backdrop-filter: blur(8px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .btn-back {
+        background: none;
+        border: none;
+        color: var(--text-white);
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 8px;
+        transition: background var(--transition-fast);
+        min-width: var(--touch-target-min);
+        min-height: var(--touch-target-min);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .btn-back:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .header-title {
+        font-size: var(--font-size-lg);
+        font-weight: 700;
+      }
+
+      .stars-display {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: var(--font-size-md);
+        color: var(--accent-yellow);
+        font-weight: 700;
+      }
+
+      /* --- 主內容 --- */
+      .shop-main {
+        margin-top: 60px;
+        padding: 16px;
+        padding-bottom: 100px;
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      /* --- 預覽區 --- */
+      .preview-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: var(--border-radius-xl);
+        padding: 24px;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+
+      .preview-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3.5rem;
+        margin: 0 auto 12px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        position: relative;
+        transition: all var(--transition-normal);
+      }
+
+      /* 頭像框效果 */
+      .preview-avatar.avatar-frame-ocean {
+        border-color: #3498db;
+        box-shadow: 0 0 15px rgba(52, 152, 219, 0.5);
+      }
+      .preview-avatar.avatar-frame-star {
+        border-color: #ffd700;
+        box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+      }
+      .preview-avatar.avatar-frame-rainbow {
+        border: 3px solid transparent;
+        background-clip: padding-box;
+        box-shadow:
+          0 0 0 3px #ff6b6b,
+          0 0 0 6px #ffd700,
+          0 0 0 9px #2ecc71;
+      }
+      .preview-avatar.avatar-frame-fire {
+        border-color: #e74c3c;
+        box-shadow: 0 0 20px rgba(231, 76, 60, 0.6);
+        animation: fire-glow 2s ease-in-out infinite;
+      }
+      .preview-avatar.avatar-frame-crown {
+        border-color: #f39c12;
+        box-shadow:
+          0 0 20px rgba(243, 156, 18, 0.5),
+          inset 0 0 10px rgba(243, 156, 18, 0.2);
+      }
+
+      @keyframes fire-glow {
+        0%,
+        100% {
+          box-shadow: 0 0 15px rgba(231, 76, 60, 0.4);
+        }
+        50% {
+          box-shadow: 0 0 25px rgba(231, 76, 60, 0.8);
+        }
+      }
+
+      /* 配飾效果 */
+      .preview-accessory {
+        position: absolute;
+        font-size: 1.5rem;
+      }
+      .preview-accessory.avatar-acc-bow {
+        top: -8px;
+        right: -8px;
+      }
+      .preview-accessory.avatar-acc-sunglasses {
+        top: 35%;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      .preview-accessory.avatar-acc-flower {
+        top: -5px;
+        left: -5px;
+      }
+      .preview-accessory.avatar-acc-sparkle {
+        top: -12px;
+        right: -12px;
+        animation: sparkle-spin 3s linear infinite;
+      }
+      .preview-accessory.avatar-acc-heart {
+        bottom: -8px;
+        right: -8px;
+        animation: heart-float 2s ease-in-out infinite;
+      }
+      .preview-accessory.avatar-acc-wings {
+        top: 20%;
+        left: -20px;
+        font-size: 2rem;
+      }
+
+      @keyframes sparkle-spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+      @keyframes heart-float {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-5px);
+        }
+      }
+
+      .preview-label {
+        font-size: var(--font-size-sm);
+        color: var(--text-light);
+      }
+
+      /* --- 分類 Tab --- */
+      .category-tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+
+      .category-tab {
+        flex: 1;
+        padding: 10px 16px;
+        font-size: var(--font-size-sm);
+        font-weight: 600;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 20px;
+        background: none;
+        color: var(--text-light);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        min-height: 44px;
+      }
+      .category-tab.active {
+        background: var(--primary-blue);
+        color: #fff;
+        border-color: var(--primary-blue);
+      }
+
+      /* --- 物品網格 --- */
+      .item-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 12px;
+      }
+
+      .item-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-radius: var(--border-radius-lg);
+        padding: 16px 12px;
+        text-align: center;
+        transition: all var(--transition-fast);
+        cursor: pointer;
+      }
+
+      .item-card:hover {
+        transform: translateY(-2px);
+        border-color: rgba(255, 255, 255, 0.25);
+      }
+      .item-card.locked {
+        opacity: 0.35;
+        filter: grayscale(1);
+      }
+      .item-card.locked:hover {
+        transform: none;
+      }
+      .item-card.owned {
+        border-color: var(--success-green);
+        background: rgba(46, 204, 113, 0.08);
+      }
+      .item-card.equipped {
+        border-color: var(--accent-yellow);
+        background: rgba(255, 215, 0, 0.1);
+        box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+      }
+
+      .lock-label {
+        font-size: var(--font-size-xs);
+        color: rgba(255, 255, 255, 0.7);
+        margin-top: 4px;
+      }
+
+      .item-emoji {
+        font-size: 2.5rem;
+        margin-bottom: 8px;
+      }
+      .item-name {
+        font-size: var(--font-size-sm);
+        font-weight: 700;
+        margin-bottom: 4px;
+      }
+      .item-cost {
+        font-size: var(--font-size-xs);
+        color: var(--accent-yellow);
+      }
+      .item-status {
+        font-size: var(--font-size-xs);
+        font-weight: 600;
+        margin-top: 4px;
+      }
+      .item-status.status-owned {
+        color: var(--success-green);
+      }
+      .item-status.status-equipped {
+        color: var(--accent-yellow);
+      }
+
+      /* --- 購買 Popup --- */
+      .buy-popup {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 200;
+        background: rgba(0, 0, 0, 0.6);
+        align-items: center;
+        justify-content: center;
+      }
+      .buy-popup.visible {
+        display: flex;
+      }
+
+      .buy-card {
+        background: #1e2d3d;
+        border: 2px solid rgba(255, 255, 255, 0.15);
+        border-radius: var(--border-radius-xl);
+        padding: 32px 24px;
+        max-width: 320px;
+        width: 90%;
+        text-align: center;
+        animation: popup-in 0.3s ease-out;
+      }
+
+      @keyframes popup-in {
+        0% {
+          opacity: 0;
+          transform: scale(0.9) translateY(20px);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1) translateY(0);
+        }
+      }
+
+      .buy-emoji {
+        font-size: 4rem;
+        margin-bottom: 12px;
+      }
+      .buy-name {
+        font-size: var(--font-size-xl);
+        font-weight: 900;
+        margin-bottom: 4px;
+      }
+      .buy-desc {
+        font-size: var(--font-size-sm);
+        color: var(--text-light);
+        margin-bottom: 12px;
+      }
+      .buy-price {
+        font-size: var(--font-size-lg);
+        color: var(--accent-yellow);
+        font-weight: 700;
+        margin-bottom: 20px;
+      }
+
+      .buy-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+      }
+
+      .buy-actions button {
+        padding: 12px 24px;
+        font-size: var(--font-size-md);
+        font-weight: 700;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        min-width: 100px;
+        min-height: var(--touch-target-min);
+        transition: all var(--transition-fast);
+      }
+
+      .btn-buy {
+        background: var(--success-green);
+        color: #fff;
+      }
+      .btn-buy:hover {
+        background: #27ae60;
+      }
+      .btn-buy:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        background: #555;
+      }
+      .btn-equip-action {
+        background: var(--primary-blue);
+        color: #fff;
+      }
+      .btn-unequip {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-light);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      .btn-popup-cancel {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-light);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      /* --- 響應式 --- */
+      @media (max-width: 400px) {
+        .item-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 8px;
+        }
+        .item-emoji {
+          font-size: 2rem;
+        }
+      }
+    </style>
+    <link rel="stylesheet" href="../css/components/navbar.css" />
+  </head>
+  <body>
+    <header class="shop-header">
+      <div class="header-left">
+        <button class="btn-back" onclick="goBack()" aria-label="返回">←</button>
+        <span class="header-title">🛍️ 換裝商店</span>
+      </div>
+      <div class="stars-display">⭐ <span id="available-stars">0</span></div>
+    </header>
+
+    <main class="shop-main" id="main-content">
+      <h1 class="sr-only">換裝商店</h1>
+      <!-- 預覽區 -->
+      <div class="preview-card">
+        <div class="preview-avatar" id="preview-avatar">
+          <span id="preview-level-icon">🥚</span>
+        </div>
+        <div class="preview-label" id="preview-label">目前造型</div>
+      </div>
+
+      <!-- 分類 Tab -->
+      <div class="category-tabs" id="category-tabs">
+        <button
+          class="category-tab active"
+          data-category="frame"
+          onclick="filterCategory('frame')"
+        >
+          🖼️ 頭像框
+        </button>
+        <button
+          class="category-tab"
+          data-category="accessory"
+          onclick="filterCategory('accessory')"
+        >
+          ✨ 配飾
+        </button>
+      </div>
+
+      <!-- 物品網格 -->
+      <div class="item-grid" id="item-grid"></div>
+    </main>
+
+    <!-- 購買 / 裝備 Popup -->
+    <div
+      class="buy-popup"
+      id="buy-popup"
+      role="dialog"
+      aria-modal="true"
+      aria-label="商品操作"
+    >
+      <div class="buy-card">
+        <div class="buy-emoji" id="popup-emoji">—</div>
+        <div class="buy-name" id="popup-name">—</div>
+        <div class="buy-desc" id="popup-desc">—</div>
+        <div class="buy-price" id="popup-price">—</div>
+        <div class="buy-actions" id="popup-actions"></div>
+      </div>
+    </div>
+
+    <script src="../js/game-config.js"></script>
+    <script src="../js/utils/storage.js"></script>
+    <script src="../js/utils/level-calculator.js"></script>
+    <script src="../js/shop/avatar-config.js"></script>
+    <script src="../js/shop/avatar-manager.js"></script>
+
+    <script>
+      var currentCategory = "frame";
+      var selectedItemId = null;
+
+      document.addEventListener("DOMContentLoaded", function () {
+        refreshAll();
+      });
+
+      function goBack() {
+        if (
+          document.referrer &&
+          document.referrer.indexOf("adventure-map") !== -1
+        ) {
+          history.back();
+        } else {
+          window.location.href = "adventure-map.html";
+        }
+      }
+
+      function refreshAll() {
+        updateStarsDisplay();
+        updatePreview();
+        renderItemGrid(currentCategory);
+      }
+
+      function updateStarsDisplay() {
+        document.getElementById("available-stars").textContent =
+          getAvailableStars();
+      }
+
+      function updatePreview() {
+        var el = document.getElementById("preview-avatar");
+        var equipped = getEquippedItems();
+        var totalStars = getTotalStars();
+        var levelDef = getLevelByStars(totalStars);
+
+        // 設定等級圖示
+        document.getElementById("preview-level-icon").textContent = levelDef
+          ? levelDef.icon
+          : "🥚";
+
+        // 清除舊 frame class
+        el.className = "preview-avatar";
+
+        // 套用頭像框
+        if (equipped.frame) {
+          var frameItem = getAvatarItemById(equipped.frame);
+          if (frameItem) el.classList.add(frameItem.cssClass);
+        }
+
+        // 移除舊配飾
+        var oldAcc = el.querySelector(".preview-accessory");
+        if (oldAcc) oldAcc.remove();
+
+        // 套用配飾
+        if (equipped.accessory) {
+          var accItem = getAvatarItemById(equipped.accessory);
+          if (accItem) {
+            var accEl = document.createElement("span");
+            accEl.className = "preview-accessory " + accItem.cssClass;
+            accEl.textContent = accItem.emoji;
+            el.appendChild(accEl);
+          }
+        }
+
+        var label = levelDef ? levelDef.icon + " " + levelDef.name : "";
+        document.getElementById("preview-label").textContent =
+          label + " 的造型";
+      }
+
+      function filterCategory(catId) {
+        currentCategory = catId;
+        document.querySelectorAll(".category-tab").forEach(function (tab) {
+          tab.classList.toggle("active", tab.dataset.category === catId);
+        });
+        renderItemGrid(catId);
+      }
+
+      function renderItemGrid(category) {
+        var grid = document.getElementById("item-grid");
+        grid.innerHTML = "";
+
+        var items = AvatarManager.getAllItemsWithStatus(category);
+
+        items.forEach(function (entry) {
+          var card = document.createElement("div");
+
+          if (entry.locked) {
+            card.className = "item-card locked";
+            card.innerHTML =
+              '<div class="item-emoji">🔒</div>' +
+              '<div class="item-name">' +
+              entry.item.name +
+              "</div>" +
+              '<div class="lock-label">🐣 Lv.' +
+              entry.requiredLevel +
+              " 解鎖</div>";
+            // 鎖定物品不可點擊
+          } else {
+            card.className =
+              "item-card" +
+              (entry.equipped ? " equipped" : entry.owned ? " owned" : "");
+
+            card.innerHTML =
+              '<div class="item-emoji">' +
+              entry.item.emoji +
+              "</div>" +
+              '<div class="item-name">' +
+              entry.item.name +
+              "</div>" +
+              (entry.equipped
+                ? '<div class="item-status status-equipped">✅ 使用中</div>'
+                : entry.owned
+                  ? '<div class="item-status status-owned">已擁有</div>'
+                  : '<div class="item-cost">⭐ ' + entry.item.cost + "</div>");
+
+            card.addEventListener("click", function () {
+              showPopup(entry);
+            });
+          }
+
+          grid.appendChild(card);
+        });
+      }
+
+      function showPopup(entry) {
+        selectedItemId = entry.item.id;
+        document.getElementById("popup-emoji").textContent = entry.item.emoji;
+        document.getElementById("popup-name").textContent = entry.item.name;
+        document.getElementById("popup-desc").textContent = entry.item.desc;
+
+        var actionsEl = document.getElementById("popup-actions");
+        actionsEl.innerHTML = "";
+
+        if (entry.equipped) {
+          // 已裝備 → 卸下
+          document.getElementById("popup-price").textContent = "使用中";
+          var btnUnequip = document.createElement("button");
+          btnUnequip.className = "btn-unequip";
+          btnUnequip.textContent = "卸下";
+          btnUnequip.onclick = function () {
+            handleUnequip(entry.item.category);
+          };
+          actionsEl.appendChild(btnUnequip);
+        } else if (entry.owned) {
+          // 已擁有 → 裝備
+          document.getElementById("popup-price").textContent = "已擁有";
+          var btnEquip = document.createElement("button");
+          btnEquip.className = "btn-equip-action";
+          btnEquip.textContent = "裝備";
+          btnEquip.onclick = function () {
+            handleEquip(entry.item.id);
+          };
+          actionsEl.appendChild(btnEquip);
+        } else {
+          // 未擁有 → 購買
+          document.getElementById("popup-price").textContent =
+            "⭐ " + entry.item.cost;
+          var canBuy = AvatarManager.canBuyItem(entry.item.id);
+          var btnBuy = document.createElement("button");
+          btnBuy.className = "btn-buy";
+          btnBuy.textContent = "購買";
+          btnBuy.disabled = !canBuy.canBuy;
+          btnBuy.onclick = function () {
+            handleBuy(entry.item.id);
+          };
+          actionsEl.appendChild(btnBuy);
+        }
+
+        var btnCancel = document.createElement("button");
+        btnCancel.className = "btn-popup-cancel";
+        btnCancel.textContent = "關閉";
+        btnCancel.onclick = closePopup;
+        actionsEl.appendChild(btnCancel);
+
+        document.getElementById("buy-popup").classList.add("visible");
+      }
+
+      function closePopup() {
+        document.getElementById("buy-popup").classList.remove("visible");
+        selectedItemId = null;
+      }
+
+      function handleBuy(itemId) {
+        var result = AvatarManager.buyItem(itemId);
+        if (result.success) {
+          // 自動裝備
+          AvatarManager.equip(itemId);
+          closePopup();
+          refreshAll();
+        } else {
+          alert(result.reason);
+        }
+      }
+
+      function handleEquip(itemId) {
+        AvatarManager.equip(itemId);
+        closePopup();
+        refreshAll();
+      }
+
+      function handleUnequip(slot) {
+        AvatarManager.unequip(slot);
+        closePopup();
+        refreshAll();
+      }
+
+      // 點擊外部關閉
+      document
+        .getElementById("buy-popup")
+        .addEventListener("click", function (e) {
+          if (e.target === this) closePopup();
+        });
+    </script>
+    <script src="../js/shared/navbar.js"></script>
+    <script src="../js/shared/landscape-hint.js"></script>
+  </body>
+</html>

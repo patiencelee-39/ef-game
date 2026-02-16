@@ -1,732 +1,1602 @@
 <!doctype html>
-<html lang="zh-TW">
+<html lang="zh-TW" data-theme="field-primary">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>遊戲中 - 執行功能遊戲</title>
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://www.googleapis.com" crossorigin />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app"
+    />
+    <title>執行功能訓練遊戲 — 多人模式</title>
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="../manifest.json" />
+    <meta name="theme-color" content="#302b63" />
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../css/themes/base.css" />
+    <link rel="stylesheet" href="../css/main.css" />
+    <link rel="stylesheet" href="../css/components/landscape-hint.css" />
+
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
+      /* ====================================
+       多人遊戲頁面專用樣式
+       ==================================== */
 
-      body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      .game-page {
+        width: 100%;
+        max-width: 640px;
         min-height: 100vh;
-        overflow: hidden;
-        user-select: none;
-      }
-
-      .game-container {
         display: flex;
         flex-direction: column;
-        height: 100vh;
-        padding: 20px;
+        margin: 0 auto;
+        padding: 0;
       }
 
-      /* 頂部資訊欄 */
-      .top-bar {
+      .game-header {
         display: flex;
+        align-items: center;
         justify-content: space-between;
-        align-items: center;
-        background: rgba(255, 255, 255, 0.95);
-        border-radius: 15px;
-        padding: 15px 25px;
-        margin-bottom: 20px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        padding: 8px 16px;
+        background: rgba(0, 0, 0, 0.3);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        flex-shrink: 0;
       }
 
-      .stage-info {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-      }
-
-      .stage-icon {
-        font-size: 2rem;
-      }
-
-      .stage-details h2 {
-        font-size: 1.2rem;
-        color: #2d3436;
-        margin-bottom: 3px;
-      }
-
-      .stage-progress {
-        font-size: 0.9rem;
-        color: #636e72;
-      }
-
-      .score-display {
-        text-align: right;
-      }
-
-      .score-label {
-        font-size: 0.85rem;
-        color: #636e72;
-        margin-bottom: 3px;
-      }
-
-      .score-value {
-        font-size: 1.8rem;
-        font-weight: bold;
-        color: #667eea;
-      }
-
-      /* 主遊戲區域 */
-      .game-area {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-      }
-
-      .stimulus-display {
-        background: white;
-        border-radius: 30px;
-        width: 400px;
-        height: 400px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 12rem;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        transition: all 0.2s;
-        position: relative;
-      }
-
-      .stimulus-display.day-context {
-        background: linear-gradient(135deg, #74b9ff 0%, #a29bfe 100%);
-      }
-
-      .stimulus-display.night-context {
-        background: linear-gradient(135deg, #2d3436 0%, #0984e3 100%);
-      }
-
-      .stimulus-display.correct {
-        animation: correct 0.5s;
-      }
-
-      .stimulus-display.wrong {
-        animation: wrong 0.5s;
-      }
-
-      @keyframes correct {
-        0%,
-        100% {
-          transform: scale(1);
-        }
-        50% {
-          transform: scale(1.1);
-          box-shadow: 0 0 50px rgba(85, 239, 196, 0.8);
-        }
-      }
-
-      @keyframes wrong {
-        0%,
-        100% {
-          transform: translateX(0);
-        }
-        25% {
-          transform: translateX(-20px);
-        }
-        75% {
-          transform: translateX(20px);
-        }
-      }
-
-      .context-indicator {
-        position: absolute;
-        top: 20px;
-        left: 20px;
-        font-size: 3rem;
-        opacity: 0.3;
-      }
-
-      /* 底部控制區 */
-      .bottom-bar {
-        display: flex;
-        justify-content: center;
-        gap: 30px;
-        padding: 20px;
-      }
-
-      .control-hint {
-        background: rgba(255, 255, 255, 0.95);
-        border-radius: 15px;
-        padding: 20px 40px;
+      .game-header-title {
+        font-size: var(--font-size-md);
+        font-weight: 700;
+        color: var(--text-white);
         text-align: center;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        flex: 1;
       }
 
-      .control-hint.active {
-        background: linear-gradient(135deg, #55efc4 0%, #00b894 100%);
-        color: white;
-        transform: scale(1.05);
-      }
-
-      .key-display {
-        font-size: 2rem;
-        font-weight: bold;
-        margin-bottom: 5px;
-      }
-
-      .key-label {
-        font-size: 0.9rem;
-        opacity: 0.8;
-      }
-
-      /* 計時器 */
-      .timer {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        background: rgba(255, 255, 255, 0.95);
-        border-radius: 50%;
-        width: 80px;
-        height: 80px;
+      .header-btn {
+        background: none;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: var(--text-white);
+        font-size: 1.4rem;
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        min-height: 44px;
+        border-radius: var(--border-radius-md);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.5rem;
-        font-weight: bold;
-        color: #667eea;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        padding: 0;
+        cursor: pointer;
       }
 
-      .timer.warning {
-        color: #ff7675;
-        animation: pulse 1s infinite;
-      }
-
-      @keyframes pulse {
-        0%,
-        100% {
-          transform: scale(1);
-        }
-        50% {
-          transform: scale(1.1);
-        }
-      }
-
-      /* 反饋訊息 */
-      .feedback {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 3rem;
-        font-weight: bold;
-        opacity: 0;
-        pointer-events: none;
-        text-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-      }
-
-      .feedback.show {
-        animation: feedbackShow 0.8s;
-      }
-
-      @keyframes feedbackShow {
-        0% {
-          opacity: 0;
-          transform: translate(-50%, -50%) scale(0.5);
-        }
-        50% {
-          opacity: 1;
-          transform: translate(-50%, -50%) scale(1.2);
-        }
-        100% {
-          opacity: 0;
-          transform: translate(-50%, -50%) scale(1);
-        }
-      }
-
-      /* 讀秒準備 */
-      .countdown-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.8);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-      }
-
-      .countdown-number {
-        font-size: 15rem;
-        font-weight: bold;
-        color: white;
-        animation: countdownPulse 1s ease-in-out;
-      }
-
-      @keyframes countdownPulse {
-        0% {
-          transform: scale(0);
-          opacity: 0;
-        }
-        50% {
-          transform: scale(1.2);
-          opacity: 1;
-        }
-        100% {
-          transform: scale(1);
-          opacity: 1;
-        }
-      }
-
-      /* 載入中 */
-      .loading-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.9);
+      .game-play-area {
+        flex: 1;
+        position: relative;
         display: flex;
         flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-        color: white;
+        overflow: hidden;
+        background: var(--bg-dark);
+        border: 3px solid rgba(255, 255, 255, 0.1);
+        border-radius: var(--border-radius-lg);
+        margin: 8px;
       }
 
-      .loading-spinner {
-        border: 5px solid rgba(255, 255, 255, 0.3);
-        border-top: 5px solid white;
-        border-radius: 50%;
+      .trial-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 16px;
+        background: rgba(0, 0, 0, 0.2);
+        flex-shrink: 0;
+      }
+
+      .round-label {
+        font-size: var(--font-size-sm);
+        font-weight: 700;
+        color: var(--accent-yellow);
+        white-space: nowrap;
+      }
+      .trial-counter {
+        font-size: var(--font-size-sm);
+        color: var(--text-light);
+        white-space: nowrap;
+      }
+      .progress-bar-container {
+        flex: 1;
+        height: 8px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+        overflow: hidden;
+      }
+      .progress-bar {
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          var(--success-green),
+          var(--primary-blue)
+        );
+        border-radius: 4px;
+        transition: width 0.3s ease;
+        width: 0%;
+      }
+
+      .stimulus-container {
+        flex: 1;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 200px;
+        border-radius: var(--border-radius-md);
+        margin: 8px;
+        transition:
+          border-color 0.3s ease,
+          background 0.3s ease;
+        overflow: hidden;
+      }
+      #backgroundLayer {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #backgroundLayer svg {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      #contextIndicator {
+        position: absolute;
+        top: 12px;
+        right: 12px;
         width: 60px;
         height: 60px;
-        animation: spin 1s linear infinite;
-        margin-bottom: 20px;
+        z-index: 5;
+        display: none;
+      }
+      #contextIndicator svg {
+        width: 100%;
+        height: 100%;
+      }
+      #stimulus {
+        position: relative;
+        z-index: 10;
+        width: 120px;
+        height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s ease;
+      }
+      #stimulus svg {
+        width: 100%;
+        height: 100%;
       }
 
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
+      .control-area {
+        padding: 12px 16px;
+        text-align: center;
+        flex-shrink: 0;
+      }
+      .btn-key {
+        width: 100%;
+        max-width: 400px;
+        min-height: var(--touch-target-game);
+        font-size: var(--font-size-lg);
+        font-weight: 700;
+        background: linear-gradient(
+          135deg,
+          var(--primary-blue) 0%,
+          #2980b9 100%
+        );
+        color: var(--text-white);
+        border: none;
+        border-radius: var(--border-radius-lg);
+        box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+        cursor: pointer;
+        touch-action: manipulation;
+        transition: transform 0.1s ease;
+      }
+      .btn-key:active {
+        transform: scale(0.96);
+      }
+      .btn-key:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+      .key-hint {
+        display: block;
+        font-size: var(--font-size-xs);
+        font-weight: 400;
+        opacity: 0.7;
+        margin-top: 4px;
+      }
+
+      .screen {
+        display: none;
+      }
+      .screen.active {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+      }
+
+      .rule-intro {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 24px;
+        padding: 24px;
+        text-align: center;
+        animation: fade-in 0.4s ease-out;
+      }
+      @keyframes fade-in {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
         }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .rule-intro h2 {
+        font-size: var(--font-size-xl);
+        color: var(--text-white);
+      }
+      .rule-box-group {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        width: 100%;
+        max-width: 360px;
+      }
+      .rule-box {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        padding: 16px;
+        border-radius: var(--border-radius-md);
+        font-size: var(--font-size-lg);
+      }
+      .rule-box--go {
+        background: rgba(46, 204, 113, 0.15);
+        border: 2px solid rgba(46, 204, 113, 0.3);
+      }
+      .rule-box--nogo {
+        background: rgba(231, 76, 60, 0.15);
+        border: 2px solid rgba(231, 76, 60, 0.3);
+      }
+      .rule-stim-icon {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .rule-stim-icon svg {
+        width: 100%;
+        height: 100%;
+      }
+      .rule-action-text {
+        font-weight: 700;
+        font-size: var(--font-size-lg);
+      }
+      .rule-action-text--go {
+        color: var(--success-green);
+      }
+      .rule-action-text--nogo {
+        color: var(--error-red);
+      }
+      .wm-notice-tag {
+        padding: 8px 16px;
+        border-radius: 6px;
+        background: rgba(92, 107, 192, 0.15);
+        border: 1px solid rgba(92, 107, 192, 0.3);
+        color: var(--wm-color);
+        font-weight: 600;
+      }
+      .context-notice {
+        font-size: var(--font-size-sm);
+        color: var(--text-light);
+        max-width: 300px;
+      }
+
+      #pause-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        z-index: 1500;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 24px;
+      }
+      #pause-overlay.active {
+        display: flex;
+      }
+      #pause-overlay h2 {
+        font-size: var(--font-size-xxl);
+        color: var(--text-white);
+      }
+
+      /* --- 離開確認覆蓋層 --- */
+      #exit-confirm-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.88);
+        z-index: 2000;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        padding: 24px;
+        text-align: center;
+      }
+      #exit-confirm-overlay.active {
+        display: flex;
+      }
+      #exit-confirm-overlay h2 {
+        font-size: var(--font-size-xxl);
+        color: var(--text-white);
+      }
+      #exit-confirm-overlay p {
+        color: var(--text-light);
+        max-width: 280px;
+        line-height: 1.6;
+      }
+      .exit-confirm-btns {
+        display: flex;
+        gap: 12px;
+        margin-top: 8px;
+      }
+
+      #wm-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 800;
+        background: var(--bg-dark);
+        overflow-y: auto;
+      }
+      #combo-transition-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 800;
+        background: var(--bg-dark);
+        overflow-y: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .spectator-dashboard {
+        flex: 1;
+        padding: 24px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      .spectator-dashboard h2 {
+        font-size: 1.6rem;
+        text-align: center;
+        color: var(--text-white);
+      }
+      .spectator-player-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .spectator-player-card {
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .spectator-player-card .avatar {
+        font-size: 2rem;
+      }
+      .spectator-player-card .info {
+        flex: 1;
+      }
+      .spectator-player-card .name {
+        font-weight: 700;
+        color: var(--text-white);
+        margin-bottom: 4px;
+      }
+      .spectator-player-card .status {
+        font-size: 0.85rem;
+        color: var(--text-light);
+      }
+      .spectator-player-card .score {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--accent-yellow);
+      }
+
+      @media (max-width: 480px) {
+        .game-play-area {
+          margin: 4px;
+        }
+        #stimulus {
+          width: 100px;
+          height: 100px;
+        }
+        .rule-stim-icon {
+          width: 48px;
+          height: 48px;
+        }
+      }
+      @media (min-width: 769px) {
+        #stimulus {
+          width: 140px;
+          height: 140px;
+        }
+      }
+
+      /* === 即時 Mini 排行榜 === */
+      .live-leaderboard {
+        position: fixed;
+        top: 60px;
+        right: 8px;
+        width: 180px;
+        background: rgba(0, 0, 0, 0.75);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 12px;
+        padding: 8px;
+        z-index: 900;
+        backdrop-filter: blur(8px);
+        font-size: 0.8rem;
+        transition:
+          opacity 0.3s,
+          transform 0.3s;
+      }
+      .live-leaderboard.collapsed {
+        transform: translateX(160px);
+        opacity: 0.4;
+      }
+      .live-leaderboard.collapsed:hover {
+        opacity: 0.8;
+      }
+      .live-lb__title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 0.75rem;
+        color: var(--accent-yellow);
+        font-weight: 700;
+        margin-bottom: 6px;
+        cursor: pointer;
+      }
+      .live-lb__toggle {
+        font-size: 0.85rem;
+        cursor: pointer;
+        background: none;
+        border: none;
+        color: var(--text-light);
+        padding: 2px 4px;
+      }
+      .live-lb__row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 4px;
+        border-radius: 6px;
+        margin-bottom: 2px;
+      }
+      .live-lb__row.is-me {
+        background: rgba(255, 215, 0, 0.15);
+        border: 1px solid rgba(255, 215, 0, 0.25);
+      }
+      .live-lb__rank {
+        width: 18px;
+        text-align: center;
+        font-weight: 700;
+        color: var(--text-white);
+        flex-shrink: 0;
+      }
+      .live-lb__name {
+        flex: 1;
+        color: var(--text-light);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .live-lb__score {
+        font-weight: 700;
+        color: var(--accent-yellow);
+        flex-shrink: 0;
+      }
+      .live-lb__offline {
+        opacity: 0.4;
+      }
+      .live-lb__bar {
+        height: 3px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+        margin-top: 2px;
+        overflow: hidden;
+      }
+      .live-lb__bar-fill {
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          var(--success-green),
+          var(--primary-blue)
+        );
+        transition: width 0.5s ease;
+      }
+      /* 等待其他玩家覆蓋 */
+      #waiting-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        z-index: 2500;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        color: var(--text-white);
+        text-align: center;
+      }
+      #waiting-overlay.active {
+        display: flex;
+      }
+      #waiting-overlay h2 {
+        font-size: 1.8rem;
+      }
+      #waiting-overlay .waiting-count {
+        font-size: 1.1rem;
+        color: var(--text-light);
+      }
+      #waiting-overlay .waiting-dots span {
+        animation: blink 1.4s infinite;
+        animation-fill-mode: both;
+      }
+      #waiting-overlay .waiting-dots span:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      #waiting-overlay .waiting-dots span:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+      @keyframes blink {
+        0%,
+        80%,
         100% {
-          transform: rotate(360deg);
+          opacity: 0;
         }
-      }
-
-      @media (max-width: 768px) {
-        .stimulus-display {
-          width: 280px;
-          height: 280px;
-          font-size: 8rem;
-        }
-
-        .top-bar {
-          flex-direction: column;
-          gap: 15px;
-          text-align: center;
-        }
-
-        .control-hint {
-          padding: 15px 25px;
+        40% {
+          opacity: 1;
         }
       }
     </style>
   </head>
+
   <body>
-    <div class="game-container">
-      <!-- 頂部資訊 -->
-      <div class="top-bar">
-        <div class="stage-info">
-          <div class="stage-icon" id="stageIcon">🧀</div>
-          <div class="stage-details">
-            <h2 id="stageName">場地A：起司森林</h2>
-            <div class="stage-progress">
-              題目 <span id="currentQuestion">1</span> / <span id="totalQuestions">10</span>
+    <a href="#main-content" class="skip-link">跳到主要內容</a>
+    <main class="game-page" id="main-content">
+      <h1 class="sr-only">多人遊戲</h1>
+      <div class="game-header">
+        <button id="btnBack" class="header-btn" aria-label="返回" title="返回">
+          &#x2190;
+        </button>
+        <div id="headerTitle" class="game-header-title">多人模式 — 載入中…</div>
+        <button id="btnPause" class="header-btn" aria-label="暫停" title="暫停">
+          &#x23F8;
+        </button>
+      </div>
+
+      <div class="game-play-area" id="gameContainer">
+        <div id="rule-intro-screen" class="screen">
+          <div class="rule-intro">
+            <h2 id="ruleIntroTitle"></h2>
+            <div id="ruleIntroBoxes" class="rule-box-group"></div>
+            <div id="ruleIntroContext" class="context-notice hidden"></div>
+            <div id="ruleIntroWM" class="wm-notice-tag hidden">
+              &#x1F9E0; 本組含工作記憶測驗
+            </div>
+            <button id="btnRuleStart" class="btn btn-primary">
+              &#x25B6;&#xFE0F; 開始
+            </button>
+          </div>
+        </div>
+
+        <div id="play-screen" class="screen">
+          <div class="trial-info">
+            <span id="roundLabel" class="round-label"></span>
+            <span class="trial-counter" aria-live="polite" aria-atomic="true">
+              <span id="trialCurrent">0</span> / <span id="trialTotal">0</span>
+            </span>
+            <div
+              class="progress-bar-container"
+              role="progressbar"
+              aria-valuenow="0"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-label="遊戲進度"
+            >
+              <div id="progressBar" class="progress-bar"></div>
+            </div>
+          </div>
+          <div class="stimulus-container" id="stimulusContainer">
+            <div id="backgroundLayer"></div>
+            <div id="contextIndicator"></div>
+            <div id="stimulus"></div>
+          </div>
+          <div class="control-area">
+            <button id="btnSpace" class="btn-key" disabled>
+              <span id="btnLabel">準備中…</span>
+              <span class="key-hint">按空白鍵 或 點此</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="spectator-screen" class="screen">
+          <div class="spectator-dashboard">
+            <h2>&#x1F441;&#xFE0F; 觀戰模式</h2>
+            <p style="text-align: center; color: var(--text-light)">
+              即時查看所有玩家進度
+            </p>
+            <div id="spectatorPlayerList" class="spectator-player-list">
+              <p style="text-align: center; color: var(--text-light)">
+                等待玩家資料…
+              </p>
+            </div>
+            <div style="text-align: center; margin-top: 1rem">
+              <button
+                class="btn btn-secondary"
+                onclick="location.href = '../index.html'"
+              >
+                &#x1F6AA; 離開
+              </button>
             </div>
           </div>
         </div>
-        <div class="score-display">
-          <div class="score-label">目前分數</div>
-          <div class="score-value" id="scoreValue">0</div>
+
+        <div id="wm-container" class="hidden"></div>
+        <div id="combo-transition-container" class="hidden"></div>
+
+        <div
+          id="pause-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-label="暫停選單"
+        >
+          <h2>&#x23F8; 暫停</h2>
+          <p style="color: var(--text-light)">遊戲已暫停，按下方按鈕繼續</p>
+          <button id="btnResume" class="btn btn-primary">
+            &#x25B6;&#xFE0F; 繼續
+          </button>
+          <button
+            id="btnQuit"
+            class="btn btn-secondary"
+            style="margin-top: 8px"
+          >
+            &#x1F6AA; 結束遊戲
+          </button>
+        </div>
+
+        <!-- 離開確認覆蓋 -->
+        <div
+          id="exit-confirm-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-label="離開遊戲確認"
+        >
+          <h2>🚪 離開遊戲？</h2>
+          <p>確定要離開嗎？<br />已作答的題目仍會保存。</p>
+          <div class="exit-confirm-btns">
+            <button id="btnExitCancel" class="btn btn-primary">繼續遊戲</button>
+            <button id="btnExitConfirm" class="btn btn-secondary">
+              確定離開
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- 主遊戲區 -->
-      <div class="game-area">
-        <div class="timer" id="timer">3.0</div>
-        <div class="stimulus-display" id="stimulusDisplay">
-          <div class="context-indicator" id="contextIndicator"></div>
-          <div id="stimulusEmoji">🧀</div>
+      <!-- 即時 Mini 排行榜（浮動） -->
+      <div class="live-leaderboard" id="liveLeaderboard" style="display: none">
+        <div class="live-lb__title" id="lbToggle">
+          <span>🏆 即時排行</span>
+          <button class="live-lb__toggle" id="btnLbToggle">◀</button>
         </div>
-        <div class="feedback" id="feedback">✓</div>
+        <div id="liveLeaderboardBody"></div>
       </div>
+    </main>
 
-      <!-- 底部控制提示 -->
-      <div class="bottom-bar">
-        <div class="control-hint" id="spaceHint">
-          <div class="key-display">空白鍵</div>
-          <div class="key-label">按下</div>
-        </div>
-        <div class="control-hint">
-          <div class="key-display">不按</div>
-          <div class="key-label">等待時間結束</div>
-        </div>
-      </div>
+    <!-- 等待其他玩家覆蓋 -->
+    <div id="waiting-overlay">
+      <h2>⏳ 等待其他玩家完成</h2>
+      <p class="waiting-count" id="waitingCount">0 / 0 位玩家已完成</p>
+      <p>
+        <span class="waiting-dots">
+          <span>.</span><span>.</span><span>.</span>
+        </span>
+      </p>
+      <button
+        class="btn btn-secondary"
+        id="btnSkipWait"
+        style="margin-top: 1rem"
+      >
+        跳過等待，直接看結果
+      </button>
     </div>
 
-    <!-- 讀秒準備 -->
-    <div class="countdown-overlay" id="countdownOverlay" style="display: none">
-      <div class="countdown-number" id="countdownNumber">3</div>
-    </div>
-
-    <!-- 載入中 -->
-    <div class="loading-overlay" id="loadingOverlay">
-      <div class="loading-spinner"></div>
-      <div>載入遊戲中...</div>
-    </div>
-
-    <!-- 語音 -->
-    <audio id="audioPlayer"></audio>
-
-    <!-- Firebase -->
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+
+    <!-- Firebase config -->
     <script src="../js/firebase-config.js"></script>
 
+    <!-- Game config -->
+    <script src="../js/game-config.js"></script>
+    <script src="../js/adaptive/difficulty-provider.js"></script>
+    <script src="../js/adaptive/simple-adaptive-engine.js"></script>
+    <script src="../js/svg-assets.js"></script>
+
+    <!-- Utils -->
+    <script src="../js/utils/storage.js"></script>
+    <script src="../js/utils/score-calculator.js"></script>
+    <script src="../js/utils/level-calculator.js"></script>
+    <script src="../js/utils/badge-checker.js"></script>
+    <script src="../js/utils/question-generator.js"></script>
+
+    <!-- Shared components -->
+    <script src="../js/sound-config.js"></script>
+    <script src="../js/shared/audio-player.js"></script>
+    <script src="../js/shared/countdown.js"></script>
+    <script src="../js/shared/focus-trap.js"></script>
+    <script src="../js/shared/feedback-overlay.js"></script>
+    <script src="../js/shared/working-memory.js"></script>
+    <script src="../js/shared/completion-notify.js"></script>
+    <script src="../js/shared/game-session-builder.js"></script>
+
+    <!-- Singleplayer core (reused) -->
+    <script src="../js/singleplayer/progress-tracker.js"></script>
+    <script src="../js/singleplayer/mode-controller.js"></script>
+
+    <!-- Multiplayer sync -->
+    <script src="../js/multiplayer/game-sync.js"></script>
+
     <script>
-      // 遊戲狀態
-      let gameState = {
-        currentStageIndex: 0,
-        currentQuestionIndex: 0,
-        stages: [],
-        score: 0,
-        answers: [],
-        startTime: null,
-        roomCode: null,
-        playerId: null,
-      };
+      /**
+       * MultiplayerBridge - 使用 GameSync 的同步層（v2）
+       * 加入：即時排行榜、等待其他玩家、同步倒數
+       */
+      var MultiplayerBridge = (function () {
+        "use strict";
 
-      let questionTimer = null;
-      let questionStartTime = null;
-      const QUESTION_TIME_LIMIT = 3000; // 3秒
+        var _roomCode = null;
+        var _playerRole = null;
+        var _playerId = null;
+        var _roomRef = null;
+        var _roomData = null;
+        var _waitingForOthers = false;
+        var _lbCollapsed = false;
 
-      // 初始化
-      window.addEventListener('DOMContentLoaded', () => {
-        initializeGame();
-      });
+        function parseRoomInfo() {
+          var params = new URLSearchParams(window.location.search);
+          _roomCode = params.get("room");
+          _playerRole = params.get("role") || "player";
 
-      async function initializeGame() {
-        // 從 localStorage 獲取遊戲資訊
-        const roomData = localStorage.getItem('currentRoom');
-        const playerData = localStorage.getItem('currentPlayer');
-
-        if (!roomData || !playerData) {
-          alert('未找到遊戲資訊');
-          window.location.href = '../index.html';
-          return;
-        }
-
-        const room = JSON.parse(roomData);
-        const player = JSON.parse(playerData);
-
-        gameState.roomCode = room.code;
-        gameState.playerId = player.id;
-
-        // 從 Firebase 獲取遊戲題目
-        const roomRef = firebase.database().ref(`rooms/${room.code}`);
-        const snapshot = await roomRef.once('value');
-        const roomGameData = snapshot.val();
-
-        if (!roomGameData || !roomGameData.gameStages) {
-          alert('遊戲數據載入失敗');
-          window.location.href = '../index.html';
-          return;
-        }
-
-        gameState.stages = roomGameData.gameStages;
-        gameState.startTime = Date.now();
-
-        // 隱藏載入畫面，開始讀秒
-        document.getElementById('loadingOverlay').style.display = 'none';
-        startCountdown();
-      }
-
-      // 開始讀秒
-      function startCountdown() {
-        const overlay = document.getElementById('countdownOverlay');
-        const number = document.getElementById('countdownNumber');
-        overlay.style.display = 'flex';
-
-        let count = 3;
-        number.textContent = count;
-
-        const interval = setInterval(() => {
-          count--;
-          if (count > 0) {
-            number.textContent = count;
-            number.style.animation = 'none';
-            setTimeout(() => {
-              number.style.animation = 'countdownPulse 1s ease-in-out';
-            }, 10);
-          } else {
-            clearInterval(interval);
-            overlay.style.display = 'none';
-            startStage();
+          if (!_roomCode) {
+            alert("Missing room code");
+            location.href = "../index.html";
+            return false;
           }
-        }, 1000);
-      }
 
-      // 開始場地
-      function startStage() {
-        const stage = gameState.stages[gameState.currentStageIndex];
-        if (!stage) {
-          endGame();
-          return;
+          try {
+            var playerData = JSON.parse(
+              localStorage.getItem("currentPlayer") || "{}",
+            );
+            _playerId = playerData.id || null;
+          } catch (e) {
+            _playerId = null;
+          }
+
+          var user = firebase.auth().currentUser;
+          if (user) {
+            _playerId = user.uid;
+          }
+
+          console.log(
+            "Multiplayer: room=" +
+              _roomCode +
+              " role=" +
+              _playerRole +
+              " id=" +
+              _playerId,
+          );
+          return true;
         }
 
-        // 更新場地資訊
-        document.getElementById('stageIcon').textContent = stage.icon;
-        document.getElementById('stageName').textContent = stage.name;
-        document.getElementById('totalQuestions').textContent = stage.questions.length;
+        function initRoom() {
+          _roomRef = firebase.database().ref("rooms/" + _roomCode);
 
-        // 播放場地語音（如果需要）
-        playStageIntroVoice(stage);
+          // 初始化 GameSync
+          GameSync.init({
+            roomCode: _roomCode,
+            playerId: _playerId,
+            isHost: false,
+            callbacks: {
+              onPlayersUpdate: _updateLiveLeaderboard,
+              onAllFinished: _onAllFinished,
+              onPlayerDisconnect: function (uid, data) {
+                console.log("⚠️ 玩家斷線: " + data.nickname);
+              },
+              onRoomClosed: function () {
+                alert("房間已關閉");
+                location.href = "../index.html";
+              },
+            },
+          });
 
-        // 短暫延遲後開始第一題
-        setTimeout(() => {
-          gameState.currentQuestionIndex = 0;
-          showQuestion();
-        }, 2000);
-      }
+          // 觀戰模式仍需全房間監聽
+          if (_playerRole === "spectator") {
+            _roomRef.on("value", function (snapshot) {
+              _roomData = snapshot.val();
+              if (!_roomData) return;
+              updateSpectatorDashboard();
+            });
+          }
 
-      // 顯示題目
-      function showQuestion() {
-        const stage = gameState.stages[gameState.currentStageIndex];
-        const question = stage.questions[gameState.currentQuestionIndex];
+          // 即時排行榜 toggle
+          var lbToggle = document.getElementById("lbToggle");
+          var btnLbToggle = document.getElementById("btnLbToggle");
+          if (lbToggle) {
+            lbToggle.addEventListener("click", function () {
+              _lbCollapsed = !_lbCollapsed;
+              var lb = document.getElementById("liveLeaderboard");
+              lb.classList.toggle("collapsed", _lbCollapsed);
+              btnLbToggle.textContent = _lbCollapsed ? "▶" : "◀";
+            });
+          }
 
-        if (!question) {
-          nextStage();
-          return;
+          // 跳過等待
+          var btnSkip = document.getElementById("btnSkipWait");
+          if (btnSkip) {
+            btnSkip.addEventListener("click", function () {
+              GameSync.goToResult();
+            });
+          }
         }
 
-        // 更新題目進度
-        document.getElementById('currentQuestion').textContent = gameState.currentQuestionIndex + 1;
+        /** 即時排行榜渲染 */
+        function _updateLiveLeaderboard(playersMap) {
+          if (_playerRole === "spectator") return;
 
-        // 更新刺激物
-        const display = document.getElementById('stimulusDisplay');
-        document.getElementById('stimulusEmoji').textContent = question.emoji;
+          var lb = document.getElementById("liveLeaderboard");
+          var body = document.getElementById("liveLeaderboardBody");
+          if (!lb || !body) return;
 
-        // 處理晝夜背景
-        display.classList.remove('day-context', 'night-context');
-        const contextIndicator = document.getElementById('contextIndicator');
+          var ranking = GameSync.getLiveRanking();
+          if (ranking.length <= 1) {
+            lb.style.display = "none";
+            return;
+          }
 
-        if (question.dayNight === 'day') {
-          display.classList.add('day-context');
-          contextIndicator.textContent = '☀️';
-        } else if (question.dayNight === 'night') {
-          display.classList.add('night-context');
-          contextIndicator.textContent = '🌙';
-        } else {
-          contextIndicator.textContent = '';
+          lb.style.display = "";
+          var html = "";
+          var medals = ["🥇", "🥈", "🥉"];
+
+          for (var i = 0; i < ranking.length; i++) {
+            var p = ranking[i];
+            var rankText = i < 3 ? medals[i] : String(i + 1);
+            var rowClass = "live-lb__row";
+            if (p.isMe) rowClass += " is-me";
+            if (!p.online) rowClass += " live-lb__offline";
+
+            html += '<div class="' + rowClass + '">';
+            html += '<span class="live-lb__rank">' + rankText + "</span>";
+            html +=
+              '<span class="live-lb__name">' + _escHtml(p.nickname) + "</span>";
+            html += '<span class="live-lb__score">' + p.score + "</span>";
+            html += "</div>";
+            html +=
+              '<div class="live-lb__bar"><div class="live-lb__bar-fill" style="width:' +
+              p.progress +
+              '%"></div></div>';
+          }
+          body.innerHTML = html;
+
+          // 更新等待中的計數
+          if (_waitingForOthers) {
+            _updateWaitingCount();
+          }
         }
 
-        // 開始計時
-        questionStartTime = Date.now();
-        startQuestionTimer();
-      }
+        function _onAllFinished(scoresMap) {
+          // 隱藏等待覆蓋，導向結果
+          var overlay = document.getElementById("waiting-overlay");
+          if (overlay) overlay.classList.remove("active");
+          setTimeout(function () {
+            GameSync.goToResult();
+          }, 800);
+        }
 
-      // 題目計時器
-      function startQuestionTimer() {
-        const timerDisplay = document.getElementById('timer');
-        let timeLeft = QUESTION_TIME_LIMIT;
+        function _updateWaitingCount() {
+          var el = document.getElementById("waitingCount");
+          if (!el) return;
+          // 數已完成（progress=100）的玩家
+          var ranking = GameSync.getLiveRanking();
+          var total = ranking.length;
+          var done = 0;
+          for (var i = 0; i < ranking.length; i++) {
+            if (ranking[i].progress >= 100) done++;
+          }
+          el.textContent = done + " / " + total + " 位玩家已完成";
+        }
 
-        questionTimer = setInterval(() => {
-          timeLeft = QUESTION_TIME_LIMIT - (Date.now() - questionStartTime);
+        function broadcastState(stateObj) {
+          GameSync.broadcastProgress(stateObj);
+        }
 
-          if (timeLeft <= 0) {
-            clearInterval(questionTimer);
-            handleAnswer('nopress');
+        function recordAnswer(trialRecord) {
+          GameSync.recordAnswer(trialRecord);
+        }
+
+        function recordFinalScore(resultObj) {
+          // 取得暱稱
+          try {
+            var pd = JSON.parse(localStorage.getItem("currentPlayer") || "{}");
+            resultObj.nickname = pd.nickname || "玩家";
+          } catch (e) {}
+
+          GameSync.recordFinalScore(resultObj);
+        }
+
+        function updateSpectatorDashboard() {
+          if (!_roomData || !_roomData.players) return;
+          var listEl = document.getElementById("spectatorPlayerList");
+          if (!listEl) return;
+
+          var avatars = ["🐱", "🐶", "🐼", "🦊", "🐨", "🐯", "🦁", "🐮"];
+          var players = _roomData.players;
+          var html = "";
+          var idx = 0;
+
+          for (var uid in players) {
+            if (!players.hasOwnProperty(uid)) continue;
+            var p = players[uid];
+            var emoji = avatars[idx % avatars.length];
+            var statusText = p.online ? p.currentCombo || "進行中" : "離線";
+            var scoreText = p.currentScore || 0;
+            var prog = p.currentProgress || 0;
+
+            html += '<div class="spectator-player-card">';
+            html += '<div class="avatar">' + emoji + "</div>";
+            html += '<div class="info">';
+            html +=
+              '<div class="name">' + _escHtml(p.nickname || "玩家") + "</div>";
+            html +=
+              '<div class="status">' + statusText + " · " + prog + "%</div>";
+            html += "</div>";
+            html += '<div class="score">' + scoreText + " ⭐</div>";
+            html += "</div>";
+            idx++;
+          }
+
+          if (html === "") {
+            html =
+              '<p style="text-align:center;color:var(--text-light);">等待玩家中…</p>';
+          }
+          listEl.innerHTML = html;
+        }
+
+        function goToResult() {
+          // 顯示等待覆蓋，等其他玩家完成
+          _waitingForOthers = true;
+          var overlay = document.getElementById("waiting-overlay");
+          if (overlay) {
+            overlay.classList.add("active");
+            _updateWaitingCount();
+          }
+
+          // 10 秒後自動跳轉（即使還有人沒完成）
+          setTimeout(function () {
+            if (_waitingForOthers) {
+              GameSync.goToResult();
+            }
+          }, 10000);
+        }
+
+        function _escHtml(s) {
+          var div = document.createElement("div");
+          div.textContent = s || "";
+          return div.innerHTML;
+        }
+
+        return {
+          parseRoomInfo: parseRoomInfo,
+          initRoom: initRoom,
+          broadcastState: broadcastState,
+          recordAnswer: recordAnswer,
+          recordFinalScore: recordFinalScore,
+          goToResult: goToResult,
+          getRole: function () {
+            return _playerRole;
+          },
+          getRoomCode: function () {
+            return _roomCode;
+          },
+          getPlayerId: function () {
+            return _playerId;
+          },
+        };
+      })();
+    </script>
+
+    <script>
+      /**
+       * GameController - Multiplayer game flow controller
+       * Based on singleplayer GameController IIFE + Firebase sync
+       */
+      var GameController = (function () {
+        "use strict";
+
+        var dom = {};
+
+        function cacheDom() {
+          dom.headerTitle = document.getElementById("headerTitle");
+          dom.btnBack = document.getElementById("btnBack");
+          dom.btnPause = document.getElementById("btnPause");
+          dom.ruleIntroScreen = document.getElementById("rule-intro-screen");
+          dom.ruleIntroTitle = document.getElementById("ruleIntroTitle");
+          dom.ruleIntroBoxes = document.getElementById("ruleIntroBoxes");
+          dom.ruleIntroContext = document.getElementById("ruleIntroContext");
+          dom.ruleIntroWM = document.getElementById("ruleIntroWM");
+          dom.btnRuleStart = document.getElementById("btnRuleStart");
+          dom.playScreen = document.getElementById("play-screen");
+          dom.roundLabel = document.getElementById("roundLabel");
+          dom.trialCurrent = document.getElementById("trialCurrent");
+          dom.trialTotal = document.getElementById("trialTotal");
+          dom.progressBar = document.getElementById("progressBar");
+          dom.stimContainer = document.getElementById("stimulusContainer");
+          dom.bgLayer = document.getElementById("backgroundLayer");
+          dom.ctxIndicator = document.getElementById("contextIndicator");
+          dom.stimulus = document.getElementById("stimulus");
+          dom.btnSpace = document.getElementById("btnSpace");
+          dom.btnLabel = document.getElementById("btnLabel");
+          dom.gameContainer = document.getElementById("gameContainer");
+          dom.wmContainer = document.getElementById("wm-container");
+          dom.comboTransition = document.getElementById(
+            "combo-transition-container",
+          );
+          dom.pauseOverlay = document.getElementById("pause-overlay");
+          dom.btnResume = document.getElementById("btnResume");
+          dom.btnQuit = document.getElementById("btnQuit");
+          dom.exitOverlay = document.getElementById("exit-confirm-overlay");
+          dom.btnExitCancel = document.getElementById("btnExitCancel");
+          dom.btnExitConfirm = document.getElementById("btnExitConfirm");
+          dom.spectatorScreen = document.getElementById("spectator-screen");
+        }
+
+        var _combos = [];
+        var _comboIndex = 0;
+        var _questions = [];
+        var _trialIndex = 0;
+        var _trialResults = [];
+        var _responded = false;
+        var _stimOnTime = 0;
+        var _isPlaying = false;
+        var _isPaused = false;
+        var _isiTimerId = null;
+        var _stimTimerId = null;
+        var _totalCorrect = 0;
+        var _totalTrials = 0;
+
+        function showScreen(el) {
+          var screens = dom.gameContainer.querySelectorAll(".screen");
+          for (var i = 0; i < screens.length; i++) {
+            screens[i].classList.remove("active");
+          }
+          if (el) el.classList.add("active");
+        }
+
+        function getActionLabel(fieldId) {
+          return fieldId === "fishing"
+            ? "\uD83C\uDFA3 Pull!"
+            : "\uD83D\uDDB1\uFE0F Catch!";
+        }
+
+        function clearStimulus() {
+          dom.stimulus.innerHTML = "";
+          dom.bgLayer.innerHTML = "";
+          dom.ctxIndicator.style.display = "none";
+        }
+
+        function beginCombo() {
+          var combo = _combos[_comboIndex];
+          _trialIndex = 0;
+          _trialResults = [];
+          _responded = false;
+
+          var count =
+            combo.questionCount ||
+            combo.questionsCount ||
+            (typeof GAME_CONFIG !== "undefined"
+              ? GAME_CONFIG.QUESTIONS.DEFAULT_COUNT
+              : 10);
+          _questions = generateQuestions(combo.fieldId, combo.ruleId, count);
+
+          dom.trialTotal.textContent = _questions.length;
+          showRuleIntro(combo);
+        }
+
+        /** stimulus key → SVG HTML (same as singleplayer) */
+        function getSVG(key) {
+          return (typeof SVG_ASSETS !== "undefined" && SVG_ASSETS[key]) || "";
+        }
+
+        function showRuleIntro(combo) {
+          var field = GAME_CONFIG.FIELDS[combo.fieldId];
+          var rule = field.rules[combo.ruleId];
+
+          dom.ruleIntroTitle.textContent = field.icon + " " + rule.name;
+
+          var boxesHtml = "";
+          if (combo.ruleId === "mixed") {
+            boxesHtml = '<div class="rule-box rule-box--go">Mixed rules</div>';
+            dom.ruleIntroContext.textContent =
+              "Context A: " +
+              rule.contextA.label +
+              " | Context B: " +
+              rule.contextB.label;
+            dom.ruleIntroContext.classList.remove("hidden");
           } else {
-            timerDisplay.textContent = (timeLeft / 1000).toFixed(1);
-            if (timeLeft < 1000) {
-              timerDisplay.classList.add('warning');
-            } else {
-              timerDisplay.classList.remove('warning');
+            var goStim = rule.go.stimulus;
+            var nogoStim = rule.noGo.stimulus;
+            var goSvg = getSVG(goStim) || goStim;
+            var nogoSvg = getSVG(nogoStim) || nogoStim;
+
+            boxesHtml =
+              '<div class="rule-box rule-box--go">' +
+              '<div class="rule-stim-icon">' +
+              goSvg +
+              "</div>" +
+              '<span class="rule-action-text rule-action-text--go">\u2192 ' +
+              getActionLabel(combo.fieldId) +
+              "</span>" +
+              "</div>" +
+              '<div class="rule-box rule-box--nogo">' +
+              '<div class="rule-stim-icon">' +
+              nogoSvg +
+              "</div>" +
+              '<span class="rule-action-text rule-action-text--nogo">\u2192 \u270B Don\'t press</span>' +
+              "</div>";
+            dom.ruleIntroContext.classList.add("hidden");
+          }
+          dom.ruleIntroBoxes.innerHTML = boxesHtml;
+          dom.ruleIntroWM.classList.add("hidden");
+
+          showScreen(dom.ruleIntroScreen);
+
+          dom.btnRuleStart.onclick = function () {
+            beginTrials();
+          };
+        }
+
+        function beginTrials() {
+          var combo = _combos[_comboIndex];
+          dom.roundLabel.textContent =
+            GAME_CONFIG.FIELDS[combo.fieldId].icon +
+            " " +
+            GAME_CONFIG.FIELDS[combo.fieldId].rules[combo.ruleId].name;
+          dom.btnLabel.textContent = getActionLabel(combo.fieldId);
+          dom.progressBar.style.width = "0%";
+          dom.trialCurrent.textContent = "0";
+
+          showScreen(dom.playScreen);
+          _isPlaying = true;
+          dom.btnSpace.disabled = true;
+
+          var _dp = DifficultyProvider.getTrialParams({
+            fieldId: combo.fieldId,
+            ruleId: combo.ruleId,
+          });
+          Countdown.start({
+            container: dom.gameContainer,
+            seconds: _dp.countdownSeconds,
+            onComplete: function () {
+              nextTrial();
+            },
+          });
+        }
+
+        function nextTrial() {
+          if (_trialIndex >= _questions.length) {
+            endCombo();
+            return;
+          }
+          if (_isPaused) return;
+
+          var question = _questions[_trialIndex];
+          var combo = _combos[_comboIndex];
+
+          dom.trialCurrent.textContent = _trialIndex + 1;
+          var progressPct = Math.round(
+            ((_trialIndex + 1) / _questions.length) * 100,
+          );
+          dom.progressBar.style.width = progressPct + "%";
+          dom.progressBar.parentElement.setAttribute(
+            "aria-valuenow",
+            progressPct,
+          );
+
+          var _tp = DifficultyProvider.getTrialParams({
+            fieldId: combo.fieldId,
+            ruleId: combo.ruleId,
+            trialIndex: _trialIndex,
+            totalTrials: _questions.length,
+            history: _trialResults,
+          });
+
+          var isiMs =
+            _trialIndex === 0
+              ? 200
+              : _tp.isiMinMs + Math.random() * (_tp.isiMaxMs - _tp.isiMinMs);
+
+          clearStimulus();
+          dom.btnSpace.disabled = true;
+          _responded = false;
+
+          _isiTimerId = setTimeout(function () {
+            if (_isPaused) return;
+            presentStimulus(question, combo, _tp.stimulusDurationMs);
+          }, isiMs);
+        }
+
+        function presentStimulus(question, combo, duration) {
+          // === 背景（對齊 singleplayer renderStimulus）===
+          if (combo.fieldId === "mouse") {
+            dom.bgLayer.innerHTML = getSVG("mouseHole");
+          } else if (combo.fieldId === "fishing") {
+            var isNight =
+              combo.ruleId === "mixed" && question.context === "night";
+            dom.bgLayer.innerHTML = isNight
+              ? getSVG("oceanNight")
+              : getSVG("oceanBg");
+          }
+
+          // === 混合規則情境指示 ===
+          if (question.context) {
+            dom.ctxIndicator.style.display = "block";
+            switch (question.context) {
+              case "hasPerson":
+                dom.ctxIndicator.innerHTML = getSVG("person");
+                break;
+              case "day":
+                dom.ctxIndicator.innerHTML = getSVG("sun");
+                break;
+              case "night":
+                dom.ctxIndicator.innerHTML = getSVG("moon");
+                break;
+              default:
+                dom.ctxIndicator.style.display = "none";
             }
           }
-        }, 50);
-      }
 
-      // 處理答案
-      function handleAnswer(action) {
-        if (!questionTimer) return; // 已經回答過
+          // === 刺激物 ===
+          dom.stimulus.innerHTML =
+            getSVG(question.stimulus) || question.stimulus || "?";
 
-        clearInterval(questionTimer);
-        questionTimer = null;
+          dom.btnSpace.disabled = false;
+          _stimOnTime = Date.now();
 
-        const stage = gameState.stages[gameState.currentStageIndex];
-        const question = stage.questions[gameState.currentQuestionIndex];
-        const reactionTime = Date.now() - questionStartTime;
-        const isCorrect = action === question.correctAction;
+          _stimTimerId = setTimeout(function () {
+            if (!_responded) {
+              _responded = true;
+              var result = question.isGo ? "miss" : "correctRejection";
+              recordTrial(question, result, null);
+              showFeedback(result);
+            }
+          }, duration);
+        }
 
-        // 記錄答案
-        gameState.answers.push({
-          stageId: stage.stageId,
-          questionId: question.id,
-          stimulusType: question.stimulusType,
-          correctAction: question.correctAction,
-          userAction: action,
-          isCorrect: isCorrect,
-          reactionTime: reactionTime,
+        function onPress() {
+          if (_responded) return;
+          _responded = true;
+          clearTimeout(_stimTimerId);
+
+          var question = _questions[_trialIndex];
+          var rt = Date.now() - _stimOnTime;
+          var result = question.isGo ? "hit" : "falseAlarm";
+          recordTrial(question, result, rt);
+          showFeedback(result);
+        }
+
+        function recordTrial(question, result, rt) {
+          var isCorrect = result === "hit" || result === "correctRejection";
+          if (isCorrect) _totalCorrect++;
+          _totalTrials++;
+
+          var record = {
+            trialIndex: _trialIndex,
+            stimulus: question.stimulus,
+            context: question.context || null,
+            isGo: question.isGo,
+            correctAction: question.correctAction,
+            result: result,
+            isCorrect: isCorrect,
+            rt: rt,
+            timestamp: Date.now(),
+          };
+          _trialResults.push(record);
+
+          DifficultyProvider.onTrialComplete(record);
+
+          MultiplayerBridge.recordAnswer(record);
+          MultiplayerBridge.broadcastState({
+            progress: Math.round(((_trialIndex + 1) / _questions.length) * 100),
+            score: _totalCorrect,
+            comboName: _combos[_comboIndex]
+              ? _combos[_comboIndex].displayName
+              : "",
+          });
+        }
+
+        function showFeedback(result) {
+          var combo = _combos[_comboIndex];
+          var _fp = DifficultyProvider.getTrialParams({
+            fieldId: combo.fieldId,
+            ruleId: combo.ruleId,
+          });
+
+          FeedbackOverlay.show({
+            gameContainer: dom.stimContainer,
+            stimulusEl: dom.stimulus,
+            result: result,
+            duration: _fp.feedbackDurationMs,
+            onComplete: function () {
+              _trialIndex++;
+              nextTrial();
+            },
+          });
+        }
+
+        function endCombo() {
+          _isPlaying = false;
+
+          DifficultyProvider.onSessionComplete({
+            fieldId: _combos[_comboIndex].fieldId,
+            ruleId: _combos[_comboIndex].ruleId,
+            trialResults: _trialResults,
+            wmResult: null,
+            passed: false,
+          });
+
+          _comboIndex++;
+          if (_comboIndex < _combos.length) {
+            beginCombo();
+          } else {
+            finishGame();
+          }
+        }
+
+        function finishGame() {
+          var accuracy =
+            _totalTrials > 0 ? (_totalCorrect / _totalTrials) * 100 : 0;
+
+          MultiplayerBridge.recordFinalScore({
+            totalScore: _totalCorrect,
+            totalCorrect: _totalCorrect,
+            totalTrials: _totalTrials,
+            accuracy: accuracy,
+            totalTime: 0,
+            answers: _trialResults,
+          });
+
+          MultiplayerBridge.goToResult();
+        }
+
+        function pause() {
+          if (!_isPlaying || _isPaused) return;
+          _isPaused = true;
+          clearTimeout(_isiTimerId);
+          clearTimeout(_stimTimerId);
+          dom.pauseOverlay.classList.add("active");
+          FocusTrap.activate(dom.pauseOverlay);
+        }
+
+        function resume() {
+          if (!_isPaused) return;
+          _isPaused = false;
+          dom.pauseOverlay.classList.remove("active");
+          FocusTrap.deactivate();
+          if (_isPlaying) nextTrial();
+        }
+
+        function init() {
+          cacheDom();
+
+          if (!MultiplayerBridge.parseRoomInfo()) return;
+          MultiplayerBridge.initRoom();
+
+          if (typeof SimpleAdaptiveEngine !== "undefined") {
+            DifficultyProvider.setEngine(SimpleAdaptiveEngine);
+          }
+          DifficultyProvider.reset();
+
+          var role = MultiplayerBridge.getRole();
+
+          if (role === "spectator") {
+            dom.headerTitle.textContent = "Spectator Mode";
+            showScreen(dom.spectatorScreen);
+            return;
+          }
+
+          dom.headerTitle.textContent = "Multiplayer";
+
+          var roomRef = firebase
+            .database()
+            .ref("rooms/" + MultiplayerBridge.getRoomCode());
+          roomRef.once("value").then(function (snapshot) {
+            var roomData = snapshot.val();
+            if (!roomData) {
+              alert("Room data not found");
+              location.href = "../index.html";
+              return;
+            }
+
+            var stages = roomData.gameStages || [];
+            if (stages.length === 0) {
+              _combos = [
+                {
+                  fieldId: "mouse",
+                  ruleId: "rule1",
+                  displayName: "Mouse Rule1",
+                },
+                {
+                  fieldId: "mouse",
+                  ruleId: "rule2",
+                  displayName: "Mouse Rule2",
+                },
+              ];
+            } else {
+              _combos = stages.map(function (stage) {
+                var fieldId =
+                  stage.id === "A" || stage.id === "B" ? "mouse" : "fishing";
+                var ruleId =
+                  stage.id === "A" || stage.id === "C"
+                    ? "rule1"
+                    : stage.id === "B" || stage.id === "D"
+                      ? "rule2"
+                      : "mixed";
+                return {
+                  fieldId: fieldId,
+                  ruleId: ruleId,
+                  displayName: (stage.icon || "") + " " + (stage.name || ""),
+                };
+              });
+            }
+
+            beginCombo();
+          });
+
+          dom.btnSpace.addEventListener("click", function () {
+            if (_isPlaying && !_responded) onPress();
+          });
+
+          document.addEventListener("keydown", function (e) {
+            if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")
+              return;
+            if (e.code === "Space") {
+              e.preventDefault();
+              if (_isPlaying && !_responded) onPress();
+            }
+            if (e.code === "Escape" && _isPlaying && !_isPaused) pause();
+          });
+
+          dom.btnPause.addEventListener("click", function () {
+            if (_isPlaying) pause();
+          });
+          dom.btnResume.addEventListener("click", resume);
+
+          // --- 離開確認對話框 ---
+          var _exitAction = null;
+
+          function showExitConfirm(action) {
+            _exitAction = action;
+            if (_isPlaying && !_isPaused) pause();
+            dom.exitOverlay.classList.add("active");
+            FocusTrap.activate(dom.exitOverlay);
+          }
+
+          function hideExitConfirm() {
+            dom.exitOverlay.classList.remove("active");
+            FocusTrap.deactivate();
+            _exitAction = null;
+          }
+
+          dom.btnExitCancel.addEventListener("click", function () {
+            hideExitConfirm();
+            history.pushState({ efgame: true }, "");
+          });
+
+          dom.btnExitConfirm.addEventListener("click", function () {
+            _isPlaying = false;
+            hideExitConfirm();
+            location.href = "../index.html";
+          });
+
+          dom.btnQuit.addEventListener("click", function () {
+            showExitConfirm("quit");
+          });
+          dom.btnBack.addEventListener("click", function () {
+            if (_isPlaying) {
+              showExitConfirm("back");
+            } else {
+              location.href = "../index.html";
+            }
+          });
+
+          // --- 瀏覽器返回鍵攔截 ---
+          history.pushState({ efgame: true }, "");
+          window.addEventListener("popstate", function () {
+            if (_isPlaying) {
+              showExitConfirm("popstate");
+            } else {
+              history.back();
+            }
+          });
+
+          window.addEventListener("beforeunload", function (e) {
+            if (_isPlaying) {
+              e.preventDefault();
+              e.returnValue = "";
+            }
+          });
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+          // 🔊 初始化音訊
+          if (typeof AudioPlayer !== "undefined" && AudioPlayer.init) {
+            AudioPlayer.init();
+          }
+          firebase.auth().onAuthStateChanged(function (user) {
+            if (user) {
+              init();
+            }
+          });
         });
 
-        // 更新分數
-        if (isCorrect) {
-          const timeBonus = Math.max(0, Math.floor((QUESTION_TIME_LIMIT - reactionTime) / 100));
-          gameState.score += 10 + timeBonus;
-        }
-
-        document.getElementById('scoreValue').textContent = gameState.score;
-
-        // 顯示反饋
-        showFeedback(isCorrect);
-
-        // 動畫效果
-        const display = document.getElementById('stimulusDisplay');
-        display.classList.add(isCorrect ? 'correct' : 'wrong');
-        setTimeout(() => {
-          display.classList.remove('correct', 'wrong');
-        }, 500);
-
-        // 下一題
-        setTimeout(() => {
-          gameState.currentQuestionIndex++;
-          showQuestion();
-        }, 1000);
-      }
-
-      // 顯示反饋
-      function showFeedback(isCorrect) {
-        const feedback = document.getElementById('feedback');
-        feedback.textContent = isCorrect ? '✓' : '✗';
-        feedback.style.color = isCorrect ? '#00b894' : '#ff7675';
-        feedback.classList.add('show');
-
-        setTimeout(() => {
-          feedback.classList.remove('show');
-        }, 800);
-
-        // 播放反饋音效
-        playFeedbackSound(isCorrect);
-      }
-
-      // 下一個場地
-      function nextStage() {
-        gameState.currentStageIndex++;
-
-        if (gameState.currentStageIndex < gameState.stages.length) {
-          // 場地間休息
-          setTimeout(() => {
-            startStage();
-          }, 2000);
-        } else {
-          endGame();
-        }
-      }
-
-      // 結束遊戲
-      async function endGame() {
-        const endTime = Date.now();
-        const totalTime = endTime - gameState.startTime;
-
-        // 計算統計
-        const totalQuestions = gameState.answers.length;
-        const correctAnswers = gameState.answers.filter((a) => a.isCorrect).length;
-        const accuracy = ((correctAnswers / totalQuestions) * 100).toFixed(1);
-
-        // 儲存結果到 Firebase
-        const resultData = {
-          playerId: gameState.playerId,
-          score: gameState.score,
-          accuracy: parseFloat(accuracy),
-          totalQuestions: totalQuestions,
-          correctAnswers: correctAnswers,
-          totalTime: totalTime,
-          answers: gameState.answers,
-          completedAt: Date.now(),
-        };
-
-        const roomRef = firebase.database().ref(`rooms/${gameState.roomCode}`);
-        await roomRef.child(`results/${gameState.playerId}`).set(resultData);
-
-        // 儲存到 localStorage
-        localStorage.setItem('gameResult', JSON.stringify(resultData));
-
-        // 跳轉到結果頁面
-        window.location.href = 'result.html';
-      }
-
-      // 播放語音
-      function playStageIntroVoice(stage) {
-        // 根據場地類型播放對應語音
-        const voiceMap = {
-          cheese_cat: '../audio/voice/voice-rule-cheese.wav',
-          person_cheese_cat: '../audio/voice/voice-rule-person.wav',
-          fish_shark: '../audio/voice/voice-rule-fish.wav',
-          day_night: '../audio/voice/voice-rule-switch.wav',
-        };
-
-        const voicePath = voiceMap[stage.type];
-        if (voicePath) {
-          const audio = document.getElementById('audioPlayer');
-          audio.src = voicePath;
-          audio.play();
-        }
-      }
-
-      function playFeedbackSound(isCorrect) {
-        const audio = document.getElementById('audioPlayer');
-        if (isCorrect) {
-          const correctSounds = [
-            '../audio/voice/voice-feedback-correct-01.wav',
-            '../audio/voice/voice-feedback-correct-02.wav',
-            '../audio/voice/voice-feedback-correct-03.wav',
-          ];
-          audio.src = correctSounds[Math.floor(Math.random() * correctSounds.length)];
-        } else {
-          const wrongSounds = [
-            '../audio/voice/voice-feedback-wrong-01.wav',
-            '../audio/voice/voice-feedback-wrong-02.wav',
-          ];
-          audio.src = wrongSounds[Math.floor(Math.random() * wrongSounds.length)];
-        }
-        audio.play();
-      }
-
-      // 鍵盤事件
-      document.addEventListener('keydown', (e) => {
-        if (e.code === 'Space' && questionTimer) {
-          e.preventDefault();
-          document.getElementById('spaceHint').classList.add('active');
-          handleAnswer('press');
-        }
-      });
-
-      document.addEventListener('keyup', (e) => {
-        if (e.code === 'Space') {
-          document.getElementById('spaceHint').classList.remove('active');
-        }
-      });
-
-      // 防止意外離開
-      window.addEventListener('beforeunload', (e) => {
-        if (questionTimer) {
-          e.preventDefault();
-          e.returnValue = '';
-        }
-      });
+        return { onPress: onPress, pause: pause, resume: resume };
+      })();
     </script>
+    <script src="../js/shared/landscape-hint.js"></script>
   </body>
 </html>

@@ -2,18 +2,27 @@
 <html lang="zh-TW">
   <head>
     <meta charset="UTF-8" />
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://www.googleapis.com" crossorigin />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app"
+    />
     <title>遊戲結果 - 執行功能遊戲</title>
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="../manifest.json" />
+    <meta name="theme-color" content="#302b63" />
+    <link rel="stylesheet" href="../css/themes/base.css" />
+    <link rel="stylesheet" href="../css/main.css" />
+    <link rel="stylesheet" href="../css/components/landscape-hint.css" />
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
+      /* result 覆寫 base/main 重複定義 */
       body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei",
+          "PingFang TC", "Helvetica Neue", Arial, sans-serif;
+        background: var(--bg-dark);
         min-height: 100vh;
         display: flex;
         align-items: center;
@@ -22,12 +31,14 @@
       }
 
       .container {
-        background: white;
+        background: rgba(255, 255, 255, 0.05);
+        border: 2px solid rgba(255, 255, 255, 0.1);
         border-radius: 20px;
         padding: 40px;
         max-width: 800px;
         width: 100%;
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(10px);
       }
 
       .header {
@@ -52,13 +63,13 @@
       }
 
       .header h1 {
-        color: #667eea;
+        color: var(--primary-blue);
         font-size: 2.5rem;
         margin-bottom: 10px;
       }
 
       .header p {
-        color: #636e72;
+        color: rgba(255, 255, 255, 0.6);
         font-size: 1.1rem;
       }
 
@@ -75,13 +86,17 @@
       }
 
       .score-card::before {
-        content: '';
+        content: "";
         position: absolute;
         top: -50%;
         left: -50%;
         width: 200%;
         height: 200%;
-        background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+        background: radial-gradient(
+          circle,
+          rgba(255, 255, 255, 0.1) 0%,
+          transparent 70%
+        );
         animation: shimmer 3s infinite;
       }
 
@@ -126,7 +141,8 @@
       }
 
       .stat-card {
-        background: #f8f9fa;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 15px;
         padding: 25px;
         text-align: center;
@@ -145,13 +161,13 @@
       .stat-value {
         font-size: 2rem;
         font-weight: bold;
-        color: #2d3436;
+        color: var(--text-white);
         margin-bottom: 5px;
       }
 
       .stat-label {
         font-size: 0.9rem;
-        color: #636e72;
+        color: rgba(255, 255, 255, 0.6);
       }
 
       /* 詳細分析 */
@@ -161,7 +177,7 @@
 
       .section-title {
         font-size: 1.3rem;
-        color: #2d3436;
+        color: var(--text-white);
         margin-bottom: 20px;
         font-weight: 600;
         display: flex;
@@ -170,7 +186,7 @@
       }
 
       .accuracy-bar {
-        background: #e9ecef;
+        background: rgba(255, 255, 255, 0.1);
         border-radius: 25px;
         height: 50px;
         overflow: hidden;
@@ -197,7 +213,7 @@
       }
 
       .stage-item {
-        background: #f8f9fa;
+        background: rgba(255, 255, 255, 0.05);
         border-radius: 12px;
         padding: 20px;
         display: flex;
@@ -212,7 +228,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: white;
+        background: rgba(255, 255, 255, 0.08);
         border-radius: 12px;
       }
 
@@ -222,7 +238,7 @@
 
       .stage-name {
         font-weight: 600;
-        color: #2d3436;
+        color: var(--text-white);
         margin-bottom: 8px;
       }
 
@@ -235,7 +251,7 @@
       .mini-bar {
         flex: 1;
         height: 8px;
-        background: #e9ecef;
+        background: rgba(255, 255, 255, 0.1);
         border-radius: 4px;
         overflow: hidden;
       }
@@ -248,7 +264,7 @@
       .stage-stats {
         text-align: right;
         font-size: 0.9rem;
-        color: #636e72;
+        color: rgba(255, 255, 255, 0.6);
       }
 
       /* 按鈕區域 */
@@ -282,12 +298,12 @@
       }
 
       .btn-secondary {
-        background: #e9ecef;
-        color: #495057;
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-light);
       }
 
       .btn-secondary:hover {
-        background: #dee2e6;
+        background: rgba(255, 255, 255, 0.2);
       }
 
       .btn-success {
@@ -356,9 +372,10 @@
         }
       }
     </style>
+    <link rel="stylesheet" href="../css/components/navbar.css" />
   </head>
   <body>
-    <div class="container">
+    <main class="container" id="main-content">
       <div class="header">
         <div class="celebration" id="celebration">🎉</div>
         <h1>遊戲完成！</h1>
@@ -418,60 +435,178 @@
 
       <!-- 操作按鈕 -->
       <div class="actions">
-        <button class="btn btn-secondary" onclick="window.location.href = '../index.html'">
-          返回首頁
+        <button class="btn btn-success" onclick="shareResult()">
+          📤 分享結果
         </button>
-        <button class="btn btn-success" onclick="shareResult()">📤 分享結果</button>
-        <button class="btn btn-primary" onclick="playAgain()">🔄 再玩一次</button>
+        <button class="btn btn-primary" onclick="playAgain()">
+          🔄 再玩一次
+        </button>
+        <button
+          class="btn btn-success"
+          id="btnUploadClass"
+          style="
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+          "
+        >
+          📤 上傳至班級排行榜
+        </button>
+        <div
+          id="uploadCodeRow"
+          style="display: none; gap: 8px; margin-top: 8px; width: 100%"
+        >
+          <input
+            id="uploadCodeInput"
+            placeholder="輸入 6 位代碼"
+            maxlength="6"
+            style="
+              flex: 1;
+              padding: 8px 12px;
+              border: 2px solid #ddd;
+              border-radius: 8px;
+              font-size: 1rem;
+              font-weight: 700;
+              text-align: center;
+              letter-spacing: 2px;
+              text-transform: uppercase;
+            "
+          />
+          <button
+            id="uploadCodeSubmit"
+            class="btn btn-primary"
+            style="padding: 8px 16px; font-size: 0.9rem"
+          >
+            上傳
+          </button>
+        </div>
+        <div
+          id="uploadStatusMsg"
+          style="
+            text-align: center;
+            font-size: 0.85rem;
+            min-height: 24px;
+            width: 100%;
+          "
+        ></div>
+        <button
+          class="btn btn-success"
+          id="btnUploadWorld"
+          style="
+            background: linear-gradient(135deg, #00c9ff, #92fe9d);
+            color: #1a1a2e;
+            border: none;
+            font-weight: 700;
+          "
+        >
+          🌐 上傳至世界排行榜
+        </button>
+        <div
+          id="worldUploadNotice"
+          style="
+            display: none;
+            font-size: 0.78rem;
+            color: #999;
+            text-align: center;
+            padding: 2px 16px 0;
+            line-height: 1.4;
+            width: 100%;
+          "
+        >
+          📋 上傳後，你的暱稱與本次成績將公開顯示於世界排行榜。<br />相同裝置再次上傳會覆蓋先前紀錄。資料僅供排名展示，不會用於其他用途。
+        </div>
+        <div
+          id="worldUploadStatus"
+          style="
+            text-align: center;
+            font-size: 0.85rem;
+            min-height: 24px;
+            width: 100%;
+          "
+        ></div>
       </div>
-    </div>
+    </main>
 
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="../js/firebase-config.js"></script>
+    <script src="../js/shared/leaderboard-writer.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="../js/shared/firestore-leaderboard.js"></script>
+    <script src="../js/sound-config.js"></script>
+    <script src="../js/shared/audio-player.js"></script>
 
     <script>
       let resultData = null;
 
       // 初始化
-      window.addEventListener('DOMContentLoaded', () => {
+      window.addEventListener("DOMContentLoaded", () => {
+        // 🔊 初始化音訊
+        if (typeof AudioPlayer !== "undefined" && AudioPlayer.init) {
+          AudioPlayer.init();
+        }
         loadResults();
       });
 
       function loadResults() {
         // 從 localStorage 獲取結果
-        const savedResult = localStorage.getItem('gameResult');
+        const savedResult = localStorage.getItem("gameResult");
         if (!savedResult) {
-          alert('未找到遊戲結果');
-          window.location.href = '../index.html';
+          alert("未找到遊戲結果");
+          window.location.href = "../index.html";
           return;
         }
 
         resultData = JSON.parse(savedResult);
+
+        // 寫入排行榜（P0-3 修復：排行榜資料從未被寫入）
+        if (typeof LeaderboardWriter !== "undefined") {
+          LeaderboardWriter.recordFromMultiplayer(resultData);
+        }
+
         displayResults();
+
+        // 🔊 播放結算音效
+        if (typeof AudioPlayer !== "undefined" && AudioPlayer.playSfx) {
+          AudioPlayer.playSfx(
+            typeof getSoundFile === "function"
+              ? getSoundFile("feedback.complete")
+              : null,
+            { synthPreset: "complete" },
+          );
+        }
       }
 
       function displayResults() {
         // 基本分數
-        document.getElementById('finalScore').textContent = resultData.score;
-        document.getElementById('accuracyValue').textContent = resultData.accuracy.toFixed(1) + '%';
-        document.getElementById('correctValue').textContent =
+        document.getElementById("finalScore").textContent = resultData.score;
+        document.getElementById("accuracyValue").textContent =
+          resultData.accuracy.toFixed(1) + "%";
+        document.getElementById("correctValue").textContent =
           `${resultData.correctAnswers}/${resultData.totalQuestions}`;
-        document.getElementById('totalTimeValue').textContent =
-          (resultData.totalTime / 1000).toFixed(1) + 's';
+        document.getElementById("totalTimeValue").textContent =
+          (resultData.totalTime / 1000).toFixed(1) + "s";
 
-        // 計算平均反應時間
+        // 計算平均反應時間（相容 rt / reactionTime 兩種欄位）
+        const validRTs = (resultData.answers || []).filter(
+          (a) => (a.rt || a.reactionTime) > 0,
+        );
         const avgTime =
-          resultData.answers.reduce((sum, a) => sum + a.reactionTime, 0) /
-          resultData.answers.length;
-        document.getElementById('avgTimeValue').textContent = (avgTime / 1000).toFixed(2) + 's';
+          validRTs.length > 0
+            ? validRTs.reduce(
+                (sum, a) => sum + (a.rt || a.reactionTime || 0),
+                0,
+              ) / validRTs.length
+            : 0;
+        document.getElementById("avgTimeValue").textContent =
+          (avgTime / 1000).toFixed(2) + "s";
 
         // 準確率進度條動畫
         setTimeout(() => {
-          const bar = document.getElementById('accuracyBar');
-          bar.style.width = resultData.accuracy + '%';
-          bar.textContent = resultData.accuracy.toFixed(1) + '%';
+          const bar = document.getElementById("accuracyBar");
+          bar.style.width = resultData.accuracy + "%";
+          bar.textContent = resultData.accuracy.toFixed(1) + "%";
         }, 300);
 
         // 獲得獎章
@@ -482,11 +617,11 @@
 
         // 慶祝動畫
         if (resultData.accuracy >= 90) {
-          document.getElementById('celebration').textContent = '🏆';
+          document.getElementById("celebration").textContent = "🏆";
         } else if (resultData.accuracy >= 70) {
-          document.getElementById('celebration').textContent = '🎉';
+          document.getElementById("celebration").textContent = "🎉";
         } else {
-          document.getElementById('celebration').textContent = '💪';
+          document.getElementById("celebration").textContent = "💪";
         }
 
         // 計算排名（如果是多人模式）
@@ -498,31 +633,38 @@
 
         // 根據表現給予獎章
         if (resultData.accuracy === 100) {
-          badges.push({ text: '🎯 完美表現', class: 'badge-gold' });
+          badges.push({ text: "🎯 完美表現", class: "badge-gold" });
         } else if (resultData.accuracy >= 90) {
-          badges.push({ text: '⭐ 優秀表現', class: 'badge-gold' });
+          badges.push({ text: "⭐ 優秀表現", class: "badge-gold" });
         } else if (resultData.accuracy >= 70) {
-          badges.push({ text: '👍 良好表現', class: 'badge-silver' });
+          badges.push({ text: "👍 良好表現", class: "badge-silver" });
         }
 
         // 速度獎章
+        const validRTs2 = (resultData.answers || []).filter(
+          (a) => (a.rt || a.reactionTime) > 0,
+        );
         const avgTime =
-          resultData.answers.reduce((sum, a) => sum + a.reactionTime, 0) /
-          resultData.answers.length;
+          validRTs2.length > 0
+            ? validRTs2.reduce(
+                (sum, a) => sum + (a.rt || a.reactionTime || 0),
+                0,
+              ) / validRTs2.length
+            : 9999;
         if (avgTime < 1000) {
-          badges.push({ text: '⚡ 閃電反應', class: 'badge-gold' });
+          badges.push({ text: "⚡ 閃電反應", class: "badge-gold" });
         } else if (avgTime < 1500) {
-          badges.push({ text: '🚀 快速反應', class: 'badge-silver' });
+          badges.push({ text: "🚀 快速反應", class: "badge-silver" });
         }
 
         // 完成獎章
-        badges.push({ text: '✅ 挑戰完成', class: 'badge-bronze' });
+        badges.push({ text: "✅ 挑戰完成", class: "badge-bronze" });
 
         // 顯示獎章
-        const badgesSection = document.getElementById('badgesSection');
+        const badgesSection = document.getElementById("badgesSection");
         if (badges.length > 0) {
           badges.forEach((badge) => {
-            const span = document.createElement('span');
+            const span = document.createElement("span");
             span.className = `badge ${badge.class}`;
             span.textContent = badge.text;
             badgesSection.appendChild(span);
@@ -534,40 +676,45 @@
         // 按場地分組統計
         const stageStats = {};
 
-        resultData.answers.forEach((answer) => {
-          if (!stageStats[answer.stageId]) {
-            stageStats[answer.stageId] = {
+        (resultData.answers || []).forEach((answer) => {
+          // 相容多種資料格式：stageId > fieldId > 'unknown'
+          var key = answer.stageId || answer.context || "game";
+          if (!stageStats[key]) {
+            stageStats[key] = {
               total: 0,
               correct: 0,
             };
           }
-          stageStats[answer.stageId].total++;
+          stageStats[key].total++;
           if (answer.isCorrect) {
-            stageStats[answer.stageId].correct++;
+            stageStats[key].correct++;
           }
         });
 
         // 場地資訊對應
         const stageInfo = {
-          A: { name: '場地A：起司森林', icon: '🧀' },
-          B: { name: '場地B：人類村莊', icon: '🧑' },
-          C: { name: '場地C：海洋世界', icon: '🐟' },
-          D: { name: '場地D：晝夜迷宮', icon: '🌙' },
-          E: { name: '場地E：轉換星球', icon: '🔄' },
-          F: { name: '場地F：耐力賽道', icon: '💪' },
-          G: { name: '場地G：極速挑戰', icon: '⚡' },
-          H: { name: '場地H：大師考驗', icon: '👑' },
+          A: { name: "場地A：起司森林", icon: "🧀" },
+          B: { name: "場地B：人類村莊", icon: "🧑" },
+          C: { name: "場地C：海洋世界", icon: "🐟" },
+          D: { name: "場地D：晝夜迷宮", icon: "🌙" },
+          E: { name: "場地E：轉換星球", icon: "🔄" },
+          F: { name: "場地F：耐力賽道", icon: "💪" },
+          G: { name: "場地G：極速挑戰", icon: "⚡" },
+          H: { name: "場地H：大師考驗", icon: "👑" },
         };
 
-        const breakdown = document.getElementById('stageBreakdown');
-        breakdown.innerHTML = '';
+        const breakdown = document.getElementById("stageBreakdown");
+        breakdown.innerHTML = "";
 
         Object.entries(stageStats).forEach(([stageId, stats]) => {
-          const info = stageInfo[stageId] || { name: `場地 ${stageId}`, icon: '🎯' };
+          const info = stageInfo[stageId] || {
+            name: `場地 ${stageId}`,
+            icon: "🎯",
+          };
           const accuracy = ((stats.correct / stats.total) * 100).toFixed(1);
 
-          const item = document.createElement('div');
-          item.className = 'stage-item';
+          const item = document.createElement("div");
+          item.className = "stage-item";
           item.innerHTML = `
             <div class="stage-icon-box">${info.icon}</div>
             <div class="stage-details">
@@ -588,47 +735,71 @@
       }
 
       async function calculateRank() {
-        // 如果是多人模式，從 Firebase 獲取其他玩家成績
-        const roomData = localStorage.getItem('currentRoom');
-        if (!roomData) {
-          document.getElementById('rankInfo').textContent = '單人模式';
+        // 如果是多人模式，從 Firebase 即時監聽其他玩家成績
+        const roomData = localStorage.getItem("currentRoom");
+        const urlRoom = new URLSearchParams(window.location.search).get("room");
+
+        if (!roomData && !urlRoom) {
+          document.getElementById("rankInfo").textContent = "單人模式";
           return;
         }
 
-        const room = JSON.parse(roomData);
-        const roomRef = firebase.database().ref(`rooms/${room.code}/results`);
+        let roomCode = urlRoom;
+        if (!roomCode && roomData) {
+          try {
+            const room = JSON.parse(roomData);
+            roomCode = room.code || room.roomCode;
+          } catch (e) {}
+        }
+        if (!roomCode) {
+          document.getElementById("rankInfo").textContent = "單人模式";
+          return;
+        }
 
-        try {
-          const snapshot = await roomRef.once('value');
+        const rankEl = document.getElementById("rankInfo");
+        rankEl.textContent = "等待其他玩家完成…";
+
+        const roomRef = firebase
+          .database()
+          .ref("rooms/" + roomCode + "/scores");
+
+        // 即時監聽（而非 .once）
+        roomRef.on("value", function (snapshot) {
           const results = snapshot.val();
-
           if (!results) {
-            document.getElementById('rankInfo').textContent = '單人模式';
+            rankEl.textContent = "等待其他玩家完成…";
             return;
           }
 
-          // 排序所有玩家成績
-          const allResults = Object.values(results).sort((a, b) => b.score - a.score);
-          const myRank = allResults.findIndex((r) => r.playerId === resultData.playerId) + 1;
+          const allResults = Object.entries(results)
+            .map(([uid, data]) => ({
+              playerId: uid,
+              score: data.totalScore || 0,
+              nickname: data.nickname || "玩家",
+            }))
+            .sort((a, b) => b.score - a.score);
+
+          const myId =
+            resultData.playerId ||
+            (firebase.auth().currentUser && firebase.auth().currentUser.uid);
+          const myRank = allResults.findIndex((r) => r.playerId === myId) + 1;
           const totalPlayers = allResults.length;
 
-          // 顯示排名
-          let rankText = '';
+          let rankText = "";
           if (myRank === 1) {
-            rankText = `🥇 第 1 名 / ${totalPlayers} 人`;
+            rankText = "🥇 第 1 名 / " + totalPlayers + " 人";
           } else if (myRank === 2) {
-            rankText = `🥈 第 2 名 / ${totalPlayers} 人`;
+            rankText = "🥈 第 2 名 / " + totalPlayers + " 人";
           } else if (myRank === 3) {
-            rankText = `🥉 第 3 名 / ${totalPlayers} 人`;
+            rankText = "🥉 第 3 名 / " + totalPlayers + " 人";
+          } else if (myRank > 0) {
+            rankText = "第 " + myRank + " 名 / " + totalPlayers + " 人";
           } else {
-            rankText = `第 ${myRank} 名 / ${totalPlayers} 人`;
+            rankText = "計算中… (" + totalPlayers + " 人已完成)";
           }
 
-          document.getElementById('rankInfo').textContent = rankText;
-        } catch (error) {
-          console.error('獲取排名失敗:', error);
-          document.getElementById('rankInfo').textContent = '排名載入失敗';
-        }
+          rankEl.textContent = rankText;
+        });
       }
 
       function shareResult() {
@@ -637,7 +808,7 @@
         if (navigator.share) {
           navigator
             .share({
-              title: '執行功能遊戲 - 我的成績',
+              title: "執行功能遊戲 - 我的成績",
               text: shareText,
             })
             .catch(() => {
@@ -651,17 +822,189 @@
 
       function copyToClipboard(text) {
         navigator.clipboard.writeText(text).then(() => {
-          alert('成績已複製到剪貼簿！');
+          alert("成績已複製到剪貼簿！");
         });
       }
 
       function playAgain() {
         // 清除遊戲記錄
-        localStorage.removeItem('gameResult');
+        localStorage.removeItem("gameResult");
 
         // 返回首頁
-        window.location.href = '../index.html';
+        window.location.href = "../index.html";
       }
+
+      // === 上傳至班級排行榜 ===
+      (function () {
+        var btn = document.getElementById("btnUploadClass");
+        var codeRow = document.getElementById("uploadCodeRow");
+        var codeInput = document.getElementById("uploadCodeInput");
+        var codeSubmit = document.getElementById("uploadCodeSubmit");
+        var statusMsg = document.getElementById("uploadStatusMsg");
+        if (!btn) return;
+
+        btn.addEventListener("click", function () {
+          codeRow.style.display =
+            codeRow.style.display === "none" ? "flex" : "none";
+          if (codeRow.style.display === "flex") codeInput.focus();
+        });
+        codeSubmit.addEventListener("click", doUpload);
+        codeInput.addEventListener("keydown", function (e) {
+          if (e.key === "Enter") doUpload();
+        });
+
+        function doUpload() {
+          var code = codeInput.value.trim().toUpperCase();
+          if (!code || code.length < 4) {
+            codeInput.style.borderColor = "#e74c3c";
+            codeInput.focus();
+            return;
+          }
+          if (typeof FirestoreLeaderboard === "undefined") {
+            statusMsg.textContent = "❌ 上傳模組未載入";
+            statusMsg.style.color = "#e74c3c";
+            return;
+          }
+          codeSubmit.disabled = true;
+          codeSubmit.textContent = "上傳中…";
+          statusMsg.textContent = "";
+          statusMsg.style.color = "";
+
+          var authP = firebase.auth().currentUser
+            ? Promise.resolve()
+            : firebase.auth().signInAnonymously();
+          authP
+            .then(function () {
+              return FirestoreLeaderboard.findBoardByCode(code);
+            })
+            .then(function (board) {
+              if (!board) throw new Error("找不到此代碼對應的看板");
+              var d = resultData || {};
+              var entry = {
+                nickname: d.playerName || d.nickname || "玩家",
+                score: d.score || 0,
+                accuracy: d.accuracy || 0,
+                avgRT: d.avgRT || 0,
+                stars: 0,
+                level: "",
+                mode: "multiplayer",
+              };
+              return FirestoreLeaderboard.uploadToClassBoard(
+                board.boardId,
+                entry,
+              );
+            })
+            .then(function () {
+              statusMsg.textContent = "✅ 上傳成功！";
+              statusMsg.style.color = "#4caf50";
+            })
+            .catch(function (err) {
+              statusMsg.textContent = "❌ " + err.message;
+              statusMsg.style.color = "#e74c3c";
+            })
+            .finally(function () {
+              codeSubmit.disabled = false;
+              codeSubmit.textContent = "上傳";
+            });
+        }
+      })();
+
+      // === 上傳至世界排行榜 ===
+      (function () {
+        var btn = document.getElementById("btnUploadWorld");
+        var notice = document.getElementById("worldUploadNotice");
+        var statusMsg = document.getElementById("worldUploadStatus");
+        if (!btn) return;
+
+        btn.addEventListener("click", function () {
+          // 點擊後隱藏原按鈕，顯示確認列（取消 + 上傳）
+          btn.style.display = "none";
+          notice.style.display = "block";
+          // 動態建立確認列
+          if (!document.getElementById("worldUploadConfirmRow")) {
+            var row = document.createElement("div");
+            row.id = "worldUploadConfirmRow";
+            row.style.cssText =
+              "display:flex;gap:10px;width:100%;margin-top:8px;";
+            var cancelBtn = document.createElement("button");
+            cancelBtn.className = "btn";
+            cancelBtn.style.cssText =
+              "flex:1;background:rgba(255,255,255,0.1);color:#aaa;border:1px solid rgba(255,255,255,0.15);padding:0.6rem;border-radius:10px;font-size:0.95rem;cursor:pointer;";
+            cancelBtn.textContent = "取消";
+            cancelBtn.addEventListener("click", function () {
+              row.style.display = "none";
+              notice.style.display = "none";
+              btn.style.display = "";
+            });
+            var confirmBtn = document.createElement("button");
+            confirmBtn.className = "btn";
+            confirmBtn.style.cssText =
+              "flex:1;background:linear-gradient(135deg,#00c9ff,#92fe9d);color:#1a1a2e;font-weight:700;padding:0.6rem;border:none;border-radius:10px;font-size:0.95rem;cursor:pointer;";
+            confirmBtn.textContent = "上傳";
+            confirmBtn.addEventListener("click", function () {
+              // 真正上傳
+              if (typeof FirestoreLeaderboard === "undefined") {
+                statusMsg.textContent = "❌ 上傳模組未載入";
+                statusMsg.style.color = "#e74c3c";
+                return;
+              }
+              confirmBtn.disabled = true;
+              confirmBtn.textContent = "上傳中…";
+              statusMsg.textContent = "";
+              statusMsg.style.color = "";
+
+              var authP = firebase.auth().currentUser
+                ? Promise.resolve()
+                : firebase.auth().signInAnonymously();
+              authP
+                .then(function () {
+                  var d = resultData || {};
+                  // 計算平均 RT
+                  var validRTs = (d.answers || []).filter(function (a) {
+                    return (a.rt || a.reactionTime) > 0;
+                  });
+                  var avgRT =
+                    validRTs.length > 0
+                      ? validRTs.reduce(function (sum, a) {
+                          return sum + (a.rt || a.reactionTime || 0);
+                        }, 0) / validRTs.length
+                      : 0;
+                  var worldData = {
+                    nickname: d.playerName || d.nickname || "玩家",
+                    bestScore: d.score || 0,
+                    bestAccuracy: Math.round(d.accuracy || 0),
+                    bestAvgRT: Math.round(avgRT),
+                    totalStars: 0,
+                    level: "",
+                    gamesPlayed: 1,
+                  };
+                  return FirestoreLeaderboard.uploadToWorld(worldData);
+                })
+                .then(function () {
+                  statusMsg.textContent = "✅ 已上傳至世界排行榜！";
+                  statusMsg.style.color = "#4caf50";
+                  row.style.display = "none";
+                  notice.style.display = "none";
+                  btn.style.display = "";
+                  btn.textContent = "🌐 已上傳";
+                  btn.disabled = true;
+                  btn.style.opacity = "0.6";
+                })
+                .catch(function (err) {
+                  statusMsg.textContent = "❌ " + err.message;
+                  statusMsg.style.color = "#e74c3c";
+                  confirmBtn.disabled = false;
+                  confirmBtn.textContent = "上傳";
+                });
+            });
+            row.appendChild(cancelBtn);
+            row.appendChild(confirmBtn);
+            notice.parentNode.insertBefore(row, notice.nextSibling);
+          }
+        });
+      })();
     </script>
+    <script src="../js/shared/navbar.js"></script>
+    <script src="../js/shared/landscape-hint.js"></script>
   </body>
 </html>

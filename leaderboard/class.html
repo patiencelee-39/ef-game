@@ -2,461 +2,1116 @@
 <html lang="zh-TW">
   <head>
     <meta charset="UTF-8" />
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://www.googleapis.com" crossorigin />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app"
+    />
     <title>班級排行榜 - 執行功能訓練遊戲</title>
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="../manifest.json" />
+    <meta name="theme-color" content="#302b63" />
+    <link rel="stylesheet" href="../css/themes/base.css" />
     <link rel="stylesheet" href="../css/main.css" />
+    <link rel="stylesheet" href="../css/components/ranking.css" />
+    <link rel="stylesheet" href="../css/components/csv-report.css" />
+    <link rel="stylesheet" href="../css/components/landscape-hint.css" />
     <style>
-      .leaderboard-container {
-        max-width: 1000px;
-        margin: 2rem auto;
-        padding: 2rem;
+      .class-page {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 1.5rem;
+        min-height: 100vh;
       }
-
-      .class-selector {
-        display: flex;
-        justify-content: center;
-        gap: 1rem;
-        margin-bottom: 2rem;
-        flex-wrap: wrap;
-      }
-
-      .class-btn {
-        padding: 0.75rem 1.5rem;
-        border: 2px solid #ddd;
-        border-radius: 8px;
-        background: white;
-        cursor: pointer;
-        transition: all 0.3s;
-        font-weight: bold;
-      }
-
-      .class-btn:hover {
-        background: #f8f9fa;
-      }
-
-      .class-btn.active {
-        background: #4caf50;
-        color: white;
-        border-color: #4caf50;
-      }
-
-      .leaderboard-table {
-        background: white;
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      }
-
-      .table-header {
-        display: grid;
-        grid-template-columns: 80px 1fr 120px 120px 120px;
-        padding: 1rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        font-weight: bold;
-      }
-
-      .table-row {
-        display: grid;
-        grid-template-columns: 80px 1fr 120px 120px 120px;
-        padding: 1rem;
-        border-bottom: 1px solid #eee;
-        transition: all 0.3s;
-      }
-
-      .table-row:hover {
-        background: #f8f9fa;
-      }
-
-      .table-row:last-child {
-        border-bottom: none;
-      }
-
-      .rank {
-        font-size: 1.5rem;
-        font-weight: bold;
+      .class-header {
         text-align: center;
+        margin-bottom: 1.5rem;
       }
-
-      .rank.top1 {
-        color: #ffd700;
-      }
-
-      .rank.top2 {
-        color: #c0c0c0;
-      }
-
-      .rank.top3 {
-        color: #cd7f32;
-      }
-
-      .player-info {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-      }
-
-      .player-avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
+      .class-header h1 {
+        font-size: 2rem;
+        margin: 0 0 0.3rem;
         background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .class-header .subtitle {
+        color: #888;
+        font-size: 0.9rem;
+      }
+      .board-name-display {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #333;
+        margin-top: 0.5rem;
+      }
+
+      /* Tab */
+      .mode-tabs {
         display: flex;
-        align-items: center;
         justify-content: center;
-        color: white;
-        font-weight: bold;
-        font-size: 1.2rem;
+        gap: 0;
+        margin-bottom: 1.5rem;
+      }
+      .mode-tab {
+        padding: 0.75rem 2rem;
+        border: 2px solid #ddd;
+        background: #fff;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+        user-select: none;
+      }
+      .mode-tab:first-child {
+        border-radius: 10px 0 0 10px;
+      }
+      .mode-tab:last-child {
+        border-radius: 0 10px 10px 0;
+      }
+      .mode-tab.active {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: #fff;
+        border-color: #667eea;
+      }
+      .mode-tab:hover:not(.active) {
+        background: #f0f0f0;
       }
 
-      .player-name {
-        font-weight: 500;
+      .panel {
+        display: none;
+      }
+      .panel.active {
+        display: block;
       }
 
-      .score-cell {
+      /* Setup */
+      .board-setup {
+        max-width: 600px;
+        margin: 0 auto 2rem;
+      }
+      .setup-card {
+        background: #fff;
+        border-radius: 14px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        margin-bottom: 1.5rem;
+      }
+      .setup-card h3 {
+        margin: 0 0 1rem;
+        font-size: 1.1rem;
+        color: #333;
+      }
+      .setup-card .input-row {
         display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        color: #4caf50;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+      }
+      .setup-card input {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        font-size: 1rem;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+      .setup-card input:focus {
+        border-color: #667eea;
+      }
+      .btn {
+        padding: 0.75rem 1.25rem;
+        border: none;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+      }
+      .btn-primary {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: #fff;
+      }
+      .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      }
+      .btn-secondary {
+        background: #f0f0f0;
+        color: #333;
+      }
+      .btn-secondary:hover {
+        background: #e0e0e0;
+      }
+      .btn-danger {
+        background: #f44336;
+        color: #fff;
+      }
+      .btn-danger:hover {
+        background: #d32f2f;
       }
 
-      .games-cell {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #666;
+      /* Share */
+      .share-methods {
+        display: none;
+        background: #fff;
+        border-radius: 14px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        margin-bottom: 1.5rem;
       }
-
-      .accuracy-cell {
-        display: flex;
-        align-items: center;
-        justify-content: center;
+      .share-methods.visible {
+        display: block;
       }
-
-      .accuracy-bar {
-        width: 80px;
-        height: 8px;
-        background: #eee;
-        border-radius: 4px;
-        overflow: hidden;
-        margin-right: 0.5rem;
-      }
-
-      .accuracy-fill {
-        height: 100%;
-        background: linear-gradient(90deg, #4caf50, #8bc34a);
-        transition: width 0.5s;
-      }
-
-      .empty-state {
+      .share-methods h3 {
+        margin: 0 0 1rem;
+        font-size: 1.1rem;
         text-align: center;
-        padding: 3rem;
+      }
+      .share-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+      }
+      @media (max-width: 700px) {
+        .share-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .share-item {
+        text-align: center;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 12px;
+        border: 1px solid #eee;
+      }
+      .share-item__label {
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: #555;
+        margin-bottom: 0.75rem;
+      }
+      .share-item__code {
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: 4px;
+        color: #333;
+        font-family: "Courier New", monospace;
+        margin-bottom: 0.5rem;
+        user-select: all;
+      }
+      .share-item__qr {
+        margin: 0.5rem auto;
+      }
+      .share-item__qr canvas {
+        border-radius: 8px;
+      }
+      .share-item__link {
+        word-break: break-all;
+        font-size: 0.78rem;
+        color: #667eea;
+        padding: 6px 10px;
+        background: #eef;
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+        user-select: all;
+      }
+      .share-item .btn {
+        margin-top: 0.5rem;
+        font-size: 0.85rem;
+        padding: 0.5rem 1rem;
+      }
+
+      /* My Boards */
+      .board-list-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem 1rem;
+        background: #fff;
+        border-radius: 10px;
+        margin-bottom: 0.5rem;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .board-list-item:hover {
+        background: #f0f4ff;
+        transform: translateX(2px);
+      }
+      .board-list-item__name {
+        font-weight: 600;
+        color: #333;
+      }
+      .board-list-item__code {
+        font-family: monospace;
+        color: #667eea;
+        font-weight: 700;
+        font-size: 0.9rem;
+      }
+      .board-list-item__meta {
+        font-size: 0.78rem;
         color: #999;
       }
 
-      .empty-state .emoji {
-        font-size: 4rem;
-        margin-bottom: 1rem;
+      /* Actions */
+      .board-actions {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: center;
+        margin: 1.5rem 0;
+        flex-wrap: wrap;
       }
-
-      .stats-summary {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
-        margin-bottom: 2rem;
-      }
-
-      .stat-card {
-        background: white;
-        padding: 1.5rem;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        text-align: center;
-      }
-
-      .stat-card .emoji {
-        font-size: 2rem;
-        margin-bottom: 0.5rem;
-      }
-
-      .stat-card .number {
-        font-size: 2rem;
-        font-weight: bold;
-        color: #4caf50;
-        margin-bottom: 0.25rem;
-      }
-
-      .stat-card .label {
-        color: #666;
+      .board-actions .btn {
         font-size: 0.9rem;
+        padding: 0.6rem 1.2rem;
       }
-
-      .action-buttons {
+      .class-footer {
         display: flex;
         gap: 1rem;
         justify-content: center;
         margin-top: 2rem;
+        flex-wrap: wrap;
+      }
+      .class-footer .btn {
+        font-size: 0.9rem;
+        padding: 0.6rem 1.2rem;
       }
 
-      @media (max-width: 768px) {
-        .table-header,
-        .table-row {
-          grid-template-columns: 60px 1fr 80px;
-        }
+      /* Toast */
+      .toast {
+        position: fixed;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #333;
+        color: #fff;
+        padding: 0.75rem 1.5rem;
+        border-radius: 24px;
+        font-size: 0.9rem;
+        z-index: 9999;
+        opacity: 0;
+        transition: opacity 0.3s;
+        pointer-events: none;
+      }
+      .toast.show {
+        opacity: 1;
+      }
 
-        .games-cell,
-        .accuracy-cell {
-          display: none;
-        }
+      /* Import */
+      .import-upload-zone {
+        border: 2px dashed #ccc;
+        border-radius: 14px;
+        padding: 2rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        margin-bottom: 1.5rem;
+        background: #fafafa;
+      }
+      .import-upload-zone:hover,
+      .import-upload-zone.dragover {
+        border-color: #667eea;
+        background: #f0f4ff;
+      }
+      .import-upload-zone p {
+        margin: 0 0 0.5rem;
+        font-size: 1rem;
+        color: #555;
+      }
+
+      /* Delete rules */
+      .delete-rules {
+        background: #fff3e0;
+        border-left: 4px solid #ff9800;
+        padding: 1rem 1.25rem;
+        border-radius: 0 10px 10px 0;
+        margin: 1.5rem 0;
+        font-size: 0.85rem;
+        line-height: 1.6;
+        color: #555;
+      }
+      .delete-rules strong {
+        color: #e65100;
+      }
+      .delete-rules ul {
+        margin: 0.5rem 0 0 1.25rem;
+        padding: 0;
       }
     </style>
+    <link rel="stylesheet" href="../css/components/navbar.css" />
   </head>
   <body>
-    <div class="container">
-      <header>
-        <h1>🏆 班級排行榜</h1>
-        <p class="subtitle">查看班級內的遊戲成績排名</p>
-      </header>
+    <main class="class-page" id="main-content">
+      <div class="class-header">
+        <h1>📋 班級排行榜</h1>
+        <p class="subtitle">即時收集學生成績 或 匯入 CSV 分析</p>
+        <div
+          class="board-name-display"
+          id="boardNameDisplay"
+          style="display: none"
+        ></div>
+      </div>
 
-      <main class="leaderboard-container">
-        <!-- 班級選擇器 -->
-        <div class="class-selector">
-          <button class="class-btn active" onclick="selectClass('all')">
-            全部班級
-          </button>
-          <button class="class-btn" onclick="selectClass('class-a')">
-            向日葵班
-          </button>
-          <button class="class-btn" onclick="selectClass('class-b')">
-            薰衣草班
-          </button>
-          <button class="class-btn" onclick="selectClass('class-c')">
-            玫瑰班
-          </button>
-        </div>
+      <div class="mode-tabs">
+        <button class="mode-tab active" data-panel="live">📡 即時模式</button>
+        <button class="mode-tab" data-panel="import">📁 匯入模式</button>
+      </div>
 
-        <!-- 統計摘要 -->
-        <div class="stats-summary">
-          <div class="stat-card">
-            <div class="emoji">👥</div>
-            <div class="number" id="totalPlayers">0</div>
-            <div class="label">參與人數</div>
-          </div>
-          <div class="stat-card">
-            <div class="emoji">🎮</div>
-            <div class="number" id="totalGames">0</div>
-            <div class="label">總遊戲場次</div>
-          </div>
-          <div class="stat-card">
-            <div class="emoji">⭐</div>
-            <div class="number" id="avgScore">0</div>
-            <div class="label">平均分數</div>
-          </div>
-          <div class="stat-card">
-            <div class="emoji">🎯</div>
-            <div class="number" id="avgAccuracy">0%</div>
-            <div class="label">平均正確率</div>
-          </div>
-        </div>
-
-        <!-- 排行榜表格 -->
-        <div class="leaderboard-table">
-          <div class="table-header">
-            <div>排名</div>
-            <div>玩家</div>
-            <div class="games-cell">遊戲次數</div>
-            <div>最高分</div>
-            <div class="accuracy-cell">正確率</div>
-          </div>
-          <div id="leaderboardBody"></div>
-        </div>
-
-        <div class="action-buttons">
-          <button class="btn-secondary" onclick="location.href = '../index.html'">
-            返回首頁
-          </button>
-          <button class="btn-primary" onclick="refreshLeaderboard()">
-            🔄 重新整理
-          </button>
-        </div>
-      </main>
-
-      <footer>
-        <p>&copy; 2026 執行功能訓練遊戲. All rights reserved.</p>
-      </footer>
-    </div>
-
-    <script src="../js/firebase-config.js"></script>
-    <script>
-      let currentClass = 'all';
-
-      // 模擬資料（實際應從 Firebase 載入）
-      const mockData = [
-        {
-          id: 1,
-          name: '小明',
-          class: 'class-a',
-          bestScore: 950,
-          gamesPlayed: 15,
-          accuracy: 95,
-        },
-        {
-          id: 2,
-          name: '小華',
-          class: 'class-a',
-          bestScore: 920,
-          gamesPlayed: 12,
-          accuracy: 92,
-        },
-        {
-          id: 3,
-          name: '小美',
-          class: 'class-b',
-          bestScore: 890,
-          gamesPlayed: 18,
-          accuracy: 89,
-        },
-        {
-          id: 4,
-          name: '小強',
-          class: 'class-b',
-          bestScore: 870,
-          gamesPlayed: 10,
-          accuracy: 87,
-        },
-        {
-          id: 5,
-          name: '小芳',
-          class: 'class-c',
-          bestScore: 850,
-          gamesPlayed: 14,
-          accuracy: 85,
-        },
-        {
-          id: 6,
-          name: '小傑',
-          class: 'class-a',
-          bestScore: 830,
-          gamesPlayed: 11,
-          accuracy: 83,
-        },
-        {
-          id: 7,
-          name: '小玲',
-          class: 'class-c',
-          bestScore: 810,
-          gamesPlayed: 13,
-          accuracy: 81,
-        },
-        {
-          id: 8,
-          name: '小宇',
-          class: 'class-b',
-          bestScore: 790,
-          gamesPlayed: 9,
-          accuracy: 79,
-        },
-      ];
-
-      function selectClass(className) {
-        currentClass = className;
-
-        // 更新按鈕狀態
-        document.querySelectorAll('.class-btn').forEach((btn) => {
-          btn.classList.remove('active');
-        });
-        event.target.classList.add('active');
-
-        renderLeaderboard();
-      }
-
-      function renderLeaderboard() {
-        const filteredData =
-          currentClass === 'all' ? mockData : mockData.filter((p) => p.class === currentClass);
-
-        // 按分數排序
-        const sortedData = [...filteredData].sort((a, b) => b.bestScore - a.bestScore);
-
-        const body = document.getElementById('leaderboardBody');
-
-        if (sortedData.length === 0) {
-          body.innerHTML = `
-          <div class="empty-state">
-            <div class="emoji">📭</div>
-            <h3>目前沒有資料</h3>
-            <p>這個班級還沒有玩家記錄</p>
-          </div>
-        `;
-          updateStats(filteredData);
-          return;
-        }
-
-        body.innerHTML = sortedData
-          .map((player, index) => {
-            const rank = index + 1;
-            const rankClass = rank === 1 ? 'top1' : rank === 2 ? 'top2' : rank === 3 ? 'top3' : '';
-            const rankEmoji = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
-
-            return `
-            <div class="table-row">
-              <div class="rank ${rankClass}">${rankEmoji}</div>
-              <div class="player-info">
-                <div class="player-avatar">${player.name.charAt(0)}</div>
-                <div class="player-name">${player.name}</div>
-              </div>
-              <div class="games-cell">${player.gamesPlayed} 場</div>
-              <div class="score-cell">${player.bestScore} 分</div>
-              <div class="accuracy-cell">
-                <div class="accuracy-bar">
-                  <div class="accuracy-fill" style="width: ${player.accuracy}%"></div>
-                </div>
-                ${player.accuracy}%
-              </div>
+      <!-- ═══ 即時模式 ═══ -->
+      <div class="panel active" id="panelLive">
+        <div class="board-setup" id="boardSetup">
+          <div class="setup-card">
+            <h3>🏫 老師：建立新看板</h3>
+            <div class="input-row">
+              <input
+                type="text"
+                id="boardNameInput"
+                placeholder="看板名稱（如：中班第三週）"
+                maxlength="50"
+                aria-label="看板名稱"
+              />
+              <button class="btn btn-primary" id="btnCreateBoard">建立</button>
             </div>
-          `;
-          })
-          .join('');
+          </div>
+          <div class="setup-card">
+            <h3>🎒 學生：輸入代碼上傳成績</h3>
+            <div class="input-row">
+              <input
+                type="text"
+                id="joinCodeInput"
+                placeholder="輸入 6 位代碼"
+                maxlength="6"
+                aria-label="看板代碼"
+                style="
+                  text-transform: uppercase;
+                  letter-spacing: 2px;
+                  text-align: center;
+                  font-weight: 700;
+                "
+              />
+              <button class="btn btn-primary" id="btnJoinBoard">加入</button>
+            </div>
+          </div>
+          <div class="my-boards" id="myBoardsSection" style="display: none">
+            <h3 style="margin: 0 0 0.75rem; color: #555">📂 我的看板</h3>
+            <div id="myBoardsList"></div>
+          </div>
+        </div>
 
-        updateStats(filteredData);
-      }
+        <div class="share-methods" id="shareMethods">
+          <h3>📢 分享給學生（三種方式皆可）</h3>
+          <div class="share-grid">
+            <div class="share-item">
+              <div class="share-item__label">🔢 代碼</div>
+              <div class="share-item__code" id="shareCode">------</div>
+              <button class="btn btn-secondary" onclick="copyCode()">
+                📋 複製代碼
+              </button>
+            </div>
+            <div class="share-item">
+              <div class="share-item__label">📱 QR Code</div>
+              <div class="share-item__qr" id="shareQR"></div>
+              <button class="btn btn-secondary" onclick="downloadQR()">
+                💾 下載 QR
+              </button>
+            </div>
+            <div class="share-item">
+              <div class="share-item__label">🔗 共享連結</div>
+              <div class="share-item__link" id="shareLink">—</div>
+              <button class="btn btn-secondary" onclick="copyLink()">
+                📋 複製連結
+              </button>
+            </div>
+          </div>
+        </div>
 
-      function updateStats(data) {
-        if (data.length === 0) {
-          document.getElementById('totalPlayers').textContent = '0';
-          document.getElementById('totalGames').textContent = '0';
-          document.getElementById('avgScore').textContent = '0';
-          document.getElementById('avgAccuracy').textContent = '0%';
-          return;
+        <div id="liveStatsContainer" style="display: none"></div>
+        <div id="liveRankingContainer">
+          <div class="ranking-empty">
+            <span class="ranking-empty__icon">📡</span>
+            <p>建立或加入看板後，排行榜將在此即時更新</p>
+          </div>
+        </div>
+        <div class="board-actions" id="boardActions" style="display: none">
+          <button class="btn btn-secondary" onclick="exportBoardCSV()">
+            💾 匯出 CSV
+          </button>
+          <button class="btn btn-secondary" onclick="exportBoardPDF()">
+            📄 匯出 PDF
+          </button>
+          <button class="btn btn-secondary" onclick="screenshotBoard()">
+            📸 截圖
+          </button>
+          <button class="btn btn-danger" onclick="deleteBoard()">
+            🗑️ 刪除此看板
+          </button>
+        </div>
+        <div class="delete-rules" id="deleteRulesLive" style="display: none">
+          <strong>ℹ️ 資料管理說明</strong>
+          <ul>
+            <li>
+              班級排行榜資料儲存在雲端，<strong>老師不刪除就會一直保留</strong>
+            </li>
+            <li>
+              學生可以重複上傳，<strong>同一位學生的資料會覆蓋前一筆</strong>（保留最新的）
+            </li>
+            <li>只有看板建立者（老師）可以刪除整個看板或個別記錄</li>
+            <li>刪除後<strong>無法恢復</strong>，建議先匯出 CSV 備份</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- ═══ 匯入模式 ═══ -->
+      <div class="panel" id="panelImport">
+        <div class="import-upload-zone" id="importUploadZone">
+          <p>📁 拖放 CSV 檔案到此處，或點擊選擇檔案</p>
+          <small>支援 EF訓練遊戲數據_ID_日期_時間.csv 格式，可多檔上傳</small>
+          <input
+            type="file"
+            id="importFileInput"
+            accept=".csv"
+            multiple
+            style="display: none"
+            aria-label="選擇 CSV 檔案"
+          />
+        </div>
+        <div id="importStatsContainer" style="display: none"></div>
+        <div id="importRankingContainer">
+          <div class="ranking-empty">
+            <span class="ranking-empty__icon">📁</span>
+            <p>匯入 CSV 檔案後，排行榜將顯示在此</p>
+          </div>
+        </div>
+        <div id="importReportContainer"></div>
+        <div class="board-actions" id="importActions" style="display: none">
+          <button class="btn btn-secondary" id="importBtnExport">
+            💾 匯出 CSV
+          </button>
+          <button class="btn btn-secondary" id="importBtnPdf">
+            📄 匯出 PDF
+          </button>
+          <button class="btn btn-secondary" id="importBtnScreenshot">
+            📸 截圖
+          </button>
+          <button class="btn btn-secondary" id="importBtnClear">
+            🗑️ 清除資料
+          </button>
+        </div>
+        <div class="delete-rules">
+          <strong>ℹ️ 匯入模式說明</strong>
+          <ul>
+            <li>
+              匯入的 CSV
+              資料<strong>僅存在瀏覽器記憶體中</strong>，關閉頁面即消失
+            </li>
+            <li>
+              適合學期末<strong>批次匯入分析</strong>，一次觀察所有學生的學習狀況
+            </li>
+            <li>匯入後可匯出 CSV / PDF / 截圖，保存分析結果</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="class-footer">
+        <button
+          class="btn btn-secondary"
+          onclick="location.href = 'index.html'"
+        >
+          ← 返回排行榜
+        </button>
+        <button
+          class="btn btn-secondary"
+          onclick="location.href = '../index.html'"
+        >
+          🏠 回首頁
+        </button>
+      </div>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <!-- === 依賴 === -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="../js/firebase-config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+    <script src="../js/utils/constants.js"></script>
+    <script src="../js/shared/ranking-renderer.js"></script>
+    <script src="../js/shared/firestore-leaderboard.js"></script>
+    <script src="../js/shared/csv-report.js"></script>
+
+    <!-- === 控制器 === -->
+    <script>
+      (function () {
+        "use strict";
+
+        var _currentBoardId = null;
+        var _currentCode = null;
+        var _currentShareUrl = null;
+        var _unsubscribe = null;
+        var _isOwner = false;
+        var _importParsedData = null;
+
+        // DOM
+        var boardNameInput = document.getElementById("boardNameInput");
+        var joinCodeInput = document.getElementById("joinCodeInput");
+        var boardSetup = document.getElementById("boardSetup");
+        var shareMethods = document.getElementById("shareMethods");
+        var liveRankingContainer = document.getElementById(
+          "liveRankingContainer",
+        );
+        var liveStatsContainer = document.getElementById("liveStatsContainer");
+        var boardActions = document.getElementById("boardActions");
+        var deleteRulesLive = document.getElementById("deleteRulesLive");
+        var boardNameDisplay = document.getElementById("boardNameDisplay");
+        var myBoardsSection = document.getElementById("myBoardsSection");
+        var myBoardsList = document.getElementById("myBoardsList");
+
+        // === 初始化 ===
+        firebase.auth().onAuthStateChanged(function (user) {
+          if (user) {
+            _checkUrlParams();
+            _loadMyBoards();
+          }
+        });
+
+        function _checkUrlParams() {
+          var params = new URLSearchParams(window.location.search);
+          var boardId = params.get("board");
+          var code = params.get("code");
+          if (boardId) _openBoard(boardId, code);
         }
 
-        const totalPlayers = data.length;
-        const totalGames = data.reduce((sum, p) => sum + p.gamesPlayed, 0);
-        const avgScore = Math.round(data.reduce((sum, p) => sum + p.bestScore, 0) / totalPlayers);
-        const avgAccuracy = Math.round(
-          data.reduce((sum, p) => sum + p.accuracy, 0) / totalPlayers
+        // === Tab 切換 ===
+        var tabs = document.querySelectorAll(".mode-tab");
+        tabs.forEach(function (tab) {
+          tab.addEventListener("click", function () {
+            tabs.forEach(function (t) {
+              t.classList.remove("active");
+            });
+            tab.classList.add("active");
+            document.querySelectorAll(".panel").forEach(function (p) {
+              p.classList.remove("active");
+            });
+            document
+              .getElementById(
+                tab.getAttribute("data-panel") === "live"
+                  ? "panelLive"
+                  : "panelImport",
+              )
+              .classList.add("active");
+          });
+        });
+
+        // === 建立看板 ===
+        document
+          .getElementById("btnCreateBoard")
+          .addEventListener("click", function () {
+            var name = boardNameInput.value.trim();
+            if (!name) {
+              boardNameInput.style.borderColor = "#e74c3c";
+              boardNameInput.focus();
+              return;
+            }
+            this.disabled = true;
+            this.textContent = "建立中…";
+            var btn = this;
+
+            FirestoreLeaderboard.createClassBoard(name)
+              .then(function (result) {
+                _currentBoardId = result.boardId;
+                _currentCode = result.code;
+                _currentShareUrl = result.shareUrl;
+                _isOwner = true;
+                _showBoardUI(name, result.code, result.shareUrl);
+                _startListening(result.boardId);
+                _loadMyBoards();
+                _toast("✅ 看板已建立！");
+              })
+              .catch(function (err) {
+                alert("❌ 建立失敗：" + err.message);
+              })
+              .finally(function () {
+                btn.disabled = false;
+                btn.textContent = "建立";
+              });
+          });
+
+        // === 加入看板 ===
+        document
+          .getElementById("btnJoinBoard")
+          .addEventListener("click", function () {
+            var code = joinCodeInput.value.trim().toUpperCase();
+            if (!code || code.length < 4) {
+              joinCodeInput.style.borderColor = "#e74c3c";
+              joinCodeInput.focus();
+              return;
+            }
+            this.disabled = true;
+            this.textContent = "搜尋中…";
+            var btn = this;
+
+            FirestoreLeaderboard.findBoardByCode(code)
+              .then(function (board) {
+                if (!board) {
+                  alert("⚠️ 找不到此代碼對應的看板");
+                  return;
+                }
+                _currentBoardId = board.boardId;
+                _currentCode = board.code;
+                _isOwner = board.ownerId === firebase.auth().currentUser.uid;
+                var shareUrl =
+                  window.location.origin +
+                  "/leaderboard/class.html?board=" +
+                  board.boardId +
+                  "&code=" +
+                  board.code;
+                _currentShareUrl = shareUrl;
+                _showBoardUI(board.boardName, board.code, shareUrl);
+                _startListening(board.boardId);
+                _toast("✅ 已加入看板！");
+              })
+              .catch(function (err) {
+                alert("❌ 查詢失敗：" + err.message);
+              })
+              .finally(function () {
+                btn.disabled = false;
+                btn.textContent = "加入";
+              });
+          });
+
+        // === 看板 UI ===
+        function _showBoardUI(boardName, code, shareUrl) {
+          boardSetup.style.display = "none";
+          shareMethods.classList.add("visible");
+          boardActions.style.display = "";
+          deleteRulesLive.style.display = "";
+          boardNameDisplay.textContent = "📋 " + boardName;
+          boardNameDisplay.style.display = "";
+          document.getElementById("shareCode").textContent = code;
+          document.getElementById("shareLink").textContent = shareUrl;
+
+          var qrContainer = document.getElementById("shareQR");
+          qrContainer.innerHTML = "";
+          if (typeof QRCode !== "undefined") {
+            QRCode.toCanvas(
+              shareUrl,
+              { width: 150, margin: 1 },
+              function (err, canvas) {
+                if (!err) qrContainer.appendChild(canvas);
+              },
+            );
+          }
+          if (!_isOwner) {
+            var db = boardActions.querySelector(".btn-danger");
+            if (db) db.style.display = "none";
+          }
+        }
+
+        function _openBoard(boardId, code) {
+          FirestoreLeaderboard.findBoardByCode(code || "")
+            .then(function (board) {
+              // findBoardByCode 可能找不到（如只有 boardId 沒有 code）
+              // 此時直接用 boardId 從 Firestore 讀取
+              if (board && board.boardId === boardId) {
+                _currentBoardId = boardId;
+                _currentCode = board.code || code;
+                _isOwner = board.ownerId === firebase.auth().currentUser.uid;
+                var shareUrl =
+                  window.location.origin +
+                  "/leaderboard/class.html?board=" +
+                  boardId +
+                  "&code=" +
+                  _currentCode;
+                _currentShareUrl = shareUrl;
+                _showBoardUI(board.boardName, _currentCode, shareUrl);
+                _startListening(boardId);
+                return;
+              }
+              // Fallback: 直接用 boardId 讀取
+              return _openBoardById(boardId, code);
+            })
+            .catch(function () {
+              _openBoardById(boardId, code);
+            });
+        }
+
+        function _openBoardById(boardId, code) {
+          var db = window.firebaseServices.firestore;
+          db.collection("classLeaderboards")
+            .doc(boardId)
+            .get()
+            .then(function (doc) {
+              if (!doc.exists) {
+                _toast("⚠️ 看板不存在或已被刪除");
+                return;
+              }
+              var data = doc.data();
+              _currentBoardId = boardId;
+              _currentCode = data.code || code;
+              _isOwner = data.ownerId === firebase.auth().currentUser.uid;
+              var shareUrl =
+                window.location.origin +
+                "/leaderboard/class.html?board=" +
+                boardId +
+                "&code=" +
+                _currentCode;
+              _currentShareUrl = shareUrl;
+              _showBoardUI(data.boardName, _currentCode, shareUrl);
+              _startListening(boardId);
+            })
+            .catch(function (err) {
+              console.error("開啟看板失敗", err);
+              _toast("❌ 開啟看板失敗：" + err.message);
+            });
+        }
+
+        // === Firestore 即時監聽 ===
+        function _startListening(boardId) {
+          if (_unsubscribe) _unsubscribe();
+          _unsubscribe = FirestoreLeaderboard.listenClassBoard(
+            boardId,
+            function (entries) {
+              RankingRenderer.renderStats(liveStatsContainer, entries);
+              var uid = firebase.auth().currentUser
+                ? firebase.auth().currentUser.uid
+                : null;
+              RankingRenderer.render(liveRankingContainer, entries, {
+                sortBy: "score",
+                showAccuracy: true,
+                showRT: true,
+                showTime: true,
+                highlightUid: uid,
+                onDelete: _isOwner
+                  ? function (entryId) {
+                      FirestoreLeaderboard.deleteClassEntry(boardId, entryId)
+                        .then(function () {
+                          _toast("✅ 已刪除");
+                        })
+                        .catch(function (err) {
+                          alert("❌ " + err.message);
+                        });
+                    }
+                  : null,
+                emptyText: "等待學生上傳成績…",
+                emptyIcon: "📡",
+              });
+            },
+          );
+        }
+
+        // === 我的看板列表 ===
+        function _loadMyBoards() {
+          FirestoreLeaderboard.getMyBoards().then(function (boards) {
+            if (boards.length === 0) {
+              myBoardsSection.style.display = "none";
+              return;
+            }
+            myBoardsSection.style.display = "";
+            myBoardsList.innerHTML = "";
+            boards.forEach(function (board) {
+              var item = document.createElement("div");
+              item.className = "board-list-item";
+              item.innerHTML =
+                '<div><div class="board-list-item__name">' +
+                _esc(board.boardName) +
+                '</div><div class="board-list-item__meta">代碼：<span class="board-list-item__code">' +
+                board.code +
+                '</span></div></div><div style="font-size:1.2rem">→</div>';
+              item.addEventListener("click", function () {
+                _openBoard(board.boardId, board.code);
+              });
+              myBoardsList.appendChild(item);
+            });
+          });
+        }
+
+        // === 分享功能 ===
+        window.copyCode = function () {
+          if (_currentCode)
+            navigator.clipboard.writeText(_currentCode).then(function () {
+              _toast("✅ 代碼已複製：" + _currentCode);
+            });
+        };
+        window.copyLink = function () {
+          if (_currentShareUrl)
+            navigator.clipboard.writeText(_currentShareUrl).then(function () {
+              _toast("✅ 連結已複製");
+            });
+        };
+        window.downloadQR = function () {
+          var c = document.querySelector("#shareQR canvas");
+          if (!c) return;
+          var a = document.createElement("a");
+          a.download = "班級排行榜_QR_" + _currentCode + ".png";
+          a.href = c.toDataURL();
+          a.click();
+          _toast("✅ QR Code 已下載");
+        };
+
+        // === 看板操作 ===
+        window.exportBoardCSV = function () {
+          if (!_currentBoardId) return;
+          FirestoreLeaderboard.getClassBoardEntries(_currentBoardId).then(
+            function (entries) {
+              if (!entries.length) {
+                _toast("⚠️ 無資料");
+                return;
+              }
+              var csv = "排名,暱稱,分數,正確率(%),平均RT(ms),星星,上傳時間\n";
+              entries.forEach(function (e, i) {
+                var t =
+                  e.uploadedAt && e.uploadedAt.toDate
+                    ? e.uploadedAt.toDate().toISOString()
+                    : "";
+                csv +=
+                  i +
+                  1 +
+                  "," +
+                  e.nickname +
+                  "," +
+                  e.score +
+                  "," +
+                  (e.accuracy || 0) +
+                  "," +
+                  (e.avgRT || 0) +
+                  "," +
+                  (e.stars || 0) +
+                  "," +
+                  t +
+                  "\n";
+              });
+              var blob = new Blob(["\uFEFF" + csv], {
+                type: "text/csv;charset=utf-8;",
+              });
+              var a = document.createElement("a");
+              a.href = URL.createObjectURL(blob);
+              a.download =
+                "班級排行榜_" +
+                _currentCode +
+                "_" +
+                new Date().toISOString().slice(0, 10) +
+                ".csv";
+              a.click();
+              _toast("✅ CSV 已匯出");
+            },
+          );
+        };
+        window.exportBoardPDF = function () {
+          if (!liveRankingContainer) return;
+          html2pdf()
+            .set({
+              margin: 10,
+              filename: "班級排行榜_" + _currentCode + ".pdf",
+              jsPDF: { unit: "mm", format: "a4" },
+            })
+            .from(liveRankingContainer)
+            .save()
+            .then(function () {
+              _toast("✅ PDF 已匯出");
+            });
+        };
+        window.screenshotBoard = function () {
+          if (!liveRankingContainer) return;
+          html2pdf()
+            .from(liveRankingContainer)
+            .toImg()
+            .get("img")
+            .then(function (img) {
+              var a = document.createElement("a");
+              a.download = "班級排行榜_" + _currentCode + ".png";
+              a.href = img.src;
+              a.click();
+              _toast("✅ 截圖已下載");
+            });
+        };
+        window.deleteBoard = function () {
+          if (!_currentBoardId || !_isOwner) return;
+          if (
+            !confirm(
+              "⚠️ 確定要刪除此看板嗎？\n\n刪除後所有學生成績將永久消失，無法恢復。\n建議先匯出 CSV 備份。",
+            )
+          )
+            return;
+          if (!confirm("⚠️⚠️ 再次確認刪除？")) return;
+          FirestoreLeaderboard.deleteClassBoard(_currentBoardId)
+            .then(function () {
+              _toast("✅ 看板已刪除");
+              _currentBoardId = null;
+              _currentCode = null;
+              if (_unsubscribe) _unsubscribe();
+              shareMethods.classList.remove("visible");
+              boardActions.style.display = "none";
+              deleteRulesLive.style.display = "none";
+              boardNameDisplay.style.display = "none";
+              boardSetup.style.display = "";
+              liveRankingContainer.innerHTML =
+                '<div class="ranking-empty"><span class="ranking-empty__icon">📡</span><p>建立或加入看板後，排行榜將在此即時更新</p></div>';
+              liveStatsContainer.style.display = "none";
+              _loadMyBoards();
+            })
+            .catch(function (err) {
+              alert("❌ " + err.message);
+            });
+        };
+
+        // === 匯入模式 ===
+        var importUploadZone = document.getElementById("importUploadZone");
+        var importFileInput = document.getElementById("importFileInput");
+        var importRankingContainer = document.getElementById(
+          "importRankingContainer",
         );
+        var importStatsContainer = document.getElementById(
+          "importStatsContainer",
+        );
+        var importReportContainer = document.getElementById(
+          "importReportContainer",
+        );
+        var importActions = document.getElementById("importActions");
 
-        document.getElementById('totalPlayers').textContent = totalPlayers;
-        document.getElementById('totalGames').textContent = totalGames;
-        document.getElementById('avgScore').textContent = avgScore;
-        document.getElementById('avgAccuracy').textContent = `${avgAccuracy}%`;
-      }
+        importUploadZone.addEventListener("click", function () {
+          importFileInput.click();
+        });
+        importFileInput.addEventListener("change", function () {
+          if (importFileInput.files.length)
+            _handleImport(importFileInput.files);
+        });
+        importUploadZone.addEventListener("dragover", function (e) {
+          e.preventDefault();
+          importUploadZone.classList.add("dragover");
+        });
+        importUploadZone.addEventListener("dragleave", function () {
+          importUploadZone.classList.remove("dragover");
+        });
+        importUploadZone.addEventListener("drop", function (e) {
+          e.preventDefault();
+          importUploadZone.classList.remove("dragover");
+          if (e.dataTransfer.files.length) _handleImport(e.dataTransfer.files);
+        });
 
-      function refreshLeaderboard() {
-        // TODO: 從 Firebase 重新載入資料
-        renderLeaderboard();
-        alert('✅ 排行榜已更新！');
-      }
+        function _handleImport(fileList) {
+          CsvReport.parseFiles(fileList)
+            .then(function (parsed) {
+              _importParsedData = parsed;
+              importUploadZone.querySelector("p").textContent =
+                "✅ 已匯入 " +
+                fileList.length +
+                " 個檔案（共 " +
+                parsed.allData.length +
+                " 筆資料）";
+              importActions.style.display = "";
+              var entries = _csvToRanking(parsed);
+              RankingRenderer.renderStats(importStatsContainer, entries);
+              RankingRenderer.render(importRankingContainer, entries, {
+                sortBy: "score",
+                showAccuracy: true,
+                showRT: true,
+                emptyText: "沒有一般試題資料",
+              });
+              CsvReport.renderReport(importReportContainer, parsed);
+            })
+            .catch(function (err) {
+              alert("⚠️ " + err.message);
+            });
+        }
 
-      // 初始化
-      renderLeaderboard();
+        function _csvToRanking(parsed) {
+          var data = parsed.regularTrials || [];
+          var pm = {};
+          for (var i = 0; i < data.length; i++) {
+            var r = data[i];
+            var pid = r.Participant || "Unknown";
+            if (!pm[pid])
+              pm[pid] = {
+                name: pid,
+                total: 0,
+                correct: 0,
+                rtSum: 0,
+                rtCount: 0,
+              };
+            pm[pid].total++;
+            if (r.Correct === "yes") pm[pid].correct++;
+            var rt = parseFloat(r["RT(ms)"]);
+            if (!isNaN(rt) && rt > 0) {
+              pm[pid].rtSum += rt;
+              pm[pid].rtCount++;
+            }
+          }
+          return Object.keys(pm).map(function (k) {
+            var p = pm[k];
+            var acc = p.total > 0 ? (p.correct / p.total) * 100 : 0;
+            var avgRT = p.rtCount > 0 ? p.rtSum / p.rtCount : 0;
+            return {
+              nickname: p.name,
+              score: Math.round(acc * 10 - avgRT / 10),
+              accuracy: acc,
+              avgRT: avgRT,
+            };
+          });
+        }
 
-      // TODO: 整合 Firebase 即時資料
-      // firebase.database().ref('leaderboard').on('value', (snapshot) => {
-      //   const data = snapshot.val();
-      //   // 更新排行榜
-      // });
+        document
+          .getElementById("importBtnExport")
+          .addEventListener("click", function () {
+            if (_importParsedData) CsvReport.exportCsv(_importParsedData);
+          });
+        document
+          .getElementById("importBtnPdf")
+          .addEventListener("click", function () {
+            if (_importParsedData)
+              CsvReport.exportPdf(importReportContainer, _importParsedData);
+          });
+        document
+          .getElementById("importBtnScreenshot")
+          .addEventListener("click", function () {
+            if (_importParsedData)
+              CsvReport.exportScreenshot(importReportContainer);
+          });
+        document
+          .getElementById("importBtnClear")
+          .addEventListener("click", function () {
+            CsvReport.destroy();
+            _importParsedData = null;
+            importRankingContainer.innerHTML =
+              '<div class="ranking-empty"><span class="ranking-empty__icon">📁</span><p>匯入 CSV 檔案後，排行榜將顯示在此</p></div>';
+            importReportContainer.innerHTML = "";
+            importStatsContainer.style.display = "none";
+            importActions.style.display = "none";
+            importUploadZone.querySelector("p").textContent =
+              "📁 拖放 CSV 檔案到此處，或點擊選擇檔案";
+            importFileInput.value = "";
+            _toast("✅ 已清除");
+          });
+
+        // === 工具 ===
+        function _toast(msg) {
+          var t = document.getElementById("toast");
+          t.textContent = msg;
+          t.classList.add("show");
+          setTimeout(function () {
+            t.classList.remove("show");
+          }, 2500);
+        }
+        function _esc(s) {
+          var d = document.createElement("div");
+          d.textContent = s;
+          return d.innerHTML;
+        }
+        window.addEventListener("beforeunload", function () {
+          if (_unsubscribe) _unsubscribe();
+        });
+      })();
     </script>
+    <script src="../js/shared/navbar.js"></script>
+    <script src="../js/shared/landscape-hint.js"></script>
   </body>
 </html>

@@ -1,0 +1,67 @@
+/* ============================================
+   基礎色彩變數（主題共用，不隨主題切換）
+   ============================================
+   對應需求文件：§4.4.2
+   說明：所有主題共用的 CSS 變數定義
+         這是整個專案的「設計 Token」
+   ============================================ */
+
+:root {
+  /* === 背景與文字（所有主題共用）=== */
+  --bg-dark: #1a2332; /* 深藍灰背景（主要背景色） */
+  --text-white: #ffffff; /* 純白文字（主要文字色） */
+  --text-light: #ecf0f1; /* 淺灰文字（次要文字、說明） */
+
+  /* === 功能色彩（所有主題共用）=== */
+  --primary-blue: #3498db; /* 主要藍色（標題、強調） */
+  --success-green: #2ecc71; /* 成功綠色（正確回饋） */
+  --error-red: #e74c3c; /* 錯誤紅色（錯誤回饋） */
+  --accent-yellow: #ffd700; /* 強調黃色（高亮、重點標記） */
+  --practice-teal: #1abc9c; /* 青綠色（練習模式） */
+
+  /* === 工作記憶色（所有主題共用）=== */
+  --wm-color: #5c6bc0; /* 靛藍色（WM 測驗） */
+
+  /* === 條件提示色（所有主題共用）=== */
+  --person-border: #ff6b6b; /* 粉紅色（人物出現邊框） */
+  --night-border: #f39c12; /* 橙黃色（晚上場景邊框） */
+  --day-border: #3498db; /* 藍色（白天場景邊框） */
+
+  /* === 字體階層（幼兒友善）=== */
+  --font-size-xs: 0.875rem; /* 14px — 輔助小字 */
+  --font-size-sm: 1rem; /* 16px — 最小正文 */
+  --font-size-md: 1.25rem; /* 20px — 正文/說明 */
+  --font-size-lg: 1.5rem; /* 24px — 按鈕文字 */
+  --font-size-xl: 1.75rem; /* 28px — 區塊標題 */
+  --font-size-xxl: 2.5rem; /* 40px — 頁面標題 */
+  --font-size-display: 4rem; /* 64px — 刺激物 emoji */
+
+  /* === 間距 === */
+  --spacing-xs: 0.5rem; /* 8px */
+  --spacing-sm: 1rem; /* 16px */
+  --spacing-md: 1.5rem; /* 24px */
+  --spacing-lg: 2rem; /* 32px */
+  --spacing-xl: 3rem; /* 48px */
+
+  /* === 觸控尺寸（幼兒友善 ≥ 56×56px）=== */
+  --touch-target-min: 56px; /* 按鈕最小尺寸 */
+  --touch-target-game: 80px; /* 遊戲刺激物觸控區 */
+
+  /* === 圓角 === */
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --border-radius-xl: 16px;
+  --border-radius-round: 50%;
+
+  /* === 陰影 === */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.2);
+  --shadow-glow: 0 0 20px rgba(52, 152, 219, 0.3);
+
+  /* === 動畫 === */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.5s ease;
+}
