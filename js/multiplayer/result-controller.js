@@ -79,57 +79,68 @@ function loadSpectatorResults() {
         return;
       }
 
-      var ranking = Object.entries(scores)
+      var allPlayers = Object.entries(scores)
         .map(function (entry) {
-          var uid = entry[0],
-            data = entry[1];
+          var uid = entry[0], data = entry[1];
           return {
+            uid: uid,
             nickname: data.nickname || "玩家",
             score: data.totalScore || 0,
             accuracy: data.accuracy || 0,
+            avgRT: data.avgRT || 0,
             totalCorrect: data.totalCorrect || 0,
             totalTrials: data.totalTrials || 0,
+            isMe: false,
           };
         })
-        .sort(function (a, b) {
-          return b.score - a.score;
-        });
+        .sort(function (a, b) { return b.score - a.score; });
 
-      var medals = ["🥇", "🥈", "🥉"];
-      var html = "";
-      for (var j = 0; j < ranking.length; j++) {
-        var p = ranking[j];
-        var medal = j < 3 ? medals[j] : j + 1 + ".";
-        html +=
-          '<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;' +
-          'background:rgba(255,255,255,0.05);border-radius:12px;margin-bottom:8px;">';
-        html +=
-          '<span style="font-size:1.5rem;min-width:36px;text-align:center;">' +
-          medal +
-          "</span>";
-        html += '<div style="flex:1;">';
-        html +=
-          '<div style="font-weight:700;font-size:1.05rem;">' +
-          _escHtml(p.nickname) +
-          "</div>";
-        html +=
-          '<div style="font-size:0.85rem;color:var(--text-light,#aaa);">' +
-          p.totalCorrect +
-          "/" +
-          p.totalTrials +
-          " 正確 · " +
-          p.accuracy.toFixed(1) +
-          "%</div>";
-        html += "</div>";
-        html +=
-          '<div style="font-size:1.3rem;font-weight:700;color:var(--accent,#ffd700);">' +
-          p.score +
-          " ⭐</div>";
-        html += "</div>";
-      }
-      rankEl.innerHTML = html;
+      // 觀戰者用分指標比較呈現
+      _renderSpectatorComparison(rankEl, allPlayers);
     });
   });
+}
+
+/** 觀戰者結果：重用 _renderMetricComparison 的邏輯輸出到指定容器 */
+function _renderSpectatorComparison(container, players) {
+  if (!players.length) {
+    container.textContent = "等待玩家完成…";
+    return;
+  }
+
+  var metrics = [
+    { label: "總排名",     icon: "🏅", key: "score",        fmt: _fmtInt,  dir: "desc" },
+    { label: "準確率",     icon: "🎯", key: "accuracy",     fmt: _fmtPct,  dir: "desc" },
+    { label: "平均反應時間", icon: "⚡", key: "avgRT",       fmt: _fmtRT,   dir: "asc"  },
+    { label: "答對題數",   icon: "✅", key: "totalCorrect", fmt: _fmtFrac, dir: "desc" },
+  ];
+
+  var html = "";
+  for (var m = 0; m < metrics.length; m++) {
+    var metric = metrics[m];
+    var sorted = players.slice().sort(function (a, b) {
+      return metric.dir === "asc"
+        ? (a[metric.key] || 0) - (b[metric.key] || 0)
+        : (b[metric.key] || 0) - (a[metric.key] || 0);
+    });
+
+    html += '<div class="mp-metric-group">';
+    html += '<div class="mp-metric-title">' + metric.icon + " " + metric.label + "</div>";
+
+    for (var p = 0; p < sorted.length; p++) {
+      var player = sorted[p];
+      var rank = p + 1;
+      var medalStr = rank <= 3 ? ["🥇", "🥈", "🥉"][rank - 1] : rank + ".";
+
+      html += '<div class="mp-player-row">';
+      html += '<span class="mp-rank">' + medalStr + "</span>";
+      html += '<span class="mp-nickname">' + _escHtml(player.nickname) + "</span>";
+      html += '<span class="mp-value">' + metric.fmt(player) + "</span>";
+      html += "</div>";
+    }
+    html += "</div>";
+  }
+  container.innerHTML = html;
 }
 
 function _escHtml(s) {
@@ -328,18 +339,18 @@ async function calculateRank() {
   }
 
   // 如果是多人模式，從 Firebase 即時監聽其他玩家成績
-  const roomData = localStorage.getItem("currentRoom");
-  const urlRoom = new URLSearchParams(window.location.search).get("room");
+  var roomData = localStorage.getItem("currentRoom");
+  var urlRoom = new URLSearchParams(window.location.search).get("room");
 
   if (!roomData && !urlRoom) {
     document.getElementById("rankInfo").textContent = "單人模式";
     return;
   }
 
-  let roomCode = urlRoom;
+  var roomCode = urlRoom;
   if (!roomCode && roomData) {
     try {
-      const room = JSON.parse(roomData);
+      var room = JSON.parse(roomData);
       roomCode = room.code || room.roomCode;
     } catch (e) {}
   }
@@ -348,49 +359,120 @@ async function calculateRank() {
     return;
   }
 
-  const rankEl = document.getElementById("rankInfo");
+  var rankEl = document.getElementById("rankInfo");
   rankEl.textContent = "等待其他玩家完成…";
 
-  const roomRef = firebase.database().ref("rooms/" + roomCode + "/scores");
+  var scoresRef = firebase.database().ref("rooms/" + roomCode + "/scores");
 
-  // 即時監聽（而非 .once）
-  roomRef.on("value", function (snapshot) {
-    const results = snapshot.val();
+  // 即時監聽
+  scoresRef.on("value", function (snapshot) {
+    var results = snapshot.val();
     if (!results) {
       rankEl.textContent = "等待其他玩家完成…";
       return;
     }
 
-    const allResults = Object.entries(results)
-      .map(([uid, data]) => ({
-        playerId: uid,
-        score: data.totalScore || 0,
-        nickname: data.nickname || "玩家",
-      }))
-      .sort((a, b) => b.score - a.score);
-
-    const myId =
+    var myId =
       resultData.playerId ||
       (firebase.auth().currentUser && firebase.auth().currentUser.uid);
-    const myRank = allResults.findIndex((r) => r.playerId === myId) + 1;
-    const totalPlayers = allResults.length;
 
-    let rankText = "";
-    if (myRank === 1) {
-      rankText = "🥇 第 1 名 / " + totalPlayers + " 人";
-    } else if (myRank === 2) {
-      rankText = "🥈 第 2 名 / " + totalPlayers + " 人";
-    } else if (myRank === 3) {
-      rankText = "🥉 第 3 名 / " + totalPlayers + " 人";
+    // 組裝所有玩家資料
+    var allPlayers = Object.entries(results)
+      .map(function (entry) {
+        var uid = entry[0], d = entry[1];
+        return {
+          uid: uid,
+          nickname: d.nickname || "玩家",
+          score: d.totalScore || 0,
+          accuracy: d.accuracy || 0,
+          avgRT: d.avgRT || 0,
+          totalCorrect: d.totalCorrect || 0,
+          totalTrials: d.totalTrials || 0,
+          isMe: uid === myId,
+        };
+      })
+      .sort(function (a, b) { return b.score - a.score; });
+
+    // 更新分數卡片排名
+    var myRank = 0;
+    for (var i = 0; i < allPlayers.length; i++) {
+      if (allPlayers[i].isMe) { myRank = i + 1; break; }
+    }
+    var medals = ["🥇", "🥈", "🥉"];
+    if (myRank > 0 && myRank <= 3) {
+      rankEl.textContent = medals[myRank - 1] + " 第 " + myRank + " 名 / " + allPlayers.length + " 人";
     } else if (myRank > 0) {
-      rankText = "第 " + myRank + " 名 / " + totalPlayers + " 人";
+      rankEl.textContent = "第 " + myRank + " 名 / " + allPlayers.length + " 人";
     } else {
-      rankText = "計算中… (" + totalPlayers + " 人已完成)";
+      rankEl.textContent = "計算中… (" + allPlayers.length + " 人已完成)";
     }
 
-    rankEl.textContent = rankText;
+    // 建立分指標比較區塊
+    _renderMetricComparison(allPlayers);
   });
 }
+
+/** 按指標分組比較所有玩家 */
+function _renderMetricComparison(players) {
+  var section = document.getElementById("mpRankingSection");
+  var container = document.getElementById("mpRankingContent");
+  if (!section || !container) return;
+
+  if (players.length < 2) {
+    section.style.display = "none";
+    return;
+  }
+  section.style.display = "";
+
+  // 指標定義：label, icon, key, formatter, sortDir(desc/asc), unit
+  var metrics = [
+    { label: "總排名",     icon: "🏅", key: "score",        fmt: _fmtInt,   dir: "desc", unit: " 分" },
+    { label: "準確率",     icon: "🎯", key: "accuracy",     fmt: _fmtPct,   dir: "desc", unit: "%" },
+    { label: "平均反應時間", icon: "⚡", key: "avgRT",       fmt: _fmtRT,    dir: "asc",  unit: "" },
+    { label: "答對題數",   icon: "✅", key: "totalCorrect", fmt: _fmtFrac,  dir: "desc", unit: "" },
+  ];
+
+  var html = "";
+
+  for (var m = 0; m < metrics.length; m++) {
+    var metric = metrics[m];
+
+    // 排序（依指標）
+    var sorted = players.slice().sort(function (a, b) {
+      return metric.dir === "asc"
+        ? (a[metric.key] || 0) - (b[metric.key] || 0)
+        : (b[metric.key] || 0) - (a[metric.key] || 0);
+    });
+
+    html += '<div class="mp-metric-group">';
+    html += '<div class="mp-metric-title">' + metric.icon + " " + metric.label + "</div>";
+
+    for (var p = 0; p < sorted.length; p++) {
+      var player = sorted[p];
+      var rank = p + 1;
+      var medalStr = rank <= 3 ? ["🥇", "🥈", "🥉"][rank - 1] : rank + ".";
+      var meClass = player.isMe ? " mp-row-me" : "";
+      var value = metric.fmt(player);
+
+      html += '<div class="mp-player-row' + meClass + '">';
+      html += '<span class="mp-rank">' + medalStr + "</span>";
+      html += '<span class="mp-nickname">' + _escHtml(player.nickname) + (player.isMe ? " (你)" : "") + "</span>";
+      html += '<span class="mp-value">' + value + "</span>";
+      html += "</div>";
+    }
+
+    html += "</div>";
+  }
+
+  container.innerHTML = html;
+}
+
+function _fmtInt(p) { return p.score; }
+function _fmtPct(p) { return p.accuracy.toFixed(1) + "%"; }
+function _fmtRT(p) {
+  return p.avgRT > 0 ? (p.avgRT / 1000).toFixed(2) + "s" : "—";
+}
+function _fmtFrac(p) { return p.totalCorrect + "/" + p.totalTrials; }
 
 function shareResult() {
   const shareText = `我在執行功能遊戲中獲得了 ${resultData.score} 分！準確率 ${resultData.accuracy.toFixed(1)}%！快來挑戰看看！`;

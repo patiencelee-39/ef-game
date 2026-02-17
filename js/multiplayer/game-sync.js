@@ -145,7 +145,11 @@ var GameSync = (function () {
 
         // 偵測場地完成通知
         if (p.justCompleted && _callbacks.onStageComplete) {
-          _callbacks.onStageComplete(uid, p.nickname || "玩家", p.justCompleted);
+          _callbacks.onStageComplete(
+            uid,
+            p.nickname || "玩家",
+            p.justCompleted,
+          );
         }
 
         // 偵測斷線
@@ -257,6 +261,7 @@ var GameSync = (function () {
       totalCorrect: resultObj.totalCorrect || 0,
       totalTrials: resultObj.totalTrials || 0,
       accuracy: resultObj.accuracy || 0,
+      avgRT: resultObj.avgRT || 0,
       finishedAt: Date.now(),
       nickname: resultObj.nickname || "玩家",
     };

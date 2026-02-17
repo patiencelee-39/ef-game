@@ -346,10 +346,18 @@ var GameController = (function () {
   function finishGame() {
     var accuracy = _totalTrials > 0 ? (_totalCorrect / _totalTrials) * 100 : 0;
 
+    // 計算平均反應時間
+    var validRTs = _trialResults.filter(function (r) { return r.rt > 0; });
+    var avgRT = validRTs.length > 0
+      ? validRTs.reduce(function (s, r) { return s + r.rt; }, 0) / validRTs.length
+      : 0;
+
     // 存入 showFinalRanking 設定供 result.html 讀取
     try {
-      localStorage.setItem("mp_showFinalRanking",
-        _displaySettings.showFinalRanking !== false ? "1" : "0");
+      localStorage.setItem(
+        "mp_showFinalRanking",
+        _displaySettings.showFinalRanking !== false ? "1" : "0",
+      );
     } catch (e) {}
 
     MultiplayerBridge.recordFinalScore({
@@ -357,6 +365,7 @@ var GameController = (function () {
       totalCorrect: _totalCorrect,
       totalTrials: _totalTrials,
       accuracy: accuracy,
+      avgRT: avgRT,
       totalTime: 0,
       answers: _trialResults,
     });
