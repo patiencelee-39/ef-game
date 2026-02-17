@@ -182,12 +182,101 @@
 @media (max-width: 600px) {
   .ranking-header,
   .ranking-row {
-    font-size: 0.82rem;
-    padding: 0.6rem 0.75rem;
+    font-size: 0.78rem;
+    padding: 0.5rem 0.5rem;
+    gap: 0;
   }
 
-  .ranking-cell--rt,
+  .ranking-cell {
+    padding: 0 2px;
+  }
+
   .ranking-cell--time {
     display: none;
   }
+}
+
+/* --- 深色主題覆寫 --- */
+body[data-theme="dark"] .ranking-row,
+.world-page .ranking-row,
+.container .ranking-row {
+  background: rgba(255, 255, 255, 0.06);
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+body[data-theme="dark"] .ranking-row:hover,
+.world-page .ranking-row:hover,
+.container .ranking-row:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+body[data-theme="dark"] .ranking-row--highlight,
+.world-page .ranking-row--highlight,
+.container .ranking-row--highlight {
+  background: rgba(102, 126, 234, 0.2) !important;
+  border-left-color: #667eea;
+}
+
+body[data-theme="dark"] .ranking-cell--name,
+.world-page .ranking-cell--name,
+.container .ranking-cell--name {
+  color: #fff;
+}
+
+body[data-theme="dark"] .ranking-cell--score,
+.world-page .ranking-cell--score,
+.container .ranking-cell--score {
+  color: #4caf50;
+}
+
+body[data-theme="dark"] .ranking-cell--acc,
+.world-page .ranking-cell--acc,
+.container .ranking-cell--acc {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+body[data-theme="dark"] .ranking-cell--rt,
+.world-page .ranking-cell--rt,
+.container .ranking-cell--rt {
+  color: #82b1ff;
+}
+
+body[data-theme="dark"] .ranking-cell--correct,
+.world-page .ranking-cell--correct,
+.container .ranking-cell--correct {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+body[data-theme="dark"] .ranking-cell--mode,
+.world-page .ranking-cell--mode,
+.container .ranking-cell--mode {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+body[data-theme="dark"] .ranking-cell--stars,
+.world-page .ranking-cell--stars,
+.container .ranking-cell--stars {
+  color: #ffd700;
+}
+
+body[data-theme="dark"] .ranking-cell--level,
+.world-page .ranking-cell--level,
+.container .ranking-cell--level {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+body[data-theme="dark"] .ranking-stat-card,
+.world-page .ranking-stat-card {
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+body[data-theme="dark"] .ranking-stat-card__val,
+.world-page .ranking-stat-card__val {
+  color: #fff;
+}
+
+body[data-theme="dark"] .ranking-stat-card__lbl,
+.world-page .ranking-stat-card__lbl {
+  color: rgba(255, 255, 255, 0.6);
 }

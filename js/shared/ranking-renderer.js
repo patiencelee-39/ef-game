@@ -160,7 +160,12 @@ var RankingRenderer = (function () {
         "</div>";
 
       if (showAccuracy) {
-        var acc = e.accuracy != null ? e.accuracy : (e.bestAccuracy != null ? e.bestAccuracy : 0);
+        var acc =
+          e.accuracy != null
+            ? e.accuracy
+            : e.bestAccuracy != null
+              ? e.bestAccuracy
+              : 0;
         html +=
           '<div class="ranking-cell ranking-cell--acc">' +
           (typeof acc === "number" ? acc.toFixed(1) : acc) +
@@ -176,23 +181,31 @@ var RankingRenderer = (function () {
       }
 
       if (showCorrect) {
-        var tc = e.totalCorrect != null ? e.totalCorrect : (e.bestScore || 0);
+        var tc = e.totalCorrect != null ? e.totalCorrect : e.bestScore || 0;
         var tt = e.totalTrials || "—";
         html +=
           '<div class="ranking-cell ranking-cell--correct">' +
-          tc + "/" + tt +
+          tc +
+          "/" +
+          tt +
           "</div>";
       }
 
       if (showStars) {
+        var starVal = e.stars || e.totalStars || 0;
         html +=
           '<div class="ranking-cell ranking-cell--stars">' +
-          (e.stars || e.totalStars || 0) +
+          (starVal > 0 ? starVal : "—") +
           "</div>";
       }
 
       if (showMode) {
-        var modeLabel = e.mode === "multiplayer" ? "競賽" : e.mode === "adventure" ? "冒險" : e.mode || "—";
+        var modeLabel =
+          e.mode === "multiplayer"
+            ? "競賽"
+            : e.mode === "adventure"
+              ? "冒險"
+              : e.mode || "—";
         html +=
           '<div class="ranking-cell ranking-cell--mode">' +
           modeLabel +
@@ -328,15 +341,15 @@ var RankingRenderer = (function () {
     showTime,
     hasDelete,
   ) {
-    var cols = ["60px", "1fr", "90px"]; // rank, name, score
-    if (showAcc) cols.push("90px");
-    if (showRT) cols.push("100px");
-    if (showCorrect) cols.push("80px");
-    if (showStars) cols.push("60px");
-    if (showLevel) cols.push("70px");
-    if (showMode) cols.push("60px");
-    if (showTime) cols.push("110px");
-    if (hasDelete) cols.push("50px");
+    var cols = ["40px", "minmax(50px,1fr)", "55px"]; // rank, name, score
+    if (showAcc) cols.push("60px");
+    if (showRT) cols.push("70px");
+    if (showCorrect) cols.push("55px");
+    if (showStars) cols.push("40px");
+    if (showLevel) cols.push("50px");
+    if (showMode) cols.push("45px");
+    if (showTime) cols.push("90px");
+    if (hasDelete) cols.push("40px");
     return "--ranking-cols: " + cols.join(" ") + ";";
   }
 

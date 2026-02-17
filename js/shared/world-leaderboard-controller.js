@@ -110,24 +110,39 @@
         return FirestoreLeaderboard.getWorldLeaderboard(200);
       })
       .then(function (entries) {
-        var myUid = firebase.auth().currentUser ? firebase.auth().currentUser.uid : null;
+        var myUid = firebase.auth().currentUser
+          ? firebase.auth().currentUser.uid
+          : null;
         var myRank = 0;
         for (var i = 0; i < entries.length; i++) {
-          if (entries[i].docId === myUid) { myRank = i + 1; break; }
+          if (entries[i].docId === myUid) {
+            myRank = i + 1;
+            break;
+          }
         }
-        var rankText = myRank > 0
-          ? "🌐 世界第 " + myRank + " 名 / " + entries.length + " 人"
-          : "✅ 上傳成功！";
+        var rankText =
+          myRank > 0
+            ? "🌐 世界第 " + myRank + " 名 / " + entries.length + " 人"
+            : "✅ 上傳成功！";
 
         var b = _bestEntry;
         uploadStatus.innerHTML =
           '<div style="text-align:center;line-height:1.8;">' +
-          '<div style="font-size:1.1rem;font-weight:700;color:#4caf50;margin-bottom:4px;">' + rankText + '</div>' +
+          '<div style="font-size:1.1rem;font-weight:700;color:#4caf50;margin-bottom:4px;">' +
+          rankText +
+          "</div>" +
           '<div style="font-size:0.85rem;color:#ccc;">' +
-          '🎯 ' + Math.round(b.accuracy || 0) + '% · ' +
-          '⚡ ' + (b.avgRT ? Math.round(b.avgRT) + 'ms' : '—') + ' · ' +
-          '✅ ' + (b.totalCorrect || b.bestScore || 0) + '/' + (b.totalTrials || '—') +
-          '</div></div>';
+          "🎯 " +
+          Math.round(b.accuracy || 0) +
+          "% · " +
+          "⚡ " +
+          (b.avgRT ? Math.round(b.avgRT) + "ms" : "—") +
+          " · " +
+          "✅ " +
+          (b.totalCorrect || b.bestScore || 0) +
+          "/" +
+          (b.totalTrials || "—") +
+          "</div></div>";
         uploadStatus.className = "upload-status success";
         _loadWorldRanking();
       })

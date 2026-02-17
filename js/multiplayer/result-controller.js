@@ -732,31 +732,52 @@ function playAgain() {
             return FirestoreLeaderboard.getWorldLeaderboard(200);
           })
           .then(function (entries) {
-            var myUid = firebase.auth().currentUser ? firebase.auth().currentUser.uid : null;
+            var myUid = firebase.auth().currentUser
+              ? firebase.auth().currentUser.uid
+              : null;
             var myRank = 0;
             var total = entries.length;
             for (var ri = 0; ri < entries.length; ri++) {
-              if (entries[ri].docId === myUid) { myRank = ri + 1; break; }
+              if (entries[ri].docId === myUid) {
+                myRank = ri + 1;
+                break;
+              }
             }
-            var rankText = myRank > 0
-              ? "🌐 世界第 " + myRank + " 名 / " + total + " 人"
-              : "✅ 已上傳至世界排行榜！";
+            var rankText =
+              myRank > 0
+                ? "🌐 世界第 " + myRank + " 名 / " + total + " 人"
+                : "✅ 已上傳至世界排行榜！";
 
             var d = resultData || {};
-            var validRTs2 = (d.answers || []).filter(function (a) { return (a.rt || a.reactionTime) > 0; });
-            var avgRT2 = validRTs2.length > 0
-              ? validRTs2.reduce(function (s, a) { return s + (a.rt || a.reactionTime || 0); }, 0) / validRTs2.length
-              : 0;
+            var validRTs2 = (d.answers || []).filter(function (a) {
+              return (a.rt || a.reactionTime) > 0;
+            });
+            var avgRT2 =
+              validRTs2.length > 0
+                ? validRTs2.reduce(function (s, a) {
+                    return s + (a.rt || a.reactionTime || 0);
+                  }, 0) / validRTs2.length
+                : 0;
 
             statusMsg.innerHTML =
               '<div style="text-align:center;line-height:1.8;">' +
-              '<div style="font-size:1.1rem;font-weight:700;color:#4caf50;margin-bottom:4px;">' + rankText + '</div>' +
+              '<div style="font-size:1.1rem;font-weight:700;color:#4caf50;margin-bottom:4px;">' +
+              rankText +
+              "</div>" +
               '<div style="font-size:0.85rem;color:#ccc;">' +
-              '🎯 準確率 ' + Math.round(d.accuracy || 0) + '% · ' +
-              '⚡ 平均 RT ' + (avgRT2 > 0 ? (avgRT2 / 1000).toFixed(2) + 's' : '—') + ' · ' +
-              '✅ 答對 ' + (d.correctAnswers || 0) + '/' + (d.totalQuestions || 0) + ' · ' +
-              '🏷️ 競賽模式' +
-              '</div></div>';
+              "🎯 準確率 " +
+              Math.round(d.accuracy || 0) +
+              "% · " +
+              "⚡ 平均 RT " +
+              (avgRT2 > 0 ? (avgRT2 / 1000).toFixed(2) + "s" : "—") +
+              " · " +
+              "✅ 答對 " +
+              (d.correctAnswers || 0) +
+              "/" +
+              (d.totalQuestions || 0) +
+              " · " +
+              "🏷️ 競賽模式" +
+              "</div></div>";
             statusMsg.style.color = "";
 
             row.style.display = "none";
