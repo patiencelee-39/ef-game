@@ -364,7 +364,12 @@ var GameSync = (function () {
 
   function goToResult() {
     _cleanup();
-    location.href = "result.html?room=" + _roomCode;
+    // 保留 URL 上的 role 參數（觀戰者需帶 role=spectator）
+    var params = new URLSearchParams(window.location.search);
+    var role = params.get("role");
+    var url = "result.html?room=" + _roomCode;
+    if (role) url += "&role=" + role;
+    location.href = url;
   }
 
   // =========================================
