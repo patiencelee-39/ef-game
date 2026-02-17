@@ -48,6 +48,7 @@ var GameController = (function () {
   var _responded = false;
   var _stimOnTime = 0;
   var _isPlaying = false;
+  var _roomCountdownSeconds = null;
   var _isPaused = false;
   var _isiTimerId = null;
   var _stimTimerId = null;
@@ -165,7 +166,7 @@ var GameController = (function () {
     });
     Countdown.start({
       container: dom.gameContainer,
-      seconds: _dp.countdownSeconds,
+      seconds: _roomCountdownSeconds || _dp.countdownSeconds,
       onComplete: function () {
         nextTrial();
       },
@@ -425,10 +426,14 @@ var GameController = (function () {
           return {
             fieldId: fieldId,
             ruleId: ruleId,
+            questionCount: stage.questionCount || 0,
             displayName: (stage.icon || "") + " " + (stage.name || ""),
           };
         });
       }
+
+      // 讀取房間自訂倒數秒數
+      _roomCountdownSeconds = roomData.countdownSeconds || null;
 
       beginCombo();
     });

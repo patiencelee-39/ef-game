@@ -85,8 +85,9 @@ var GameSync = (function () {
     _playersRef = _roomRef.child("players");
     _scoresRef = _roomRef.child("scores");
 
-    // 標記自己上線
-    if (_playerId) {
+    // 標記自己上線（觀戰者不寫入 players）
+    var _role = config.role || "player";
+    if (_playerId && _role !== "spectator") {
       _roomRef
         .child("players/" + _playerId + "/online")
         .onDisconnect()

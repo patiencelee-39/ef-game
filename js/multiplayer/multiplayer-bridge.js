@@ -57,6 +57,7 @@ var MultiplayerBridge = (function () {
       roomCode: _roomCode,
       playerId: _playerId,
       isHost: false,
+      role: _playerRole,
       callbacks: {
         onPlayersUpdate: _updateLiveLeaderboard,
         onAllFinished: _onAllFinished,
