@@ -5,6 +5,7 @@
 
       "$roomCode": {
         ".read": "auth != null",
+        ".write": "auth != null && !data.exists()",
         ".indexOn": ["createdAt", "status", "expiresAt"],
 
         // --- 房間基本資訊（房主可寫全部，其他人有限寫入）---
