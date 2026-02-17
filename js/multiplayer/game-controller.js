@@ -249,7 +249,7 @@ var GameController = (function () {
     _stimTimerId = setTimeout(function () {
       if (!_responded) {
         _responded = true;
-        var result = question.isGo ? "miss" : "correctRejection";
+        var result = question.isGo ? "Miss" : "CR";
         recordTrial(question, result, null);
         showFeedback(result);
       }
@@ -263,13 +263,13 @@ var GameController = (function () {
 
     var question = _questions[_trialIndex];
     var rt = Date.now() - _stimOnTime;
-    var result = question.isGo ? "hit" : "falseAlarm";
+    var result = question.isGo ? "Hit" : "FA";
     recordTrial(question, result, rt);
     showFeedback(result);
   }
 
   function recordTrial(question, result, rt) {
-    var isCorrect = result === "hit" || result === "correctRejection";
+    var isCorrect = result === "Hit" || result === "CR";
     if (isCorrect) _totalCorrect++;
     _totalTrials++;
 
