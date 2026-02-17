@@ -35,6 +35,7 @@ import {
   onValue,
   onChildAdded,
   off,
+  onDisconnect as rtdbOnDisconnect,
   serverTimestamp as rtdbServerTimestamp,
   query as rtdbQuery,
   orderByChild,
@@ -128,6 +129,17 @@ function wrapRef(dbRef) {
     },
     remove() {
       return remove(dbRef);
+    },
+
+    // onDisconnect
+    onDisconnect() {
+      const disc = rtdbOnDisconnect(dbRef);
+      return {
+        set(value) { return disc.set(value); },
+        update(value) { return disc.update(value); },
+        remove() { return disc.remove(); },
+        cancel() { return disc.cancel(); },
+      };
     },
 
     // 導航
