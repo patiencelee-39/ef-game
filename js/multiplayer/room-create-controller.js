@@ -263,7 +263,6 @@ function collectFormData() {
     ),
     displaySettings: {
       showLeaderboard: document.getElementById("showLeaderboard").checked,
-      showAnswerStatus: document.getElementById("showAnswerStatus").checked,
       showCompletionNotification: document.getElementById(
         "showCompletionNotification",
       ).checked,

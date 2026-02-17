@@ -68,6 +68,15 @@ var MultiplayerBridge = (function () {
           alert("房間已關閉");
           location.href = "../index.html";
         },
+        onStageComplete: function (uid, nickname, stageName) {
+          // 其他玩家完成場地時顯示通知
+          if (uid !== _playerId && typeof CompletionNotify !== "undefined") {
+            CompletionNotify.show({
+              message: "✅ " + nickname + " 完成了 " + stageName + "！",
+              type: "normal",
+            });
+          }
+        },
       },
     });
 
@@ -170,6 +179,10 @@ var MultiplayerBridge = (function () {
     GameSync.broadcastProgress(stateObj);
   }
 
+  function broadcastStageComplete(stageName) {
+    GameSync.broadcastStageComplete(stageName);
+  }
+
   function recordAnswer(trialRecord) {
     GameSync.recordAnswer(trialRecord);
   }
@@ -247,6 +260,7 @@ var MultiplayerBridge = (function () {
     parseRoomInfo: parseRoomInfo,
     initRoom: initRoom,
     broadcastState: broadcastState,
+    broadcastStageComplete: broadcastStageComplete,
     recordAnswer: recordAnswer,
     recordFinalScore: recordFinalScore,
     goToResult: goToResult,

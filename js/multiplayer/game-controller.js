@@ -49,6 +49,7 @@ var GameController = (function () {
   var _stimOnTime = 0;
   var _isPlaying = false;
   var _roomCountdownSeconds = null;
+  var _displaySettings = {};
   var _isPaused = false;
   var _isiTimerId = null;
   var _stimTimerId = null;
@@ -319,13 +320,20 @@ var GameController = (function () {
   function endCombo() {
     _isPlaying = false;
 
+    var completedCombo = _combos[_comboIndex];
+
     DifficultyProvider.onSessionComplete({
-      fieldId: _combos[_comboIndex].fieldId,
-      ruleId: _combos[_comboIndex].ruleId,
+      fieldId: completedCombo.fieldId,
+      ruleId: completedCombo.ruleId,
       trialResults: _trialResults,
       wmResult: null,
       passed: false,
     });
+
+    // 廣播場地完成通知（其他玩家會看到）
+    if (_displaySettings.showCompletionNotification !== false) {
+      MultiplayerBridge.broadcastStageComplete(completedCombo.displayName);
+    }
 
     _comboIndex++;
     if (_comboIndex < _combos.length) {
@@ -337,6 +345,12 @@ var GameController = (function () {
 
   function finishGame() {
     var accuracy = _totalTrials > 0 ? (_totalCorrect / _totalTrials) * 100 : 0;
+
+    // 存入 showFinalRanking 設定供 result.html 讀取
+    try {
+      localStorage.setItem("mp_showFinalRanking",
+        _displaySettings.showFinalRanking !== false ? "1" : "0");
+    } catch (e) {}
 
     MultiplayerBridge.recordFinalScore({
       totalScore: _totalCorrect,
@@ -436,6 +450,9 @@ var GameController = (function () {
 
       // 讀取房間自訂倒數秒數
       _roomCountdownSeconds = roomData.countdownSeconds || null;
+
+      // 讀取顯示設定
+      _displaySettings = roomData.displaySettings || {};
 
       beginCombo();
     });

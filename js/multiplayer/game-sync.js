@@ -44,6 +44,7 @@ var GameSync = (function () {
     onPlayerDisconnect: null, // (playerId, playerData) → 某玩家斷線
     onRoomClosed: null, // () → 房間被關閉
     onCountdownSync: null, // (secondsLeft) → 同步倒數
+    onStageComplete: null, // (uid, nickname, stageName) → 某玩家完成場地
   };
 
   /** 全員完成偵測 */
@@ -142,6 +143,11 @@ var GameSync = (function () {
         };
         _expectedPlayerCount++;
 
+        // 偵測場地完成通知
+        if (p.justCompleted && _callbacks.onStageComplete) {
+          _callbacks.onStageComplete(uid, p.nickname || "玩家", p.justCompleted);
+        }
+
         // 偵測斷線
         if (p.online === false && _callbacks.onPlayerDisconnect) {
           _callbacks.onPlayerDisconnect(uid, _playerSnapshots[uid]);
@@ -206,6 +212,23 @@ var GameSync = (function () {
       online: true,
       lastUpdate: Date.now(),
     });
+  }
+
+  /**
+   * 廣播場地完成通知
+   * @param {string} stageName — 場地名稱
+   */
+  function broadcastStageComplete(stageName) {
+    if (!_roomRef || !_playerId) return;
+    _roomRef.child("players/" + _playerId).update({
+      justCompleted: stageName,
+    });
+    // 3 秒後清除
+    setTimeout(function () {
+      if (_roomRef) {
+        _roomRef.child("players/" + _playerId + "/justCompleted").set(null);
+      }
+    }, 3000);
   }
 
   // =========================================
@@ -379,6 +402,7 @@ var GameSync = (function () {
   return {
     init: init,
     broadcastProgress: broadcastProgress,
+    broadcastStageComplete: broadcastStageComplete,
     recordAnswer: recordAnswer,
     recordFinalScore: recordFinalScore,
     startSyncCountdown: startSyncCountdown,
