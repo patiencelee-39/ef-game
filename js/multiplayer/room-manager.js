@@ -32,11 +32,28 @@ class RoomManager {
         displaySettings,
       } = roomData;
 
-      // 生成題目序列
-      const gameStages = window.QuestionGenerator.generateGameStages(
-        selectedStages,
-        questionsCount,
-      );
+      // 將 UI 的 stage ID（A/B/C/D）轉換為 game-config 的 fieldId + ruleId
+      const stageToCombo = {
+        A: { fieldId: "mouse", ruleId: "rule1", hasWM: false, name: "場地A：起司森林", icon: "🧀" },
+        B: { fieldId: "mouse", ruleId: "rule2", hasWM: false, name: "場地B：人類村莊", icon: "🧑" },
+        C: { fieldId: "fishing", ruleId: "rule1", hasWM: false, name: "場地C：海洋世界", icon: "🐟" },
+        D: { fieldId: "fishing", ruleId: "rule2", hasWM: false, name: "場地D：晝夜迷宮", icon: "🌙" },
+      };
+
+      const combos = selectedStages.map((stageId) => {
+        const combo = stageToCombo[stageId];
+        if (!combo) throw new Error("無效的遊戲場 ID: " + stageId);
+        return { ...combo, questionCount: questionsCount };
+      });
+
+      // 生成題目序列，並保留 stage ID / UI 資訊供下游使用
+      const generatedCombos = window.generateGameCombos(combos);
+      const gameStages = generatedCombos.map((combo, i) => ({
+        ...combo,
+        id: selectedStages[i],
+        name: stageToCombo[selectedStages[i]].name,
+        icon: stageToCombo[selectedStages[i]].icon,
+      }));
 
       // 準備房間資料
       const room = {
