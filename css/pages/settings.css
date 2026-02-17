@@ -1,0 +1,362 @@
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei",
+          "PingFang TC", "Helvetica Neue", Arial, sans-serif;
+        background: linear-gradient(
+          135deg,
+          #0f0c29 0%,
+          #302b63 50%,
+          #24243e 100%
+        );
+        min-height: 100vh;
+        color: #e8e8e8;
+      }
+
+      .settings-page {
+        max-width: 480px;
+        margin: 0 auto;
+        padding: 24px 16px 120px;
+      }
+
+      /* === 標題 === */
+      .settings-page h1 {
+        text-align: center;
+        font-size: 1.5rem;
+        font-weight: 800;
+        margin-bottom: 24px;
+        color: #a8edea;
+        background: linear-gradient(135deg, #a8edea, #fed6e3);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      /* === 區塊卡片 === */
+      .settings-section {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 18px 16px;
+        margin-bottom: 16px;
+        backdrop-filter: blur(8px);
+      }
+      .settings-section h2 {
+        font-size: 1rem;
+        font-weight: 700;
+        margin: 0 0 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #fff;
+      }
+
+      /* === 設定列 === */
+      .settings-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 11px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+      .settings-item:last-child {
+        border-bottom: none;
+      }
+
+      .settings-item__label {
+        font-size: 0.92rem;
+        color: rgba(255, 255, 255, 0.85);
+        flex-shrink: 0;
+      }
+      .settings-item__value {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.7);
+        text-align: right;
+      }
+
+      /* === 音量滑桿 === */
+      .volume-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 11px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+      .volume-row:last-child {
+        border-bottom: none;
+      }
+      .volume-row__label {
+        font-size: 0.92rem;
+        color: rgba(255, 255, 255, 0.85);
+        white-space: nowrap;
+        min-width: 60px;
+      }
+      .volume-row__slider {
+        flex: 1;
+        -webkit-appearance: none;
+        appearance: none;
+        height: 6px;
+        border-radius: 3px;
+        background: rgba(255, 255, 255, 0.15);
+        outline: none;
+      }
+      .volume-row__slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: #ffd700;
+        cursor: pointer;
+        border: 2px solid rgba(0, 0, 0, 0.2);
+      }
+      .volume-row__slider::-moz-range-thumb {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: #ffd700;
+        cursor: pointer;
+        border: 2px solid rgba(0, 0, 0, 0.2);
+      }
+      .volume-row__percent {
+        font-size: 0.85rem;
+        color: #ffd700;
+        min-width: 36px;
+        text-align: right;
+        font-weight: 600;
+      }
+
+      /* === Toggle 開關 === */
+      .toggle-switch {
+        position: relative;
+        width: 48px;
+        height: 26px;
+        flex-shrink: 0;
+      }
+      .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .toggle-switch__track {
+        position: absolute;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 13px;
+        cursor: pointer;
+        transition: background 0.25s;
+      }
+      .toggle-switch__track::after {
+        content: "";
+        position: absolute;
+        left: 3px;
+        top: 3px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #fff;
+        transition: transform 0.25s;
+      }
+      .toggle-switch input:checked + .toggle-switch__track {
+        background: #2ecc71;
+      }
+      .toggle-switch input:checked + .toggle-switch__track::after {
+        transform: translateX(22px);
+      }
+
+      /* === 語速按鈕群 === */
+      .rate-selector {
+        display: flex;
+        gap: 6px;
+      }
+      .rate-btn {
+        padding: 5px 10px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .rate-btn.active {
+        background: rgba(255, 215, 0, 0.2);
+        border-color: #ffd700;
+        color: #ffd700;
+        font-weight: 600;
+      }
+
+      /* === 題數選擇 === */
+      .count-selector {
+        display: flex;
+        gap: 6px;
+      }
+      .count-btn {
+        width: 38px;
+        height: 34px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .count-btn.active {
+        background: rgba(52, 152, 219, 0.25);
+        border-color: var(--primary-blue, #3498db);
+        color: var(--primary-blue, #3498db);
+        font-weight: 700;
+      }
+
+      /* === 按鈕 === */
+      .settings-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 10px;
+        font-size: 0.92rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition:
+          opacity 0.2s,
+          transform 0.1s;
+        margin-bottom: 10px;
+      }
+      .settings-btn:last-child {
+        margin-bottom: 0;
+      }
+      .settings-btn:active {
+        transform: scale(0.97);
+      }
+
+      .settings-btn--export {
+        background: rgba(52, 152, 219, 0.2);
+        color: #3498db;
+        border: 1px solid rgba(52, 152, 219, 0.3);
+      }
+      .settings-btn--import {
+        background: rgba(46, 204, 113, 0.2);
+        color: #2ecc71;
+        border: 1px solid rgba(46, 204, 113, 0.3);
+      }
+      .settings-btn--danger {
+        background: rgba(231, 76, 60, 0.15);
+        color: #e74c3c;
+        border: 1px solid rgba(231, 76, 60, 0.25);
+      }
+
+      /* === 訪客標籤 === */
+      .guest-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        background: rgba(243, 156, 18, 0.2);
+        color: #f39c12;
+        border: 1px solid rgba(243, 156, 18, 0.3);
+      }
+
+      /* === 提示訊息 === */
+      .settings-toast {
+        position: fixed;
+        bottom: 90px;
+        left: 50%;
+        transform: translateX(-50%) translateY(20px);
+        background: rgba(0, 0, 0, 0.85);
+        color: #fff;
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-size: 0.88rem;
+        z-index: 9999;
+        opacity: 0;
+        pointer-events: none;
+        transition:
+          opacity 0.3s,
+          transform 0.3s;
+        backdrop-filter: blur(8px);
+      }
+      .settings-toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+
+      /* === 隱藏的 file input === */
+      #importFileInput {
+        display: none;
+      }
+
+      /* === 確認彈窗 === */
+      .confirm-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s;
+      }
+      .confirm-overlay.show {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .confirm-dialog {
+        background: #2a2a4a;
+        border-radius: 16px;
+        padding: 28px 24px 20px;
+        max-width: 320px;
+        width: 90%;
+        text-align: center;
+      }
+      .confirm-dialog__icon {
+        font-size: 2.5rem;
+        margin-bottom: 12px;
+      }
+      .confirm-dialog__title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: #fff;
+      }
+      .confirm-dialog__msg {
+        font-size: 0.88rem;
+        color: rgba(255, 255, 255, 0.6);
+        margin-bottom: 20px;
+        line-height: 1.5;
+      }
+      .confirm-dialog__actions {
+        display: flex;
+        gap: 10px;
+      }
+      .confirm-dialog__btn {
+        flex: 1;
+        padding: 10px;
+        border: none;
+        border-radius: 10px;
+        font-size: 0.92rem;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .confirm-dialog__btn--cancel {
+        background: rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.7);
+      }
+      .confirm-dialog__btn--danger {
+        background: #e74c3c;
+        color: #fff;
+      }

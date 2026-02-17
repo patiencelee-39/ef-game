@@ -1,0 +1,402 @@
+/* 頭像商店頁面覆寫 */
+body {
+  padding: 0;
+  overflow-x: hidden;
+  color: var(--text-white);
+}
+
+.shop-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: rgba(26, 35, 50, 0.92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-back {
+  background: none;
+  border: none;
+  color: var(--text-white);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: background var(--transition-fast);
+  min-width: var(--touch-target-min);
+  min-height: var(--touch-target-min);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-back:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.header-title {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+}
+
+.stars-display {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-size-md);
+  color: var(--accent-yellow);
+  font-weight: 700;
+}
+
+/* --- 主內容 --- */
+.shop-main {
+  margin-top: 60px;
+  padding: 16px;
+  padding-bottom: 100px;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* --- 預覽區 --- */
+.preview-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--border-radius-xl);
+  padding: 24px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.preview-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3.5rem;
+  margin: 0 auto 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  position: relative;
+  transition: all var(--transition-normal);
+}
+
+/* 頭像框效果 */
+.preview-avatar.avatar-frame-ocean {
+  border-color: #3498db;
+  box-shadow: 0 0 15px rgba(52, 152, 219, 0.5);
+}
+.preview-avatar.avatar-frame-star {
+  border-color: #ffd700;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+}
+.preview-avatar.avatar-frame-rainbow {
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  box-shadow:
+    0 0 0 3px #ff6b6b,
+    0 0 0 6px #ffd700,
+    0 0 0 9px #2ecc71;
+}
+.preview-avatar.avatar-frame-fire {
+  border-color: #e74c3c;
+  box-shadow: 0 0 20px rgba(231, 76, 60, 0.6);
+  animation: fire-glow 2s ease-in-out infinite;
+}
+.preview-avatar.avatar-frame-crown {
+  border-color: #f39c12;
+  box-shadow:
+    0 0 20px rgba(243, 156, 18, 0.5),
+    inset 0 0 10px rgba(243, 156, 18, 0.2);
+}
+
+@keyframes fire-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 15px rgba(231, 76, 60, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(231, 76, 60, 0.8);
+  }
+}
+
+/* 配飾效果 */
+.preview-accessory {
+  position: absolute;
+  font-size: 1.5rem;
+}
+.preview-accessory.avatar-acc-bow {
+  top: -8px;
+  right: -8px;
+}
+.preview-accessory.avatar-acc-sunglasses {
+  top: 35%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.preview-accessory.avatar-acc-flower {
+  top: -5px;
+  left: -5px;
+}
+.preview-accessory.avatar-acc-sparkle {
+  top: -12px;
+  right: -12px;
+  animation: sparkle-spin 3s linear infinite;
+}
+.preview-accessory.avatar-acc-heart {
+  bottom: -8px;
+  right: -8px;
+  animation: heart-float 2s ease-in-out infinite;
+}
+.preview-accessory.avatar-acc-wings {
+  top: 20%;
+  left: -20px;
+  font-size: 2rem;
+}
+
+@keyframes sparkle-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+@keyframes heart-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.preview-label {
+  font-size: var(--font-size-sm);
+  color: var(--text-light);
+}
+
+/* --- 分類 Tab --- */
+.category-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.category-tab {
+  flex: 1;
+  padding: 10px 16px;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  background: none;
+  color: var(--text-light);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  min-height: 44px;
+}
+.category-tab.active {
+  background: var(--primary-blue);
+  color: #fff;
+  border-color: var(--primary-blue);
+}
+
+/* --- 物品網格 --- */
+.item-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.item-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--border-radius-lg);
+  padding: 16px 12px;
+  text-align: center;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+}
+
+.item-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+.item-card.locked {
+  opacity: 0.35;
+  filter: grayscale(1);
+}
+.item-card.locked:hover {
+  transform: none;
+}
+.item-card.owned {
+  border-color: var(--success-green);
+  background: rgba(46, 204, 113, 0.08);
+}
+.item-card.equipped {
+  border-color: var(--accent-yellow);
+  background: rgba(255, 215, 0, 0.1);
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+}
+
+.lock-label {
+  font-size: var(--font-size-xs);
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 4px;
+}
+
+.item-emoji {
+  font-size: 2.5rem;
+  margin-bottom: 8px;
+}
+.item-name {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.item-cost {
+  font-size: var(--font-size-xs);
+  color: var(--accent-yellow);
+}
+.item-status {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  margin-top: 4px;
+}
+.item-status.status-owned {
+  color: var(--success-green);
+}
+.item-status.status-equipped {
+  color: var(--accent-yellow);
+}
+
+/* --- 購買 Popup --- */
+.buy-popup {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.6);
+  align-items: center;
+  justify-content: center;
+}
+.buy-popup.visible {
+  display: flex;
+}
+
+.buy-card {
+  background: #1e2d3d;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--border-radius-xl);
+  padding: 32px 24px;
+  max-width: 320px;
+  width: 90%;
+  text-align: center;
+  animation: popup-in 0.3s ease-out;
+}
+
+@keyframes popup-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.buy-emoji {
+  font-size: 4rem;
+  margin-bottom: 12px;
+}
+.buy-name {
+  font-size: var(--font-size-xl);
+  font-weight: 900;
+  margin-bottom: 4px;
+}
+.buy-desc {
+  font-size: var(--font-size-sm);
+  color: var(--text-light);
+  margin-bottom: 12px;
+}
+.buy-price {
+  font-size: var(--font-size-lg);
+  color: var(--accent-yellow);
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.buy-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.buy-actions button {
+  padding: 12px 24px;
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  min-width: 100px;
+  min-height: var(--touch-target-min);
+  transition: all var(--transition-fast);
+}
+
+.btn-buy {
+  background: var(--success-green);
+  color: #fff;
+}
+.btn-buy:hover {
+  background: #27ae60;
+}
+.btn-buy:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: #555;
+}
+.btn-equip-action {
+  background: var(--primary-blue);
+  color: #fff;
+}
+.btn-unequip {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-light);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.btn-popup-cancel {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-light);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* --- 響應式 --- */
+@media (max-width: 400px) {
+  .item-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .item-emoji {
+    font-size: 2rem;
+  }
+}

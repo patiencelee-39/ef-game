@@ -1,0 +1,339 @@
+/* ==================================== */
+body {
+  padding: var(--spacing-md);
+}
+
+.free-select-container {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* --- Header --- */
+.fs-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: var(--spacing-lg);
+}
+
+.btn-back {
+  background: none;
+  border: none;
+  color: var(--text-white);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  min-width: var(--touch-target-min);
+  min-height: var(--touch-target-min);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition-fast);
+}
+
+.btn-back:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.fs-title {
+  font-size: var(--font-size-xxl);
+  color: var(--text-white);
+  font-weight: 900;
+}
+
+/* --- 遊戲場選擇 --- */
+.section-label {
+  font-size: var(--font-size-md);
+  color: var(--text-light);
+  margin-bottom: var(--spacing-xs);
+  font-weight: 600;
+}
+
+.field-selector {
+  display: flex;
+  gap: 12px;
+  margin-bottom: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.field-btn {
+  flex: 1;
+  min-width: 140px;
+  padding: 16px;
+  border-radius: var(--border-radius-lg);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-white);
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: center;
+  min-height: var(--touch-target-min);
+}
+
+.field-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.field-btn.selected {
+  border-color: var(--primary-blue);
+  background: rgba(52, 152, 219, 0.2);
+}
+
+/* --- 規則選擇 --- */
+.rule-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: var(--spacing-md);
+}
+
+.rule-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--border-radius-md);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  min-height: var(--touch-target-min);
+  /* button reset */
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  width: 100%;
+}
+
+.rule-option:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.rule-option.selected {
+  border-color: var(--primary-blue);
+  background: rgba(52, 152, 219, 0.15);
+}
+
+.rule-checkbox {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+}
+
+.rule-option.selected .rule-checkbox {
+  background: var(--primary-blue);
+  border-color: var(--primary-blue);
+}
+
+.rule-option.selected .rule-checkbox::after {
+  content: "✓";
+  color: #fff;
+  font-weight: 900;
+  font-size: 14px;
+}
+
+.rule-info {
+  flex: 1;
+}
+
+.rule-name {
+  font-size: var(--font-size-md);
+  color: var(--text-white);
+  font-weight: 600;
+}
+
+.rule-desc {
+  font-size: var(--font-size-xs);
+  color: var(--text-light);
+  margin-top: 2px;
+}
+
+/* --- WM 開關 --- */
+.wm-toggle-section {
+  margin-bottom: var(--spacing-md);
+  padding: 16px;
+  border-radius: var(--border-radius-lg);
+  background: rgba(92, 107, 192, 0.1);
+  border: 1px solid rgba(92, 107, 192, 0.2);
+}
+
+.wm-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  /* button reset */
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  width: 100%;
+}
+
+.wm-label {
+  font-size: var(--font-size-md);
+  color: var(--text-white);
+  font-weight: 600;
+}
+
+.toggle-switch {
+  width: 52px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+  position: relative;
+  transition: background var(--transition-fast);
+  cursor: pointer;
+}
+
+.toggle-switch.active {
+  background: var(--wm-color);
+}
+
+.toggle-switch::after {
+  content: "";
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  background: #fff;
+  border-radius: 50%;
+  top: 3px;
+  left: 3px;
+  transition: transform var(--transition-fast);
+}
+
+.toggle-switch.active::after {
+  transform: translateX(24px);
+}
+
+/* --- 題數選擇 --- */
+.question-count-section {
+  margin-bottom: var(--spacing-lg);
+}
+
+.count-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.count-slider {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+  outline: none;
+}
+
+.count-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--primary-blue);
+  cursor: pointer;
+}
+
+.count-value {
+  font-size: var(--font-size-lg);
+  color: var(--accent-yellow);
+  font-weight: 900;
+  min-width: 50px;
+  text-align: center;
+}
+
+/* --- 組合預覽 --- */
+.combo-preview {
+  margin-bottom: var(--spacing-md);
+  padding: 16px;
+  border-radius: var(--border-radius-lg);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.combo-list {
+  list-style: none;
+  padding: 0;
+}
+
+.combo-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--text-light);
+  font-size: var(--font-size-sm);
+}
+
+.combo-item:last-child {
+  border-bottom: none;
+}
+
+.combo-item-name {
+  font-weight: 600;
+  color: var(--text-white);
+}
+
+.combo-item-meta {
+  font-size: var(--font-size-xs);
+  color: var(--text-light);
+}
+
+.no-combo-msg {
+  text-align: center;
+  color: var(--text-light);
+  font-size: var(--font-size-sm);
+  padding: 16px;
+}
+
+/* --- 開始按鈕 --- */
+.btn-start-game {
+  width: 100%;
+  padding: 16px;
+  font-size: var(--font-size-lg);
+  font-weight: 900;
+  border-radius: var(--border-radius-lg);
+  border: none;
+  background: var(--success-green);
+  color: #fff;
+  cursor: pointer;
+  min-height: var(--touch-target-min);
+  transition: all var(--transition-fast);
+}
+
+.btn-start-game:hover {
+  background: #27ae60;
+}
+
+.btn-start-game:disabled {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.3);
+  cursor: not-allowed;
+}
+
+/* --- 響應式 --- */
+@media (max-width: 480px) {
+  .fs-title {
+    font-size: var(--font-size-xl);
+  }
+
+  .field-btn {
+    min-width: 100px;
+    padding: 12px;
+    font-size: var(--font-size-md);
+  }
+}

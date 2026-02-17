@@ -1,0 +1,185 @@
+      .world-page {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 1.5rem;
+        min-height: 100vh;
+      }
+      .world-header {
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+      .world-header h1 {
+        font-size: 2rem;
+        margin: 0 0 0.4rem;
+        color: #ffd700;
+        background: linear-gradient(135deg, #ffd700, #ffaa00);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .world-header .subtitle {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.92rem;
+        line-height: 1.5;
+      }
+
+      /* Upload Card */
+      .upload-section {
+        max-width: 500px;
+        margin: 0 auto 2rem;
+      }
+      .upload-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 14px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        text-align: center;
+        backdrop-filter: blur(8px);
+      }
+      .upload-card h3 {
+        margin: 0 0 0.5rem;
+        font-size: 1.05rem;
+        color: var(--text-white);
+      }
+      .upload-card p {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.85rem;
+        margin-bottom: 0.75rem;
+        line-height: 1.5;
+      }
+      .local-score {
+        margin: 0.75rem 0;
+      }
+      .local-score__label {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.7);
+      }
+      .local-score__value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #ffd700;
+        background: linear-gradient(135deg, #ffd700, #ff6b6b);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 0.25rem 0;
+      }
+      .local-score__detail {
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.65);
+      }
+      .local-score__nickname {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.7);
+        margin-top: 0.25rem;
+      }
+      .upload-status {
+        margin-top: 0.75rem;
+        font-size: 0.85rem;
+        min-height: 1.5em;
+      }
+      .upload-status.success {
+        color: #4caf50;
+      }
+      .upload-status.error {
+        color: #e74c3c;
+      }
+
+      .btn {
+        padding: 0.75rem 1.25rem;
+        border: none;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+      }
+      .btn-primary {
+        background: linear-gradient(135deg, #ffd700, #ffaa00);
+        color: #333;
+      }
+      .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+      }
+      .btn-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+      .btn-secondary {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-light);
+      }
+      .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+
+      /* Footer */
+      .world-footer {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+      }
+      .world-footer .btn {
+        font-size: 0.9rem;
+        padding: 0.6rem 1.2rem;
+      }
+
+      /* Toast */
+      .toast {
+        position: fixed;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #333;
+        color: #fff;
+        padding: 0.75rem 1.5rem;
+        border-radius: 24px;
+        font-size: 0.9rem;
+        z-index: 9999;
+        opacity: 0;
+        transition: opacity 0.3s;
+        pointer-events: none;
+      }
+      .toast.show {
+        opacity: 1;
+      }
+
+      /* Explanation */
+      .explain-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 14px;
+        padding: 1.25rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        margin: 1.5rem auto;
+        max-width: 600px;
+        font-size: 0.85rem;
+        line-height: 1.7;
+        color: rgba(255, 255, 255, 0.6);
+      }
+      .explain-card strong {
+        color: var(--text-white);
+      }
+      .explain-card ul {
+        margin: 0.5rem 0 0 1.25rem;
+        padding: 0;
+      }
+
+      /* No-data notice */
+      .no-data-notice {
+        text-align: center;
+        padding: 1rem;
+        background: rgba(230, 81, 0, 0.12);
+        border: 1px solid rgba(230, 81, 0, 0.25);
+        border-radius: 10px;
+        margin: 0.75rem 0;
+        font-size: 0.85rem;
+        color: #ffab40;
+      }

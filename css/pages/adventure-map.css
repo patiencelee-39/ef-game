@@ -1,0 +1,480 @@
+/* 冒險地圖頁面覆寫 */
+body {
+  padding: 0;
+  overflow: hidden;
+}
+
+/* --- 頂部狀態列 --- */
+.adventure-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: rgba(26, 35, 50, 0.92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-back {
+  background: none;
+  border: none;
+  color: var(--text-white);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: background var(--transition-fast);
+  min-width: var(--touch-target-min);
+  min-height: var(--touch-target-min);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-back:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.header-title {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--text-white);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.stars-display {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-size-md);
+  color: var(--accent-yellow);
+  font-weight: 700;
+}
+
+.level-display {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-size-sm);
+  color: var(--text-light);
+  background: rgba(255, 255, 255, 0.08);
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.btn-sticker-book {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--accent-yellow);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 20px;
+  transition: all var(--transition-fast);
+  min-width: 40px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-sticker-book:hover {
+  background: rgba(255, 215, 0, 0.15);
+  border-color: var(--accent-yellow);
+}
+
+.btn-shop {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--accent-yellow);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 20px;
+  transition: all var(--transition-fast);
+  min-width: 40px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-shop:hover {
+  background: rgba(255, 215, 0, 0.15);
+  border-color: var(--accent-yellow);
+}
+
+.btn-pet {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--accent-yellow);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 20px;
+  transition: all var(--transition-fast);
+  min-width: 40px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-pet:hover {
+  background: rgba(255, 215, 0, 0.15);
+  border-color: var(--accent-yellow);
+}
+
+/* --- 地圖容器 --- */
+/* bottom 計算：map-tabs 高度(48px) + navbar 高度(64px) + safe-area */
+.map-viewport {
+  position: fixed;
+  top: 56px;
+  left: 0;
+  right: 0;
+  bottom: calc(48px + 64px + env(safe-area-inset-bottom, 0px));
+  overflow: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.map-container {
+  position: relative;
+  width: 100%;
+  max-width: 1200px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.map-bg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
+
+/* --- 探險點疊加層 --- */
+.points-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.adventure-point {
+  position: absolute;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  /* button reset */
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+}
+
+.adventure-point:active {
+  transform: scale(0.92);
+}
+
+.point-circle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 900;
+  border: 3px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: all var(--transition-normal);
+}
+
+.point-label {
+  margin-top: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-white);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  white-space: nowrap;
+  text-align: center;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 狀態：locked */
+.point-locked .point-circle {
+  background: rgba(100, 100, 100, 0.7);
+  border-color: rgba(150, 150, 150, 0.5);
+  color: #888;
+}
+
+.point-locked {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.adventure-point:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* 狀態：current */
+.point-current .point-circle {
+  background: linear-gradient(135deg, #f39c12, #e67e22);
+  border-color: #fff;
+  color: #fff;
+  animation: point-pulse 2s ease-in-out infinite;
+}
+
+@keyframes point-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(243, 156, 18, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 20px 8px rgba(243, 156, 18, 0.3);
+  }
+}
+
+/* 狀態：passed */
+.point-passed .point-circle {
+  background: linear-gradient(135deg, var(--success-green), #27ae60);
+  border-color: rgba(255, 255, 255, 0.8);
+  color: #fff;
+}
+
+.point-stars {
+  font-size: 0.65rem;
+  color: var(--accent-yellow);
+  margin-top: 2px;
+}
+
+/* --- 地圖選擇 Tabs --- */
+/* 位於 navbar(64px) 上方 */
+.map-tabs {
+  position: fixed;
+  bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  background: rgba(26, 35, 50, 0.95);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.map-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 8px;
+  background: none;
+  border: none;
+  color: var(--text-light);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  min-height: var(--touch-target-min);
+  position: relative;
+}
+
+.map-tab.active {
+  color: var(--primary-blue);
+  font-weight: 700;
+}
+
+.map-tab.active::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 20%;
+  right: 20%;
+  height: 3px;
+  background: var(--primary-blue);
+  border-radius: 0 0 3px 3px;
+}
+
+.map-tab.locked {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.map-tab-icon {
+  font-size: 1.5rem;
+  margin-bottom: 2px;
+}
+
+.map-tab-label {
+  font-size: 0.75rem;
+}
+
+.tab-free-select {
+  background: linear-gradient(
+    135deg,
+    rgba(52, 152, 219, 0.1),
+    rgba(52, 152, 219, 0.05)
+  );
+}
+
+/* --- 探險點 info popup --- */
+.point-info-popup {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.6);
+  align-items: center;
+  justify-content: center;
+}
+
+.point-info-popup.visible {
+  display: flex;
+}
+
+.point-info-card {
+  background: #1e2d3d;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--border-radius-xl);
+  padding: 32px 24px;
+  max-width: 360px;
+  width: 90%;
+  text-align: center;
+  animation: popup-in 0.3s ease-out;
+}
+
+@keyframes popup-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.point-info-title {
+  font-size: var(--font-size-xl);
+  font-weight: 900;
+  color: var(--text-white);
+  margin-bottom: 12px;
+}
+
+.point-info-details {
+  font-size: var(--font-size-md);
+  color: var(--text-light);
+  margin-bottom: 8px;
+}
+
+.point-info-wm {
+  font-size: var(--font-size-sm);
+  color: var(--wm-color);
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.point-info-best {
+  font-size: var(--font-size-sm);
+  color: var(--text-light);
+  margin-bottom: 20px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.point-info-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.point-info-actions button {
+  padding: 12px 24px;
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  min-width: 120px;
+  min-height: var(--touch-target-min);
+  transition: all var(--transition-fast);
+}
+
+.btn-play {
+  background: var(--success-green);
+  color: #fff;
+}
+
+.btn-play:hover {
+  background: #27ae60;
+}
+
+.btn-cancel {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-light);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* --- 響應式 --- */
+@media (max-width: 480px) {
+  .point-circle {
+    width: 44px;
+    height: 44px;
+    font-size: 1.2rem;
+  }
+
+  .point-label {
+    font-size: 0.6rem;
+  }
+
+  .header-title {
+    font-size: var(--font-size-md);
+  }
+}
+
+@media (min-width: 769px) {
+  .point-circle {
+    width: 64px;
+    height: 64px;
+    font-size: 1.8rem;
+  }
+}

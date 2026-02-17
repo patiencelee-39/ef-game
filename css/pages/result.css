@@ -1,0 +1,557 @@
+/* ====================================
+       結算頁面專用樣式
+       ==================================== */
+
+      /* --- 頁面容器 --- */
+      .result-page {
+        width: 100%;
+        max-width: 640px;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        margin: 0 auto;
+        padding: 0;
+        background: var(--bg-dark);
+      }
+
+      /* --- 頂部導航 --- */
+      .result-header {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 16px;
+        background: rgba(0, 0, 0, 0.3);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .result-header h1 {
+        font-size: var(--font-size-lg);
+        color: var(--text-white);
+        margin: 0;
+      }
+
+      /* --- 主內容 --- */
+      .result-body {
+        flex: 1;
+        padding: 16px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      /* --- 卡片 --- */
+      .result-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: var(--border-radius-lg);
+        padding: 20px;
+      }
+
+      .result-card h2 {
+        font-size: var(--font-size-md);
+        color: var(--text-white);
+        margin: 0 0 12px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      /* --- 通過 / 未通過標語 --- */
+      .result-banner {
+        text-align: center;
+        padding: 24px 16px;
+        border-radius: var(--border-radius-lg);
+        animation: banner-in 0.6s ease-out;
+      }
+
+      @keyframes banner-in {
+        from {
+          opacity: 0;
+          transform: scale(0.8);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      .result-banner--pass {
+        background: linear-gradient(
+          135deg,
+          rgba(46, 204, 113, 0.15),
+          rgba(52, 152, 219, 0.15)
+        );
+        border: 2px solid rgba(46, 204, 113, 0.3);
+      }
+
+      .result-banner--fail {
+        background: rgba(231, 76, 60, 0.1);
+        border: 2px solid rgba(231, 76, 60, 0.25);
+      }
+
+      .banner-icon {
+        font-size: var(--font-size-display);
+        display: block;
+      }
+
+      .banner-text {
+        font-size: var(--font-size-xl);
+        font-weight: 700;
+        color: var(--text-white);
+        margin-top: 8px;
+      }
+
+      .banner-sub {
+        font-size: var(--font-size-sm);
+        color: var(--text-light);
+        margin-top: 4px;
+      }
+
+      /* --- 星星顯示 --- */
+      .star-display {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin: 16px 0;
+      }
+
+      .star {
+        font-size: 2rem;
+        transition: transform 0.4s ease;
+        animation: star-pop 0.4s ease-out backwards;
+      }
+
+      .star:nth-child(1) {
+        animation-delay: 0.1s;
+      }
+      .star:nth-child(2) {
+        animation-delay: 0.3s;
+      }
+      .star:nth-child(3) {
+        animation-delay: 0.5s;
+      }
+
+      @keyframes star-pop {
+        from {
+          opacity: 0;
+          transform: scale(0) rotate(-30deg);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1) rotate(0);
+        }
+      }
+
+      .star--earned {
+        color: var(--accent-yellow);
+      }
+      .star--empty {
+        color: rgba(255, 255, 255, 0.2);
+      }
+
+      .star-count-text {
+        font-size: var(--font-size-sm);
+        color: var(--text-light);
+        text-align: center;
+        margin-top: 4px;
+      }
+
+      /* --- 統計網格 --- */
+      .stat-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .stat-item {
+        text-align: center;
+        padding: 12px;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: var(--border-radius-md);
+      }
+
+      .stat-value {
+        font-size: var(--font-size-xl);
+        font-weight: 700;
+        color: var(--text-white);
+      }
+
+      .stat-value--good {
+        color: var(--success-green);
+      }
+      .stat-value--bad {
+        color: var(--error-red);
+      }
+      .stat-value--wm {
+        color: var(--wm-color);
+      }
+
+      .stat-label {
+        font-size: var(--font-size-xs);
+        color: var(--text-light);
+        margin-top: 4px;
+      }
+
+      /* --- 等級進度 --- */
+      .level-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .level-icon-big {
+        font-size: 3rem;
+      }
+
+      .level-name {
+        font-size: var(--font-size-lg);
+        font-weight: 700;
+        color: var(--accent-yellow);
+      }
+
+      .level-up-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 6px 16px;
+        background: linear-gradient(135deg, var(--accent-yellow), #f39c12);
+        color: #1a2332;
+        font-weight: 700;
+        border-radius: 20px;
+        font-size: var(--font-size-sm);
+        animation: level-glow 1s ease-in-out infinite alternate;
+      }
+
+      @keyframes level-glow {
+        from {
+          box-shadow: 0 0 6px rgba(255, 215, 0, 0.3);
+        }
+        to {
+          box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+        }
+      }
+
+      .level-progress-bar {
+        width: 100%;
+        max-width: 280px;
+        height: 10px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 5px;
+        overflow: hidden;
+      }
+
+      .level-progress-fill {
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          var(--primary-blue),
+          var(--accent-yellow)
+        );
+        border-radius: 5px;
+        transition: width 1s ease-out;
+      }
+
+      .level-progress-text {
+        font-size: var(--font-size-xs);
+        color: var(--text-light);
+      }
+
+      /* --- 徽章 --- */
+      .badge-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: center;
+      }
+
+      .badge-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        padding: 12px;
+        background: rgba(255, 215, 0, 0.08);
+        border: 1px solid rgba(255, 215, 0, 0.2);
+        border-radius: var(--border-radius-md);
+        min-width: 80px;
+        animation: badge-in 0.5s ease-out backwards;
+      }
+
+      .badge-item:nth-child(1) {
+        animation-delay: 0.2s;
+      }
+      .badge-item:nth-child(2) {
+        animation-delay: 0.4s;
+      }
+      .badge-item:nth-child(3) {
+        animation-delay: 0.6s;
+      }
+
+      @keyframes badge-in {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .badge-icon-lg {
+        font-size: 2rem;
+      }
+
+      .badge-name {
+        font-size: var(--font-size-xs);
+        color: var(--accent-yellow);
+        font-weight: 600;
+        text-align: center;
+      }
+
+      /* --- 地圖進展提示 --- */
+      .map-notice {
+        text-align: center;
+        padding: 12px;
+        border-radius: var(--border-radius-md);
+        font-weight: 600;
+      }
+
+      .map-notice--unlock {
+        background: rgba(46, 204, 113, 0.12);
+        border: 1px solid rgba(46, 204, 113, 0.25);
+        color: var(--success-green);
+      }
+
+      .map-notice--complete {
+        background: rgba(255, 215, 0, 0.1);
+        border: 1px solid rgba(255, 215, 0, 0.25);
+        color: var(--accent-yellow);
+      }
+
+      .map-notice--all-done {
+        background: linear-gradient(
+          135deg,
+          rgba(255, 215, 0, 0.15),
+          rgba(231, 76, 60, 0.08)
+        );
+        border: 1px solid rgba(255, 215, 0, 0.3);
+        color: var(--accent-yellow);
+      }
+
+      /* --- 自由選擇：多 combo 結果列表 --- */
+      .combo-result-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .combo-result-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: var(--border-radius-md);
+        border-left: 4px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .combo-result-item--pass {
+        border-left-color: var(--success-green);
+      }
+      .combo-result-item--fail {
+        border-left-color: var(--error-red);
+      }
+
+      .combo-result-icon {
+        font-size: 1.4rem;
+        flex-shrink: 0;
+      }
+
+      .combo-result-info {
+        flex: 1;
+      }
+
+      .combo-result-name {
+        font-weight: 700;
+        color: var(--text-white);
+        font-size: var(--font-size-sm);
+      }
+
+      .combo-result-detail {
+        font-size: var(--font-size-xs);
+        color: var(--text-light);
+        margin-top: 2px;
+      }
+
+      .combo-result-stars {
+        font-size: var(--font-size-md);
+        flex-shrink: 0;
+      }
+
+      /* --- 底部按鈕列 --- */
+      .result-actions {
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        flex-shrink: 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .result-actions .btn {
+        width: 100%;
+        min-height: var(--touch-target-min);
+        font-size: var(--font-size-md);
+        font-weight: 700;
+        border-radius: var(--border-radius-lg);
+        border: none;
+        cursor: pointer;
+      }
+
+      .btn-next {
+        background: linear-gradient(135deg, var(--success-green), #27ae60);
+        color: #fff;
+      }
+
+      .btn-retry {
+        background: linear-gradient(135deg, #f39c12, #e67e22);
+        color: #fff;
+      }
+
+      .btn-map {
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--text-light);
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      }
+
+      .btn-home {
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-light);
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      }
+
+      .btn-leaderboard {
+        background: linear-gradient(135deg, #ffd700, #ffaa00);
+        color: #1a1a2e;
+        font-weight: 700;
+      }
+
+      .btn-upload-class {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: #fff;
+        font-weight: 700;
+      }
+      .btn-upload-class:hover {
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      }
+
+      .upload-code-input-row {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+        padding: 0 16px;
+      }
+      .upload-code-input-row input {
+        flex: 1;
+        padding: 8px 12px;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.08);
+        color: #fff;
+        font-size: 0.95rem;
+        font-weight: 700;
+        text-align: center;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        outline: none;
+      }
+      .upload-code-input-row input:focus {
+        border-color: #667eea;
+      }
+      .upload-code-input-row button {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: #fff;
+        font-weight: 700;
+        cursor: pointer;
+        white-space: nowrap;
+        font-size: 0.9rem;
+      }
+      .upload-status-msg {
+        text-align: center;
+        font-size: 0.85rem;
+        padding: 4px 16px;
+        min-height: 24px;
+      }
+      .upload-status-msg.success {
+        color: #4caf50;
+      }
+      .upload-status-msg.error {
+        color: #e74c3c;
+      }
+
+      /* --- 世界排行榜上傳 --- */
+      .btn-upload-world {
+        background: linear-gradient(135deg, #00c9ff, #92fe9d);
+        color: #1a1a2e;
+        font-weight: 700;
+      }
+      .btn-upload-world:hover {
+        box-shadow: 0 4px 12px rgba(0, 201, 255, 0.4);
+      }
+      .upload-world-notice {
+        font-size: 0.78rem;
+        color: var(--text-light, #aaa);
+        text-align: center;
+        padding: 2px 16px 0;
+        line-height: 1.4;
+        opacity: 0.85;
+      }
+      .world-upload-confirm-row {
+        width: 100%;
+      }
+      .world-upload-btn-pair {
+        display: flex;
+        gap: 10px;
+        margin-top: 8px;
+      }
+      .world-upload-btn-pair .btn {
+        flex: 1;
+        min-width: 0;
+      }
+      .btn-world-cancel {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-light, #aaa);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+      }
+      .btn-world-cancel:hover {
+        background: rgba(255, 255, 255, 0.15);
+      }
+      .btn-world-confirm {
+        background: linear-gradient(135deg, #00c9ff, #92fe9d);
+        color: #1a1a2e;
+        font-weight: 700;
+      }
+      .btn-world-confirm:hover {
+        box-shadow: 0 4px 12px rgba(0, 201, 255, 0.4);
+      }
+
+      /* --- 響應式 --- */
+      @media (max-width: 480px) {
+        .result-body {
+          padding: 12px;
+          gap: 16px;
+        }
+        .star {
+          font-size: 1.6rem;
+        }
+        .stat-grid {
+          gap: 8px;
+        }
+      }
