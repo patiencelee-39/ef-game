@@ -347,10 +347,15 @@ var GameController = (function () {
     var accuracy = _totalTrials > 0 ? (_totalCorrect / _totalTrials) * 100 : 0;
 
     // 計算平均反應時間
-    var validRTs = _trialResults.filter(function (r) { return r.rt > 0; });
-    var avgRT = validRTs.length > 0
-      ? validRTs.reduce(function (s, r) { return s + r.rt; }, 0) / validRTs.length
-      : 0;
+    var validRTs = _trialResults.filter(function (r) {
+      return r.rt > 0;
+    });
+    var avgRT =
+      validRTs.length > 0
+        ? validRTs.reduce(function (s, r) {
+            return s + r.rt;
+          }, 0) / validRTs.length
+        : 0;
 
     // 存入 showFinalRanking 設定供 result.html 讀取
     try {

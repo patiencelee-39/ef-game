@@ -81,7 +81,8 @@ function loadSpectatorResults() {
 
       var allPlayers = Object.entries(scores)
         .map(function (entry) {
-          var uid = entry[0], data = entry[1];
+          var uid = entry[0],
+            data = entry[1];
           return {
             uid: uid,
             nickname: data.nickname || "玩家",
@@ -93,7 +94,9 @@ function loadSpectatorResults() {
             isMe: false,
           };
         })
-        .sort(function (a, b) { return b.score - a.score; });
+        .sort(function (a, b) {
+          return b.score - a.score;
+        });
 
       // 觀戰者用分指標比較呈現
       _renderSpectatorComparison(rankEl, allPlayers);
@@ -109,10 +112,22 @@ function _renderSpectatorComparison(container, players) {
   }
 
   var metrics = [
-    { label: "總排名",     icon: "🏅", key: "score",        fmt: _fmtInt,  dir: "desc" },
-    { label: "準確率",     icon: "🎯", key: "accuracy",     fmt: _fmtPct,  dir: "desc" },
-    { label: "平均反應時間", icon: "⚡", key: "avgRT",       fmt: _fmtRT,   dir: "asc"  },
-    { label: "答對題數",   icon: "✅", key: "totalCorrect", fmt: _fmtFrac, dir: "desc" },
+    { label: "總排名", icon: "🏅", key: "score", fmt: _fmtInt, dir: "desc" },
+    { label: "準確率", icon: "🎯", key: "accuracy", fmt: _fmtPct, dir: "desc" },
+    {
+      label: "平均反應時間",
+      icon: "⚡",
+      key: "avgRT",
+      fmt: _fmtRT,
+      dir: "asc",
+    },
+    {
+      label: "答對題數",
+      icon: "✅",
+      key: "totalCorrect",
+      fmt: _fmtFrac,
+      dir: "desc",
+    },
   ];
 
   var html = "";
@@ -125,7 +140,12 @@ function _renderSpectatorComparison(container, players) {
     });
 
     html += '<div class="mp-metric-group">';
-    html += '<div class="mp-metric-title">' + metric.icon + " " + metric.label + "</div>";
+    html +=
+      '<div class="mp-metric-title">' +
+      metric.icon +
+      " " +
+      metric.label +
+      "</div>";
 
     for (var p = 0; p < sorted.length; p++) {
       var player = sorted[p];
@@ -134,7 +154,8 @@ function _renderSpectatorComparison(container, players) {
 
       html += '<div class="mp-player-row">';
       html += '<span class="mp-rank">' + medalStr + "</span>";
-      html += '<span class="mp-nickname">' + _escHtml(player.nickname) + "</span>";
+      html +=
+        '<span class="mp-nickname">' + _escHtml(player.nickname) + "</span>";
       html += '<span class="mp-value">' + metric.fmt(player) + "</span>";
       html += "</div>";
     }
@@ -379,7 +400,8 @@ async function calculateRank() {
     // 組裝所有玩家資料
     var allPlayers = Object.entries(results)
       .map(function (entry) {
-        var uid = entry[0], d = entry[1];
+        var uid = entry[0],
+          d = entry[1];
         return {
           uid: uid,
           nickname: d.nickname || "玩家",
@@ -391,18 +413,30 @@ async function calculateRank() {
           isMe: uid === myId,
         };
       })
-      .sort(function (a, b) { return b.score - a.score; });
+      .sort(function (a, b) {
+        return b.score - a.score;
+      });
 
     // 更新分數卡片排名
     var myRank = 0;
     for (var i = 0; i < allPlayers.length; i++) {
-      if (allPlayers[i].isMe) { myRank = i + 1; break; }
+      if (allPlayers[i].isMe) {
+        myRank = i + 1;
+        break;
+      }
     }
     var medals = ["🥇", "🥈", "🥉"];
     if (myRank > 0 && myRank <= 3) {
-      rankEl.textContent = medals[myRank - 1] + " 第 " + myRank + " 名 / " + allPlayers.length + " 人";
+      rankEl.textContent =
+        medals[myRank - 1] +
+        " 第 " +
+        myRank +
+        " 名 / " +
+        allPlayers.length +
+        " 人";
     } else if (myRank > 0) {
-      rankEl.textContent = "第 " + myRank + " 名 / " + allPlayers.length + " 人";
+      rankEl.textContent =
+        "第 " + myRank + " 名 / " + allPlayers.length + " 人";
     } else {
       rankEl.textContent = "計算中… (" + allPlayers.length + " 人已完成)";
     }
@@ -426,10 +460,38 @@ function _renderMetricComparison(players) {
 
   // 指標定義：label, icon, key, formatter, sortDir(desc/asc), unit
   var metrics = [
-    { label: "總排名",     icon: "🏅", key: "score",        fmt: _fmtInt,   dir: "desc", unit: " 分" },
-    { label: "準確率",     icon: "🎯", key: "accuracy",     fmt: _fmtPct,   dir: "desc", unit: "%" },
-    { label: "平均反應時間", icon: "⚡", key: "avgRT",       fmt: _fmtRT,    dir: "asc",  unit: "" },
-    { label: "答對題數",   icon: "✅", key: "totalCorrect", fmt: _fmtFrac,  dir: "desc", unit: "" },
+    {
+      label: "總排名",
+      icon: "🏅",
+      key: "score",
+      fmt: _fmtInt,
+      dir: "desc",
+      unit: " 分",
+    },
+    {
+      label: "準確率",
+      icon: "🎯",
+      key: "accuracy",
+      fmt: _fmtPct,
+      dir: "desc",
+      unit: "%",
+    },
+    {
+      label: "平均反應時間",
+      icon: "⚡",
+      key: "avgRT",
+      fmt: _fmtRT,
+      dir: "asc",
+      unit: "",
+    },
+    {
+      label: "答對題數",
+      icon: "✅",
+      key: "totalCorrect",
+      fmt: _fmtFrac,
+      dir: "desc",
+      unit: "",
+    },
   ];
 
   var html = "";
@@ -445,7 +507,12 @@ function _renderMetricComparison(players) {
     });
 
     html += '<div class="mp-metric-group">';
-    html += '<div class="mp-metric-title">' + metric.icon + " " + metric.label + "</div>";
+    html +=
+      '<div class="mp-metric-title">' +
+      metric.icon +
+      " " +
+      metric.label +
+      "</div>";
 
     for (var p = 0; p < sorted.length; p++) {
       var player = sorted[p];
@@ -456,7 +523,11 @@ function _renderMetricComparison(players) {
 
       html += '<div class="mp-player-row' + meClass + '">';
       html += '<span class="mp-rank">' + medalStr + "</span>";
-      html += '<span class="mp-nickname">' + _escHtml(player.nickname) + (player.isMe ? " (你)" : "") + "</span>";
+      html +=
+        '<span class="mp-nickname">' +
+        _escHtml(player.nickname) +
+        (player.isMe ? " (你)" : "") +
+        "</span>";
       html += '<span class="mp-value">' + value + "</span>";
       html += "</div>";
     }
@@ -467,12 +538,18 @@ function _renderMetricComparison(players) {
   container.innerHTML = html;
 }
 
-function _fmtInt(p) { return p.score; }
-function _fmtPct(p) { return p.accuracy.toFixed(1) + "%"; }
+function _fmtInt(p) {
+  return p.score;
+}
+function _fmtPct(p) {
+  return p.accuracy.toFixed(1) + "%";
+}
 function _fmtRT(p) {
   return p.avgRT > 0 ? (p.avgRT / 1000).toFixed(2) + "s" : "—";
 }
-function _fmtFrac(p) { return p.totalCorrect + "/" + p.totalTrials; }
+function _fmtFrac(p) {
+  return p.totalCorrect + "/" + p.totalTrials;
+}
 
 function shareResult() {
   const shareText = `我在執行功能遊戲中獲得了 ${resultData.score} 分！準確率 ${resultData.accuracy.toFixed(1)}%！快來挑戰看看！`;
@@ -641,6 +718,9 @@ function playAgain() {
               bestScore: d.score || 0,
               bestAccuracy: Math.round(d.accuracy || 0),
               bestAvgRT: Math.round(avgRT),
+              totalCorrect: d.correctAnswers || 0,
+              totalTrials: d.totalQuestions || 0,
+              mode: "multiplayer",
               totalStars: 0,
               level: "",
               gamesPlayed: 1,
@@ -648,8 +728,37 @@ function playAgain() {
             return FirestoreLeaderboard.uploadToWorld(worldData);
           })
           .then(function () {
-            statusMsg.textContent = "✅ 已上傳至世界排行榜！";
-            statusMsg.style.color = "#4caf50";
+            // 上傳成功後查詢世界排名
+            return FirestoreLeaderboard.getWorldLeaderboard(200);
+          })
+          .then(function (entries) {
+            var myUid = firebase.auth().currentUser ? firebase.auth().currentUser.uid : null;
+            var myRank = 0;
+            var total = entries.length;
+            for (var ri = 0; ri < entries.length; ri++) {
+              if (entries[ri].docId === myUid) { myRank = ri + 1; break; }
+            }
+            var rankText = myRank > 0
+              ? "🌐 世界第 " + myRank + " 名 / " + total + " 人"
+              : "✅ 已上傳至世界排行榜！";
+
+            var d = resultData || {};
+            var validRTs2 = (d.answers || []).filter(function (a) { return (a.rt || a.reactionTime) > 0; });
+            var avgRT2 = validRTs2.length > 0
+              ? validRTs2.reduce(function (s, a) { return s + (a.rt || a.reactionTime || 0); }, 0) / validRTs2.length
+              : 0;
+
+            statusMsg.innerHTML =
+              '<div style="text-align:center;line-height:1.8;">' +
+              '<div style="font-size:1.1rem;font-weight:700;color:#4caf50;margin-bottom:4px;">' + rankText + '</div>' +
+              '<div style="font-size:0.85rem;color:#ccc;">' +
+              '🎯 準確率 ' + Math.round(d.accuracy || 0) + '% · ' +
+              '⚡ 平均 RT ' + (avgRT2 > 0 ? (avgRT2 / 1000).toFixed(2) + 's' : '—') + ' · ' +
+              '✅ 答對 ' + (d.correctAnswers || 0) + '/' + (d.totalQuestions || 0) + ' · ' +
+              '🏷️ 競賽模式' +
+              '</div></div>';
+            statusMsg.style.color = "";
+
             row.style.display = "none";
             notice.style.display = "none";
             btn.style.display = "";

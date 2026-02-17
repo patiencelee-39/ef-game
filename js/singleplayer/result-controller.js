@@ -1132,6 +1132,24 @@ var ResultController = (function () {
           bestAvgRT = rtCount > 0 ? Math.round(rtSum / rtCount) : 0;
         }
 
+        // 計算答對題數和總題數
+        var uploadTotalCorrect = 0;
+        var uploadTotalTrials = 0;
+        var uploadMode = "adventure";
+
+        if (data.mode === "adventure" && data.comboResult) {
+          var uploadRR = data.comboResult.ruleResult || {};
+          uploadTotalCorrect = uploadRR.correctCount || bestScore;
+          uploadTotalTrials = uploadRR.totalCount || 0;
+        } else if (data.allComboResults) {
+          for (var ui = 0; ui < data.allComboResults.length; ui++) {
+            var uRR = (data.allComboResults[ui].result || {}).ruleResult || {};
+            uploadTotalCorrect += uRR.correctCount || 0;
+            uploadTotalTrials += uRR.totalCount || 0;
+          }
+          uploadMode = "adventure";
+        }
+
         var worldData = {
           nickname: nickname,
           totalStars: totalStars,
@@ -1139,6 +1157,9 @@ var ResultController = (function () {
           bestScore: bestScore,
           bestAccuracy: bestAccuracy,
           bestAvgRT: bestAvgRT,
+          totalCorrect: uploadTotalCorrect,
+          totalTrials: uploadTotalTrials,
+          mode: uploadMode,
           gamesPlayed: 1,
         };
 

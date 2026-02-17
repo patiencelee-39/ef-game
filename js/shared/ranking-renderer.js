@@ -37,6 +37,8 @@ var RankingRenderer = (function () {
     var showStars = opts.showStars || false;
     var showLevel = opts.showLevel || false;
     var showTime = opts.showTime || false;
+    var showCorrect = opts.showCorrect || false;
+    var showMode = opts.showMode || false;
     var highlightUid = opts.highlightUid || null;
     var onDelete = opts.onDelete || null;
 
@@ -74,8 +76,10 @@ var RankingRenderer = (function () {
     var colCount = 3; // 排名、名稱、分數（基本欄位）
     if (showAccuracy) colCount++;
     if (showRT) colCount++;
+    if (showCorrect) colCount++;
     if (showStars) colCount++;
     if (showLevel) colCount++;
+    if (showMode) colCount++;
     if (showTime) colCount++;
     if (onDelete) colCount++;
 
@@ -83,8 +87,10 @@ var RankingRenderer = (function () {
     var colTemplate = _buildGridTemplate(
       showAccuracy,
       showRT,
+      showCorrect,
       showStars,
       showLevel,
+      showMode,
       showTime,
       onDelete,
     );
@@ -101,10 +107,14 @@ var RankingRenderer = (function () {
       html += '<div class="ranking-cell ranking-cell--acc">正確率</div>';
     if (showRT)
       html += '<div class="ranking-cell ranking-cell--rt">平均 RT</div>';
+    if (showCorrect)
+      html += '<div class="ranking-cell ranking-cell--correct">答對</div>';
     if (showStars)
       html += '<div class="ranking-cell ranking-cell--stars">⭐</div>';
     if (showLevel)
       html += '<div class="ranking-cell ranking-cell--level">等級</div>';
+    if (showMode)
+      html += '<div class="ranking-cell ranking-cell--mode">模式</div>';
     if (showTime)
       html += '<div class="ranking-cell ranking-cell--time">時間</div>';
     if (onDelete)
@@ -150,7 +160,7 @@ var RankingRenderer = (function () {
         "</div>";
 
       if (showAccuracy) {
-        var acc = e.accuracy != null ? e.accuracy : 0;
+        var acc = e.accuracy != null ? e.accuracy : (e.bestAccuracy != null ? e.bestAccuracy : 0);
         html +=
           '<div class="ranking-cell ranking-cell--acc">' +
           (typeof acc === "number" ? acc.toFixed(1) : acc) +
@@ -158,10 +168,19 @@ var RankingRenderer = (function () {
       }
 
       if (showRT) {
-        var rt = e.avgRT || 0;
+        var rt = e.avgRT || e.bestAvgRT || 0;
         html +=
           '<div class="ranking-cell ranking-cell--rt">' +
           (rt > 0 ? Math.round(rt) + " ms" : "—") +
+          "</div>";
+      }
+
+      if (showCorrect) {
+        var tc = e.totalCorrect != null ? e.totalCorrect : (e.bestScore || 0);
+        var tt = e.totalTrials || "—";
+        html +=
+          '<div class="ranking-cell ranking-cell--correct">' +
+          tc + "/" + tt +
           "</div>";
       }
 
@@ -169,6 +188,14 @@ var RankingRenderer = (function () {
         html +=
           '<div class="ranking-cell ranking-cell--stars">' +
           (e.stars || e.totalStars || 0) +
+          "</div>";
+      }
+
+      if (showMode) {
+        var modeLabel = e.mode === "multiplayer" ? "競賽" : e.mode === "adventure" ? "冒險" : e.mode || "—";
+        html +=
+          '<div class="ranking-cell ranking-cell--mode">' +
+          modeLabel +
           "</div>";
       }
 
@@ -252,9 +279,10 @@ var RankingRenderer = (function () {
     for (var i = 0; i < entries.length; i++) {
       var e = entries[i];
       totalScore += e.score || e.bestScore || 0;
-      totalAcc += e.accuracy || 0;
-      if (e.avgRT && e.avgRT > 0) {
-        totalRT += e.avgRT;
+      totalAcc += e.accuracy || e.bestAccuracy || 0;
+      var eRT = e.avgRT || e.bestAvgRT || 0;
+      if (eRT > 0) {
+        totalRT += eRT;
         rtCount++;
       }
     }
@@ -293,16 +321,20 @@ var RankingRenderer = (function () {
   function _buildGridTemplate(
     showAcc,
     showRT,
+    showCorrect,
     showStars,
     showLevel,
+    showMode,
     showTime,
     hasDelete,
   ) {
     var cols = ["60px", "1fr", "90px"]; // rank, name, score
     if (showAcc) cols.push("90px");
     if (showRT) cols.push("100px");
+    if (showCorrect) cols.push("80px");
     if (showStars) cols.push("60px");
     if (showLevel) cols.push("70px");
+    if (showMode) cols.push("60px");
     if (showTime) cols.push("110px");
     if (hasDelete) cols.push("50px");
     return "--ranking-cols: " + cols.join(" ") + ";";

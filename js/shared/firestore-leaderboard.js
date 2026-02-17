@@ -394,6 +394,9 @@ var FirestoreLeaderboard = (function () {
     if (data.gamesPlayed != null) uploadData.gamesPlayed = data.gamesPlayed;
     if (data.bestAccuracy != null) uploadData.bestAccuracy = data.bestAccuracy;
     if (data.bestAvgRT != null) uploadData.bestAvgRT = data.bestAvgRT;
+    if (data.totalCorrect != null) uploadData.totalCorrect = data.totalCorrect;
+    if (data.totalTrials != null) uploadData.totalTrials = data.totalTrials;
+    if (data.mode) uploadData.mode = data.mode;
     if (data.badges) uploadData.badges = data.badges;
 
     return db
