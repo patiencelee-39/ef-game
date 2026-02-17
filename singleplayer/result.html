@@ -2,7 +2,6 @@
 <html lang="zh-TW" data-theme="field-primary">
   <head>
     <meta charset="UTF-8" />
-    <link rel="preconnect" href="https://www.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://www.googleapis.com" crossorigin />
     <meta
       name="viewport"
@@ -10,7 +9,7 @@
     />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app"
     />
     <title>遊戲結算</title>
     <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
@@ -21,32 +20,37 @@
     <!-- CSS 載入順序：base → main → 本頁行內 -->
     <link rel="stylesheet" href="../css/themes/base.css" />
     <link rel="stylesheet" href="../css/main.css" />
-    <link rel="preload" href="../css/components/csv-report.css" as="style" onload="this.rel='stylesheet'" />
-    <noscript><link rel="stylesheet" href="../css/components/csv-report.css" /></noscript>
-    <link rel="preload" href="../css/components/landscape-hint.css" as="style" onload="this.rel='stylesheet'" />
-    <noscript><link rel="stylesheet" href="../css/components/landscape-hint.css" /></noscript>
+    <link
+      rel="preload"
+      href="../css/components/csv-report.css"
+      as="style"
+      onload="this.rel = 'stylesheet'"
+    />
+    <noscript
+      ><link rel="stylesheet" href="../css/components/csv-report.css"
+    /></noscript>
+    <link
+      rel="preload"
+      href="../css/components/landscape-hint.css"
+      as="style"
+      onload="this.rel = 'stylesheet'"
+    />
+    <noscript
+      ><link rel="stylesheet" href="../css/components/landscape-hint.css"
+    /></noscript>
     <link rel="stylesheet" href="../css/pages/result.css" />
-    <link rel="preload" href="../css/components/navbar.css" as="style" onload="this.rel='stylesheet'" />
-    <noscript><link rel="stylesheet" href="../css/components/navbar.css" /></noscript>
+    <link
+      rel="preload"
+      href="../css/components/navbar.css"
+      as="style"
+      onload="this.rel = 'stylesheet'"
+    />
+    <noscript
+      ><link rel="stylesheet" href="../css/components/navbar.css"
+    /></noscript>
     <!-- ==================== 模組載入 ==================== -->
-    <!-- ==================== Firebase SDK ==================== -->
-    <script
-      defer
-      src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"
-    ></script>
-    <script
-      defer
-      src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"
-    ></script>
-    <script
-      defer
-      src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"
-    ></script>
-    <script
-      defer
-      src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"
-    ></script>
-    <script defer src="../js/firebase-config.js"></script>
+    <!-- Firebase Bundle -->
+    <script defer src="../js/firebase-bundle.js"></script>
     <!-- ==================== 遊戲核心 ==================== -->
     <script defer src="../js/game-config.js"></script>
     <script defer src="../js/adventure-maps-config.js"></script>

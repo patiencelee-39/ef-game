@@ -19,3 +19,6 @@ test-*.js
 # Node 模組
 node_modules/
 _inline-audit-full-output.txt
+
+# Vite 建置輸出
+dist/

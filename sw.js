@@ -9,7 +9,7 @@
  * 版本號更新時會自動清除舊快取。
  */
 
-var CACHE_VERSION = "efgame-20260217b";
+var CACHE_VERSION = "efgame-20260217c";
 var STATIC_CACHE = CACHE_VERSION + "-static";
 var PAGE_CACHE = CACHE_VERSION + "-pages";
 
@@ -27,6 +27,7 @@ var PRE_CACHE = [
   "/js/shared/navbar.js",
   "/js/shared/landscape-hint.js",
   "/js/shared/focus-trap.js",
+  "/js/firebase-bundle.js",
   "/js/game-config.js",
   "/js/svg-assets.js",
   "/js/utils/storage.js",

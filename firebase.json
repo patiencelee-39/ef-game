@@ -7,7 +7,12 @@
       "**/node_modules/**",
       "_archive/**",
       "**/*.md",
-      "scripts/**"
+      "scripts/**",
+      "src/**",
+      "dist/**",
+      "vite.config.js",
+      "package.json",
+      "package-lock.json"
     ],
     "headers": [
       {

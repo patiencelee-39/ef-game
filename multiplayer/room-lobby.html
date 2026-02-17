@@ -2,12 +2,11 @@
 <html lang="zh-TW">
   <head>
     <meta charset="UTF-8" />
-    <link rel="preconnect" href="https://www.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://www.googleapis.com" crossorigin />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app"
     />
     <title>等待室 - 執行功能遊戲</title>
     <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
@@ -16,26 +15,28 @@
     <meta name="theme-color" content="#302b63" />
     <link rel="stylesheet" href="../css/themes/base.css" />
     <link rel="stylesheet" href="../css/main.css" />
-    <link rel="preload" href="../css/components/landscape-hint.css" as="style" onload="this.rel='stylesheet'" />
-    <noscript><link rel="stylesheet" href="../css/components/landscape-hint.css" /></noscript>
+    <link
+      rel="preload"
+      href="../css/components/landscape-hint.css"
+      as="style"
+      onload="this.rel = 'stylesheet'"
+    />
+    <noscript
+      ><link rel="stylesheet" href="../css/components/landscape-hint.css"
+    /></noscript>
     <link rel="stylesheet" href="../css/pages/room-lobby.css" />
-    <link rel="preload" href="../css/components/navbar.css" as="style" onload="this.rel='stylesheet'" />
-    <noscript><link rel="stylesheet" href="../css/components/navbar.css" /></noscript>
-    <!-- Firebase -->
-    <script
-      defer
-      src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"
-    ></script>
-    <script
-      defer
-      src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"
-    ></script>
-    <script
-      defer
-      src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"
-    ></script>
+    <link
+      rel="preload"
+      href="../css/components/navbar.css"
+      as="style"
+      onload="this.rel = 'stylesheet'"
+    />
+    <noscript
+      ><link rel="stylesheet" href="../css/components/navbar.css"
+    /></noscript>
+    <!-- Firebase Bundle -->
+    <script defer src="../js/firebase-bundle.js"></script>
     <script defer src="../js/utils/constants.js"></script>
-    <script defer src="../js/firebase-config.js"></script>
     <script defer src="../js/utils/question-generator.js"></script>
     <script defer src="../js/shared/navbar.js"></script>
     <script defer src="../js/shared/landscape-hint.js"></script>

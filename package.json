@@ -10,6 +10,7 @@
     "format:check": "prettier --check \"**/*.{js,html,css,json,md}\"",
     "validate": "npm run lint && npm run format:check",
     "validate:assets": "node scripts/validate-assets.js",
+    "build:firebase": "vite build && cp dist/firebase-bundle.js js/firebase-bundle.js && echo '✅ firebase-bundle.js copied to js/'",
     "test": "node test-specific.js && node test-deep.js",
     "prepare": "husky"
   },
@@ -28,9 +29,14 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "^2.29.1",
     "husky": "^9.0.11",
-    "prettier": "^3.2.5"
+    "prettier": "^3.2.5",
+    "terser": "^5.46.0",
+    "vite": "^5.4.21"
   },
   "engines": {
     "node": ">=14.0.0"
+  },
+  "dependencies": {
+    "firebase": "^10.14.1"
   }
 }
