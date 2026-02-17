@@ -135,10 +135,18 @@ function wrapRef(dbRef) {
     onDisconnect() {
       const disc = rtdbOnDisconnect(dbRef);
       return {
-        set(value) { return disc.set(value); },
-        update(value) { return disc.update(value); },
-        remove() { return disc.remove(); },
-        cancel() { return disc.cancel(); },
+        set(value) {
+          return disc.set(value);
+        },
+        update(value) {
+          return disc.update(value);
+        },
+        remove() {
+          return disc.remove();
+        },
+        cancel() {
+          return disc.cancel();
+        },
       };
     },
 

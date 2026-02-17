@@ -105,7 +105,23 @@ async function joinRoom() {
     if (!user) throw new Error("請先登入");
 
     // 使用 RoomManager 加入房間（統一邏輯：密碼檢查、過期檢查、資料結構）
-    await window.RoomManager.joinRoom(cleanRoomCode, null);
+    let joinPassword = null;
+
+    // 先嘗試無密碼加入，如需密碼則彈窗詢問
+    try {
+      await window.RoomManager.joinRoom(cleanRoomCode, null);
+    } catch (pwError) {
+      if (pwError.message === "此房間需要密碼") {
+        joinPassword = prompt("🔒 此房間需要密碼，請輸入：");
+        if (!joinPassword) {
+          showStatus("❌ 已取消加入", "error");
+          return;
+        }
+        await window.RoomManager.joinRoom(cleanRoomCode, joinPassword);
+      } else {
+        throw pwError;
+      }
+    }
 
     // 加入成功後更新暱稱
     await window.RoomManager.updateNickname(cleanRoomCode, playerName);
