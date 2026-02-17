@@ -371,6 +371,7 @@ function generateGameCombos(combos) {
     var result = {
       fieldId: combo.fieldId,
       ruleId: combo.ruleId,
+      questionCount: count,
       questions: questions,
     };
 

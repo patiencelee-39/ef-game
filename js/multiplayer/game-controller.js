@@ -426,7 +426,7 @@ var GameController = (function () {
           return {
             fieldId: fieldId,
             ruleId: ruleId,
-            questionCount: stage.questionCount || 0,
+            questionCount: stage.questionCount || (stage.questions ? stage.questions.length : 0),
             displayName: (stage.icon || "") + " " + (stage.name || ""),
           };
         });
