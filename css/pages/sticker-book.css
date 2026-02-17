@@ -104,11 +104,7 @@ body {
 
 .stats-bar-inner {
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    var(--primary-blue),
-    var(--accent-yellow)
-  );
+  background: linear-gradient(90deg, var(--primary-blue), var(--accent-yellow));
   border-radius: 6px;
   transition: width var(--transition-normal);
 }

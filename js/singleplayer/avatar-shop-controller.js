@@ -6,10 +6,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function goBack() {
-  if (
-    document.referrer &&
-    document.referrer.indexOf("adventure-map") !== -1
-  ) {
+  if (document.referrer && document.referrer.indexOf("adventure-map") !== -1) {
     history.back();
   } else {
     window.location.href = "adventure-map.html";
@@ -23,8 +20,7 @@ function refreshAll() {
 }
 
 function updateStarsDisplay() {
-  document.getElementById("available-stars").textContent =
-    getAvailableStars();
+  document.getElementById("available-stars").textContent = getAvailableStars();
 }
 
 function updatePreview() {
@@ -63,8 +59,7 @@ function updatePreview() {
   }
 
   var label = levelDef ? levelDef.icon + " " + levelDef.name : "";
-  document.getElementById("preview-label").textContent =
-    label + " 的造型";
+  document.getElementById("preview-label").textContent = label + " 的造型";
 }
 
 function filterCategory(catId) {
@@ -205,8 +200,6 @@ function handleUnequip(slot) {
 }
 
 // 點擊外部關閉
-document
-  .getElementById("buy-popup")
-  .addEventListener("click", function (e) {
-    if (e.target === this) closePopup();
-  });
+document.getElementById("buy-popup").addEventListener("click", function (e) {
+  if (e.target === this) closePopup();
+});

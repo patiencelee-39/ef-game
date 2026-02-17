@@ -142,8 +142,7 @@ function setupMapTabs() {
   var progress = getAdventureProgress();
 
   // 地圖 2 解鎖檢查
-  var map2Unlocked =
-    progress.currentMapIndex >= 1 || isMapAllPassed("mouse");
+  var map2Unlocked = progress.currentMapIndex >= 1 || isMapAllPassed("mouse");
   var tab1 = document.getElementById("tab-map-1");
   if (!map2Unlocked) {
     tab1.classList.add("locked");
@@ -156,22 +155,20 @@ function setupMapTabs() {
   }
 
   // Tab 點擊事件
-  document
-    .getElementById("map-tabs")
-    .addEventListener("click", function (e) {
-      var tab = e.target.closest(".map-tab");
-      if (!tab || tab.classList.contains("locked")) return;
+  document.getElementById("map-tabs").addEventListener("click", function (e) {
+    var tab = e.target.closest(".map-tab");
+    if (!tab || tab.classList.contains("locked")) return;
 
-      var mapIndex = tab.dataset.map;
+    var mapIndex = tab.dataset.map;
 
-      if (mapIndex === "free") {
-        ModeController.goToFreeSelect();
-        return;
-      }
+    if (mapIndex === "free") {
+      ModeController.goToFreeSelect();
+      return;
+    }
 
-      var idx = parseInt(mapIndex, 10);
-      switchMap(idx);
-    });
+    var idx = parseInt(mapIndex, 10);
+    switchMap(idx);
+  });
 }
 
 function switchMap(mapIndex) {
@@ -291,8 +288,7 @@ function renderMap(mapIndex) {
       var starsEl = document.createElement("div");
       starsEl.className = "point-stars";
       starsEl.setAttribute("aria-hidden", "true");
-      starsEl.textContent =
-        "⭐×" + (point.starsEarned + point.wmStarsEarned);
+      starsEl.textContent = "⭐×" + (point.starsEarned + point.wmStarsEarned);
       el.appendChild(starsEl);
     }
 
@@ -345,8 +341,7 @@ function showPointInfo(point, pointIndex, mapIndex) {
   var bestEl = document.getElementById("popup-best");
   if (point.bestScore > 0) {
     bestEl.style.display = "block";
-    document.getElementById("popup-best-score").textContent =
-      point.bestScore;
+    document.getElementById("popup-best-score").textContent = point.bestScore;
     document.getElementById("popup-best-stars").textContent =
       point.starsEarned + point.wmStarsEarned;
   } else {
@@ -355,8 +350,7 @@ function showPointInfo(point, pointIndex, mapIndex) {
 
   // 開始按鈕文字
   var playBtn = document.getElementById("popup-play-btn");
-  playBtn.textContent =
-    point.status === "passed" ? "🔄 再玩一次" : "▶️ 開始";
+  playBtn.textContent = point.status === "passed" ? "🔄 再玩一次" : "▶️ 開始";
 
   document.getElementById("point-info-popup").classList.add("visible");
   FocusTrap.activate(document.getElementById("point-info-popup"));

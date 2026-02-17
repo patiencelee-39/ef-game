@@ -47,13 +47,10 @@ function toggleRule(ruleId) {
 // ─── WM Toggle ───
 function toggleWM() {
   wmEnabled = !wmEnabled;
-  document
-    .getElementById("wm-toggle")
-    .classList.toggle("active", wmEnabled);
+  document.getElementById("wm-toggle").classList.toggle("active", wmEnabled);
   // 更新 ARIA switch 狀態
   var wmBtn = document.querySelector(".wm-toggle");
-  if (wmBtn)
-    wmBtn.setAttribute("aria-checked", wmEnabled ? "true" : "false");
+  if (wmBtn) wmBtn.setAttribute("aria-checked", wmEnabled ? "true" : "false");
   updatePreview();
 }
 

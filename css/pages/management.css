@@ -1,420 +1,415 @@
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-      body {
-        font-family:
-          -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei",
-          "PingFang TC", "Helvetica Neue", Arial, sans-serif;
-        background: linear-gradient(
-          135deg,
-          #0f0c29 0%,
-          #302b63 50%,
-          #24243e 100%
-        );
-        min-height: 100vh;
-        color: #e8e8e8;
-      }
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei",
+    "PingFang TC", "Helvetica Neue", Arial, sans-serif;
+  background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+  min-height: 100vh;
+  color: #e8e8e8;
+}
 
-      /* === 頁面容器 === */
-      .admin-page {
-        max-width: 640px;
-        margin: 0 auto;
-        padding: 24px 16px 120px;
-      }
+/* === 頁面容器 === */
+.admin-page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 24px 16px 120px;
+}
 
-      /* === 標題 === */
-      .admin-page > h1 {
-        text-align: center;
-        font-size: 1.5rem;
-        font-weight: 800;
-        margin-bottom: 8px;
-        color: #c9b1ff;
-        background: linear-gradient(135deg, #c9b1ff, #fed6e3);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-      }
-      .admin-subtitle {
-        text-align: center;
-        font-size: 0.85rem;
-        color: rgba(255, 255, 255, 0.65);
-        margin-bottom: 24px;
-      }
+/* === 標題 === */
+.admin-page > h1 {
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+  color: #c9b1ff;
+  background: linear-gradient(135deg, #c9b1ff, #fed6e3);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.admin-subtitle {
+  text-align: center;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.65);
+  margin-bottom: 24px;
+}
 
-      /* === 快捷導航 === */
-      .quick-nav {
-        display: flex;
-        gap: 8px;
-        margin-bottom: 20px;
-        flex-wrap: wrap;
-        justify-content: center;
-      }
-      .quick-nav__btn {
-        padding: 8px 14px;
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        border-radius: 10px;
-        background: rgba(255, 255, 255, 0.06);
-        color: rgba(255, 255, 255, 0.75);
-        font-size: 0.85rem;
-        cursor: pointer;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        transition:
-          background 0.2s,
-          border-color 0.2s;
-      }
-      .quick-nav__btn:hover {
-        background: rgba(255, 255, 255, 0.12);
-        border-color: rgba(255, 255, 255, 0.25);
-      }
+/* === 快捷導航 === */
+.quick-nav {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.quick-nav__btn {
+  padding: 8px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+}
+.quick-nav__btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+}
 
-      /* === 統計卡片 === */
-      .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-        margin-bottom: 20px;
-      }
-      .stat-card {
-        background: rgba(255, 255, 255, 0.06);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 14px;
-        padding: 16px 12px;
-        text-align: center;
-        backdrop-filter: blur(8px);
-      }
-      .stat-card__icon {
-        font-size: 1.6rem;
-        margin-bottom: 6px;
-      }
-      .stat-card__value {
-        font-size: 1.8rem;
-        font-weight: 800;
-        color: #fff;
-        line-height: 1.2;
-      }
-      .stat-card__label {
-        font-size: 0.78rem;
-        color: rgba(255, 255, 255, 0.7);
-        margin-top: 4px;
-      }
+/* === 統計卡片 === */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.stat-card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 16px 12px;
+  text-align: center;
+  backdrop-filter: blur(8px);
+}
+.stat-card__icon {
+  font-size: 1.6rem;
+  margin-bottom: 6px;
+}
+.stat-card__value {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.2;
+}
+.stat-card__label {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 4px;
+}
 
-      /* === 區塊 === */
-      .admin-section {
-        background: rgba(255, 255, 255, 0.06);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 16px;
-        padding: 18px 16px;
-        margin-bottom: 16px;
-        backdrop-filter: blur(8px);
-      }
-      .admin-section h2 {
-        font-size: 1rem;
-        font-weight: 700;
-        margin: 0 0 14px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: #fff;
-      }
+/* === 區塊 === */
+.admin-section {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 18px 16px;
+  margin-bottom: 16px;
+  backdrop-filter: blur(8px);
+}
+.admin-section h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+}
 
-      /* === 班級管理 === */
-      .class-form {
-        display: flex;
-        gap: 8px;
-        margin-bottom: 14px;
-      }
-      .class-form__input {
-        flex: 1;
-        padding: 10px 14px;
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        border-radius: 10px;
-        background: rgba(255, 255, 255, 0.06);
-        color: #fff;
-        font-size: 0.92rem;
-        outline: none;
-        transition: border-color 0.2s;
-      }
-      .class-form__input::placeholder {
-        color: rgba(255, 255, 255, 0.35);
-      }
-      .class-form__input:focus {
-        border-color: rgba(155, 89, 182, 0.5);
-      }
-      .class-form__btn {
-        padding: 10px 16px;
-        border: none;
-        border-radius: 10px;
-        background: rgba(155, 89, 182, 0.25);
-        color: #c9a0dc;
-        font-size: 0.88rem;
-        font-weight: 600;
-        cursor: pointer;
-        white-space: nowrap;
-        transition: background 0.2s;
-      }
-      .class-form__btn:hover {
-        background: rgba(155, 89, 182, 0.4);
-      }
+/* === 班級管理 === */
+.class-form {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.class-form__input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  font-size: 0.92rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.class-form__input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+.class-form__input:focus {
+  border-color: rgba(155, 89, 182, 0.5);
+}
+.class-form__btn {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 10px;
+  background: rgba(155, 89, 182, 0.25);
+  color: #c9a0dc;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+.class-form__btn:hover {
+  background: rgba(155, 89, 182, 0.4);
+}
 
-      .class-list {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-      .class-chip {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 10px 14px;
-        background: rgba(255, 255, 255, 0.04);
-        border-radius: 10px;
-        border: 1px solid rgba(255, 255, 255, 0.06);
-      }
-      .class-chip__info {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 0.92rem;
-      }
-      .class-chip__count {
-        font-size: 0.78rem;
-        color: rgba(255, 255, 255, 0.65);
-      }
-      .class-chip__del {
-        width: 32px;
-        height: 32px;
-        border: none;
-        border-radius: 8px;
-        background: rgba(231, 76, 60, 0.12);
-        color: #e74c3c;
-        font-size: 0.9rem;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background 0.2s;
-      }
-      .class-chip__del:hover {
-        background: rgba(231, 76, 60, 0.3);
-      }
+.class-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.class-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.class-chip__info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.92rem;
+}
+.class-chip__count {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.65);
+}
+.class-chip__del {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(231, 76, 60, 0.12);
+  color: #e74c3c;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.class-chip__del:hover {
+  background: rgba(231, 76, 60, 0.3);
+}
 
-      /* === 學生列表 === */
-      .student-table-wrap {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-      }
-      .student-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.85rem;
-      }
-      .student-table th {
-        padding: 8px 10px;
-        text-align: left;
-        font-size: 0.78rem;
-        color: rgba(255, 255, 255, 0.7);
-        font-weight: 600;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        white-space: nowrap;
-      }
-      .student-table td {
-        padding: 9px 10px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        color: rgba(255, 255, 255, 0.85);
-      }
-      .student-table tr:hover td {
-        background: rgba(255, 255, 255, 0.03);
-      }
-      .student-table .rank-medal {
-        font-size: 1.1rem;
-      }
+/* === 學生列表 === */
+.student-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.student-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.student-table th {
+  padding: 8px 10px;
+  text-align: left;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  white-space: nowrap;
+}
+.student-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.85);
+}
+.student-table tr:hover td {
+  background: rgba(255, 255, 255, 0.03);
+}
+.student-table .rank-medal {
+  font-size: 1.1rem;
+}
 
-      /* === 篩選列 === */
-      .filter-row {
-        display: flex;
-        gap: 6px;
-        margin-bottom: 12px;
-        flex-wrap: wrap;
-      }
-      .filter-chip {
-        padding: 5px 12px;
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        border-radius: 8px;
-        background: transparent;
-        color: rgba(255, 255, 255, 0.6);
-        font-size: 0.8rem;
-        cursor: pointer;
-        transition: all 0.2s;
-      }
-      .filter-chip.active {
-        background: rgba(155, 89, 182, 0.2);
-        border-color: rgba(155, 89, 182, 0.5);
-        color: #c9a0dc;
-        font-weight: 600;
-      }
+/* === 篩選列 === */
+.filter-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.filter-chip {
+  padding: 5px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.filter-chip.active {
+  background: rgba(155, 89, 182, 0.2);
+  border-color: rgba(155, 89, 182, 0.5);
+  color: #c9a0dc;
+  font-weight: 600;
+}
 
-      /* === 空狀態 === */
-      .empty-state {
-        text-align: center;
-        padding: 28px 16px;
-        color: rgba(255, 255, 255, 0.65);
-      }
-      .empty-state__icon {
-        font-size: 2.5rem;
-        margin-bottom: 10px;
-      }
-      .empty-state__text {
-        font-size: 0.88rem;
-        line-height: 1.5;
-      }
+/* === 空狀態 === */
+.empty-state {
+  text-align: center;
+  padding: 28px 16px;
+  color: rgba(255, 255, 255, 0.65);
+}
+.empty-state__icon {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+}
+.empty-state__text {
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
 
-      /* === 資料管理按鈕 === */
-      .admin-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        width: 100%;
-        padding: 12px;
-        border: none;
-        border-radius: 10px;
-        font-size: 0.92rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition:
-          opacity 0.2s,
-          transform 0.1s;
-        margin-bottom: 10px;
-      }
-      .admin-btn:last-child {
-        margin-bottom: 0;
-      }
-      .admin-btn:active {
-        transform: scale(0.97);
-      }
-      .admin-btn--export {
-        background: rgba(52, 152, 219, 0.2);
-        color: #3498db;
-        border: 1px solid rgba(52, 152, 219, 0.3);
-      }
-      .admin-btn--import {
-        background: rgba(46, 204, 113, 0.2);
-        color: #2ecc71;
-        border: 1px solid rgba(46, 204, 113, 0.3);
-      }
-      .admin-btn--danger {
-        background: rgba(231, 76, 60, 0.15);
-        color: #e74c3c;
-        border: 1px solid rgba(231, 76, 60, 0.25);
-      }
+/* === 資料管理按鈕 === */
+.admin-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    opacity 0.2s,
+    transform 0.1s;
+  margin-bottom: 10px;
+}
+.admin-btn:last-child {
+  margin-bottom: 0;
+}
+.admin-btn:active {
+  transform: scale(0.97);
+}
+.admin-btn--export {
+  background: rgba(52, 152, 219, 0.2);
+  color: #3498db;
+  border: 1px solid rgba(52, 152, 219, 0.3);
+}
+.admin-btn--import {
+  background: rgba(46, 204, 113, 0.2);
+  color: #2ecc71;
+  border: 1px solid rgba(46, 204, 113, 0.3);
+}
+.admin-btn--danger {
+  background: rgba(231, 76, 60, 0.15);
+  color: #e74c3c;
+  border: 1px solid rgba(231, 76, 60, 0.25);
+}
 
-      /* === Toast === */
-      .admin-toast {
-        position: fixed;
-        bottom: 90px;
-        left: 50%;
-        transform: translateX(-50%) translateY(20px);
-        background: rgba(0, 0, 0, 0.85);
-        color: #fff;
-        padding: 10px 20px;
-        border-radius: 10px;
-        font-size: 0.88rem;
-        z-index: 9999;
-        opacity: 0;
-        pointer-events: none;
-        transition:
-          opacity 0.3s,
-          transform 0.3s;
-        backdrop-filter: blur(8px);
-      }
-      .admin-toast.show {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
-      }
+/* === Toast === */
+.admin-toast {
+  position: fixed;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.3s,
+    transform 0.3s;
+  backdrop-filter: blur(8px);
+}
+.admin-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
 
-      /* === 確認彈窗 === */
-      .confirm-overlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.6);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 10000;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.25s;
-      }
-      .confirm-overlay.show {
-        opacity: 1;
-        pointer-events: auto;
-      }
-      .confirm-dialog {
-        background: #2a2a4a;
-        border-radius: 16px;
-        padding: 28px 24px 20px;
-        max-width: 320px;
-        width: 90%;
-        text-align: center;
-      }
-      .confirm-dialog__icon {
-        font-size: 2.5rem;
-        margin-bottom: 12px;
-      }
-      .confirm-dialog__title {
-        font-size: 1.1rem;
-        font-weight: 700;
-        margin-bottom: 8px;
-        color: #fff;
-      }
-      .confirm-dialog__msg {
-        font-size: 0.88rem;
-        color: rgba(255, 255, 255, 0.6);
-        margin-bottom: 20px;
-        line-height: 1.5;
-      }
-      .confirm-dialog__actions {
-        display: flex;
-        gap: 10px;
-      }
-      .confirm-dialog__btn {
-        flex: 1;
-        padding: 10px;
-        border: none;
-        border-radius: 10px;
-        font-size: 0.92rem;
-        font-weight: 600;
-        cursor: pointer;
-      }
-      .confirm-dialog__btn--cancel {
-        background: rgba(255, 255, 255, 0.1);
-        color: rgba(255, 255, 255, 0.7);
-      }
-      .confirm-dialog__btn--danger {
-        background: #e74c3c;
-        color: #fff;
-      }
+/* === 確認彈窗 === */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+}
+.confirm-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+.confirm-dialog {
+  background: #2a2a4a;
+  border-radius: 16px;
+  padding: 28px 24px 20px;
+  max-width: 320px;
+  width: 90%;
+  text-align: center;
+}
+.confirm-dialog__icon {
+  font-size: 2.5rem;
+  margin-bottom: 12px;
+}
+.confirm-dialog__title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #fff;
+}
+.confirm-dialog__msg {
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+.confirm-dialog__actions {
+  display: flex;
+  gap: 10px;
+}
+.confirm-dialog__btn {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.confirm-dialog__btn--cancel {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+}
+.confirm-dialog__btn--danger {
+  background: #e74c3c;
+  color: #fff;
+}
 
-      /* === 隱藏 file input === */
-      #importFileInput {
-        display: none;
-      }
+/* === 隱藏 file input === */
+#importFileInput {
+  display: none;
+}
 
-      /* === 響應式 === */
-      @media (max-width: 400px) {
-        .stats-grid {
-          gap: 8px;
-        }
-        .stat-card {
-          padding: 12px 8px;
-        }
-        .stat-card__value {
-          font-size: 1.5rem;
-        }
-      }
+/* === 響應式 === */
+@media (max-width: 400px) {
+  .stats-grid {
+    gap: 8px;
+  }
+  .stat-card {
+    padding: 12px 8px;
+  }
+  .stat-card__value {
+    font-size: 1.5rem;
+  }
+}

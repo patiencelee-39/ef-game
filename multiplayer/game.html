@@ -21,7 +21,8 @@
     <!-- CSS -->
     <link rel="stylesheet" href="../css/themes/base.css" />
     <link rel="stylesheet" href="../css/main.css" />
-    <link rel="stylesheet" href="../css/components/landscape-hint.css" />
+    <link rel="preload" href="../css/components/landscape-hint.css" as="style" onload="this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="../css/components/landscape-hint.css" /></noscript>
     <link rel="stylesheet" href="../css/pages/game.css" />
     <link rel="stylesheet" href="../css/pages/game-multiplayer.css" />
     <!-- Firebase SDK -->

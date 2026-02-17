@@ -19,7 +19,8 @@
     <!-- CSS 載入順序：base → theme → main → 本頁行內 -->
     <link rel="stylesheet" href="../css/themes/base.css" />
     <link rel="stylesheet" href="../css/main.css" />
-    <link rel="stylesheet" href="../css/components/landscape-hint.css" />
+    <link rel="preload" href="../css/components/landscape-hint.css" as="style" onload="this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="../css/components/landscape-hint.css" /></noscript>
     <link rel="stylesheet" href="../css/pages/game.css" />
 
     <!-- ==================== 模組載入（依賴順序）==================== -->

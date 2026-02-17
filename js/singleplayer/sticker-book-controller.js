@@ -14,10 +14,7 @@ document.addEventListener("DOMContentLoaded", function () {
 // ─── 返回 ───
 
 function goBack() {
-  if (
-    document.referrer &&
-    document.referrer.indexOf("adventure-map") !== -1
-  ) {
+  if (document.referrer && document.referrer.indexOf("adventure-map") !== -1) {
     history.back();
   } else {
     window.location.href = "adventure-map.html";
@@ -74,11 +71,7 @@ function updateOpenPackButton() {
     btn.textContent = "🏆 圖鑑全滿";
   } else if (!check.canOpen) {
     costText.textContent =
-      "星星不足（需要 " +
-      check.cost +
-      " ⭐，目前 " +
-      check.available +
-      " ⭐）";
+      "星星不足（需要 " + check.cost + " ⭐，目前 " + check.available + " ⭐）";
   } else {
     costText.textContent = "花費 " + check.cost + " ⭐ 開啟一包";
   }
@@ -224,9 +217,7 @@ function handleOpenPack() {
 }
 
 function closePackResult() {
-  document
-    .getElementById("pack-result-overlay")
-    .classList.remove("visible");
+  document.getElementById("pack-result-overlay").classList.remove("visible");
 }
 
 // ─── 貼紙詳情 ───
@@ -240,15 +231,11 @@ function showDetail(sticker) {
   document.getElementById("detail-rarity").style.color = rarity.color;
   document.getElementById("detail-desc").textContent = sticker.desc;
 
-  document
-    .getElementById("sticker-detail-popup")
-    .classList.add("visible");
+  document.getElementById("sticker-detail-popup").classList.add("visible");
 }
 
 function closeDetail() {
-  document
-    .getElementById("sticker-detail-popup")
-    .classList.remove("visible");
+  document.getElementById("sticker-detail-popup").classList.remove("visible");
 }
 
 // 點擊 overlay 外部關閉

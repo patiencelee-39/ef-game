@@ -169,9 +169,7 @@
     var container = document.getElementById("ruleCompareContent");
     var progress = getAdventureProgress();
     var records =
-      progress && progress.fieldRuleRecords
-        ? progress.fieldRuleRecords
-        : {};
+      progress && progress.fieldRuleRecords ? progress.fieldRuleRecords : {};
 
     // 從探險進度取各探險點的 bestScore
     var statuses =
@@ -228,9 +226,7 @@
       // 從 fieldRuleRecords 取 bestAvgRT
       var record = records[k];
       var rtText =
-        record && record.bestAvgRT
-          ? Math.round(record.bestAvgRT) + "ms"
-          : "";
+        record && record.bestAvgRT ? Math.round(record.bestAvgRT) + "ms" : "";
 
       html +=
         '<div class="rule-bar">' +

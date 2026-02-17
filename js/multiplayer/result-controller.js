@@ -54,10 +54,8 @@ function displayResults() {
   );
   const avgTime =
     validRTs.length > 0
-      ? validRTs.reduce(
-          (sum, a) => sum + (a.rt || a.reactionTime || 0),
-          0,
-        ) / validRTs.length
+      ? validRTs.reduce((sum, a) => sum + (a.rt || a.reactionTime || 0), 0) /
+        validRTs.length
       : 0;
   document.getElementById("avgTimeValue").textContent =
     (avgTime / 1000).toFixed(2) + "s";
@@ -106,10 +104,8 @@ function displayBadges() {
   );
   const avgTime =
     validRTs2.length > 0
-      ? validRTs2.reduce(
-          (sum, a) => sum + (a.rt || a.reactionTime || 0),
-          0,
-        ) / validRTs2.length
+      ? validRTs2.reduce((sum, a) => sum + (a.rt || a.reactionTime || 0), 0) /
+        validRTs2.length
       : 9999;
   if (avgTime < 1000) {
     badges.push({ text: "⚡ 閃電反應", class: "badge-gold" });
@@ -219,9 +215,7 @@ async function calculateRank() {
   const rankEl = document.getElementById("rankInfo");
   rankEl.textContent = "等待其他玩家完成…";
 
-  const roomRef = firebase
-    .database()
-    .ref("rooms/" + roomCode + "/scores");
+  const roomRef = firebase.database().ref("rooms/" + roomCode + "/scores");
 
   // 即時監聽（而非 .once）
   roomRef.on("value", function (snapshot) {
@@ -304,8 +298,7 @@ function playAgain() {
   if (!btn) return;
 
   btn.addEventListener("click", function () {
-    codeRow.style.display =
-      codeRow.style.display === "none" ? "flex" : "none";
+    codeRow.style.display = codeRow.style.display === "none" ? "flex" : "none";
     if (codeRow.style.display === "flex") codeInput.focus();
   });
   codeSubmit.addEventListener("click", doUpload);
@@ -349,10 +342,7 @@ function playAgain() {
           level: "",
           mode: "multiplayer",
         };
-        return FirestoreLeaderboard.uploadToClassBoard(
-          board.boardId,
-          entry,
-        );
+        return FirestoreLeaderboard.uploadToClassBoard(board.boardId, entry);
       })
       .then(function () {
         statusMsg.textContent = "✅ 上傳成功！";
@@ -384,8 +374,7 @@ function playAgain() {
     if (!document.getElementById("worldUploadConfirmRow")) {
       var row = document.createElement("div");
       row.id = "worldUploadConfirmRow";
-      row.style.cssText =
-        "display:flex;gap:10px;width:100%;margin-top:8px;";
+      row.style.cssText = "display:flex;gap:10px;width:100%;margin-top:8px;";
       var cancelBtn = document.createElement("button");
       cancelBtn.className = "btn";
       cancelBtn.style.cssText =

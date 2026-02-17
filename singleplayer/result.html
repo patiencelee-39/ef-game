@@ -21,10 +21,13 @@
     <!-- CSS 載入順序：base → main → 本頁行內 -->
     <link rel="stylesheet" href="../css/themes/base.css" />
     <link rel="stylesheet" href="../css/main.css" />
-    <link rel="stylesheet" href="../css/components/csv-report.css" />
-    <link rel="stylesheet" href="../css/components/landscape-hint.css" />
+    <link rel="preload" href="../css/components/csv-report.css" as="style" onload="this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="../css/components/csv-report.css" /></noscript>
+    <link rel="preload" href="../css/components/landscape-hint.css" as="style" onload="this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="../css/components/landscape-hint.css" /></noscript>
     <link rel="stylesheet" href="../css/pages/result.css" />
-    <link rel="stylesheet" href="../css/components/navbar.css" />
+    <link rel="preload" href="../css/components/navbar.css" as="style" onload="this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="../css/components/navbar.css" /></noscript>
     <!-- ==================== 模組載入 ==================== -->
     <!-- ==================== Firebase SDK ==================== -->
     <script

@@ -17,9 +17,11 @@
     <meta name="theme-color" content="#302b63" />
     <link rel="stylesheet" href="../css/themes/base.css" />
     <link rel="stylesheet" href="../css/main.css" />
-    <link rel="stylesheet" href="../css/components/landscape-hint.css" />
+    <link rel="preload" href="../css/components/landscape-hint.css" as="style" onload="this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="../css/components/landscape-hint.css" /></noscript>
     <link rel="stylesheet" href="../css/pages/pet.css" />
-    <link rel="stylesheet" href="../css/components/navbar.css" />
+    <link rel="preload" href="../css/components/navbar.css" as="style" onload="this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="../css/components/navbar.css" /></noscript>
     <!-- ===== Scripts（依賴鏈載入順序）===== -->
     <script defer src="../js/game-config.js"></script>
     <script defer src="../js/utils/storage.js"></script>
@@ -213,6 +215,5 @@
     </div>
 
     <script defer src="../js/singleplayer/pet-controller.js"></script>
-
   </body>
 </html>

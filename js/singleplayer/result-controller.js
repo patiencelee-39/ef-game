@@ -267,13 +267,11 @@ var ResultController = (function () {
 
       // 加分明細
       var bonuses = [];
-      if (rule.perfectBonus)
-        bonuses.push("🎯 全對 +" + rule.perfectBonus);
+      if (rule.perfectBonus) bonuses.push("🎯 全對 +" + rule.perfectBonus);
       if (rule.speedBonus) bonuses.push("⚡ 速度 +" + rule.speedBonus);
       if (rule.firstClearBonus)
         bonuses.push("🏅 首次通過 +" + rule.firstClearBonus);
-      if (rule.progressBonus)
-        bonuses.push("📈 進步 +" + rule.progressBonus);
+      if (rule.progressBonus) bonuses.push("📈 進步 +" + rule.progressBonus);
       if (bonuses.length > 0) {
         html +=
           '<div style="margin-top:12px;font-size:var(--font-size-xs);color:var(--text-light);">' +
@@ -409,16 +407,14 @@ var ResultController = (function () {
   function _renderAdventureActions(passed) {
     var html = "";
     if (passed) {
-      html +=
-        '<button id="btnNext" class="btn btn-next">➡️ 下一關</button>';
+      html += '<button id="btnNext" class="btn btn-next">➡️ 下一關</button>';
     } else {
       html +=
         '<button id="btnRetry" class="btn btn-retry">🔄 再試一次</button>';
     }
     html +=
       '<button id="btnReport" class="btn btn-map" style="background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none!important;">📊 查看分析報告</button>';
-    html +=
-      '<button id="btnMap" class="btn btn-map">🗺️ 回到地圖</button>';
+    html += '<button id="btnMap" class="btn btn-map">🗺️ 回到地圖</button>';
     html +=
       '<button id="btnUploadClass" class="btn btn-upload-class">📤 上傳至班級排行榜</button>';
     html +=
@@ -433,8 +429,7 @@ var ResultController = (function () {
       '<button id="worldCancelBtn" class="btn btn-world-cancel">取消</button>' +
       '<button id="worldConfirmBtn" class="btn btn-world-confirm">上傳</button>' +
       "</div></div>";
-    html +=
-      '<div id="worldUploadStatus" class="upload-status-msg"></div>';
+    html += '<div id="worldUploadStatus" class="upload-status-msg"></div>';
     dom.actions.innerHTML = html;
 
     var btnNext = document.getElementById("btnNext");
@@ -509,9 +504,7 @@ var ResultController = (function () {
           : "combo-result-item combo-result-item--fail";
         html += '<div class="' + itemCls + '">';
         html +=
-          '<span class="combo-result-icon">' +
-          (p ? "✅" : "❌") +
-          "</span>";
+          '<span class="combo-result-icon">' + (p ? "✅" : "❌") + "</span>";
         html += '<div class="combo-result-info">';
         html +=
           '<div class="combo-result-name">' +
@@ -574,10 +567,8 @@ var ResultController = (function () {
         html += '<div class="result-card"><h2>📈 等級</h2>';
         html += '<div class="level-section">';
         if (cl) {
-          html +=
-            '<div class="level-icon-big">' + (cl.icon || "🥚") + "</div>";
-          html +=
-            '<div class="level-name">' + esc(cl.name || "") + "</div>";
+          html += '<div class="level-icon-big">' + (cl.icon || "🥚") + "</div>";
+          html += '<div class="level-name">' + esc(cl.name || "") + "</div>";
         }
         if (lr.leveledUp) {
           html +=
@@ -642,8 +633,7 @@ var ResultController = (function () {
       '<button id="btnFreeSelect" class="btn btn-next">🎯 再選一次</button>';
     html +=
       '<button id="btnReport" class="btn btn-map" style="background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none!important;">📊 查看分析報告</button>';
-    html +=
-      '<button id="btnMap" class="btn btn-map">🗺️ 回到地圖</button>';
+    html += '<button id="btnMap" class="btn btn-map">🗺️ 回到地圖</button>';
     html +=
       '<button id="btnUploadClass" class="btn btn-upload-class">📤 上傳至班級排行榜</button>';
     html +=
@@ -658,8 +648,7 @@ var ResultController = (function () {
       '<button id="worldCancelBtn" class="btn btn-world-cancel">取消</button>' +
       '<button id="worldConfirmBtn" class="btn btn-world-confirm">上傳</button>' +
       "</div></div>";
-    html +=
-      '<div id="worldUploadStatus" class="upload-status-msg"></div>';
+    html += '<div id="worldUploadStatus" class="upload-status-msg"></div>';
     dom.actions.innerHTML = html;
 
     document
@@ -667,16 +656,12 @@ var ResultController = (function () {
       .addEventListener("click", function () {
         ModeController.goToFreeSelect();
       });
-    document
-      .getElementById("btnMap")
-      .addEventListener("click", function () {
-        ModeController.goToAdventureMap();
-      });
-    document
-      .getElementById("btnReport")
-      .addEventListener("click", function () {
-        toggleReport();
-      });
+    document.getElementById("btnMap").addEventListener("click", function () {
+      ModeController.goToAdventureMap();
+    });
+    document.getElementById("btnReport").addEventListener("click", function () {
+      toggleReport();
+    });
     _bindUploadClassBtn();
     _bindUploadWorldBtn();
   }
@@ -720,14 +705,11 @@ var ResultController = (function () {
       _padZ(now.getMonth() + 1) +
       _padZ(now.getDate());
     var timeStr =
-      _padZ(now.getHours()) +
-      _padZ(now.getMinutes()) +
-      _padZ(now.getSeconds());
+      _padZ(now.getHours()) + _padZ(now.getMinutes()) + _padZ(now.getSeconds());
 
     var sep = FN.SEPARATOR || "_";
     var prefix = FN.DATA_PREFIX || "EF訓練遊戲數據";
-    var fileName =
-      prefix + sep + pid + sep + dateStr + sep + timeStr + ".csv";
+    var fileName = prefix + sep + pid + sep + dateStr + sep + timeStr + ".csv";
 
     // Bug #2+10 修正：支援多 combo 時各自有不同 Round 值
     var roundStr = String(roundIndex != null ? roundIndex : 1);
@@ -762,8 +744,7 @@ var ResultController = (function () {
         ? CV.CORRECT_YES || "yes"
         : CV.CORRECT_NO || "no";
       // Bug #3 修正：RT null（No-Go 正確）→ 空字串而非 "0"
-      row[F.RT_MS || "RT(ms)"] =
-        t.rt != null ? String(Math.round(t.rt)) : "";
+      row[F.RT_MS || "RT(ms)"] = t.rt != null ? String(Math.round(t.rt)) : "";
       // Bug #4 修正：用易讀格式取代 ISO，讓 tooltip 正確拆分
       row[F.TIMESTAMP || "Timestamp"] = t.timestamp
         ? _formatTimestamp(new Date(t.timestamp))
@@ -914,10 +895,7 @@ var ResultController = (function () {
       _reportContainer.style.display = "block";
     }
 
-    CsvReport.renderReport(
-      document.getElementById("reportContent"),
-      parsed,
-    );
+    CsvReport.renderReport(document.getElementById("reportContent"), parsed);
     _reportVisible = true;
 
     var btn2 = document.getElementById("btnReport");
@@ -1030,10 +1008,7 @@ var ResultController = (function () {
           level: (profile && profile.level) || "",
           mode: "singleplayer",
         };
-        return FirestoreLeaderboard.uploadToClassBoard(
-          board.boardId,
-          entry,
-        );
+        return FirestoreLeaderboard.uploadToClassBoard(board.boardId, entry);
       })
       .then(function () {
         statusMsg.textContent = "✅ 上傳成功！老師的看板已收到你的成績";
@@ -1153,9 +1128,7 @@ var ResultController = (function () {
           }
           bestScore = totalCorrect;
           bestAccuracy =
-            totalCount > 0
-              ? Math.round((totalCorrect / totalCount) * 100)
-              : 0;
+            totalCount > 0 ? Math.round((totalCorrect / totalCount) * 100) : 0;
           bestAvgRT = rtCount > 0 ? Math.round(rtSum / rtCount) : 0;
         }
 

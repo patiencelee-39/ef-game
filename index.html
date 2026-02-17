@@ -27,8 +27,10 @@
     <meta name="theme-color" content="#302b63" />
     <link rel="stylesheet" href="css/themes/base.css" />
     <link rel="stylesheet" href="css/main.css" />
-    <link rel="stylesheet" href="css/components/navbar.css" />
-    <link rel="stylesheet" href="css/components/landscape-hint.css" />
+    <link rel="preload" href="css/components/navbar.css" as="style" onload="this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="css/components/navbar.css" /></noscript>
+    <link rel="preload" href="css/components/landscape-hint.css" as="style" onload="this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="css/components/landscape-hint.css" /></noscript>
 
     <!-- Firebase SDK (defer: 與 HTML 解析並行下載，按順序執行) -->
     <script
