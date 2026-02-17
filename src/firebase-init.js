@@ -263,16 +263,26 @@ function wrapCollectionRef(collRef, existingConstraints) {
       return getDocs(buildQuery()).then((snap) => wrapQuerySnapshot(snap));
     },
     where(field, op, value) {
-      return wrapCollectionRef(collRef, [...constraints, where(field, op, value)]);
+      return wrapCollectionRef(collRef, [
+        ...constraints,
+        where(field, op, value),
+      ]);
     },
     orderBy(field, direction) {
-      return wrapCollectionRef(collRef, [...constraints, orderBy(field, direction || "asc")]);
+      return wrapCollectionRef(collRef, [
+        ...constraints,
+        orderBy(field, direction || "asc"),
+      ]);
     },
     limit(n) {
       return wrapCollectionRef(collRef, [...constraints, limit(n)]);
     },
     onSnapshot(onNext, onError) {
-      return onSnapshot(buildQuery(), onNext ? (snap) => onNext(wrapQuerySnapshot(snap)) : undefined, onError);
+      return onSnapshot(
+        buildQuery(),
+        onNext ? (snap) => onNext(wrapQuerySnapshot(snap)) : undefined,
+        onError,
+      );
     },
   };
 
@@ -335,37 +345,46 @@ window.firebaseServices = {
 
 // 2. window.firebase 命名空間（給直接使用 firebase.xxx 的程式碼）
 window.firebase = {
-  database() {
-    return databaseCompat;
-  },
-  auth() {
-    return authCompat;
-  },
-  firestore() {
-    return firestoreCompat;
-  },
+  // app 已初始化，提供 apps 陣列讓 firebase.apps.length 檢查通過
+  apps: [app],
   initializeApp() {
     /* 已初始化，no-op */
+    return app;
   },
-  // 靜態屬性
-  auth: Object.assign(function () { return authCompat; }, {
-    GoogleAuthProvider: GoogleAuthProvider,
-  }),
-  database: Object.assign(function () { return databaseCompat; }, {
-    ServerValue: {
-      TIMESTAMP: rtdbServerTimestamp(),
+  // 雙重角色：firebase.auth() 呼叫 + firebase.auth.GoogleAuthProvider 靜態屬性
+  auth: Object.assign(
+    function () {
+      return authCompat;
     },
-  }),
-  firestore: Object.assign(function () { return firestoreCompat; }, {
-    FieldValue: {
-      serverTimestamp() {
-        return serverTimestamp();
-      },
-      delete() {
-        return deleteField();
+    {
+      GoogleAuthProvider: GoogleAuthProvider,
+    },
+  ),
+  database: Object.assign(
+    function () {
+      return databaseCompat;
+    },
+    {
+      ServerValue: {
+        TIMESTAMP: rtdbServerTimestamp(),
       },
     },
-  }),
+  ),
+  firestore: Object.assign(
+    function () {
+      return firestoreCompat;
+    },
+    {
+      FieldValue: {
+        serverTimestamp() {
+          return serverTimestamp();
+        },
+        delete() {
+          return deleteField();
+        },
+      },
+    },
+  ),
 };
 
 // ════════════════════════════════════════
