@@ -57,25 +57,26 @@ service cloud.firestore {
     }
 
     // ─────────────────────────────────
-    // 🌐 世界排行榜（匿名即可上傳，覆蓋或過期刪除）
+    // 🌐 世界排行榜（匿名即可上傳，per-rule 分開存放）
     // 路徑：/worldLeaderboard/{docId}
-    // docId = auth.uid（匿名 UID）
+    // docId = uid_fieldId_ruleId（per-rule）或 uid（舊版相容）
+    // 每個 doc 必須帶 uid 欄位 = request.auth.uid
     // ─────────────────────────────────
     match /worldLeaderboard/{docId} {
       // ✅ 任何已驗證用戶可讀取排行榜
       allow read: if request.auth != null;
 
-      // ✅ 已驗證用戶可建立/更新自己的資料
+      // ✅ 已驗證用戶可建立/更新自己的資料（uid 欄位必須等於 auth.uid）
       allow create, update: if request.auth != null
-        && docId == request.auth.uid
+        && request.resource.data.uid == request.auth.uid
         && request.resource.data.nickname is string
         && request.resource.data.nickname.size() >= 1
         && request.resource.data.nickname.size() <= 20
-        && request.resource.data.keys().size() <= 20;
+        && request.resource.data.keys().size() <= 25;
 
-      // ✅ 只能刪除自己的資料
+      // ✅ 只能刪除自己的資料（用 uid 欄位驗證）
       allow delete: if request.auth != null
-        && docId == request.auth.uid;
+        && resource.data.uid == request.auth.uid;
     }
 
     // ─────────────────────────────────

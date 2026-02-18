@@ -312,26 +312,19 @@ function displayStageBreakdown() {
     }
   });
 
-  // 場地資訊對應
-  const stageInfo = {
-    A: { name: "場地A：起司森林", icon: "🧀" },
-    B: { name: "場地B：人類村莊", icon: "🧑" },
-    C: { name: "場地C：海洋世界", icon: "🐟" },
-    D: { name: "場地D：晝夜迷宮", icon: "🌙" },
-    E: { name: "場地E：轉換星球", icon: "🔄" },
-    F: { name: "場地F：耐力賽道", icon: "💪" },
-    G: { name: "場地G：極速挑戰", icon: "⚡" },
-    H: { name: "場地H：大師考驗", icon: "👑" },
+  // 場地資訊從 ComboSelector 共用模組取得
+  const getStageDisplay = function (stageId) {
+    if (typeof ComboSelector !== "undefined") {
+      return ComboSelector.getDisplayInfo(stageId);
+    }
+    return { name: "場地 " + stageId, icon: "🎮" };
   };
 
   const breakdown = document.getElementById("stageBreakdown");
   breakdown.innerHTML = "";
 
   Object.entries(stageStats).forEach(([stageId, stats]) => {
-    const info = stageInfo[stageId] || {
-      name: `場地 ${stageId}`,
-      icon: "🎯",
-    };
+    const info = getStageDisplay(stageId);
     const accuracy = ((stats.correct / stats.total) * 100).toFixed(1);
 
     const item = document.createElement("div");
@@ -590,183 +583,94 @@ function playAgain() {
   window.location.href = "../index.html";
 }
 
-// === 上傳至班級排行榜 ===
+// === 上傳至排行榜（委託 ResultUpload 共用模組）===
 (function () {
-  var btn = document.getElementById("btnUploadClass");
-  var codeRow = document.getElementById("uploadCodeRow");
-  var codeInput = document.getElementById("uploadCodeInput");
-  var codeSubmit = document.getElementById("uploadCodeSubmit");
-  var statusMsg = document.getElementById("uploadStatusMsg");
-  if (!btn) return;
-
-  btn.addEventListener("click", function () {
-    codeRow.style.display = codeRow.style.display === "none" ? "flex" : "none";
-    if (codeRow.style.display === "flex") codeInput.focus();
+  // 班級排行榜
+  ResultUpload.bindClassUpload({
+    btn: document.getElementById("btnUploadClass"),
+    codeRow: document.getElementById("uploadCodeRow"),
+    codeInput: document.getElementById("uploadCodeInput"),
+    codeSubmit: document.getElementById("uploadCodeSubmit"),
+    statusMsg: document.getElementById("uploadStatusMsg"),
+    getEntry: function () {
+      var d = resultData || {};
+      return {
+        nickname: d.playerName || d.nickname || "玩家",
+        score: d.score || 0,
+        accuracy: d.accuracy || 0,
+        avgRT: d.avgRT || 0,
+        stars: 0,
+        level: "",
+        mode: "multiplayer",
+      };
+    },
   });
-  codeSubmit.addEventListener("click", doUpload);
-  codeInput.addEventListener("keydown", function (e) {
-    if (e.key === "Enter") doUpload();
-  });
 
-  function doUpload() {
-    var code = codeInput.value.trim().toUpperCase();
-    if (!code || code.length < 4) {
-      codeInput.style.borderColor = "#e74c3c";
-      codeInput.focus();
-      return;
-    }
-    if (typeof FirestoreLeaderboard === "undefined") {
-      statusMsg.textContent = "❌ 上傳模組未載入";
-      statusMsg.style.color = "#e74c3c";
-      return;
-    }
-    codeSubmit.disabled = true;
-    codeSubmit.textContent = "上傳中…";
-    statusMsg.textContent = "";
-    statusMsg.style.color = "";
-
-    var authP = firebase.auth().currentUser
-      ? Promise.resolve()
-      : firebase.auth().signInAnonymously();
-    authP
-      .then(function () {
-        return FirestoreLeaderboard.findBoardByCode(code);
-      })
-      .then(function (board) {
-        if (!board) throw new Error("找不到此代碼對應的看板");
-        var d = resultData || {};
-        var entry = {
+  // 世界排行榜（確認列由共用模組動態建立）
+  ResultUpload.bindWorldUpload({
+    btn: document.getElementById("btnUploadWorld"),
+    statusMsg: document.getElementById("worldUploadStatus"),
+    noticeEl: document.getElementById("worldUploadNotice"),
+    getEntries: function () {
+      var d = resultData || {};
+      var validRTs = (d.answers || []).filter(function (a) {
+        return (a.rt || a.reactionTime) > 0;
+      });
+      var avgRT =
+        validRTs.length > 0
+          ? validRTs.reduce(function (sum, a) {
+              return sum + (a.rt || a.reactionTime || 0);
+            }, 0) / validRTs.length
+          : 0;
+      return [
+        {
           nickname: d.playerName || d.nickname || "玩家",
-          score: d.score || 0,
-          accuracy: d.accuracy || 0,
-          avgRT: d.avgRT || 0,
-          stars: 0,
-          level: "",
+          bestScore: d.score || 0,
+          bestAccuracy: Math.round(d.accuracy || 0),
+          bestAvgRT: Math.round(avgRT),
+          totalCorrect: d.correctAnswers || 0,
+          totalTrials: d.totalQuestions || 0,
           mode: "multiplayer",
-        };
-        return FirestoreLeaderboard.uploadToClassBoard(board.boardId, entry);
-      })
-      .then(function () {
-        statusMsg.textContent = "✅ 上傳成功！";
-        statusMsg.style.color = "#4caf50";
-      })
-      .catch(function (err) {
-        statusMsg.textContent = "❌ " + err.message;
-        statusMsg.style.color = "#e74c3c";
-      })
-      .finally(function () {
-        codeSubmit.disabled = false;
-        codeSubmit.textContent = "上傳";
-      });
-  }
-})();
-
-// === 上傳至世界排行榜 ===
-(function () {
-  var btn = document.getElementById("btnUploadWorld");
-  var notice = document.getElementById("worldUploadNotice");
-  var statusMsg = document.getElementById("worldUploadStatus");
-  if (!btn) return;
-
-  btn.addEventListener("click", function () {
-    // 點擊後隱藏原按鈕，顯示確認列（取消 + 上傳）
-    btn.style.display = "none";
-    notice.style.display = "block";
-    // 動態建立確認列
-    if (!document.getElementById("worldUploadConfirmRow")) {
-      var row = document.createElement("div");
-      row.id = "worldUploadConfirmRow";
-      row.style.cssText = "display:flex;gap:10px;width:100%;margin-top:8px;";
-      var cancelBtn = document.createElement("button");
-      cancelBtn.className = "btn";
-      cancelBtn.style.cssText =
-        "flex:1;background:rgba(255,255,255,0.1);color:#aaa;border:1px solid rgba(255,255,255,0.15);padding:0.6rem;border-radius:10px;font-size:0.95rem;cursor:pointer;";
-      cancelBtn.textContent = "取消";
-      cancelBtn.addEventListener("click", function () {
-        row.style.display = "none";
-        notice.style.display = "none";
-        btn.style.display = "";
-      });
-      var confirmBtn = document.createElement("button");
-      confirmBtn.className = "btn";
-      confirmBtn.style.cssText =
-        "flex:1;background:linear-gradient(135deg,#00c9ff,#92fe9d);color:#1a1a2e;font-weight:700;padding:0.6rem;border:none;border-radius:10px;font-size:0.95rem;cursor:pointer;";
-      confirmBtn.textContent = "上傳";
-      confirmBtn.addEventListener("click", function () {
-        // 真正上傳
-        if (typeof FirestoreLeaderboard === "undefined") {
-          statusMsg.textContent = "❌ 上傳模組未載入";
-          statusMsg.style.color = "#e74c3c";
-          return;
-        }
-        confirmBtn.disabled = true;
-        confirmBtn.textContent = "上傳中…";
-        statusMsg.textContent = "";
-        statusMsg.style.color = "";
-
-        var authP = firebase.auth().currentUser
-          ? Promise.resolve()
-          : firebase.auth().signInAnonymously();
-        authP
-          .then(function () {
-            var d = resultData || {};
-            // 計算平均 RT
-            var validRTs = (d.answers || []).filter(function (a) {
-              return (a.rt || a.reactionTime) > 0;
-            });
-            var avgRT =
-              validRTs.length > 0
-                ? validRTs.reduce(function (sum, a) {
-                    return sum + (a.rt || a.reactionTime || 0);
-                  }, 0) / validRTs.length
-                : 0;
-            var worldData = {
-              nickname: d.playerName || d.nickname || "玩家",
-              bestScore: d.score || 0,
-              bestAccuracy: Math.round(d.accuracy || 0),
-              bestAvgRT: Math.round(avgRT),
-              totalCorrect: d.correctAnswers || 0,
-              totalTrials: d.totalQuestions || 0,
-              mode: "multiplayer",
-              totalStars: 0,
-              level: "",
-              gamesPlayed: 1,
-            };
-            return FirestoreLeaderboard.uploadToWorld(worldData);
-          })
-          .then(function () {
-            // 上傳成功後查詢世界排名
-            return FirestoreLeaderboard.getWorldLeaderboard(200);
-          })
-          .then(function (entries) {
-            var myUid = firebase.auth().currentUser
-              ? firebase.auth().currentUser.uid
-              : null;
-            var myRank = 0;
-            var total = entries.length;
-            for (var ri = 0; ri < entries.length; ri++) {
-              if (entries[ri].docId === myUid) {
-                myRank = ri + 1;
-                break;
-              }
+          totalStars: 0,
+          level: "",
+          gamesPlayed: 1,
+        },
+      ];
+    },
+    onSuccess: function () {
+      // 上傳成功後查詢世界排名
+      FirestoreLeaderboard.getWorldLeaderboard(200)
+        .then(function (entries) {
+          var myUid = firebase.auth().currentUser
+            ? firebase.auth().currentUser.uid
+            : null;
+          var myRank = 0;
+          var total = entries.length;
+          for (var ri = 0; ri < entries.length; ri++) {
+            if (entries[ri].uid === myUid || entries[ri].docId === myUid) {
+              myRank = ri + 1;
+              break;
             }
-            var rankText =
-              myRank > 0
-                ? "🌐 世界第 " + myRank + " 名 / " + total + " 人"
-                : "✅ 已上傳至世界排行榜！";
+          }
+          var rankText =
+            myRank > 0
+              ? "🌐 世界第 " + myRank + " 名 / " + total + " 人"
+              : "✅ 已上傳至世界排行榜！";
 
-            var d = resultData || {};
-            var validRTs2 = (d.answers || []).filter(function (a) {
-              return (a.rt || a.reactionTime) > 0;
-            });
-            var avgRT2 =
-              validRTs2.length > 0
-                ? validRTs2.reduce(function (s, a) {
-                    return s + (a.rt || a.reactionTime || 0);
-                  }, 0) / validRTs2.length
-                : 0;
+          var d = resultData || {};
+          var validRTs = (d.answers || []).filter(function (a) {
+            return (a.rt || a.reactionTime) > 0;
+          });
+          var avgRT =
+            validRTs.length > 0
+              ? validRTs.reduce(function (s, a) {
+                  return s + (a.rt || a.reactionTime || 0);
+                }, 0) / validRTs.length
+              : 0;
 
-            statusMsg.innerHTML =
+          var worldStatus = document.getElementById("worldUploadStatus");
+          if (worldStatus) {
+            worldStatus.innerHTML =
               '<div style="text-align:center;line-height:1.8;">' +
               '<div style="font-size:1.1rem;font-weight:700;color:#4caf50;margin-bottom:4px;">' +
               rankText +
@@ -776,7 +680,7 @@ function playAgain() {
               Math.round(d.accuracy || 0) +
               "% · " +
               "⚡ 平均 RT " +
-              (avgRT2 > 0 ? (avgRT2 / 1000).toFixed(2) + "s" : "—") +
+              (avgRT > 0 ? (avgRT / 1000).toFixed(2) + "s" : "—") +
               " · " +
               "✅ 答對 " +
               (d.correctAnswers || 0) +
@@ -785,25 +689,16 @@ function playAgain() {
               " · " +
               "🏷️ 競賽模式" +
               "</div></div>";
-            statusMsg.style.color = "";
-
-            row.style.display = "none";
-            notice.style.display = "none";
-            btn.style.display = "";
-            btn.textContent = "🌐 已上傳";
-            btn.disabled = true;
-            btn.style.opacity = "0.6";
-          })
-          .catch(function (err) {
-            statusMsg.textContent = "❌ " + err.message;
-            statusMsg.style.color = "#e74c3c";
-            confirmBtn.disabled = false;
-            confirmBtn.textContent = "上傳";
-          });
-      });
-      row.appendChild(cancelBtn);
-      row.appendChild(confirmBtn);
-      notice.parentNode.insertBefore(row, notice.nextSibling);
-    }
+            worldStatus.className = "upload-status-msg success";
+          }
+        })
+        .catch(function () {
+          var worldStatus = document.getElementById("worldUploadStatus");
+          if (worldStatus) {
+            worldStatus.textContent = "✅ 已上傳至世界排行榜！";
+            worldStatus.className = "upload-status-msg success";
+          }
+        });
+    },
   });
 })();

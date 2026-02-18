@@ -69,23 +69,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 // 遊戲場選擇器初始化
 let selectedStages = [];
 
-// 場地資訊定義（只保留 A-D 四個場地）
-const stageInfo = {
-  A: { id: "A", name: "場地A：起司森林", icon: "🧀", difficulty: "easy" },
-  B: {
-    id: "B",
-    name: "場地B：人類村莊",
-    icon: "🧑",
-    difficulty: "medium",
-  },
-  C: {
-    id: "C",
-    name: "場地C：海洋世界",
-    icon: "🐟",
-    difficulty: "medium",
-  },
-  D: { id: "D", name: "場地D：晝夜迷宮", icon: "🌙", difficulty: "hard" },
-};
+// 場地資訊從 ComboSelector 共用模組取得
+const stageInfo = (function () {
+  var map = {};
+  ComboSelector.getAll().forEach(function (s) { map[s.id] = s; });
+  return map;
+})();
 
 function initStageSelector() {
   const availableStages = document.getElementById("availableStages");

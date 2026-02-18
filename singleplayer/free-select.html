@@ -83,52 +83,8 @@
         </button>
       </div>
 
-      <!-- 規則選擇 -->
-      <p class="section-label">選擇規則</p>
-      <div class="rule-selector" id="rule-selector">
-        <button
-          class="rule-option"
-          type="button"
-          data-rule="rule1"
-          onclick="toggleRule('rule1')"
-          role="checkbox"
-          aria-checked="false"
-        >
-          <div class="rule-checkbox" aria-hidden="true"></div>
-          <div class="rule-info">
-            <div class="rule-name">規則一（建立規則）</div>
-            <div class="rule-desc">訓練抑制控制</div>
-          </div>
-        </button>
-        <button
-          class="rule-option"
-          type="button"
-          data-rule="rule2"
-          onclick="toggleRule('rule2')"
-          role="checkbox"
-          aria-checked="false"
-        >
-          <div class="rule-checkbox" aria-hidden="true"></div>
-          <div class="rule-info">
-            <div class="rule-name">規則二（規則轉換）</div>
-            <div class="rule-desc">訓練認知彈性</div>
-          </div>
-        </button>
-        <button
-          class="rule-option"
-          type="button"
-          data-rule="mixed"
-          onclick="toggleRule('mixed')"
-          role="checkbox"
-          aria-checked="false"
-        >
-          <div class="rule-checkbox" aria-hidden="true"></div>
-          <div class="rule-info">
-            <div class="rule-name">混合規則</div>
-            <div class="rule-desc">訓練工作記憶 + 認知彈性</div>
-          </div>
-        </button>
-      </div>
+      <!-- 各遊戲場的規則選擇（動態產生） -->
+      <div id="per-field-rules"></div>
 
       <!-- WM 開關 -->
       <div class="wm-toggle-section">

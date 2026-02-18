@@ -491,8 +491,7 @@ var ResultController = (function () {
         toggleReport();
       });
     }
-    _bindUploadClassBtn();
-    _bindUploadWorldBtn();
+    _bindUploads();
   }
 
   // =========================================
@@ -694,8 +693,7 @@ var ResultController = (function () {
     document.getElementById("btnReport").addEventListener("click", function () {
       toggleReport();
     });
-    _bindUploadClassBtn();
-    _bindUploadWorldBtn();
+    _bindUploads();
   }
 
   // =========================================
@@ -938,76 +936,27 @@ var ResultController = (function () {
   }
 
   // =========================================
-  // 上傳至班級排行榜
+  // 上傳至排行榜（委託 ResultUpload 共用模組）
   // =========================================
 
   var _uploadData = null; // 快取目前結算資料
 
-  function _bindUploadClassBtn() {
-    var btn = document.getElementById("btnUploadClass");
-    var codeRow = document.getElementById("uploadCodeRow");
-    var codeInput = document.getElementById("uploadCodeInput");
-    var codeSubmit = document.getElementById("uploadCodeSubmit");
-    var statusMsg = document.getElementById("uploadStatusMsg");
-    if (!btn) return;
-
-    btn.addEventListener("click", function () {
-      codeRow.style.display =
-        codeRow.style.display === "none" ? "flex" : "none";
-      if (codeRow.style.display === "flex") codeInput.focus();
-    });
-
-    if (codeSubmit) {
-      codeSubmit.addEventListener("click", function () {
-        _doUploadToClass(codeInput, codeSubmit, statusMsg);
-      });
-    }
-    if (codeInput) {
-      codeInput.addEventListener("keydown", function (e) {
-        if (e.key === "Enter")
-          _doUploadToClass(codeInput, codeSubmit, statusMsg);
-      });
-    }
-  }
-
-  function _doUploadToClass(codeInput, codeSubmit, statusMsg) {
-    var code = codeInput.value.trim().toUpperCase();
-    if (!code || code.length < 4) {
-      codeInput.style.borderColor = "#e74c3c";
-      codeInput.focus();
-      return;
-    }
-    if (typeof FirestoreLeaderboard === "undefined") {
-      statusMsg.textContent = "❌ 上傳模組未載入";
-      statusMsg.className = "upload-status-msg error";
-      return;
-    }
-
-    codeSubmit.disabled = true;
-    codeSubmit.textContent = "上傳中…";
-    statusMsg.textContent = "";
-    statusMsg.className = "upload-status-msg";
-
-    // 確保匿名登入
-    var authPromise = firebase.auth().currentUser
-      ? Promise.resolve()
-      : firebase.auth().signInAnonymously();
-
-    authPromise
-      .then(function () {
-        return FirestoreLeaderboard.findBoardByCode(code);
-      })
-      .then(function (board) {
-        if (!board) throw new Error("找不到此代碼對應的看板");
+  function _bindUploads() {
+    // === 班級排行榜 ===
+    ResultUpload.bindClassUpload({
+      btn: document.getElementById("btnUploadClass"),
+      codeRow: document.getElementById("uploadCodeRow"),
+      codeInput: document.getElementById("uploadCodeInput"),
+      codeSubmit: document.getElementById("uploadCodeSubmit"),
+      statusMsg: document.getElementById("uploadStatusMsg"),
+      getEntry: function () {
         var data = _uploadData || ModeController.getResultData() || {};
-        // Bug #6 修正：從巢狀結構正確提取資料
         var profile = null;
         try {
           profile = getPlayerProfile ? getPlayerProfile() : null;
         } catch (e) {}
         var cr = data.comboResult || {};
         var rr = cr.ruleResult || {};
-        // 自由選擇模式：合計各 combo
         var totalStarsVal = 0;
         var totalAccuracy = rr.accuracy || 0;
         var totalAvgRT = rr.avgRT || 0;
@@ -1031,7 +980,7 @@ var ResultController = (function () {
           totalStarsVal =
             cr.totalStars || (cr.starsResult || {}).totalStars || 0;
         }
-        var entry = {
+        return {
           nickname: (profile && profile.nickname) || "玩家",
           score: rr.finalScore || 0,
           accuracy: totalAccuracy,
@@ -1040,76 +989,20 @@ var ResultController = (function () {
           level: (profile && profile.level) || "",
           mode: "singleplayer",
         };
-        return FirestoreLeaderboard.uploadToClassBoard(board.boardId, entry);
-      })
-      .then(function () {
-        statusMsg.textContent = "✅ 上傳成功！老師的看板已收到你的成績";
-        statusMsg.className = "upload-status-msg success";
-      })
-      .catch(function (err) {
-        statusMsg.textContent = "❌ " + err.message;
-        statusMsg.className = "upload-status-msg error";
-      })
-      .finally(function () {
-        codeSubmit.disabled = false;
-        codeSubmit.textContent = "上傳";
-      });
-  }
-
-  // =========================================
-  // 上傳至世界排行榜
-  // =========================================
-
-  function _bindUploadWorldBtn() {
-    var btn = document.getElementById("btnUploadWorld");
-    var confirmRow = document.getElementById("worldUploadConfirmRow");
-    var cancelBtn = document.getElementById("worldCancelBtn");
-    var confirmBtn = document.getElementById("worldConfirmBtn");
-    var statusMsg = document.getElementById("worldUploadStatus");
-    if (!btn || !confirmRow) return;
-
-    btn.addEventListener("click", function () {
-      // 點擊後隱藏原按鈕，顯示確認列（取消 + 上傳）
-      btn.style.display = "none";
-      confirmRow.style.display = "";
+      },
     });
 
-    if (cancelBtn) {
-      cancelBtn.addEventListener("click", function () {
-        confirmRow.style.display = "none";
-        btn.style.display = "";
-      });
-    }
-
-    if (confirmBtn) {
-      confirmBtn.addEventListener("click", function () {
-        _doUploadToWorld(confirmBtn, statusMsg, confirmRow);
-      });
-    }
-  }
-
-  function _doUploadToWorld(btn, statusMsg, notice) {
-    if (typeof FirestoreLeaderboard === "undefined") {
-      statusMsg.textContent = "❌ 上傳模組未載入";
-      statusMsg.className = "upload-status-msg error";
-      return;
-    }
-
-    btn.disabled = true;
-    btn.textContent = "上傳中…";
-    statusMsg.textContent = "";
-    statusMsg.className = "upload-status-msg";
-
-    var authPromise = firebase.auth().currentUser
-      ? Promise.resolve()
-      : firebase.auth().signInAnonymously();
-
-    authPromise
-      .then(function () {
+    // === 世界排行榜 ===
+    ResultUpload.bindWorldUpload({
+      btn: document.getElementById("btnUploadWorld"),
+      confirmRow: document.getElementById("worldUploadConfirmRow"),
+      cancelBtn: document.getElementById("worldCancelBtn"),
+      confirmBtn: document.getElementById("worldConfirmBtn"),
+      statusMsg: document.getElementById("worldUploadStatus"),
+      getEntries: function () {
         var data = _uploadData || ModeController.getResultData() || {};
-
-        // 從 player-profile 取得暱稱
         var nickname = "玩家";
+        var level = "";
         try {
           var profileRaw =
             sessionStorage.getItem("efgame-player-profile") ||
@@ -1117,118 +1010,65 @@ var ResultController = (function () {
           if (profileRaw) {
             var profile = JSON.parse(profileRaw);
             nickname = profile.nickname || profile.name || nickname;
+            level = profile.level || "";
           }
         } catch (e) {
           /* ignore */
         }
 
-        // 根據模式正確提取數據
-        var bestScore = 0;
-        var bestAccuracy = 0;
-        var bestAvgRT = 0;
-        var totalStars = 0;
+        var entries = [];
 
         if (data.mode === "adventure" && data.comboResult) {
           var cr = data.comboResult;
           var rr = cr.ruleResult || {};
-          bestScore = rr.finalScore || rr.correctCount || 0;
-          bestAccuracy =
-            rr.accuracy != null ? Math.round(rr.accuracy * 100) : 0;
-          bestAvgRT = rr.avgRT ? Math.round(rr.avgRT) : 0;
-          totalStars = cr.totalStars || 0;
+          var comboData = {
+            nickname: nickname,
+            level: level,
+            fieldId: cr.fieldId || (cr.combo || {}).fieldId || "",
+            ruleId: cr.ruleId || (cr.combo || {}).ruleId || "",
+            bestScore: rr.finalScore || rr.correctCount || 0,
+            bestAccuracy:
+              rr.accuracy != null ? Math.round(rr.accuracy * 100) : 0,
+            bestAvgRT: rr.avgRT ? Math.round(rr.avgRT) : 0,
+            totalStars: cr.totalStars || 0,
+            totalCorrect: rr.correctCount || 0,
+            totalTrials: rr.totalCount || 0,
+            mode: "adventure",
+            gamesPlayed: 1,
+          };
           if (cr.starsResult) {
-            totalStars = totalStars || cr.starsResult.totalStars || 0;
+            comboData.totalStars =
+              comboData.totalStars || cr.starsResult.totalStars || 0;
           }
-        } else if (data.allComboResults) {
-          // 自由選擇模式：合併所有 combo 結果
-          var allCombos = data.allComboResults;
-          var totalCorrect = 0;
-          var totalCount = 0;
-          var rtSum = 0;
-          var rtCount = 0;
-          for (var ci = 0; ci < allCombos.length; ci++) {
-            var entry = allCombos[ci];
+          entries.push(comboData);
+        } else if (data.allComboResults && data.allComboResults.length > 0) {
+          for (var ci = 0; ci < data.allComboResults.length; ci++) {
+            var entry = data.allComboResults[ci];
             var er = (entry.result || {}).ruleResult || {};
-            totalCorrect += er.correctCount || 0;
-            totalCount += er.totalCount || 0;
-            if (er.avgRT) {
-              rtSum += er.avgRT;
-              rtCount++;
-            }
-            totalStars +=
+            var combo = entry.combo || entry;
+            var stars =
               ((entry.result || {}).starsResult || {}).totalStars || 0;
+            entries.push({
+              nickname: nickname,
+              level: level,
+              fieldId: combo.fieldId || "",
+              ruleId: combo.ruleId || "",
+              bestScore: er.finalScore || er.correctCount || 0,
+              bestAccuracy:
+                er.accuracy != null ? Math.round(er.accuracy * 100) : 0,
+              bestAvgRT: er.avgRT ? Math.round(er.avgRT) : 0,
+              totalStars: stars,
+              totalCorrect: er.correctCount || 0,
+              totalTrials: er.totalCount || 0,
+              mode: "free-select",
+              gamesPlayed: 1,
+            });
           }
-          bestScore = totalCorrect;
-          bestAccuracy =
-            totalCount > 0 ? Math.round((totalCorrect / totalCount) * 100) : 0;
-          bestAvgRT = rtCount > 0 ? Math.round(rtSum / rtCount) : 0;
         }
 
-        // 計算答對題數和總題數
-        var uploadTotalCorrect = 0;
-        var uploadTotalTrials = 0;
-        var uploadMode = "adventure";
-
-        if (data.mode === "adventure" && data.comboResult) {
-          var uploadRR = data.comboResult.ruleResult || {};
-          uploadTotalCorrect = uploadRR.correctCount || bestScore;
-          uploadTotalTrials = uploadRR.totalCount || 0;
-        } else if (data.allComboResults) {
-          for (var ui = 0; ui < data.allComboResults.length; ui++) {
-            var uRR = (data.allComboResults[ui].result || {}).ruleResult || {};
-            uploadTotalCorrect += uRR.correctCount || 0;
-            uploadTotalTrials += uRR.totalCount || 0;
-          }
-          uploadMode = "adventure";
-        }
-
-        var worldData = {
-          nickname: nickname,
-          totalStars: totalStars,
-          level: "",
-          bestScore: bestScore,
-          bestAccuracy: bestAccuracy,
-          bestAvgRT: bestAvgRT,
-          totalCorrect: uploadTotalCorrect,
-          totalTrials: uploadTotalTrials,
-          mode: uploadMode,
-          gamesPlayed: 1,
-        };
-
-        // 嘗試從 player-profile 取得等級
-        try {
-          var pRaw =
-            sessionStorage.getItem("efgame-player-profile") ||
-            localStorage.getItem("efgame-player-profile");
-          if (pRaw) {
-            var p = JSON.parse(pRaw);
-            worldData.level = p.level || "";
-          }
-        } catch (e) {
-          /* ignore */
-        }
-
-        return FirestoreLeaderboard.uploadToWorld(worldData);
-      })
-      .then(function () {
-        statusMsg.textContent = "✅ 已上傳至世界排行榜！";
-        statusMsg.className = "upload-status-msg success";
-        notice.style.display = "none";
-        // 隱藏確認列，顯示已完成狀態
-        var origBtn = document.getElementById("btnUploadWorld");
-        if (origBtn) {
-          origBtn.style.display = "";
-          origBtn.textContent = "🌐 已上傳";
-          origBtn.disabled = true;
-          origBtn.style.opacity = "0.6";
-        }
-      })
-      .catch(function (err) {
-        statusMsg.textContent = "❌ " + err.message;
-        statusMsg.className = "upload-status-msg error";
-        btn.disabled = false;
-        btn.textContent = "上傳";
-      });
+        return entries;
+      },
+    });
   }
 
   // =========================================

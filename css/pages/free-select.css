@@ -83,12 +83,28 @@ body {
   background: rgba(52, 152, 219, 0.2);
 }
 
+/* --- Per-field 規則區塊 --- */
+.per-field-block {
+  margin-bottom: var(--spacing-md);
+  padding: 14px 16px;
+  border-radius: var(--border-radius-lg);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.per-field-label {
+  margin-bottom: var(--spacing-xs);
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: var(--accent-yellow);
+}
+
 /* --- 規則選擇 --- */
 .rule-selector {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-bottom: var(--spacing-md);
+  margin-bottom: 0;
 }
 
 .rule-option {

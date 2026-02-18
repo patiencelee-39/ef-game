@@ -6,7 +6,7 @@
  *
  * 二軌制：
  *   📋 班級排行榜 /classLeaderboards/{boardId}/entries/{entryId}
- *   🌐 世界排行榜 /worldLeaderboard/{uid}
+ *   🌐 世界排行榜 /worldLeaderboard/{uid_fieldId_ruleId}（per-rule）
  *
  * 依賴：firebase-app, firebase-firestore, firebase-auth（均在 index.html 載入）
  *
@@ -371,8 +371,12 @@ var FirestoreLeaderboard = (function () {
 
   /**
    * 上傳到世界排行榜（匿名即可，不需 Google 登入）
+   * 支援 per-rule 上傳：若提供 fieldId + ruleId，docId = uid_fieldId_ruleId
+   * 向後相容：若未提供，docId = uid（舊格式）
    * @param {Object} data
    * @param {string} data.nickname
+   * @param {string} [data.fieldId]     - 遊戲場 ID（per-rule 必填）
+   * @param {string} [data.ruleId]      - 規則 ID（per-rule 必填）
    * @param {number} [data.totalStars]
    * @param {number} [data.level]
    * @param {number} [data.bestScore]
@@ -387,10 +391,21 @@ var FirestoreLeaderboard = (function () {
     var user = _getCurrentUser();
     if (!db || !user) return Promise.reject(new Error("請先登入（匿名即可）"));
 
+    // 決定 docId：有 fieldId + ruleId → per-rule，否則舊格式
+    var docId = user.uid;
+    if (data.fieldId && data.ruleId) {
+      docId = user.uid + "_" + data.fieldId + "_" + data.ruleId;
+    }
+
     var uploadData = {
+      uid: user.uid,
       nickname: (data.nickname || "").substring(0, 20) || "匿名",
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
     };
+
+    // per-rule 欄位
+    if (data.fieldId) uploadData.fieldId = data.fieldId;
+    if (data.ruleId) uploadData.ruleId = data.ruleId;
 
     // 只上傳有提供的欄位
     if (data.totalStars != null) uploadData.totalStars = data.totalStars;
@@ -406,26 +421,34 @@ var FirestoreLeaderboard = (function () {
 
     return db
       .collection("worldLeaderboard")
-      .doc(user.uid)
+      .doc(docId)
       .set(uploadData, { merge: true })
       .then(function () {
-        console.log("✅ 世界排行榜已更新：" + uploadData.nickname);
+        var label = data.fieldId
+          ? uploadData.nickname + " [" + data.fieldId + "/" + data.ruleId + "]"
+          : uploadData.nickname;
+        console.log("✅ 世界排行榜已更新：" + label);
       });
   }
 
   /**
-   * 讀取世界排行榜（依星星排序）
+   * 讀取世界排行榜（依最高分排序）
    * @param {number} [limit] - 限制筆數，預設 50
+   * @param {Object} [filter] - 可選篩選
+   * @param {string} [filter.ruleId]  - 篩選特定規則
+   * @param {string} [filter.fieldId] - 篩選特定遊戲場
    * @returns {Promise<Array>}
    */
-  function getWorldLeaderboard(limit) {
+  function getWorldLeaderboard(limit, filter) {
     var db = _getFirestore();
     if (!db) return Promise.reject(new Error("Firestore 未就緒"));
 
-    return db
-      .collection("worldLeaderboard")
+    var query = db.collection("worldLeaderboard");
+
+    // 客戶端篩選比較安全（避免複合索引問題）
+    return query
       .orderBy("bestScore", "desc")
-      .limit(limit || 50)
+      .limit(limit || 200)
       .get()
       .then(function (snapshot) {
         var entries = [];
@@ -434,12 +457,27 @@ var FirestoreLeaderboard = (function () {
           data.docId = doc.id;
           entries.push(data);
         });
+
+        // 客戶端篩選
+        if (filter) {
+          if (filter.ruleId) {
+            entries = entries.filter(function (e) {
+              return e.ruleId === filter.ruleId;
+            });
+          }
+          if (filter.fieldId) {
+            entries = entries.filter(function (e) {
+              return e.fieldId === filter.fieldId;
+            });
+          }
+        }
+
         return entries;
       });
   }
 
   /**
-   * 刪除自己的世界排行榜資料
+   * 刪除自己的世界排行榜資料（所有 per-rule 紀錄）
    * @returns {Promise}
    */
   function deleteMyWorldEntry() {
@@ -447,12 +485,24 @@ var FirestoreLeaderboard = (function () {
     var user = _getCurrentUser();
     if (!db || !user) return Promise.reject(new Error("請先登入"));
 
+    // 查詢所有自己的紀錄（uid 欄位 == auth.uid）
     return db
       .collection("worldLeaderboard")
-      .doc(user.uid)
-      .delete()
+      .where("uid", "==", user.uid)
+      .get()
+      .then(function (snapshot) {
+        if (snapshot.empty) {
+          // 舊版相容：嘗試用 uid 當 docId 刪除
+          return db.collection("worldLeaderboard").doc(user.uid).delete();
+        }
+        var batch = db.batch();
+        snapshot.forEach(function (doc) {
+          batch.delete(doc.ref);
+        });
+        return batch.commit();
+      })
       .then(function () {
-        console.log("✅ 已從世界排行榜移除自己的資料");
+        console.log("✅ 已從世界排行榜移除自己的所有資料");
       });
   }
 

@@ -151,6 +151,38 @@
   opacity: 1;
 }
 
+/* Rule Tabs */
+.rule-tabs {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+.rule-tab {
+  padding: 0.5rem 1rem;
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+.rule-tab:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+.rule-tab.active {
+  background: rgba(255, 215, 0, 0.15);
+  border-color: #ffd700;
+  color: #ffd700;
+}
+
 /* Explanation */
 .explain-card {
   background: rgba(255, 255, 255, 0.05);

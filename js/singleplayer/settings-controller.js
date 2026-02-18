@@ -11,6 +11,7 @@
   var voiceToggle = document.getElementById("voiceToggle");
   var rateSelector = document.getElementById("rateSelector");
   var countSelector = document.getElementById("countSelector");
+  var themeSelector = document.getElementById("themeSelector");
   var btnExport = document.getElementById("btnExport");
   var btnImport = document.getElementById("btnImport");
   var btnClearAll = document.getElementById("btnClearAll");
@@ -22,6 +23,7 @@
     loadPlayerInfo();
     loadAudioSettings();
     loadGameSettings();
+    loadThemeSettings();
     bindEvents();
   }
 
@@ -124,6 +126,25 @@
   }
 
   // =========================================
+  // 🎨 配色主題
+  // =========================================
+  function loadThemeSettings() {
+    var theme =
+      typeof getThemePreference === "function"
+        ? getThemePreference()
+        : "field-primary";
+    if (themeSelector) {
+      themeSelector.querySelectorAll(".theme-option").forEach(function (opt) {
+        var isActive = opt.dataset.theme === theme;
+        opt.classList.toggle("active", isActive);
+        opt.setAttribute("aria-pressed", isActive ? "true" : "false");
+      });
+    }
+    // 套用到 <html>
+    document.documentElement.setAttribute("data-theme", theme);
+  }
+
+  // =========================================
   // 事件綁定
   // =========================================
   function bindEvents() {
@@ -193,6 +214,29 @@
       });
       showToast("每回合題數已設定為 " + count + " 題");
     });
+
+    // --- 配色主題 ---
+    if (themeSelector) {
+      themeSelector.addEventListener("click", function (e) {
+        var opt = e.target.closest(".theme-option");
+        if (!opt) return;
+        var theme = opt.dataset.theme;
+        if (typeof saveThemePreference === "function") {
+          saveThemePreference(theme);
+        }
+        document.documentElement.setAttribute("data-theme", theme);
+        themeSelector.querySelectorAll(".theme-option").forEach(function (o) {
+          var isActive = o.dataset.theme === theme;
+          o.classList.toggle("active", isActive);
+          o.setAttribute("aria-pressed", isActive ? "true" : "false");
+        });
+        var names = {
+          "field-primary": "遊戲場配色",
+          "rule-independent": "規則配色",
+        };
+        showToast("🎨 已切換為「" + (names[theme] || theme) + "」");
+      });
+    }
 
     // --- 匯出 ---
     btnExport.addEventListener("click", handleExport);

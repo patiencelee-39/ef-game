@@ -263,9 +263,13 @@ async function startGame() {
     console.log("✅ 遊戲場地資料:", stages);
 
     // 若房主是觀戰模式，在 players 節點標記 role
-    const localPlayer = JSON.parse(localStorage.getItem("currentPlayer") || "{}");
+    const localPlayer = JSON.parse(
+      localStorage.getItem("currentPlayer") || "{}",
+    );
     if (localPlayer.isSpectator) {
-      await roomRef.child("players/" + currentPlayerId + "/role").set("spectator");
+      await roomRef
+        .child("players/" + currentPlayerId + "/role")
+        .set("spectator");
     }
 
     // 更新房間狀態
@@ -306,15 +310,14 @@ function _checkHostTransfer(roomData) {
   // 房主在線 或 不在玩家列表中（觀戰者）→ 不需轉移
   if (!hostPlayer || hostPlayer.online !== false) {
     // 偵測房主變更：通知所有玩家
-    if (
-      previousHostId &&
-      previousHostId !== roomData.hostId
-    ) {
+    if (previousHostId && previousHostId !== roomData.hostId) {
       if (roomData.hostId === currentPlayerId) {
         showToast("🏠 房主已離開，你現在是房主！", "success");
       } else {
         var newHostPlayer = players[roomData.hostId];
-        var newHostName = newHostPlayer ? (newHostPlayer.nickname || "其他玩家") : "其他玩家";
+        var newHostName = newHostPlayer
+          ? newHostPlayer.nickname || "其他玩家"
+          : "其他玩家";
         showToast("🏠 房主已變更為 " + newHostName, "info");
       }
     }

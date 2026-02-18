@@ -89,6 +89,47 @@
       <!-- Stats -->
       <div id="worldStatsContainer" style="display: none"></div>
 
+      <!-- Rule Tabs -->
+      <div
+        class="rule-tabs"
+        id="ruleTabs"
+        role="tablist"
+        aria-label="依規則篩選"
+      >
+        <button
+          class="rule-tab active"
+          data-rule="all"
+          role="tab"
+          aria-selected="true"
+        >
+          全部
+        </button>
+        <button
+          class="rule-tab"
+          data-rule="rule1"
+          role="tab"
+          aria-selected="false"
+        >
+          規則一
+        </button>
+        <button
+          class="rule-tab"
+          data-rule="rule2"
+          role="tab"
+          aria-selected="false"
+        >
+          規則二
+        </button>
+        <button
+          class="rule-tab"
+          data-rule="mixed"
+          role="tab"
+          aria-selected="false"
+        >
+          混合規則
+        </button>
+      </div>
+
       <!-- Ranking -->
       <div id="worldRankingContainer">
         <div class="ranking-empty">
@@ -103,9 +144,14 @@
         <ul>
           <li><strong>不需要登入帳號</strong>，完成遊戲後即可上傳</li>
           <li>
-            以「暱稱 + 裝置」辨識身份，<strong>同一裝置上傳會覆蓋前一筆</strong>
+            每個「遊戲場 ×
+            規則」組合各有<strong>獨立排名</strong>，可用上方分頁切換
           </li>
-          <li>上傳後<strong>無法自行刪除</strong>，只能被新上傳覆蓋</li>
+          <li>
+            以「暱稱 + 裝置」辨識身份，<strong
+              >同一組合重複上傳會覆蓋前一筆</strong
+            >
+          </li>
           <li>
             訪客模式（00NoName）使用
             sessionStorage，<strong>關閉分頁後資料即清除</strong>，但仍可上傳至世界排行榜

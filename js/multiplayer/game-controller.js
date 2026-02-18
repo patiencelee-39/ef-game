@@ -55,6 +55,8 @@ var GameController = (function () {
   var _stimTimerId = null;
   var _totalCorrect = 0;
   var _totalTrials = 0;
+  var _allTrialResults = []; // 跨 combo 累積（修復原 finishGame 僅取最後 combo 的 bug）
+  var _comboScores = [];     // 每個 combo 的 calculateRuleScore 結果
 
   function showScreen(el) {
     var screens = dom.gameContainer.querySelectorAll(".screen");
@@ -287,6 +289,7 @@ var GameController = (function () {
       timestamp: Date.now(),
     };
     _trialResults.push(record);
+    _allTrialResults.push(record);
 
     DifficultyProvider.onTrialComplete(record);
 
@@ -330,6 +333,17 @@ var GameController = (function () {
       passed: false,
     });
 
+    // 使用 score-calculator 計算此 combo 的得分
+    if (typeof calculateRuleScore === "function") {
+      var comboScore = calculateRuleScore({
+        results: _trialResults,
+        fieldId: completedCombo.fieldId,
+        ruleId: completedCombo.ruleId,
+        mode: "multiplayer",
+      });
+      _comboScores.push(comboScore);
+    }
+
     // 廣播場地完成通知（其他玩家會看到）
     if (_displaySettings.showCompletionNotification !== false) {
       MultiplayerBridge.broadcastStageComplete(completedCombo.displayName);
@@ -346,8 +360,8 @@ var GameController = (function () {
   function finishGame() {
     var accuracy = _totalTrials > 0 ? (_totalCorrect / _totalTrials) * 100 : 0;
 
-    // 計算平均反應時間
-    var validRTs = _trialResults.filter(function (r) {
+    // 計算平均反應時間（使用跨 combo 累積結果）
+    var validRTs = _allTrialResults.filter(function (r) {
       return r.rt > 0;
     });
     var avgRT =
@@ -356,6 +370,16 @@ var GameController = (function () {
             return s + r.rt;
           }, 0) / validRTs.length
         : 0;
+
+    // 從 score-calculator 結果計算總分（含獎勵）
+    var calculatedTotal = 0;
+    if (_comboScores.length > 0) {
+      for (var si = 0; si < _comboScores.length; si++) {
+        calculatedTotal += _comboScores[si].finalScore || 0;
+      }
+    } else {
+      calculatedTotal = _totalCorrect; // fallback
+    }
 
     // 存入 showFinalRanking 設定供 result.html 讀取
     try {
@@ -366,13 +390,14 @@ var GameController = (function () {
     } catch (e) {}
 
     MultiplayerBridge.recordFinalScore({
-      totalScore: _totalCorrect,
+      totalScore: calculatedTotal,
       totalCorrect: _totalCorrect,
       totalTrials: _totalTrials,
       accuracy: accuracy,
       avgRT: avgRT,
       totalTime: 0,
-      answers: _trialResults,
+      answers: _allTrialResults,
+      comboScores: _comboScores,
     });
 
     MultiplayerBridge.goToResult();
@@ -443,17 +468,9 @@ var GameController = (function () {
         ];
       } else {
         _combos = stages.map(function (stage) {
-          var fieldId =
-            stage.id === "A" || stage.id === "B" ? "mouse" : "fishing";
-          var ruleId =
-            stage.id === "A" || stage.id === "C"
-              ? "rule1"
-              : stage.id === "B" || stage.id === "D"
-                ? "rule2"
-                : "mixed";
           return {
-            fieldId: fieldId,
-            ruleId: ruleId,
+            fieldId: stage.fieldId || "mouse",
+            ruleId: stage.ruleId || "rule1",
             questionCount:
               stage.questionCount ||
               (stage.questions ? stage.questions.length : 0),

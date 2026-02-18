@@ -10,9 +10,34 @@
   var uploadStatus = document.getElementById("uploadStatus");
   var worldRankingContainer = document.getElementById("worldRankingContainer");
   var worldStatsContainer = document.getElementById("worldStatsContainer");
+  var ruleTabs = document.getElementById("ruleTabs");
 
   var _bestEntry = null; // 快取找到的最佳紀錄
+  var _allEntries = []; // 快取全部世界排行資料
+  var _currentRule = "all"; // 當前篩選規則
   var GUEST_NICKNAME = "00NoName";
+
+  // ─── 分頁按鈕 ───
+  if (ruleTabs) {
+    ruleTabs.addEventListener("click", function (e) {
+      var tab = e.target.closest(".rule-tab");
+      if (!tab) return;
+      var rule = tab.dataset.rule;
+      if (rule === _currentRule) return;
+
+      _currentRule = rule;
+
+      // 更新 active 狀態
+      ruleTabs.querySelectorAll(".rule-tab").forEach(function (t) {
+        var isActive = t.dataset.rule === rule;
+        t.classList.toggle("active", isActive);
+        t.setAttribute("aria-selected", isActive ? "true" : "false");
+      });
+
+      // 用快取資料重新渲染
+      _renderFiltered(_allEntries);
+    });
+  }
 
   // === 初始化 ===
   firebase.auth().onAuthStateChanged(function (user) {
@@ -102,6 +127,8 @@
       totalTrials: _bestEntry.totalTrials || 0,
       mode: _bestEntry.mode || "adventure",
       gamesPlayed: _bestEntry.gamesPlayed || 1,
+      fieldId: _bestEntry.fieldId || "",
+      ruleId: _bestEntry.ruleId || "",
     };
 
     FirestoreLeaderboard.uploadToWorld(entry)
@@ -110,12 +137,13 @@
         return FirestoreLeaderboard.getWorldLeaderboard(200);
       })
       .then(function (entries) {
+        _allEntries = entries;
         var myUid = firebase.auth().currentUser
           ? firebase.auth().currentUser.uid
           : null;
         var myRank = 0;
         for (var i = 0; i < entries.length; i++) {
-          if (entries[i].docId === myUid) {
+          if (entries[i].uid === myUid || entries[i].docId === myUid) {
             myRank = i + 1;
             break;
           }
@@ -144,7 +172,7 @@
           (b.totalTrials || "—") +
           "</div></div>";
         uploadStatus.className = "upload-status success";
-        _loadWorldRanking();
+        _renderFiltered(entries);
       })
       .catch(function (err) {
         uploadStatus.textContent = "❌ 上傳失敗：" + err.message;
@@ -158,23 +186,10 @@
 
   // === 載入世界排行 ===
   function _loadWorldRanking() {
-    FirestoreLeaderboard.getWorldLeaderboard(100)
+    FirestoreLeaderboard.getWorldLeaderboard(200)
       .then(function (entries) {
-        RankingRenderer.renderStats(worldStatsContainer, entries);
-        var uid = firebase.auth().currentUser
-          ? firebase.auth().currentUser.uid
-          : null;
-        RankingRenderer.render(worldRankingContainer, entries, {
-          sortBy: "bestScore",
-          showAccuracy: true,
-          showRT: true,
-          showCorrect: true,
-          showMode: true,
-          showStars: true,
-          highlightUid: uid,
-          emptyText: "世界排行榜目前還沒有紀錄，成為第一個上榜的玩家吧！",
-          emptyIcon: "🌐",
-        });
+        _allEntries = entries;
+        _renderFiltered(entries);
       })
       .catch(function (err) {
         worldRankingContainer.innerHTML =
@@ -182,6 +197,55 @@
           err.message +
           "</p></div>";
       });
+  }
+
+  // === 依規則篩選並渲染 ===
+  function _renderFiltered(entries) {
+    var filtered = entries;
+    if (_currentRule !== "all") {
+      filtered = entries.filter(function (e) {
+        return e.ruleId === _currentRule;
+      });
+    }
+
+    RankingRenderer.renderStats(worldStatsContainer, filtered);
+    var uid = firebase.auth().currentUser
+      ? firebase.auth().currentUser.uid
+      : null;
+
+    // 準備遊戲場/規則名稱對照
+    var ruleLabel = {
+      rule1: "規則一",
+      rule2: "規則二",
+      mixed: "混合規則",
+    };
+
+    // 在每筆資料加上可讀規則標籤（用於 showMode 顯示）
+    var displayEntries = filtered.map(function (e) {
+      var copy = {};
+      for (var k in e) copy[k] = e[k];
+      if (e.fieldId || e.ruleId) {
+        var fName = e.fieldId || "";
+        var rName = ruleLabel[e.ruleId] || e.ruleId || "";
+        copy.mode = fName + (rName ? " · " + rName : "");
+      }
+      return copy;
+    });
+
+    RankingRenderer.render(worldRankingContainer, displayEntries, {
+      sortBy: "bestScore",
+      showAccuracy: true,
+      showRT: true,
+      showCorrect: true,
+      showMode: true,
+      showStars: true,
+      highlightUid: uid,
+      emptyText:
+        _currentRule === "all"
+          ? "世界排行榜目前還沒有紀錄，成為第一個上榜的玩家吧！"
+          : "此規則目前尚無排行紀錄",
+      emptyIcon: "🌐",
+    });
   }
 
   // === 工具 ===
