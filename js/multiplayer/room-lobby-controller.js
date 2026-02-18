@@ -224,9 +224,31 @@ function getDifficultyText(difficulty) {
 
 function copyRoomCode() {
   const code = document.getElementById("roomCode").textContent;
-  navigator.clipboard.writeText(code).then(() => {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(code).then(() => {
+      showToast("代碼已複製！", "success");
+    }).catch(() => {
+      _fallbackCopy(code);
+    });
+  } else {
+    _fallbackCopy(code);
+  }
+}
+
+function _fallbackCopy(text) {
+  try {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
     showToast("代碼已複製！", "success");
-  });
+  } catch (e) {
+    showToast("請手動複製代碼：" + text, "info");
+  }
 }
 
 function toggleReady() {
