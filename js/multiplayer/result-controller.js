@@ -134,9 +134,13 @@ function _renderSpectatorComparison(container, players) {
   for (var m = 0; m < metrics.length; m++) {
     var metric = metrics[m];
     var sorted = players.slice().sort(function (a, b) {
-      return metric.dir === "asc"
-        ? (a[metric.key] || 0) - (b[metric.key] || 0)
-        : (b[metric.key] || 0) - (a[metric.key] || 0);
+      var aVal = a[metric.key] || 0;
+      var bVal = b[metric.key] || 0;
+      // 無數據（0）排最後
+      if (aVal === 0 && bVal === 0) return 0;
+      if (aVal === 0) return 1;
+      if (bVal === 0) return -1;
+      return metric.dir === "asc" ? aVal - bVal : bVal - aVal;
     });
 
     html += '<div class="mp-metric-group">';
@@ -499,11 +503,14 @@ function _renderMetricComparison(players) {
   for (var m = 0; m < metrics.length; m++) {
     var metric = metrics[m];
 
-    // 排序（依指標）
+    // 排序（依指標）：無數據（0）排最後
     var sorted = players.slice().sort(function (a, b) {
-      return metric.dir === "asc"
-        ? (a[metric.key] || 0) - (b[metric.key] || 0)
-        : (b[metric.key] || 0) - (a[metric.key] || 0);
+      var aVal = a[metric.key] || 0;
+      var bVal = b[metric.key] || 0;
+      if (aVal === 0 && bVal === 0) return 0;
+      if (aVal === 0) return 1;
+      if (bVal === 0) return -1;
+      return metric.dir === "asc" ? aVal - bVal : bVal - aVal;
     });
 
     html += '<div class="mp-metric-group">';

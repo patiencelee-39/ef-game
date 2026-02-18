@@ -3,6 +3,7 @@ let currentPlayerId = null;
 let isHost = false;
 let isReady = false;
 let roomRef = null;
+let previousHostId = null;
 
 // 初始化
 window.addEventListener("DOMContentLoaded", () => {
@@ -49,6 +50,15 @@ function initializeLobby() {
 
   // 監聽房間變化
   roomRef = firebase.database().ref(`rooms/${currentRoom.code}`);
+
+  // 設置斷線自動標記離線
+  if (currentPlayerId) {
+    roomRef
+      .child("players/" + currentPlayerId + "/online")
+      .onDisconnect()
+      .set(false);
+  }
+
   roomRef.on("value", (snapshot) => {
     const roomData = snapshot.val();
     if (!roomData) {
@@ -98,6 +108,9 @@ function initializeLobby() {
     } else {
       console.error("❌ 在 Firebase 中找不到玩家資料:", currentPlayerId);
     }
+
+    // 檢查房主是否需要轉移（斷線/離開）
+    _checkHostTransfer(roomData);
 
     updateLobby(roomData);
   });
@@ -271,30 +284,134 @@ async function startGame() {
   }
 }
 
-function leaveRoom() {
-  if (confirm("確定要離開房間嗎？")) {
-    if (roomRef && currentPlayerId) {
-      // 如果是房主，刪除整個房間
-      if (isHost) {
-        console.log("🏠 房主離開，刪除整個房間");
-        roomRef.remove();
-      } else {
-        // 如果是一般玩家，只移除該玩家
-        console.log("👤 玩家離開，移除玩家資料");
-        roomRef.child(`players/${currentPlayerId}`).remove();
-      }
+/**
+ * 檢查房主是否需要轉移（斷線/離開）
+ * 偵測房主離線後，自動將房主轉移給最早加入的在線玩家
+ */
+function _checkHostTransfer(roomData) {
+  if (!roomData || !roomData.hostId || !currentPlayerId) return;
+
+  // 遊戲已開始不處理
+  if (roomData.status === "playing" || roomData.status === "finished") return;
+
+  var players = roomData.players || {};
+  var hostPlayer = players[roomData.hostId];
+
+  // 房主在線 或 不在玩家列表中（觀戰者）→ 不需轉移
+  if (!hostPlayer || hostPlayer.online !== false) {
+    // 偵測房主變更：如果 hostId 變成自己，顯示通知
+    if (
+      previousHostId &&
+      previousHostId !== roomData.hostId &&
+      roomData.hostId === currentPlayerId
+    ) {
+      showToast("🏠 房主已離開，你現在是房主！", "success");
     }
-
-    // 清除本地儲存
-    localStorage.removeItem("currentRoom");
-    localStorage.removeItem("currentPlayer");
-    localStorage.removeItem("currentRoomCode");
-    localStorage.removeItem("currentPlayerId");
-    localStorage.removeItem("currentPlayerName");
-
-    // 返回首頁
-    window.location.href = "../index.html";
+    previousHostId = roomData.hostId;
+    return;
   }
+
+  // 房主離線 → 尋找接手人選
+  var candidates = [];
+  for (var uid in players) {
+    if (!players.hasOwnProperty(uid)) continue;
+    if (uid === roomData.hostId) continue;
+    if (players[uid].online === false) continue;
+    candidates.push({ uid: uid, joinedAt: players[uid].joinedAt || 0 });
+  }
+
+  if (candidates.length === 0) {
+    previousHostId = roomData.hostId;
+    return;
+  }
+
+  // 按加入時間排序（最早加入者接手），同時間用 UID 排序確保一致
+  candidates.sort(function (a, b) {
+    var diff = a.joinedAt - b.joinedAt;
+    return diff !== 0 ? diff : a.uid.localeCompare(b.uid);
+  });
+
+  var newHostUid = candidates[0].uid;
+
+  // 只有被選中的玩家執行寫入（避免多人同時寫入競爭）
+  if (newHostUid === currentPlayerId) {
+    console.log("🏠 房主離線，自動接手房主");
+    var updates = {};
+    updates["hostId"] = currentPlayerId;
+    updates["players/" + currentPlayerId + "/isHost"] = true;
+    updates["players/" + roomData.hostId + "/isHost"] = false;
+    roomRef.update(updates);
+  }
+
+  previousHostId = roomData.hostId;
+}
+
+function leaveRoom() {
+  if (!confirm("確定要離開房間嗎？")) return;
+
+  // 取消 onDisconnect（避免移除後還寫入 online:false 造成殘留）
+  if (roomRef && currentPlayerId) {
+    roomRef
+      .child("players/" + currentPlayerId + "/online")
+      .onDisconnect()
+      .cancel();
+  }
+
+  var leavePromise = Promise.resolve();
+
+  if (roomRef && currentPlayerId) {
+    if (isHost) {
+      // 房主離開：轉移房主給其他在線玩家
+      leavePromise = roomRef.once("value").then(function (snapshot) {
+        var data = snapshot.val();
+        var players = data ? data.players || {} : {};
+        var others = Object.entries(players)
+          .filter(function (entry) {
+            return entry[0] !== currentPlayerId && entry[1].online !== false;
+          })
+          .sort(function (a, b) {
+            var diff = (a[1].joinedAt || 0) - (b[1].joinedAt || 0);
+            return diff !== 0 ? diff : a[0].localeCompare(b[0]);
+          });
+
+        if (others.length > 0) {
+          // 轉移房主給最早加入的在線玩家
+          var newHostId = others[0][0];
+          console.log("🏠 房主離開，轉移給:", newHostId);
+          var updates = {};
+          updates["hostId"] = newHostId;
+          updates["players/" + newHostId + "/isHost"] = true;
+          return roomRef.update(updates).then(function () {
+            return roomRef.child("players/" + currentPlayerId).remove();
+          });
+        } else {
+          // 沒有其他在線玩家，刪除房間
+          console.log("🏠 房主離開且無其他玩家，刪除房間");
+          return roomRef.remove();
+        }
+      });
+    } else {
+      // 一般玩家離開
+      console.log("👤 玩家離開，移除玩家資料");
+      leavePromise = roomRef.child("players/" + currentPlayerId).remove();
+    }
+  }
+
+  leavePromise
+    .catch(function (err) {
+      console.warn("離開房間時發生錯誤:", err);
+    })
+    .finally(function () {
+      // 清除本地儲存
+      localStorage.removeItem("currentRoom");
+      localStorage.removeItem("currentPlayer");
+      localStorage.removeItem("currentRoomCode");
+      localStorage.removeItem("currentPlayerId");
+      localStorage.removeItem("currentPlayerName");
+
+      // 返回首頁
+      window.location.href = "../index.html";
+    });
 }
 
 function showToast(message, type = "success") {
