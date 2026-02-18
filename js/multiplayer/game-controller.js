@@ -122,10 +122,18 @@ var GameController = (function () {
       ? "rule-action-text rule-action-text--go"
       : "rule-action-text rule-action-text--nogo";
     return (
-      '<div class="' + cls + '">' +
-      '<span class="rule-stim-icon">' + getSVG(stimKey) + "</span>" +
+      '<div class="' +
+      cls +
+      '">' +
+      '<span class="rule-stim-icon">' +
+      getSVG(stimKey) +
+      "</span>" +
       '<span style="color:var(--text-light);font-size:1.5rem;">→</span>' +
-      '<span class="' + txtCls + '">' + actionText + "</span>" +
+      '<span class="' +
+      txtCls +
+      '">' +
+      actionText +
+      "</span>" +
       "</div>"
     );
   }
@@ -489,7 +497,8 @@ var GameController = (function () {
 
     // WM 提示
     var wmN = ctr.querySelector(".combo-wm-notice");
-    if (wmN) wmN.style.display = (nextCombo.enableWm || nextCombo.hasWM) ? "" : "none";
+    if (wmN)
+      wmN.style.display = nextCombo.enableWm || nextCombo.hasWM ? "" : "none";
 
     // 開始按鈕
     var startBtn = ctr.querySelector(".combo-start-btn");
