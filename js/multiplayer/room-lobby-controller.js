@@ -225,11 +225,14 @@ function getDifficultyText(difficulty) {
 function copyRoomCode() {
   const code = document.getElementById("roomCode").textContent;
   if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(code).then(() => {
-      showToast("代碼已複製！", "success");
-    }).catch(() => {
-      _fallbackCopy(code);
-    });
+    navigator.clipboard
+      .writeText(code)
+      .then(() => {
+        showToast("代碼已複製！", "success");
+      })
+      .catch(() => {
+        _fallbackCopy(code);
+      });
   } else {
     _fallbackCopy(code);
   }
