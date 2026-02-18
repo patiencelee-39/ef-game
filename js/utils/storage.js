@@ -149,6 +149,7 @@ function createDefaultPlayerProfile(seatNumber, nickname) {
       masterVolume: 0.8,
       sfx: true,
       voice: true,
+      voiceRate: 1.0,
     },
     colorTheme: "field-primary",
     stimuliPack: "default",

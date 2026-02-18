@@ -70,8 +70,9 @@
   // 🔊 音效設定
   // =========================================
   function loadAudioSettings() {
-    // 確保 AudioPlayer 已初始化
+    // 確保 AudioPlayer 已初始化（從 localStorage 載入持久化設定）
     if (typeof AudioPlayer !== "undefined") {
+      AudioPlayer.init();
       // 音量
       var vol = AudioPlayer.getVolume();
       var pct = Math.round(vol * 100);
@@ -166,6 +167,10 @@
       var rate = parseFloat(btn.getAttribute("data-rate"));
       if (typeof AudioPlayer !== "undefined") {
         AudioPlayer.setVoiceRate(rate);
+      }
+      // 同步到 profile
+      if (typeof saveSoundSettings === "function") {
+        saveSoundSettings({ voiceRate: rate });
       }
       updateRateButtons(rate);
       showToast("語速已設定為 " + btn.textContent.trim());

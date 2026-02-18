@@ -212,6 +212,8 @@ var MultiplayerBridge = (function () {
       var p = players[uid];
       // 過濾幽靈條目：沒有 nickname 且沒有 joinedAt 的不是真正玩家
       if (!p.nickname && !p.joinedAt) continue;
+      // 過濾觀戰者（房主觀戰模式）
+      if (p.role === "spectator") continue;
       var emoji = avatars[idx % avatars.length];
       var statusText = p.online ? p.currentCombo || "進行中" : "離線";
       var scoreText = p.currentScore || 0;

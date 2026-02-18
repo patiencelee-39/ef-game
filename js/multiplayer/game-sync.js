@@ -134,6 +134,8 @@ var GameSync = (function () {
         var p = players[uid];
         // 過濾幽靈條目（沒有 nickname 且沒有 joinedAt 的不是真正玩家）
         if (!p.nickname && !p.joinedAt) continue;
+        // 過濾觀戰者（房主觀戰模式）
+        if (p.role === "spectator") continue;
         _playerSnapshots[uid] = {
           nickname: p.nickname || "玩家",
           online: p.online !== false,
