@@ -341,7 +341,7 @@ var RankingRenderer = (function () {
     showTime,
     hasDelete,
   ) {
-    var cols = ["40px", "minmax(50px,1fr)", "55px"]; // rank, name, score
+    var cols = ["40px", "minmax(50px,2fr)", "minmax(55px,1fr)"]; // rank, name, score
     if (showAcc) cols.push("60px");
     if (showRT) cols.push("70px");
     if (showCorrect) cols.push("55px");

@@ -132,6 +132,8 @@ var GameSync = (function () {
       for (var uid in players) {
         if (!players.hasOwnProperty(uid)) continue;
         var p = players[uid];
+        // 過濾幽靈條目（沒有 nickname 且沒有 joinedAt 的不是真正玩家）
+        if (!p.nickname && !p.joinedAt) continue;
         _playerSnapshots[uid] = {
           nickname: p.nickname || "玩家",
           online: p.online !== false,

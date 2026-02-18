@@ -210,6 +210,8 @@ var MultiplayerBridge = (function () {
     for (var uid in players) {
       if (!players.hasOwnProperty(uid)) continue;
       var p = players[uid];
+      // 過濾幽靈條目：沒有 nickname 且沒有 joinedAt 的不是真正玩家
+      if (!p.nickname && !p.joinedAt) continue;
       var emoji = avatars[idx % avatars.length];
       var statusText = p.online ? p.currentCombo || "進行中" : "離線";
       var scoreText = p.currentScore || 0;
