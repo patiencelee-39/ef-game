@@ -136,7 +136,8 @@ class RoomManager {
       }
 
       // 檢查是否已開始且不允許中途加入
-      if (room.isGameStarted && !room.displaySettings.allowLateJoin) {
+      var ds = room.displaySettings || {};
+      if (room.isGameStarted && !ds.allowLateJoin) {
         throw new Error("遊戲已開始，不允許中途加入");
       }
 

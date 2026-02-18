@@ -297,6 +297,7 @@ var GameController = (function () {
     if (isCorrect) _totalCorrect++;
     _totalTrials++;
 
+    var combo = _combos[_comboIndex];
     var record = {
       trialIndex: _trialIndex,
       stimulus: question.stimulus,
@@ -308,6 +309,9 @@ var GameController = (function () {
       isCorrect: isCorrect,
       rt: rt,
       timestamp: Date.now(),
+      stageId: combo ? combo.stageId || null : null,
+      fieldId: combo ? combo.fieldId : null,
+      ruleId: combo ? combo.ruleId : null,
     };
     _trialResults.push(record);
     _allTrialResults.push(record);
@@ -680,6 +684,7 @@ var GameController = (function () {
           if (qs && !Array.isArray(qs)) qs = Object.values(qs);
 
           return {
+            stageId: stage.id || null,
             fieldId: stage.fieldId || "mouse",
             ruleId: stage.ruleId || "rule1",
             questionCount: stage.questionCount || (qs ? qs.length : 0),

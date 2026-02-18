@@ -249,6 +249,9 @@ var GameSync = (function () {
       stimulus: trialRecord.stimulus || "",
       isCorrect: trialRecord.isCorrect || false,
       rt: trialRecord.rt || null,
+      stageId: trialRecord.stageId || null,
+      fieldId: trialRecord.fieldId || null,
+      ruleId: trialRecord.ruleId || null,
       timestamp: Date.now(),
     });
   }
@@ -279,10 +282,12 @@ var GameSync = (function () {
         JSON.stringify({
           score: scoreData.totalScore,
           accuracy: scoreData.accuracy,
+          avgRT: scoreData.avgRT,
           correctAnswers: scoreData.totalCorrect,
           totalQuestions: scoreData.totalTrials,
           totalTime: resultObj.totalTime || 0,
           answers: resultObj.answers || [],
+          comboScores: resultObj.comboScores || [],
           playerId: _playerId,
           nickname: scoreData.nickname,
         }),
