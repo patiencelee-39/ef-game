@@ -213,7 +213,7 @@ function displayResults() {
   document.getElementById("totalTimeValue").textContent =
     (resultData.totalTime / 1000).toFixed(1) + "s";
 
-  // 計算平均反應時間（相容 rt / reactionTime 兩種欄位）
+  // 計算平均反應時間（相容 rt / reactionTime 兩種欄位，fallback 到已存 avgRT）
   const validRTs = (resultData.answers || []).filter(
     (a) => (a.rt || a.reactionTime) > 0,
   );
@@ -221,7 +221,7 @@ function displayResults() {
     validRTs.length > 0
       ? validRTs.reduce((sum, a) => sum + (a.rt || a.reactionTime || 0), 0) /
         validRTs.length
-      : 0;
+      : resultData.avgRT || 0;
   document.getElementById("avgTimeValue").textContent =
     (avgTime / 1000).toFixed(2) + "s";
 
@@ -621,7 +621,7 @@ function playAgain() {
           ? validRTs.reduce(function (sum, a) {
               return sum + (a.rt || a.reactionTime || 0);
             }, 0) / validRTs.length
-          : 0;
+          : d.avgRT || 0;
       return [
         {
           nickname: d.playerName || d.nickname || "玩家",

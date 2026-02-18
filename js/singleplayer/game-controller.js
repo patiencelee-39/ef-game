@@ -316,6 +316,7 @@ var GameController = (function () {
 
   /** 紀錄試驗資料 */
   function recordTrial(question, action, result, isCorrect, rt) {
+    var combo = _combos[_comboIndex];
     var record = {
       trialIndex: _trialIndex,
       stimulus: question.stimulus,
@@ -327,6 +328,8 @@ var GameController = (function () {
       isCorrect: isCorrect,
       rt: rt,
       timestamp: Date.now(),
+      fieldId: combo ? combo.fieldId : null,
+      ruleId: combo ? combo.ruleId : null,
     };
     _trialResults.push(record);
 
