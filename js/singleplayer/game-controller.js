@@ -62,12 +62,22 @@ var GameController = (function () {
   var _stimShownAt = 0; // 刺激物顯示時間戳
 
   // =========================================
-  // 刺激物渲染
+  // 刺激物渲染（委派 TrialRenderer 共用模組）
   // =========================================
 
-  /** stimulus key → SVG HTML */
+  /** stimulus key → SVG HTML（委派 TrialRenderer） */
   function getSVG(key) {
-    return (typeof SVG_ASSETS !== "undefined" && SVG_ASSETS[key]) || "";
+    return TrialRenderer.svg(key);
+  }
+
+  /** 快速組裝渲染所需 DOM 元素 */
+  function _stimEls() {
+    return {
+      stimContainer: dom.stimContainer,
+      bgLayer: dom.bgLayer,
+      ctxIndicator: dom.ctxIndicator,
+      stimulus: dom.stimulus,
+    };
   }
 
   /** 遊戲場 → 回應按鈕文字 */
@@ -79,59 +89,7 @@ var GameController = (function () {
         : "按！";
   }
 
-  /**
-   * 渲染單題視覺：背景 + 情境指示 + 刺激物
-   */
-  function renderStimulus(question, fieldId, ruleId) {
-    // 重置
-    dom.stimContainer.className = "stimulus-container";
-    dom.ctxIndicator.style.display = "none";
-    dom.ctxIndicator.innerHTML = "";
-
-    // === 背景 ===
-    if (fieldId === "mouse") {
-      dom.bgLayer.innerHTML = getSVG("mouseHole");
-    } else if (fieldId === "fishing") {
-      var isNight = ruleId === "mixed" && question.context === "night";
-      dom.bgLayer.innerHTML = isNight
-        ? getSVG("oceanNight")
-        : getSVG("oceanBg");
-    }
-
-    // === 混合規則情境指示 ===
-    if (ruleId === "mixed" && question.context) {
-      switch (question.context) {
-        case "hasPerson":
-          dom.ctxIndicator.innerHTML = getSVG("person");
-          dom.ctxIndicator.style.display = "block";
-          dom.stimContainer.classList.add("context-has-person");
-          break;
-        case "noPerson":
-          dom.stimContainer.classList.add("context-no-person");
-          break;
-        case "day":
-          dom.ctxIndicator.innerHTML = getSVG("sun");
-          dom.ctxIndicator.style.display = "block";
-          dom.stimContainer.classList.add("context-day");
-          break;
-        case "night":
-          dom.ctxIndicator.innerHTML = getSVG("moon");
-          dom.ctxIndicator.style.display = "block";
-          dom.stimContainer.classList.add("context-night");
-          break;
-      }
-    }
-
-    // === 刺激物 ===
-    dom.stimulus.innerHTML = getSVG(question.stimulus);
-  }
-
-  /** 清空刺激物舞台 */
-  function clearStimulus() {
-    dom.stimulus.innerHTML = "";
-    dom.ctxIndicator.style.display = "none";
-    dom.stimContainer.className = "stimulus-container";
-  }
+  // renderStimulus / clearStimulus 已遷移至 TrialRenderer 共用模組
 
   // =========================================
   // 畫面管理
@@ -304,7 +262,7 @@ var GameController = (function () {
         ? 200
         : _tp.isiMinMs + Math.random() * (_tp.isiMaxMs - _tp.isiMinMs);
 
-    clearStimulus();
+    TrialRenderer.clear(_stimEls());
     dom.btnSpace.disabled = true;
     _responded = false;
 
@@ -312,7 +270,7 @@ var GameController = (function () {
       if (_isPaused) return;
 
       // 呈現刺激物
-      renderStimulus(question, combo.fieldId, combo.ruleId);
+      TrialRenderer.render(_stimEls(), question, combo.fieldId, combo.ruleId);
       dom.btnSpace.disabled = false;
       _stimShownAt = Date.now();
       _responded = false;
@@ -406,7 +364,7 @@ var GameController = (function () {
   function endCombo() {
     _isPlaying = false;
     dom.btnSpace.disabled = true;
-    clearStimulus();
+    TrialRenderer.clear(_stimEls());
 
     var combo = _combos[_comboIndex];
     var hasWM = combo.enableWm || combo.hasWM || false;

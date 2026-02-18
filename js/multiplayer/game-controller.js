@@ -56,7 +56,7 @@ var GameController = (function () {
   var _totalCorrect = 0;
   var _totalTrials = 0;
   var _allTrialResults = []; // 跨 combo 累積（修復原 finishGame 僅取最後 combo 的 bug）
-  var _comboScores = [];     // 每個 combo 的 calculateRuleScore 結果
+  var _comboScores = []; // 每個 combo 的 calculateRuleScore 結果
 
   function showScreen(el) {
     var screens = dom.gameContainer.querySelectorAll(".screen");
@@ -72,10 +72,14 @@ var GameController = (function () {
       : "\uD83D\uDDB1\uFE0F Catch!";
   }
 
-  function clearStimulus() {
-    dom.stimulus.innerHTML = "";
-    dom.bgLayer.innerHTML = "";
-    dom.ctxIndicator.style.display = "none";
+  /** 快速組裝渲染所需 DOM 元素 */
+  function _stimEls() {
+    return {
+      stimContainer: dom.stimContainer,
+      bgLayer: dom.bgLayer,
+      ctxIndicator: dom.ctxIndicator,
+      stimulus: dom.stimulus,
+    };
   }
 
   function beginCombo() {
@@ -96,9 +100,9 @@ var GameController = (function () {
     showRuleIntro(combo);
   }
 
-  /** stimulus key → SVG HTML (same as singleplayer) */
+  /** stimulus key → SVG HTML（委派 TrialRenderer） */
   function getSVG(key) {
-    return (typeof SVG_ASSETS !== "undefined" && SVG_ASSETS[key]) || "";
+    return TrialRenderer.svg(key);
   }
 
   function showRuleIntro(combo) {
@@ -204,7 +208,7 @@ var GameController = (function () {
         ? 200
         : _tp.isiMinMs + Math.random() * (_tp.isiMaxMs - _tp.isiMinMs);
 
-    clearStimulus();
+    TrialRenderer.clear(_stimEls());
     dom.btnSpace.disabled = true;
     _responded = false;
 
@@ -215,37 +219,8 @@ var GameController = (function () {
   }
 
   function presentStimulus(question, combo, duration) {
-    // === 背景（對齊 singleplayer renderStimulus）===
-    if (combo.fieldId === "mouse") {
-      dom.bgLayer.innerHTML = getSVG("mouseHole");
-    } else if (combo.fieldId === "fishing") {
-      var isNight = combo.ruleId === "mixed" && question.context === "night";
-      dom.bgLayer.innerHTML = isNight
-        ? getSVG("oceanNight")
-        : getSVG("oceanBg");
-    }
-
-    // === 混合規則情境指示 ===
-    if (question.context) {
-      dom.ctxIndicator.style.display = "block";
-      switch (question.context) {
-        case "hasPerson":
-          dom.ctxIndicator.innerHTML = getSVG("person");
-          break;
-        case "day":
-          dom.ctxIndicator.innerHTML = getSVG("sun");
-          break;
-        case "night":
-          dom.ctxIndicator.innerHTML = getSVG("moon");
-          break;
-        default:
-          dom.ctxIndicator.style.display = "none";
-      }
-    }
-
-    // === 刺激物 ===
-    dom.stimulus.innerHTML =
-      getSVG(question.stimulus) || question.stimulus || "?";
+    // 委派 TrialRenderer 渲染背景 + 情境指示 + 刺激物
+    TrialRenderer.render(_stimEls(), question, combo.fieldId, combo.ruleId);
 
     dom.btnSpace.disabled = false;
     _stimOnTime = Date.now();

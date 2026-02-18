@@ -72,7 +72,9 @@ let selectedStages = [];
 // 場地資訊從 ComboSelector 共用模組取得
 const stageInfo = (function () {
   var map = {};
-  ComboSelector.getAll().forEach(function (s) { map[s.id] = s; });
+  ComboSelector.getAll().forEach(function (s) {
+    map[s.id] = s;
+  });
   return map;
 })();
 
