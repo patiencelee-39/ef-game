@@ -248,6 +248,27 @@ var ResultController = (function () {
         "</div>" +
         "</div>";
 
+      // === 2.5 場地資訊 ===
+      var _pointDef = cr.pointDef || {};
+      var _fieldId = _pointDef.field || "";
+      var _ruleLabel = _pointDef.label || _pointDef.id || "";
+      var _fieldName =
+        typeof GAME_CONFIG !== "undefined" &&
+        GAME_CONFIG.FIELDS &&
+        GAME_CONFIG.FIELDS[_fieldId]
+          ? GAME_CONFIG.FIELDS[_fieldId].name
+          : _fieldId;
+      var _fieldIcon = _fieldId === "mouse" ? "🐭" : _fieldId === "fishing" ? "🐟" : "🎮";
+      if (_fieldName || _ruleLabel) {
+        html += '<div class="result-card"><h2>🎮 場地資訊</h2>';
+        html += '<div style="display:flex;align-items:center;gap:12px;justify-content:center;padding:8px 0;">';
+        html += '<span style="font-size:2rem;">' + _fieldIcon + '</span>';
+        html += '<div>';
+        if (_fieldName) html += '<div style="font-weight:700;font-size:1.05rem;">' + esc(_fieldName) + '</div>';
+        if (_ruleLabel) html += '<div style="font-size:0.85rem;color:var(--text-light);margin-top:2px;">' + esc(_ruleLabel) + (_pointDef.hasWM ? ' + 🧠工作記憶' : '') + '</div>';
+        html += '</div></div></div>';
+      }
+
       // === 3. 數據統計 ===
       html += '<div class="result-card"><h2>📊 統計</h2>';
       html += '<div class="stat-grid">';

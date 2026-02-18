@@ -552,7 +552,10 @@ function getSoundSettings() {
  */
 function saveSoundSettings(settings) {
   var profile = getPlayerProfile();
-  if (!profile) return false;
+  if (!profile) {
+    profile = createDefaultPlayerProfile("00", "訪客");
+    savePlayerProfile(profile);
+  }
   profile.soundSettings = { ...profile.soundSettings, ...settings };
   return savePlayerProfile(profile);
 }
@@ -616,7 +619,10 @@ function getQuestionCountPreference() {
  */
 function saveQuestionCountPreference(count) {
   var profile = getPlayerProfile();
-  if (!profile) return false;
+  if (!profile) {
+    profile = createDefaultPlayerProfile("00", "訪客");
+    savePlayerProfile(profile);
+  }
   if (!profile.questionCountPrefs) {
     profile.questionCountPrefs = {};
   }
