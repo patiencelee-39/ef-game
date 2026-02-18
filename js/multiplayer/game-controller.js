@@ -682,10 +682,13 @@ var GameController = (function () {
           return {
             fieldId: stage.fieldId || "mouse",
             ruleId: stage.ruleId || "rule1",
-            questionCount:
-              stage.questionCount || (qs ? qs.length : 0),
+            questionCount: stage.questionCount || (qs ? qs.length : 0),
             displayName: (stage.icon || "") + " " + (stage.name || ""),
-            enableWm: !!(stage.enableWm || stage.hasWM || stage.workingMemoryTest),
+            enableWm: !!(
+              stage.enableWm ||
+              stage.hasWM ||
+              stage.workingMemoryTest
+            ),
             questions: qs,
             workingMemoryTest: stage.workingMemoryTest || null,
           };
