@@ -67,9 +67,11 @@ var GameController = (function () {
   }
 
   function getActionLabel(fieldId) {
-    return fieldId === "fishing"
-      ? "\uD83C\uDFA3 Pull!"
-      : "\uD83D\uDDB1\uFE0F Catch!";
+    return fieldId === "mouse"
+      ? "🧀 蒐集起司！"
+      : fieldId === "fishing"
+        ? "🐟 釣魚！"
+        : "按！";
   }
 
   /** 快速組裝渲染所需 DOM 元素 */
@@ -96,6 +98,14 @@ var GameController = (function () {
         : 10);
     _questions = generateQuestions(combo.fieldId, combo.ruleId, count);
 
+    // 防呆：題目生成失敗
+    if (!_questions || _questions.length === 0) {
+      console.error("❌ 題目生成失敗:", combo.fieldId, combo.ruleId);
+      alert("題目生成失敗，將返回大廳");
+      location.href = "../index.html";
+      return;
+    }
+
     dom.trialTotal.textContent = _questions.length;
     showRuleIntro(combo);
   }
@@ -105,50 +115,71 @@ var GameController = (function () {
     return TrialRenderer.svg(key);
   }
 
+  /** 產生單個規則框 HTML（與 SP _boxHTML 一致） */
+  function _boxHTML(stimKey, actionText, isGo) {
+    var cls = isGo ? "rule-box rule-box--go" : "rule-box rule-box--nogo";
+    var txtCls = isGo
+      ? "rule-action-text rule-action-text--go"
+      : "rule-action-text rule-action-text--nogo";
+    return (
+      '<div class="' + cls + '">' +
+      '<span class="rule-stim-icon">' + getSVG(stimKey) + "</span>" +
+      '<span style="color:var(--text-light);font-size:1.5rem;">→</span>' +
+      '<span class="' + txtCls + '">' + actionText + "</span>" +
+      "</div>"
+    );
+  }
+
   function showRuleIntro(combo) {
     var field = GAME_CONFIG.FIELDS[combo.fieldId];
     var rule = field.rules[combo.ruleId];
 
     dom.ruleIntroTitle.textContent = field.icon + " " + rule.name;
 
-    var boxesHtml = "";
-    if (combo.ruleId === "mixed") {
-      boxesHtml = '<div class="rule-box rule-box--go">Mixed rules</div>';
-      dom.ruleIntroContext.textContent =
-        "Context A: " +
-        rule.contextA.label +
-        " | Context B: " +
-        rule.contextB.label;
-      dom.ruleIntroContext.classList.remove("hidden");
-    } else {
-      var goStim = rule.go.stimulus;
-      var nogoStim = rule.noGo.stimulus;
-      var goSvg = getSVG(goStim) || goStim;
-      var nogoSvg = getSVG(nogoStim) || nogoStim;
+    // 規則框
+    dom.ruleIntroBoxes.innerHTML = "";
 
-      boxesHtml =
-        '<div class="rule-box rule-box--go">' +
-        '<div class="rule-stim-icon">' +
-        goSvg +
-        "</div>" +
-        '<span class="rule-action-text rule-action-text--go">\u2192 ' +
-        getActionLabel(combo.fieldId) +
-        "</span>" +
-        "</div>" +
-        '<div class="rule-box rule-box--nogo">' +
-        '<div class="rule-stim-icon">' +
-        nogoSvg +
-        "</div>" +
-        '<span class="rule-action-text rule-action-text--nogo">\u2192 \u270B Don\'t press</span>' +
-        "</div>";
+    if (combo.ruleId === "mixed") {
+      var ruleA = field.rules[rule.contextA.appliesRule];
+      var ruleB = field.rules[rule.contextB.appliesRule];
+
+      dom.ruleIntroBoxes.innerHTML =
+        '<p style="font-weight:700;color:var(--text-white);margin-bottom:8px;">' +
+        rule.contextA.label +
+        "（多數情境）：</p>" +
+        _boxHTML(ruleA.go.stimulus, "按空白鍵！", true) +
+        _boxHTML(ruleA.noGo.stimulus, "不要按！", false) +
+        '<p style="font-weight:700;color:#f39c12;margin:12px 0 8px;">⚠️ ' +
+        rule.contextB.label +
+        "（少數情境）：</p>" +
+        _boxHTML(ruleB.go.stimulus, "按空白鍵！", true) +
+        _boxHTML(ruleB.noGo.stimulus, "不要按！", false);
+
+      dom.ruleIntroContext.classList.remove("hidden");
+      dom.ruleIntroContext.textContent =
+        combo.fieldId === "mouse"
+          ? "👤 有人出現時規則會改變！注意畫面右上角"
+          : "🌛 晚上時規則會改變！注意背景顏色";
+    } else {
+      dom.ruleIntroBoxes.innerHTML =
+        _boxHTML(rule.go.stimulus, "按空白鍵！", true) +
+        _boxHTML(rule.noGo.stimulus, "不要按！", false);
       dom.ruleIntroContext.classList.add("hidden");
     }
-    dom.ruleIntroBoxes.innerHTML = boxesHtml;
-    dom.ruleIntroWM.classList.add("hidden");
+
+    // WM 提示
+    var hasWM = combo.enableWm || combo.hasWM;
+    dom.ruleIntroWM.classList.toggle("hidden", !hasWM);
 
     showScreen(dom.ruleIntroScreen);
 
     dom.btnRuleStart.onclick = function () {
+      if (
+        typeof AudioPlayer !== "undefined" &&
+        AudioPlayer.resumeAudioContext
+      ) {
+        AudioPlayer.resumeAudioContext();
+      }
       beginTrials();
     };
   }
@@ -228,27 +259,28 @@ var GameController = (function () {
     _stimTimerId = setTimeout(function () {
       if (!_responded) {
         _responded = true;
+        var isCorrect = !question.isGo;
         var result = question.isGo ? "Miss" : "CR";
-        recordTrial(question, result, null);
+        recordTrial(question, "nopress", result, isCorrect, null);
         showFeedback(result);
       }
     }, duration);
   }
 
   function onPress() {
-    if (_responded) return;
+    if (!_isPlaying || _isPaused || _responded || dom.btnSpace.disabled) return;
     _responded = true;
     clearTimeout(_stimTimerId);
 
     var question = _questions[_trialIndex];
     var rt = Date.now() - _stimOnTime;
+    var isCorrect = question.isGo;
     var result = question.isGo ? "Hit" : "FA";
-    recordTrial(question, result, rt);
+    recordTrial(question, "press", result, isCorrect, rt);
     showFeedback(result);
   }
 
-  function recordTrial(question, result, rt) {
-    var isCorrect = result === "Hit" || result === "CR";
+  function recordTrial(question, action, result, isCorrect, rt) {
     if (isCorrect) _totalCorrect++;
     _totalTrials++;
 
@@ -258,6 +290,7 @@ var GameController = (function () {
       context: question.context || null,
       isGo: question.isGo,
       correctAction: question.correctAction,
+      playerAction: action,
       result: result,
       isCorrect: isCorrect,
       rt: rt,
@@ -267,6 +300,9 @@ var GameController = (function () {
     _allTrialResults.push(record);
 
     DifficultyProvider.onTrialComplete(record);
+
+    // 更新難度指示器
+    _updateDifficultyBadge();
 
     MultiplayerBridge.recordAnswer(record);
     MultiplayerBridge.broadcastState({
@@ -297,14 +333,72 @@ var GameController = (function () {
 
   function endCombo() {
     _isPlaying = false;
+    dom.btnSpace.disabled = true;
+    TrialRenderer.clear(_stimEls());
 
     var completedCombo = _combos[_comboIndex];
+    var hasWM = completedCombo.enableWm || completedCombo.hasWM || false;
+
+    if (hasWM) {
+      startWMTest(completedCombo);
+    } else {
+      _processComboEnd(null);
+    }
+  }
+
+  /** 啟動 WM 測驗 */
+  function startWMTest(combo) {
+    dom.wmContainer.classList.remove("hidden");
+
+    if (typeof WorkingMemory === "undefined") {
+      console.warn("⚠️ WorkingMemory 模組未載入，跳過 WM 測驗");
+      dom.wmContainer.classList.add("hidden");
+      _processComboEnd(null);
+      return;
+    }
+
+    WorkingMemory.init({
+      container: dom.wmContainer,
+      templatePath: "../shared/working-memory.html",
+    })
+      .then(function () {
+        return WorkingMemory.start({
+          fieldId: combo.fieldId,
+          questions: _questions,
+          personalBest: null, // MP 不使用 ProgressTracker，無 personalBest
+          onResult: function (wmScore) {
+            WorkingMemory.hide();
+            dom.wmContainer.classList.add("hidden");
+            _processComboEnd(wmScore);
+          },
+        });
+      })
+      .catch(function (err) {
+        console.error("❌ WM 測驗錯誤:", err);
+        dom.wmContainer.classList.add("hidden");
+        _processComboEnd(null);
+      });
+  }
+
+  /** combo 結算（WM 完成或跳過後呼叫） */
+  function _processComboEnd(wmResult) {
+    var completedCombo = _combos[_comboIndex];
+
+    var wmData = null;
+    if (wmResult) {
+      wmData = {
+        correctCount: wmResult.correctCount,
+        totalPositions: wmResult.total,
+        direction: wmResult.direction,
+        completionTimeMs: wmResult.completionMs,
+      };
+    }
 
     DifficultyProvider.onSessionComplete({
       fieldId: completedCombo.fieldId,
       ruleId: completedCombo.ruleId,
       trialResults: _trialResults,
-      wmResult: null,
+      wmResult: wmData,
       passed: false,
     });
 
@@ -326,9 +420,101 @@ var GameController = (function () {
 
     _comboIndex++;
     if (_comboIndex < _combos.length) {
-      beginCombo();
+      showComboTransition(_combos[_comboIndex]);
     } else {
       finishGame();
+    }
+  }
+
+  // =========================================
+  // Combo 過場
+  // =========================================
+
+  function showComboTransition(nextCombo) {
+    var ctr = dom.comboTransition;
+    ctr.classList.remove("hidden");
+
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", "../shared/combo-transition.html", true);
+    xhr.onload = function () {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        ctr.innerHTML = xhr.responseText;
+        _fillTransition(ctr, nextCombo);
+      } else {
+        ctr.classList.add("hidden");
+        beginCombo();
+      }
+    };
+    xhr.onerror = function () {
+      ctr.classList.add("hidden");
+      beginCombo();
+    };
+    xhr.send();
+  }
+
+  /** 填充過場 DOM */
+  function _fillTransition(ctr, nextCombo) {
+    var prevCombo = _comboIndex > 0 ? _combos[_comboIndex - 1] : _combos[0];
+    var field = GAME_CONFIG.FIELDS[nextCombo.fieldId];
+    var rule = field.rules[nextCombo.ruleId];
+
+    // 上一組合名稱
+    var prev = ctr.querySelector(".prev-combo-name");
+    if (prev) prev.textContent = prevCombo.displayName || "";
+
+    // 下一組合資訊
+    var nIcon = ctr.querySelector(".next-field-icon");
+    var nName = ctr.querySelector(".next-field-name");
+    var nRule = ctr.querySelector(".next-rule-name");
+    if (nIcon) nIcon.textContent = field.icon;
+    if (nName) nName.textContent = field.name;
+    if (nRule) nRule.textContent = rule.name || nextCombo.ruleId;
+
+    // Go / NoGo 規則展示（非混合）
+    if (nextCombo.ruleId !== "mixed") {
+      var goSI = ctr.querySelector(".go-stimulus-icon");
+      var goSL = ctr.querySelector(".go-stimulus-label");
+      var goA = ctr.querySelector(".go-action");
+      var ngSI = ctr.querySelector(".nogo-stimulus-icon");
+      var ngSL = ctr.querySelector(".nogo-stimulus-label");
+      var ngA = ctr.querySelector(".nogo-action");
+
+      if (goSI) goSI.innerHTML = getSVG(rule.go.stimulus);
+      if (goSL) goSL.textContent = rule.go.stimulus;
+      if (goA) goA.textContent = "按空白鍵！";
+      if (ngSI) ngSI.innerHTML = getSVG(rule.noGo.stimulus);
+      if (ngSL) ngSL.textContent = rule.noGo.stimulus;
+      if (ngA) ngA.textContent = "不要按！";
+    }
+
+    // WM 提示
+    var wmN = ctr.querySelector(".combo-wm-notice");
+    if (wmN) wmN.style.display = (nextCombo.enableWm || nextCombo.hasWM) ? "" : "none";
+
+    // 開始按鈕
+    var startBtn = ctr.querySelector(".combo-start-btn");
+    if (startBtn) {
+      startBtn.addEventListener(
+        "click",
+        function () {
+          ctr.classList.add("hidden");
+          ctr.innerHTML = "";
+          beginCombo();
+        },
+        { once: true },
+      );
+    }
+
+    // 聽規則按鈕
+    var listenBtn = ctr.querySelector(".combo-listen-btn");
+    if (listenBtn) {
+      listenBtn.addEventListener("click", function () {
+        if (typeof AudioPlayer !== "undefined" && AudioPlayer.playSfx) {
+          AudioPlayer.playSfx("audio/sfx/click.mp3", {
+            synthPreset: "click",
+          });
+        }
+      });
     }
   }
 
@@ -378,6 +564,37 @@ var GameController = (function () {
     MultiplayerBridge.goToResult();
   }
 
+  // =========================================
+  // 難度指示器 UI
+  // =========================================
+
+  var _prevDiffLevel = 0;
+
+  function _updateDifficultyBadge() {
+    if (typeof SimpleAdaptiveEngine === "undefined") return;
+    var level = SimpleAdaptiveEngine.getCurrentLevel();
+    var badge = document.getElementById("diffBadge");
+    var dotsEl = document.getElementById("diffDots");
+    if (!badge || !dotsEl) return;
+
+    // 渲染 5 個圓點
+    var html = "";
+    for (var i = 1; i <= 5; i++) {
+      html +=
+        '<span class="diff-dot' + (i <= level ? " active" : "") + '"></span>';
+    }
+    dotsEl.innerHTML = html;
+    badge.setAttribute("aria-label", "目前難度 " + level + " / 5");
+
+    // 升降動畫
+    if (_prevDiffLevel > 0 && level !== _prevDiffLevel) {
+      badge.classList.remove("level-up", "level-down");
+      void badge.offsetWidth; // reflow
+      badge.classList.add(level > _prevDiffLevel ? "level-up" : "level-down");
+    }
+    _prevDiffLevel = level;
+  }
+
   function pause() {
     if (!_isPlaying || _isPaused) return;
     _isPaused = true;
@@ -405,6 +622,7 @@ var GameController = (function () {
       DifficultyProvider.setEngine(SimpleAdaptiveEngine);
     }
     DifficultyProvider.reset();
+    _updateDifficultyBadge(); // 初始渲染難度指示器
 
     var role = MultiplayerBridge.getRole();
 
@@ -463,8 +681,9 @@ var GameController = (function () {
       beginCombo();
     });
 
-    dom.btnSpace.addEventListener("click", function () {
-      if (_isPlaying && !_responded) onPress();
+    dom.btnSpace.addEventListener("pointerdown", function (e) {
+      e.preventDefault();
+      onPress();
     });
 
     document.addEventListener("keydown", function (e) {
@@ -472,6 +691,37 @@ var GameController = (function () {
         return;
       if (e.code === "Space") {
         e.preventDefault();
+        // 1. 規則說明頁 → 開始
+        if (dom.ruleIntroScreen.classList.contains("active")) {
+          dom.btnRuleStart.click();
+          return;
+        }
+        // 2. 暫停中 → 繼續
+        if (_isPaused) {
+          resume();
+          return;
+        }
+        // 3. Combo 過場 → 點擊開始按鈕
+        if (
+          dom.comboTransition &&
+          !dom.comboTransition.classList.contains("hidden")
+        ) {
+          var comboStartBtn =
+            dom.comboTransition.querySelector(".combo-start-btn");
+          if (comboStartBtn) {
+            comboStartBtn.click();
+            return;
+          }
+        }
+        // 4. WM 測驗作答中 → 點擊確認按鈕
+        if (dom.wmContainer && !dom.wmContainer.classList.contains("hidden")) {
+          var wmConfirmBtn = dom.wmContainer.querySelector(".wm-confirm-btn");
+          if (wmConfirmBtn && !wmConfirmBtn.disabled) {
+            wmConfirmBtn.click();
+            return;
+          }
+        }
+        // 5. 遊戲進行中 → 按鍵回應
         if (_isPlaying && !_responded) onPress();
       }
       if (e.code === "Escape" && _isPlaying && !_isPaused) pause();
