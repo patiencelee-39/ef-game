@@ -90,13 +90,18 @@ var GameController = (function () {
     _trialResults = [];
     _responded = false;
 
-    var count =
-      combo.questionCount ||
-      combo.questionsCount ||
-      (typeof GAME_CONFIG !== "undefined"
-        ? GAME_CONFIG.QUESTIONS.DEFAULT_COUNT
-        : 10);
-    _questions = generateQuestions(combo.fieldId, combo.ruleId, count);
+    // 優先使用 Firebase 預生成題目（確保所有玩家同題 → 公平性）
+    if (combo.questions && combo.questions.length > 0) {
+      _questions = combo.questions;
+    } else {
+      var count =
+        combo.questionCount ||
+        combo.questionsCount ||
+        (typeof GAME_CONFIG !== "undefined"
+          ? GAME_CONFIG.QUESTIONS.DEFAULT_COUNT
+          : 10);
+      _questions = generateQuestions(combo.fieldId, combo.ruleId, count);
+    }
 
     // 防呆：題目生成失敗
     if (!_questions || _questions.length === 0) {
@@ -670,13 +675,19 @@ var GameController = (function () {
         ];
       } else {
         _combos = stages.map(function (stage) {
+          // Firebase RTDB 可能將 Array 轉為 Object，確保還原
+          var qs = stage.questions || null;
+          if (qs && !Array.isArray(qs)) qs = Object.values(qs);
+
           return {
             fieldId: stage.fieldId || "mouse",
             ruleId: stage.ruleId || "rule1",
             questionCount:
-              stage.questionCount ||
-              (stage.questions ? stage.questions.length : 0),
+              stage.questionCount || (qs ? qs.length : 0),
             displayName: (stage.icon || "") + " " + (stage.name || ""),
+            enableWm: !!(stage.enableWm || stage.hasWM || stage.workingMemoryTest),
+            questions: qs,
+            workingMemoryTest: stage.workingMemoryTest || null,
           };
         });
       }
