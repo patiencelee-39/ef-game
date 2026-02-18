@@ -31,7 +31,7 @@
       id: "compete",
       icon: "⚔️",
       label: "競賽",
-      href: "/multiplayer/room-create.html",
+      href: "/multiplayer/index.html",
     },
     {
       id: "leaderboard",

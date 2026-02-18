@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="preconnect" href="https://www.googleapis.com" crossorigin />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://*.firebasedatabase.app https://*.firebaseio.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app"
+    />
+    <title>多人競賽 - 執行功能訓練遊戲</title>
+    <meta
+      name="description"
+      content="選擇建立房間或加入房間，與朋友一起競賽。"
+    />
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="../favicon.svg" />
+    <link rel="manifest" href="../manifest.json" />
+    <meta name="theme-color" content="#302b63" />
+    <link rel="stylesheet" href="../css/themes/base.css" />
+    <link rel="stylesheet" href="../css/main.css" />
+    <link
+      rel="preload"
+      href="../css/components/navbar.css"
+      as="style"
+      onload="this.rel = 'stylesheet'"
+    />
+    <noscript
+      ><link rel="stylesheet" href="../css/components/navbar.css"
+    /></noscript>
+
+    <!-- Firebase Bundle -->
+    <script defer src="../js/firebase-bundle.js"></script>
+    <script defer src="../js/shared/navbar.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>⚔️ 多人競賽</h1>
+        <p class="subtitle">選擇方式開始遊戲</p>
+      </header>
+
+      <main class="mode-selection" id="main-content">
+        <a class="mode-card" href="room-create.html">
+          <div class="mode-icon" aria-hidden="true">🏠</div>
+          <h2>建立房間</h2>
+          <p>建立新房間，邀請朋友加入</p>
+          <span class="btn-primary" aria-hidden="true">建立</span>
+        </a>
+
+        <a class="mode-card" href="room-join.html">
+          <div class="mode-icon" aria-hidden="true">🔗</div>
+          <h2>加入房間</h2>
+          <p>輸入房間代碼加入遊戲</p>
+          <span class="btn-secondary" aria-hidden="true">加入</span>
+        </a>
+      </main>
+    </div>
+
+    <!-- Service Worker 註冊 -->
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("../sw.js").catch(function (err) {
+          console.warn("SW 註冊失敗:", err);
+        });
+      }
+    </script>
+  </body>
+</html>
