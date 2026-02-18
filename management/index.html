@@ -70,20 +70,38 @@
         </div>
       </div>
 
-      <!-- === 班級管理 === -->
+      <!-- === 班級看板管理 === -->
       <div class="admin-section">
-        <h2>📚 班級管理</h2>
+        <h2>📚 班級看板管理</h2>
+
+        <!-- 建立新看板 -->
+        <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: #c9a0dc">
+          🏫 建立新看板
+        </h3>
         <div class="class-form">
           <input
             type="text"
             id="newClassName"
             class="class-form__input"
-            placeholder="輸入班級名稱（如：向日葵班）"
-            maxlength="20"
-            aria-label="新班級名稱"
+            placeholder="看板名稱（如：中班第三週）"
+            maxlength="50"
+            aria-label="看板名稱"
           />
-          <button class="class-form__btn" id="btnAddClass">➕ 新增</button>
+          <button class="class-form__btn" id="btnAddClass">📋 建立看板</button>
         </div>
+
+        <!-- 我的看板 -->
+        <h3
+          style="
+            margin: 1.25rem 0 0.5rem;
+            font-size: 1rem;
+            color: #aaa;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding-top: 1rem;
+          "
+        >
+          📂 我的看板
+        </h3>
         <div class="class-list" id="classList">
           <!-- 動態產生 -->
         </div>

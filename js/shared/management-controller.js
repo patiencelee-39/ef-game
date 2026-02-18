@@ -84,7 +84,7 @@
       })
       .catch(function (err) {
         console.error("❌ 載入看板失敗:", err);
-        showToast("❌ 載入班級看板失敗");
+        showToast("❌ 載入班級看板失敗：" + (err.message || "未知錯誤"));
       });
   }
 
@@ -107,7 +107,7 @@
     FirestoreLeaderboard.createClassBoard(name)
       .then(function (board) {
         els.boardNameInput.value = "";
-        showToast("✅ 已建立班級「" + name + "」\n代碼：" + board.code);
+        showToast("✅ 已建立看板「" + name + "」\n代碼：" + board.code);
         loadBoards();
       })
       .catch(function (err) {
@@ -115,7 +115,7 @@
       })
       .finally(function () {
         els.btnAddClass.disabled = false;
-        els.btnAddClass.textContent = "➕ 新增";
+        els.btnAddClass.textContent = "📋 建立看板";
       });
   }
 
@@ -147,7 +147,7 @@
     if (_boards.length === 0) {
       els.classList.innerHTML =
         '<div class="empty-state" style="padding:16px">' +
-        '<p class="empty-state__text">尚未建立班級看板<br>點擊上方「➕ 新增」建立第一個班級</p>' +
+        '<p class="empty-state__text">尚未建立看板<br>點擊上方「📋 建立看板」建立第一個班級看板</p>' +
         "</div>";
       return;
     }
@@ -499,7 +499,7 @@
     // 新增看板
     els.btnAddClass.addEventListener("click", addBoard);
     els.boardNameInput.addEventListener("keydown", function (e) {
-      if (e.key === "Enter") addBoard();
+      if (e.key === "Enter" && !e.isComposing) addBoard();
     });
 
     // 刪除看板（事件委派）

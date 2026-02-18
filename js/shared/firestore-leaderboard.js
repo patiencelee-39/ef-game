@@ -272,7 +272,6 @@ var FirestoreLeaderboard = (function () {
     return db
       .collection("classLeaderboards")
       .where("ownerId", "==", user.uid)
-      .orderBy("createdAt", "desc")
       .get()
       .then(function (snapshot) {
         var boards = [];
@@ -280,6 +279,12 @@ var FirestoreLeaderboard = (function () {
           var data = doc.data();
           data.boardId = doc.id;
           boards.push(data);
+        });
+        // client-side 排序（避免依賴複合索引）
+        boards.sort(function (a, b) {
+          var aTime = a.createdAt ? a.createdAt.toMillis() : 0;
+          var bTime = b.createdAt ? b.createdAt.toMillis() : 0;
+          return bTime - aTime; // 新 → 舊
         });
         return boards;
       });
