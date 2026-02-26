@@ -103,7 +103,8 @@
       path.indexOf("/settings/") !== -1 ||
       path.indexOf("/management/") !== -1 ||
       path.indexOf("/teacher/") !== -1 ||
-      path.indexOf("/assessment/") !== -1
+      path.indexOf("/assessment/") !== -1 ||
+      path.indexOf("/tools/") !== -1
     ) {
       return "../";
     }
