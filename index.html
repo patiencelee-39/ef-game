@@ -1,5 +1,24 @@
 <!doctype html>
 <html lang="zh-TW">
+  <!-- ============================================================
+       📋 檔案說明（給教師的白話版）
+       ─────────────────────────────────
+       檔案名稱：index.html（遊戲首頁）
+       一句話說明：玩家進入遊戲時「第一個看到的畫面」
+
+       🔍 教師可以在這個檔案修改的項目：
+          1. 🏷️ 頁面標題文字（遊戲名稱）
+          2. 📝 副標題文字
+          3. 🎴 各模式的名稱和說明文字
+          4. 📄 頁尾版權文字
+
+       ⚠️ 修改注意：
+          - 只修改 < > 標籤之間的中文文字
+          - 不要刪除任何 < > 標籤本身
+          - 不要修改 href="..." 裡面的網址路徑
+
+       📚 詳細教學請見：TEACHER-GUIDE.md
+       ============================================================ -->
   <head>
     <meta charset="UTF-8" />
     <link rel="preconnect" href="https://www.googleapis.com" crossorigin />
@@ -25,16 +44,9 @@
     <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#302b63" />
     <link rel="stylesheet" href="css/themes/base.css" />
+    <link rel="stylesheet" href="css/themes/theme-field-primary.css" />
+    <link rel="stylesheet" href="css/themes/theme-rule-independent.css" />
     <link rel="stylesheet" href="css/main.css" />
-    <link
-      rel="preload"
-      href="css/components/navbar.css"
-      as="style"
-      onload="this.rel = 'stylesheet'"
-    />
-    <noscript
-      ><link rel="stylesheet" href="css/components/navbar.css"
-    /></noscript>
     <link
       rel="preload"
       href="css/components/landscape-hint.css"
@@ -44,48 +56,155 @@
     <noscript
       ><link rel="stylesheet" href="css/components/landscape-hint.css"
     /></noscript>
+    <style>
+      /* Landing Page 專用樣式 */
+      body {
+        padding: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .landing {
+        text-align: center;
+        max-width: 700px;
+        width: 100%;
+        padding: var(--spacing-xl);
+      }
+      .landing__logo {
+        font-size: 5rem;
+        margin-bottom: var(--spacing-md);
+        animation: landing-bounce 2s ease-in-out infinite;
+      }
+      @keyframes landing-bounce {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+      .landing__title {
+        font-size: clamp(2rem, 6vw, 3rem);
+        color: var(--text-white);
+        margin-bottom: var(--spacing-sm);
+        text-shadow: 0 2px 15px rgba(52, 152, 219, 0.5);
+      }
+      .landing__subtitle {
+        font-size: clamp(1rem, 3vw, 1.3rem);
+        color: var(--text-light);
+        margin-bottom: var(--spacing-lg);
+        opacity: 0.9;
+      }
+      .landing__desc {
+        color: rgba(255, 255, 255, 0.75);
+        font-size: clamp(0.85rem, 2.5vw, 1.05rem);
+        line-height: 1.8;
+        margin-bottom: var(--spacing-xl);
+        text-align: left;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: var(--border-radius-lg);
+        padding: var(--spacing-md) var(--spacing-lg);
+      }
+      .landing__desc strong {
+        color: var(--accent-yellow);
+      }
+      .landing__features {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: var(--spacing-sm);
+        margin-bottom: var(--spacing-xl);
+      }
+      .landing__feature {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: var(--border-radius-md);
+        padding: var(--spacing-sm);
+        text-align: center;
+      }
+      .landing__feature-icon {
+        font-size: 2rem;
+        margin-bottom: 4px;
+      }
+      .landing__feature-text {
+        font-size: 0.85rem;
+        color: var(--text-light);
+      }
+      .landing__enter-btn {
+        display: inline-block;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        font-size: clamp(1.2rem, 3vw, 1.5rem);
+        font-weight: bold;
+        padding: 16px 48px;
+        border-radius: 50px;
+        text-decoration: none;
+        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+        transition: all 0.3s ease;
+        animation: landing-pulse 2.5s ease-in-out infinite;
+      }
+      .landing__enter-btn:hover,
+      .landing__enter-btn:focus-visible {
+        transform: scale(1.05);
+        box-shadow: 0 6px 30px rgba(102, 126, 234, 0.6);
+      }
+      @keyframes landing-pulse {
+        0%,
+        100% {
+          box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+        }
+        50% {
+          box-shadow: 0 4px 30px rgba(102, 126, 234, 0.7);
+        }
+      }
+      .landing footer {
+        margin-top: var(--spacing-xl);
+        opacity: 0.6;
+        font-size: 0.8rem;
+      }
+    </style>
 
     <!-- Firebase Bundle -->
     <script defer src="js/firebase-bundle.js"></script>
-    <script defer src="js/shared/navbar.js"></script>
+    <script defer src="js/utils/logger.js"></script>
     <script defer src="js/shared/landscape-hint.js"></script>
   </head>
   <body>
-    <div class="container">
-      <header>
-        <h1>🎮 執行功能訓練遊戲</h1>
-        <p class="subtitle">3-6歲聽障學齡前幼兒專用</p>
-      </header>
+    <a href="#main-content" class="skip-link">跳到主要內容</a>
+    <div class="landing" id="main-content">
+      <div class="landing__logo" aria-hidden="true">🎮</div>
+      <h1 class="landing__title">執行功能訓練遊戲</h1>
+      <p class="landing__subtitle">專為 3–6 歲聽障學齡前幼兒設計</p>
 
-      <main class="mode-selection" id="main-content">
-        <a class="mode-card" href="multiplayer/room-create.html">
-          <div class="mode-icon" aria-hidden="true">👥</div>
-          <h2>多人模式</h2>
-          <p>與朋友一起競賽</p>
-          <span class="btn-primary" aria-hidden="true">建立房間</span>
-        </a>
+      <div class="landing__desc">
+        本遊戲是一套<strong>認知訓練系統</strong>，以研究為基礎，透過有趣的互動遊戲，協助聽障幼兒訓練三大核心執行功能：
+        <strong>抑制控制</strong
+        >（Go/No-Go）、<strong>認知彈性</strong>（規則轉換）、<strong>工作記憶</strong>（序列回想）。
+        遊戲包含探險闖關、多人競賽、虛擬養雞場等多元獎勵機制，讓孩子在遊玩中提升認知能力。
+      </div>
 
-        <a class="mode-card" href="multiplayer/room-join.html">
-          <div class="mode-icon" aria-hidden="true">🔗</div>
-          <h2>加入房間</h2>
-          <p>輸入房間代碼加入</p>
-          <span class="btn-secondary" aria-hidden="true">加入遊戲</span>
-        </a>
+      <div class="landing__features">
+        <div class="landing__feature">
+          <div class="landing__feature-icon">🧠</div>
+          <div class="landing__feature-text">三大執行功能訓練</div>
+        </div>
+        <div class="landing__feature">
+          <div class="landing__feature-icon">🗺️</div>
+          <div class="landing__feature-text">探險闖關模式</div>
+        </div>
+        <div class="landing__feature">
+          <div class="landing__feature-icon">⚔️</div>
+          <div class="landing__feature-text">多人即時競賽</div>
+        </div>
+        <div class="landing__feature">
+          <div class="landing__feature-icon">🐔</div>
+          <div class="landing__feature-text">虛擬寵物獎勵</div>
+        </div>
+      </div>
 
-        <a class="mode-card" href="singleplayer/adventure-map.html">
-          <div class="mode-icon" aria-hidden="true">🌟</div>
-          <h2>單人模式</h2>
-          <p>挑戰自己的極限</p>
-          <span class="btn-primary" aria-hidden="true">開始遊戲</span>
-        </a>
-
-        <a class="mode-card" href="leaderboard/index.html">
-          <div class="mode-icon" aria-hidden="true">🏆</div>
-          <h2>排行榜</h2>
-          <p>全球・班級・即時排行</p>
-          <span class="btn-secondary" aria-hidden="true">查看排名</span>
-        </a>
-      </main>
+      <a class="landing__enter-btn" href="home.html">🚀 進入遊戲</a>
 
       <footer>
         <p>© 2026 執行功能訓練遊戲 | 學術研究專案</p>

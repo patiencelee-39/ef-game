@@ -65,6 +65,89 @@ var ResultController = (function () {
     );
   }
 
+  /**
+   * 產生 SDT 信號偵測理論統計卡片 HTML
+   * @param {Object[]} trialDetails — 原始 trialDetails 陣列
+   * @returns {string} HTML 字串（若無資料或 CsvReport 不存在則為空字串）
+   */
+  function _renderSDTSection(trialDetails) {
+    if (
+      !trialDetails ||
+      trialDetails.length === 0 ||
+      typeof CsvReport === "undefined" ||
+      !CsvReport.calculateSDT
+    ) {
+      return "";
+    }
+
+    var sdt = CsvReport.calculateSDT(trialDetails);
+    if (!sdt || sdt.dPrime == null) return "";
+
+    var html =
+      '<div class="result-card sdt-card"><h2>🎯 信號偵測理論 (SDT)</h2>';
+
+    // d' 解讀
+    var dClass = "";
+    var dNote = "";
+    if (sdt.dPrime >= 2.0) {
+      dClass = "stat-value--good";
+      dNote = "優秀的辨別力！";
+    } else if (sdt.dPrime >= 1.0) {
+      dClass = "";
+      dNote = "不錯的辨別力";
+    } else {
+      dClass = "stat-value--bad";
+      dNote = "還需加強辨別力";
+    }
+
+    // c 解讀（策略傾向）
+    var cNote = "";
+    if (sdt.criterion > 0.3) {
+      cNote = "偏保守（傾向不按）";
+    } else if (sdt.criterion < -0.3) {
+      cNote = "偏冒險（傾向按）";
+    } else {
+      cNote = "策略平衡";
+    }
+
+    // 上半：SDT 核心指標
+    html += '<div class="stat-grid">';
+    html += _statItem(sdt.dPrime.toFixed(2), "d\u2032 敏感度", dClass);
+    html += _statItem(sdt.criterion.toFixed(2), "c 反應偏向", "");
+    html += _statItem(sdt.beta.toFixed(2), "\u03B2 決策權重", "");
+    html += _statItem(
+      Math.round(sdt.hitRate * 100) + "%",
+      "Hit Rate 命中率",
+      sdt.hitRate >= 0.8 ? "stat-value--good" : "",
+    );
+    html += "</div>"; // stat-grid
+
+    // 下半：原始計數 + 解讀
+    html += '<div class="sdt-detail-row">';
+    html +=
+      '<span class="sdt-count sdt-hit">Hit ' +
+      sdt.hits +
+      "</span>" +
+      '<span class="sdt-count sdt-miss">Miss ' +
+      sdt.misses +
+      "</span>" +
+      '<span class="sdt-count sdt-fa">FA ' +
+      sdt.fa +
+      "</span>" +
+      '<span class="sdt-count sdt-cr">CR ' +
+      sdt.cr +
+      "</span>";
+    html += "</div>";
+
+    html += '<div class="sdt-notes">';
+    html += "<div>" + dNote + "</div>";
+    html += "<div>" + cNote + "</div>";
+    html += "</div>";
+
+    html += "</div>"; // result-card
+    return html;
+  }
+
   // =========================================
   // 🔊 結算音效
   // =========================================
@@ -199,10 +282,47 @@ var ResultController = (function () {
 
       var cr = data.comboResult;
       if (!cr) {
-        dom.body.innerHTML =
-          '<p style="text-align:center;color:var(--error-red);">⚠️ 無結算資料</p>';
-        _renderAdventureActions(false);
-        return;
+        // comboResult 為 null 可能是 processAdventureResult 出錯
+        // 嘗試從 trialDetails 產生基本結算
+        Logger.warn("⚠️ comboResult 為 null，嘗試從 trialDetails 重建");
+        var td = data.trialDetails || [];
+        if (td.length > 0) {
+          var correctCount = 0;
+          var totalRT = 0;
+          var rtCount = 0;
+          for (var ti = 0; ti < td.length; ti++) {
+            if (td[ti].isCorrect) correctCount++;
+            if (td[ti].rt != null && td[ti].rt > 0) {
+              totalRT += td[ti].rt;
+              rtCount++;
+            }
+          }
+          var acc = td.length > 0 ? correctCount / td.length : 0;
+          var fbPassed = acc >= 0.83;
+          cr = {
+            pointPassed: fbPassed,
+            ruleResult: {
+              correctCount: correctCount,
+              totalCount: td.length,
+              accuracy: acc,
+              avgRT: rtCount > 0 ? totalRT / rtCount : 0,
+              finalScore: correctCount,
+              passed: fbPassed,
+            },
+            wmResult: null,
+            starsResult: { totalStars: 0, ruleStars: 0, wmStars: 0 },
+            levelResult: { leveledUp: false },
+            newBadges: [],
+            pointDef: {},
+            mapDef: {},
+          };
+          data.comboResult = cr;
+        } else {
+          dom.body.innerHTML =
+            '<p style="text-align:center;color:var(--error-red);">⚠️ 無結算資料，請從遊戲頁面進入</p>';
+          _renderAdventureActions(false);
+          return;
+        }
       }
 
       var passed = cr.pointPassed;
@@ -327,6 +447,9 @@ var ResultController = (function () {
         html += "</div></div>";
       }
 
+      // === 4.5 SDT 信號偵測理論 ===
+      html += _renderSDTSection(data.trialDetails);
+
       // === 5. 等級進度 ===
       html += '<div class="result-card"><h2>📈 等級</h2>';
       html += '<div class="level-section">';
@@ -426,14 +549,109 @@ var ResultController = (function () {
 
       // 🔊 播放結算音效
       _playResultAudio(passed, level, badges);
+
+      // 🏅 徽章慶祝彈窗
+      if (badges.length > 0) {
+        _showBadgeCelebration(badges);
+      }
     } catch (err) {
-      console.error("❌ renderAdventure 運行錯誤:", err);
+      Logger.error("❌ renderAdventure 運行錯誤:", err);
       dom.body.innerHTML =
         '<p style="text-align:center;color:var(--error-red);padding:48px;">' +
         "⚠️ 結算頁面發生錯誤，請返回重試</p>" +
         '<div style="text-align:center;margin-top:16px;">' +
         '<button onclick="ModeController.goToAdventureMap()" style="padding:12px 24px;border-radius:8px;background:var(--primary-blue);color:#fff;border:none;cursor:pointer;font-size:1rem;">返回地圖</button></div>';
     }
+  }
+
+  /**
+   * 🏅 徽章解鎖慶祝彈窗 — 全螢幕覆蓋 + 粒子效果
+   */
+  function _showBadgeCelebration(badges) {
+    if (!badges || badges.length === 0) return;
+    var overlay = document.createElement("div");
+    overlay.style.cssText =
+      "position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.8);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;opacity:0;transition:opacity .4s ease;cursor:pointer;";
+
+    var inner =
+      '<div style="font-size:2.8rem;animation:badge-bounce 0.6s ease-out;">🎉</div>';
+    inner +=
+      '<div style="color:#ffd700;font-size:1.4rem;font-weight:700;text-shadow:0 0 12px rgba(255,215,0,0.5);">獲得新徽章！</div>';
+    inner +=
+      '<div style="display:flex;flex-wrap:wrap;gap:16px;justify-content:center;margin:12px 0;">';
+    for (var i = 0; i < badges.length; i++) {
+      inner +=
+        '<div style="text-align:center;animation:badge-pop 0.5s ease-out ' +
+        (i * 0.2 + 0.3) +
+        's both;">' +
+        '<div style="font-size:3rem;">' +
+        (badges[i].icon || "🏅") +
+        "</div>" +
+        '<div style="color:#fff;font-size:0.9rem;font-weight:600;margin-top:4px;">' +
+        (badges[i].name || "徽章") +
+        "</div>" +
+        "</div>";
+    }
+    inner += "</div>";
+    inner +=
+      '<div style="color:rgba(255,255,255,0.5);font-size:0.8rem;margin-top:8px;">點擊任意處關閉</div>';
+    overlay.innerHTML = inner;
+
+    // 注入動畫
+    if (!document.getElementById("badge-celebration-style")) {
+      var s = document.createElement("style");
+      s.id = "badge-celebration-style";
+      s.textContent =
+        "@keyframes badge-bounce{0%{transform:scale(0) rotate(-15deg)}60%{transform:scale(1.3) rotate(5deg)}100%{transform:scale(1) rotate(0)}}" +
+        "@keyframes badge-pop{0%{transform:scale(0);opacity:0}60%{transform:scale(1.2)}100%{transform:scale(1);opacity:1}}" +
+        "@keyframes confetti-fall{0%{transform:translateY(-10px) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}";
+      document.head.appendChild(s);
+    }
+
+    // 五彩紙屑粒子
+    var colors = [
+      "#ffd700",
+      "#ff6b6b",
+      "#51cf66",
+      "#339af0",
+      "#cc5de8",
+      "#ff922b",
+    ];
+    for (var c = 0; c < 20; c++) {
+      var p = document.createElement("div");
+      p.style.cssText =
+        "position:absolute;top:-10px;left:" +
+        Math.random() * 100 +
+        "%;width:" +
+        (6 + Math.random() * 6) +
+        "px;height:" +
+        (6 + Math.random() * 6) +
+        "px;background:" +
+        colors[c % colors.length] +
+        ";border-radius:" +
+        (Math.random() > 0.5 ? "50%" : "2px") +
+        ";animation:confetti-fall " +
+        (1.5 + Math.random() * 2) +
+        "s ease-in " +
+        Math.random() * 0.8 +
+        "s forwards;";
+      overlay.appendChild(p);
+    }
+
+    document.body.appendChild(overlay);
+    requestAnimationFrame(function () {
+      overlay.style.opacity = "1";
+    });
+
+    // 點擊或 4 秒後自動關閉
+    function dismiss() {
+      overlay.style.opacity = "0";
+      setTimeout(function () {
+        if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+      }, 400);
+    }
+    overlay.addEventListener("click", dismiss);
+    setTimeout(dismiss, 4000);
   }
 
   function _renderAdventureActions(passed) {
@@ -470,8 +688,13 @@ var ResultController = (function () {
 
     if (btnNext) {
       btnNext.addEventListener("click", function () {
+        var session = ModeController.getSession();
+        var mapIdx =
+          session && typeof session.mapIndex === "number"
+            ? session.mapIndex
+            : 0;
         ModeController.clearSession();
-        ModeController.goToAdventureMap();
+        ModeController.goToAdventureMap(mapIdx);
       });
     }
     if (btnRetry) {
@@ -481,7 +704,12 @@ var ResultController = (function () {
     }
     if (btnMap) {
       btnMap.addEventListener("click", function () {
-        ModeController.goToAdventureMap();
+        var session = ModeController.getSession();
+        var mapIdx =
+          session && typeof session.mapIndex === "number"
+            ? session.mapIndex
+            : 0;
+        ModeController.goToAdventureMap(mapIdx);
       });
     }
 
@@ -590,6 +818,14 @@ var ResultController = (function () {
         " 個組合</div>";
       html += "</div>";
 
+      // === 2.5 SDT 信號偵測理論（合併所有 combo 的 trialDetails）===
+      var allFsTrials = [];
+      for (var si = 0; si < all.length; si++) {
+        var sTd = all[si].trialDetails || [];
+        allFsTrials = allFsTrials.concat(sTd);
+      }
+      html += _renderSDTSection(allFsTrials);
+
       // === 3. 等級 ===
       var lastResult = all[all.length - 1].result || {};
       if (lastResult.levelResult) {
@@ -649,7 +885,7 @@ var ResultController = (function () {
           : null;
       _playResultAudio(true, lastLr, uniqueBadges);
     } catch (err) {
-      console.error("❌ renderFreeSelect 運行錯誤:", err);
+      Logger.error("❌ renderFreeSelect 運行錯誤:", err);
       dom.body.innerHTML =
         '<p style="text-align:center;color:var(--error-red);padding:48px;">' +
         "⚠️ 結算頁面發生錯誤，請返回重試</p>" +
@@ -706,16 +942,18 @@ var ResultController = (function () {
   /**
    * 將 game.html 的 trialDetails 轉為 csv-report.js 接受的格式
    * trialDetails 欄位: trialIndex, stimulus, context, isGo,
-   *   correctAction, playerAction, result, isCorrect, rt, timestamp
+   *   correctAction, playerAction, result, isCorrect, rt, timestamp,
+   *   sessionId, mode, stimulusDurationMs, isiMs, wmSpan, wmDirection, wmCompletionTime
    * CSV 欄位: 由 GameConstants.CSV_FIELDS 定義（single source of truth）
    */
-  function _convertTrials(trialDetails, participantId, roundIndex) {
+  function _convertTrials(trialDetails, participantId, roundIndex, mode) {
     if (!trialDetails || trialDetails.length === 0) return [];
 
     var GC = window.GameConstants || {};
     var F = GC.CSV_FIELDS || {};
     var CV = GC.CSV_VALUES || {};
     var FN = GC.CSV_FILE_NAMING || {};
+    var WM_PREFIX = GC.WM_ROUND_PREFIX || "WM";
 
     // Bug #1 修正：優先從 playerProfile 取暱稱
     var pid = participantId;
@@ -742,28 +980,57 @@ var ResultController = (function () {
     var fileName = prefix + sep + pid + sep + dateStr + sep + timeStr + ".csv";
 
     // Bug #2+10 修正：支援多 combo 時各自有不同 Round 值
+    // Bug #5 修正：冒險模式依 fieldId+ruleId 自動推算回合編號
+    var FRTM = GC.FIELD_RULE_TO_ROUND || {};
     var roundStr = String(roundIndex != null ? roundIndex : 1);
 
+    // 從首筆試驗取得 sessionId（若有），避免依賴外部變數
+    var sessionId = (trialDetails[0] && trialDetails[0].sessionId) || "";
+    var trialMode = mode || (trialDetails[0] && trialDetails[0].mode) || "";
+
+    // 遊戲結束時間 = 最後一題的 timestamp
+    var gameEndTime = "";
+    if (trialDetails.length > 0) {
+      var lastTrial = trialDetails[trialDetails.length - 1];
+      if (lastTrial.timestamp) {
+        gameEndTime = _formatTimestamp(new Date(lastTrial.timestamp));
+      }
+    }
+
     return trialDetails.map(function (t, i) {
-      var hasPerson =
-        t.context === "hasPerson" ||
-        t.context === "person" ||
-        (typeof t.context === "string" &&
-          t.context.toLowerCase().indexOf("person") >= 0);
-      var isNight =
-        t.context === "night" ||
-        t.context === "isNightTime" ||
-        (typeof t.context === "string" &&
-          t.context.toLowerCase().indexOf("night") >= 0);
+      var isWmRow = t._isWmSummary || t.stimulus === "WM";
 
       var row = {};
+      // 依 fieldId + ruleId 推算回合編號（若映射表有定義）
+      var derivedRound = roundStr;
+      if (t.fieldId && t.ruleId) {
+        var key = t.fieldId + "_" + t.ruleId;
+        if (FRTM[key]) {
+          derivedRound = String(FRTM[key]);
+        }
+      }
       row[F.FILE_NAME || "FileName"] = fileName;
       row[F.PARTICIPANT || "Participant"] = pid;
-      row[F.ROUND || "Round"] = roundStr;
-      row[F.TRIAL || "Trial"] = String(i + 1);
+      // 兒童代碼（研究用，與量表配對）
+      row[F.CHILD_CODE || "ChildCode"] = (function () {
+        try {
+          var prof = getPlayerProfile ? getPlayerProfile() : null;
+          return (prof && prof.childCode) || "";
+        } catch (e) {
+          return "";
+        }
+      })();
+      row[F.SESSION_ID || "SessionId"] = t.sessionId || sessionId;
+      row[F.MODE || "Mode"] = t.mode || trialMode;
+      row[F.FIELD_ID || "FieldId"] = t.fieldId || "";
+      row[F.RULE_ID || "RuleId"] = t.ruleId || "";
+      row[F.ROUND || "Round"] = isWmRow
+        ? WM_PREFIX + derivedRound
+        : derivedRound;
+      row[F.TRIAL || "Trial"] = isWmRow ? "1" : String(i + 1);
       row[F.STIMULUS || "Stimulus"] = t.stimulus || "";
-      row[F.HAS_PERSON || "HasPerson"] = String(hasPerson);
-      row[F.IS_NIGHT_TIME || "IsNightTime"] = String(isNight);
+      row[F.IS_GO || "IsGo"] = t.isGo != null ? String(t.isGo) : "";
+      row[F.CONTEXT || "Context"] = t.context || "";
       row[F.INPUT_KEY || "InputKey"] =
         t.playerAction === "press"
           ? "Space"
@@ -773,17 +1040,28 @@ var ResultController = (function () {
       row[F.CORRECT || "Correct"] = t.isCorrect
         ? CV.CORRECT_YES || "yes"
         : CV.CORRECT_NO || "no";
+      row[F.RESULT || "Result"] = t.result || "";
       // Bug #3 修正：RT null（No-Go 正確）→ 空字串而非 "0"
       row[F.RT_MS || "RT(ms)"] = t.rt != null ? String(Math.round(t.rt)) : "";
+      // 新增：時間參數
+      row[F.STIMULUS_DURATION || "StimulusDuration"] =
+        t.stimulusDurationMs != null ? String(t.stimulusDurationMs) : "";
+      row[F.ISI || "ISI"] = t.isiMs != null ? String(t.isiMs) : "";
+      // 新增：WM 欄位（非 WM 試驗留空）
+      row[F.WM_SPAN || "WMSpan"] = t.wmSpan != null ? String(t.wmSpan) : "";
+      row[F.WM_DIRECTION || "WMDirection"] = t.wmDirection || "";
+      row[F.WM_COMPLETION_TIME || "WMCompletionTime"] =
+        t.wmCompletionTime != null ? String(t.wmCompletionTime) : "";
       // Bug #4 修正：用易讀格式取代 ISO，讓 tooltip 正確拆分
       row[F.TIMESTAMP || "Timestamp"] = t.timestamp
         ? _formatTimestamp(new Date(t.timestamp))
         : _formatTimestamp(now);
+      row[F.GAME_END_TIME || "GameEndTime"] = gameEndTime;
       return row;
     });
   }
 
-  /** 格式化時間戳為 YYYY-MM-DD HH:MM:SS */
+  /** 格式化時間戳為 YYYY-MM-DD HH:MM:SS.mmm */
   function _formatTimestamp(d) {
     return (
       d.getFullYear() +
@@ -796,7 +1074,9 @@ var ResultController = (function () {
       ":" +
       _padZ(d.getMinutes()) +
       ":" +
-      _padZ(d.getSeconds())
+      _padZ(d.getSeconds()) +
+      "." +
+      String(d.getMilliseconds()).padStart(3, "0")
     );
   }
 
@@ -837,20 +1117,20 @@ var ResultController = (function () {
     if (data.mode === "adventure") {
       var allTrials = data.trialDetails || [];
       if (allTrials.length === 0) {
-        alert("沒有逐題資料可供分析");
+        GameModal.alert("無資料", "沒有逐題資料可供分析", { icon: "📊" });
         return;
       }
-      csvData = _convertTrials(allTrials, pid, 1);
+      csvData = _convertTrials(allTrials, pid, 1, data.mode);
     } else {
       // free-select: 各 combo 分別轉換，Round 遞增
       var results = data.allComboResults || [];
       for (var i = 0; i < results.length; i++) {
         var td = results[i].trialDetails || [];
-        var comboRows = _convertTrials(td, pid, i + 1);
+        var comboRows = _convertTrials(td, pid, i + 1, data.mode);
         csvData = csvData.concat(comboRows);
       }
       if (csvData.length === 0) {
-        alert("沒有逐題資料可供分析");
+        GameModal.alert("無資料", "沒有逐題資料可供分析", { icon: "📊" });
         return;
       }
     }
@@ -871,7 +1151,15 @@ var ResultController = (function () {
       exportBtn.className = "csv-report__btn csv-report__btn--export";
       exportBtn.textContent = "💾 匯出 CSV";
       exportBtn.addEventListener("click", function () {
-        CsvReport.exportCsv(parsed);
+        // 從 CSV 資料第一列取得原始檔名
+        var csvFilename = null;
+        if (parsed.allData && parsed.allData.length > 0) {
+          var fn = parsed.allData[0]["FileName"];
+          if (fn && fn !== "-" && fn !== "SDT_Summary") {
+            csvFilename = fn;
+          }
+        }
+        CsvReport.exportCsv(parsed, csvFilename);
       });
       exportBar.appendChild(exportBtn);
 
@@ -901,7 +1189,40 @@ var ResultController = (function () {
         var content = document.getElementById("reportContent");
         ssBtn.textContent = "⏳ 擷取中…";
         ssBtn.disabled = true;
-        CsvReport.exportScreenshot(content)
+
+        // 生成截圖檔名（含暱稱和時間戳）
+        var screenshotFilename = (function () {
+          var GC = window.GameConstants || {};
+          var FN = GC.CSV_FILE_NAMING || {};
+          var now = new Date();
+          var fileDate =
+            now.getFullYear().toString() +
+            String(now.getMonth() + 1).padStart(2, "0") +
+            String(now.getDate()).padStart(2, "0");
+          var timeStr =
+            String(now.getHours()).padStart(2, "0") +
+            String(now.getMinutes()).padStart(2, "0") +
+            String(now.getSeconds()).padStart(2, "0");
+          var pid = "Data";
+          try {
+            var profile =
+              typeof getPlayerProfile === "function"
+                ? getPlayerProfile()
+                : null;
+            if (profile && profile.nickname) pid = profile.nickname;
+          } catch (e) {}
+          return (
+            (FN.SCREENSHOT_PREFIX || "EF單人冒險分析截圖") +
+            (FN.SEPARATOR || "_") +
+            pid +
+            "_" +
+            fileDate +
+            "_" +
+            timeStr
+          );
+        })();
+
+        CsvReport.exportScreenshot(content, screenshotFilename)
           .then(function () {
             ssBtn.textContent = "📸 截圖";
             ssBtn.disabled = false;
@@ -925,7 +1246,9 @@ var ResultController = (function () {
       _reportContainer.style.display = "block";
     }
 
-    CsvReport.renderReport(document.getElementById("reportContent"), parsed);
+    CsvReport.renderReport(document.getElementById("reportContent"), parsed, {
+      mode: data.mode || "",
+    });
     _reportVisible = true;
 
     var btn2 = document.getElementById("btnReport");
@@ -943,6 +1266,21 @@ var ResultController = (function () {
 
   function _bindUploads() {
     // === 班級排行榜 ===
+    var uploadCodeInput = document.getElementById("uploadCodeInput");
+
+    // 自動填入已儲存的看板代碼
+    if (uploadCodeInput) {
+      try {
+        var savedProfile =
+          typeof getPlayerProfile === "function" ? getPlayerProfile() : null;
+        if (savedProfile && savedProfile.boardCode) {
+          uploadCodeInput.value = savedProfile.boardCode;
+        }
+      } catch (e) {
+        /* ignore */
+      }
+    }
+
     ResultUpload.bindClassUpload({
       btn: document.getElementById("btnUploadClass"),
       codeRow: document.getElementById("uploadCodeRow"),
@@ -954,7 +1292,9 @@ var ResultController = (function () {
         var profile = null;
         try {
           profile = getPlayerProfile ? getPlayerProfile() : null;
-        } catch (e) {}
+        } catch (e) {
+          Logger.warn("[Result] getPlayerProfile failed:", e);
+        }
         var cr = data.comboResult || {};
         var rr = cr.ruleResult || {};
         var totalStarsVal = 0;
@@ -980,6 +1320,50 @@ var ResultController = (function () {
           totalStarsVal =
             cr.totalStars || (cr.starsResult || {}).totalStars || 0;
         }
+        // 計算 SDT 指標（從 trialDetails）
+        var sdtStats = { dPrime: null, criterion: null, beta: null };
+        var allTrials = data.trialDetails || [];
+        if (data.allComboResults && data.allComboResults.length > 0) {
+          allTrials = [];
+          data.allComboResults.forEach(function (c) {
+            allTrials = allTrials.concat(c.trialDetails || []);
+          });
+        }
+        if (
+          allTrials.length > 0 &&
+          typeof CsvReport !== "undefined" &&
+          CsvReport.calculateSDT
+        ) {
+          sdtStats = CsvReport.calculateSDT(allTrials);
+        }
+
+        // 組合順序描述
+        var comboOrder = "";
+        if (data.allComboResults && data.allComboResults.length > 0) {
+          comboOrder = data.allComboResults
+            .map(function (c) {
+              var cb = c.combo || {};
+              var wm = cb.enableWm || cb.hasWM ? "+WM" : "";
+              return (cb.fieldId || "") + "/" + (cb.ruleId || "") + wm;
+            })
+            .join(" → ");
+        } else if (data.comboResult) {
+          var _pd = data.comboResult.pointDef || {};
+          comboOrder =
+            (_pd.field || "") +
+            "/" +
+            (_pd.rule || "") +
+            (_pd.hasWM ? "+WM" : "");
+        }
+
+        // 總花費時間
+        var totalTimeMs = null;
+        if (allTrials.length > 0) {
+          var firstTs = allTrials[0].timestamp;
+          var lastTs = allTrials[allTrials.length - 1].timestamp;
+          if (firstTs && lastTs) totalTimeMs = lastTs - firstTs;
+        }
+
         return {
           nickname: (profile && profile.nickname) || "玩家",
           score: rr.finalScore || 0,
@@ -988,6 +1372,47 @@ var ResultController = (function () {
           stars: totalStarsVal,
           level: (profile && profile.level) || "",
           mode: "singleplayer",
+          dPrime: sdtStats.dPrime,
+          criterion: sdtStats.criterion,
+          beta: sdtStats.beta,
+          comboOrder: comboOrder,
+          totalTimeMs: totalTimeMs,
+          gameEndTime: new Date().toISOString(),
+          // v4.7 自適應難度欄位
+          engineName:
+            typeof DifficultyProvider !== "undefined"
+              ? DifficultyProvider.getEngineName()
+              : "",
+          finalLevel: (function () {
+            var en =
+              typeof DifficultyProvider !== "undefined"
+                ? DifficultyProvider.getEngineName()
+                : "";
+            if (
+              en === "IRTSimpleEngine" &&
+              typeof IRTSimpleEngine !== "undefined"
+            )
+              return IRTSimpleEngine.getCurrentLevel();
+            if (typeof SimpleAdaptiveEngine !== "undefined")
+              return SimpleAdaptiveEngine.getCurrentLevel();
+            return "";
+          })(),
+          finalTheta: (function () {
+            var en =
+              typeof DifficultyProvider !== "undefined"
+                ? DifficultyProvider.getEngineName()
+                : "";
+            if (
+              en === "IRTSimpleEngine" &&
+              typeof IRTSimpleEngine !== "undefined"
+            ) {
+              var s = IRTSimpleEngine.getIRTState();
+              return s && s.theta != null
+                ? Math.round(s.theta * 1000) / 1000
+                : null;
+            }
+            return null;
+          })(),
         };
       },
     });
@@ -1018,14 +1443,50 @@ var ResultController = (function () {
 
         var entries = [];
 
+        // v4.7 自適應難度共用擷取
+        var _adEn =
+          typeof DifficultyProvider !== "undefined"
+            ? DifficultyProvider.getEngineName()
+            : "";
+        var _adLv = (function () {
+          if (
+            _adEn === "IRTSimpleEngine" &&
+            typeof IRTSimpleEngine !== "undefined"
+          )
+            return IRTSimpleEngine.getCurrentLevel();
+          if (typeof SimpleAdaptiveEngine !== "undefined")
+            return SimpleAdaptiveEngine.getCurrentLevel();
+          return "";
+        })();
+        var _adTh = (function () {
+          if (
+            _adEn === "IRTSimpleEngine" &&
+            typeof IRTSimpleEngine !== "undefined"
+          ) {
+            var s = IRTSimpleEngine.getIRTState();
+            return s && s.theta != null
+              ? Math.round(s.theta * 1000) / 1000
+              : null;
+          }
+          return null;
+        })();
+
         if (data.mode === "adventure" && data.comboResult) {
           var cr = data.comboResult;
           var rr = cr.ruleResult || {};
           var comboData = {
             nickname: nickname,
             level: level,
-            fieldId: cr.fieldId || (cr.combo || {}).fieldId || "",
-            ruleId: cr.ruleId || (cr.combo || {}).ruleId || "",
+            fieldId:
+              (cr.pointDef || {}).field ||
+              cr.fieldId ||
+              (cr.combo || {}).fieldId ||
+              "",
+            ruleId:
+              (cr.pointDef || {}).rule ||
+              cr.ruleId ||
+              (cr.combo || {}).ruleId ||
+              "",
             bestScore: rr.finalScore || rr.correctCount || 0,
             bestAccuracy:
               rr.accuracy != null ? Math.round(rr.accuracy * 100) : 0,
@@ -1035,6 +1496,10 @@ var ResultController = (function () {
             totalTrials: rr.totalCount || 0,
             mode: "adventure",
             gamesPlayed: 1,
+            gameEndTime: new Date().toISOString(),
+            engineName: _adEn,
+            finalLevel: _adLv,
+            finalTheta: _adTh,
           };
           if (cr.starsResult) {
             comboData.totalStars =
@@ -1062,6 +1527,10 @@ var ResultController = (function () {
               totalTrials: er.totalCount || 0,
               mode: "free-select",
               gamesPlayed: 1,
+              gameEndTime: new Date().toISOString(),
+              engineName: _adEn,
+              finalLevel: _adLv,
+              finalTheta: _adTh,
             });
           }
         }

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; connect-src 'self'"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; connect-src 'self' https://lin.ee"
     />
     <title>設定 - 執行功能訓練遊戲</title>
     <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
@@ -13,6 +13,8 @@
     <link rel="manifest" href="../manifest.json" />
     <meta name="theme-color" content="#302b63" />
     <link rel="stylesheet" href="../css/themes/base.css" />
+    <link rel="stylesheet" href="../css/themes/theme-field-primary.css" />
+    <link rel="stylesheet" href="../css/themes/theme-rule-independent.css" />
     <link rel="stylesheet" href="../css/main.css" />
     <link rel="preload" href="../css/components/navbar.css" as="style" onload="this.rel='stylesheet'" />
     <noscript><link rel="stylesheet" href="../css/components/navbar.css" /></noscript>
@@ -20,53 +22,34 @@
     <noscript><link rel="stylesheet" href="../css/components/landscape-hint.css" /></noscript>
     <link rel="stylesheet" href="../css/pages/settings.css" />
     <!-- === Scripts === -->
+    <script defer src="../js/utils/logger.js"></script>
     <script defer src="../js/utils/storage.js"></script>
     <script defer src="../js/shared/audio-player.js"></script>
     <script defer src="../js/shared/navbar.js"></script>
     <script defer src="../js/shared/landscape-hint.js"></script>
     <script defer src="../js/singleplayer/settings-controller.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        var btn = document.getElementById('btnDevTools');
+        if (!btn) return;
+        btn.addEventListener('click', function () {
+          var pw = prompt('請輸入密碼：');
+          if (pw === null) return;
+          if (pw === '00000') {
+            window.location.href = '../tools/admin.html';
+          } else {
+            alert('密碼錯誤');
+          }
+        });
+      });
+    </script>
   </head>
   <body>
     <main class="settings-page" id="main-content">
       <h1>⚙️ 設定</h1>
 
       <!-- ==================== -->
-      <!-- 👤 玩家資訊           -->
-      <!-- ==================== -->
-      <div class="settings-section" id="sectionPlayerInfo">
-        <h2>👤 玩家資訊</h2>
-        <div class="settings-item">
-          <span class="settings-item__label">座號</span>
-          <span class="settings-item__value" id="infoSeatNumber">--</span>
-        </div>
-        <div class="settings-item">
-          <span class="settings-item__label">暱稱</span>
-          <span class="settings-item__value" id="infoNickname">--</span>
-        </div>
-        <div class="settings-item">
-          <span class="settings-item__label">等級</span>
-          <span class="settings-item__value" id="infoLevel">--</span>
-        </div>
-        <div class="settings-item">
-          <span class="settings-item__label">⭐ 總星星</span>
-          <span class="settings-item__value" id="infoTotalStars">--</span>
-        </div>
-        <div class="settings-item">
-          <span class="settings-item__label">⭐ 可用星星</span>
-          <span class="settings-item__value" id="infoAvailStars">--</span>
-        </div>
-        <div class="settings-item">
-          <span class="settings-item__label">🏅 徽章數</span>
-          <span class="settings-item__value" id="infoBadgeCount">--</span>
-        </div>
-        <div class="settings-item" id="guestInfoRow" style="display: none">
-          <span class="settings-item__label">身份</span>
-          <span class="guest-badge">👤 訪客模式</span>
-        </div>
-      </div>
-
-      <!-- ==================== -->
-      <!-- 🔊 音效設定           -->
+      <!-- � 音效設定           -->
       <!-- ==================== -->
       <div class="settings-section">
         <h2>🔊 音效設定</h2>
@@ -126,6 +109,20 @@
             <button class="count-btn" data-count="10">10</button>
           </div>
         </div>
+        <!-- 難度調整模式 -->
+        <div class="settings-item">
+          <span class="settings-item__label">🧠 難度調整模式</span>
+          <div class="engine-selector" id="engineSelector">
+            <button class="engine-btn" data-engine="static" title="固定難度，不隨表現調整">📊 固定</button>
+            <button class="engine-btn active" data-engine="simple" title="連對升級、連錯降級（預設）">🎯 簡易</button>
+            <button class="engine-btn" data-engine="irt" title="IRT 智慧分析，依能力精準選題">🧠 IRT</button>
+          </div>
+          <p class="settings-item__hint" id="engineHint">
+            📊 固定：難度不變，適合標準化測驗<br>
+            🎯 簡易：連續答對自動升級、連錯降級（推薦）<br>
+            🧠 IRT：根據試題反應理論(Item Response Theory)即時估計能力值，智慧選題
+          </p>
+        </div>
       </div>
 
       <!-- ==================== -->
@@ -148,27 +145,10 @@
       </div>
 
       <!-- ==================== -->
-      <!-- 🗄️ 資料管理           -->
+      <!--  玩家資訊           -->
       <!-- ==================== -->
       <div class="settings-section">
-        <h2>🗄️ 資料管理</h2>
-        <button class="settings-btn settings-btn--export" id="btnExport">
-          📤 匯出遊戲紀錄
-        </button>
-        <button class="settings-btn settings-btn--import" id="btnImport">
-          📥 匯入遊戲紀錄
-        </button>
-        <button class="settings-btn settings-btn--danger" id="btnClearAll">
-          🗑️ 清除所有資料
-        </button>
-        <input type="file" id="importFileInput" accept=".json" aria-label="選擇 JSON 備份檔" />
-      </div>
-
-      <!-- ==================== -->
-      <!-- � 我的統計           -->
-      <!-- ==================== -->
-      <div class="settings-section">
-        <h2>📈 我的統計</h2>
+        <h2>👤 玩家資訊</h2>
         <a
           href="../singleplayer/stats.html"
           class="settings-btn"
@@ -179,7 +159,7 @@
             text-decoration: none;
           "
         >
-          📊 查看個人統計
+          📊 玩家資訊與統計
         </a>
         <p
           style="
@@ -190,37 +170,33 @@
             line-height: 1.4;
           "
         >
-          探險進度、規則表現、徽章收集一覽
+          玩家身份、遊戲紀錄、探險進度、徽章收集、資料管理
         </p>
       </div>
 
       <!-- ==================== -->
-      <!-- �👩‍🏫 教師專區           -->
+      <!-- 💾 資料管理           -->
       <!-- ==================== -->
       <div class="settings-section">
-        <h2>👩‍🏫 教師專區</h2>
-        <a
-          href="../management/index.html"
-          class="settings-btn"
-          style="
-            background: rgba(155, 89, 182, 0.2);
-            color: #9b59b6;
-            border: 1px solid rgba(155, 89, 182, 0.3);
-            text-decoration: none;
-          "
-        >
-          🏫 教師管理後台
-        </a>
-        <p
-          style="
-            font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.65);
-            text-align: center;
-            margin-top: 6px;
-            line-height: 1.4;
-          "
-        >
-          班級管理、學生進度查看、資料匯出
+        <h2>💾 資料管理</h2>
+        <button class="settings-btn" id="btnExport" style="background:rgba(76,175,80,0.2);color:#66bb6a;border:1px solid rgba(76,175,80,0.3)">
+          📥 匯出遊戲紀錄 (JSON)
+        </button>
+        <button class="settings-btn" id="btnImport" style="background:rgba(33,150,243,0.2);color:#42a5f5;border:1px solid rgba(33,150,243,0.3);margin-top:8px">
+          📤 匯入遊戲紀錄 (JSON)
+        </button>
+        <input type="file" id="importFileInput" accept=".json" style="display:none" />
+        <button class="settings-btn" id="btnClearAll" style="background:rgba(244,67,54,0.15);color:#ef5350;border:1px solid rgba(244,67,54,0.3);margin-top:8px">
+          🗑️ 清除所有資料
+        </button>
+        <p style="font-size:0.75rem;color:rgba(255,255,255,0.5);text-align:center;margin-top:8px;line-height:1.4">
+          清除前建議先匯出備份，清除後所有遊戲紀錄、進度、星星和徽章將永久刪除
+        </p>
+        <button class="settings-btn" id="btnClearCache" style="background:rgba(255,152,0,0.15);color:#ffa726;border:1px solid rgba(255,152,0,0.3);margin-top:12px">
+          🧹 僅清除快取儲存空間
+        </button>
+        <p style="font-size:0.75rem;color:rgba(255,255,255,0.5);text-align:center;margin-top:8px;line-height:1.4">
+          僅清除離線快取（不影響遊戲紀錄），可釋放儲存空間。下次載入頁面會重新快取。
         </p>
       </div>
 
@@ -253,6 +229,54 @@
             >查看 →</span
           >
         </a>
+      </div>
+
+      <!-- ==================== -->
+      <!-- 📞 研究者聯絡資訊       -->
+      <!-- ==================== -->
+      <div class="settings-section">
+        <h2>📞 研究者聯絡資訊</h2>
+        <div style="text-align:center;padding:8px 0">
+          <a href="https://lin.ee/KB0tzxv" target="_blank" rel="noopener" style="display:inline-block">
+            <img
+              src="../images/%5BQRcode%5D%20%40ynx0042l.jpg"
+              alt="Line QR Code"
+              style="width:160px;height:160px;border-radius:12px;border:2px solid rgba(255,255,255,0.1)"
+            />
+          </a>
+          <p style="margin-top:10px;font-size:0.88rem;color:#a8edea">
+            研究者：<strong>李珮瑄</strong>
+          </p>
+          <p style="margin-top:6px;font-size:0.88rem;color:#a8edea">
+            Line ID：<strong>@ynx0042l</strong>
+          </p>
+          <p style="font-size:0.75rem;color:rgba(255,255,255,0.45);margin-top:4px">
+            （ynx零 零 4 2 小寫L）
+          </p>
+          <p style="font-size:0.75rem;color:rgba(255,255,255,0.5);margin-top:6px">
+            有任何問題歡迎透過 Line 聯繫研究者
+          </p>
+        </div>
+      </div>
+
+      <!-- ==================== -->
+      <!-- 🔧 開發者與研究者工具 -->
+      <!-- ==================== -->
+      <div style="text-align:center;margin-top:24px;padding-bottom:20px">
+        <button
+          id="btnDevTools"
+          style="
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.25);
+            font-size: 0.72rem;
+            cursor: pointer;
+            padding: 8px 16px;
+            letter-spacing: 0.5px;
+          "
+        >
+          🔒 開發者與研究者工具
+        </button>
       </div>
     </div>
 

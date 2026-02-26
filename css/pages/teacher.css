@@ -1,0 +1,35 @@
+/* ============================================================
+ *  📋 檔案說明
+ *  ─────────────────────────────────
+ *  檔案名稱：teacher.css
+ *  一句話說明：教師家長專區頁面的樣式
+ *  用途：teacher/index.html 專區導覽頁
+ * ============================================================ */
+
+/* ====================================
+   專區頁面佈局
+   ==================================== */
+
+.teacher-hub {
+  max-width: 960px;
+}
+
+.teacher-hub header {
+  text-align: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.teacher-hub header h1 {
+  font-size: var(--font-size-xl);
+}
+
+.teacher-hub .mode-selection {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.teacher-hub footer {
+  text-align: center;
+  margin-top: var(--spacing-xl);
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+}

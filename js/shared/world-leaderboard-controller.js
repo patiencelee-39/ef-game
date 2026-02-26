@@ -11,13 +11,37 @@
   var worldRankingContainer = document.getElementById("worldRankingContainer");
   var worldStatsContainer = document.getElementById("worldStatsContainer");
   var ruleTabs = document.getElementById("ruleTabs");
+  var fieldTabs = document.getElementById("fieldTabs");
 
-  var _bestEntry = null; // 快取找到的最佳紀錄
+  var _latestEntry = null; // 快取找到的最新紀錄
   var _allEntries = []; // 快取全部世界排行資料
   var _currentRule = "all"; // 當前篩選規則
+  var _currentField = "all"; // 當前篩選遊戲場
   var GUEST_NICKNAME = "00NoName";
 
-  // ─── 分頁按鈕 ───
+  // 遊戲場名稱對照
+  var FIELD_LABELS = { mouse: "小老鼠", fishing: "釣魚" };
+  var RULE_LABELS = { rule1: "規則一", rule2: "規則二", mixed: "混合規則" };
+
+  // ─── 遊戲場分頁按鈕 ───
+  if (fieldTabs) {
+    fieldTabs.addEventListener("click", function (e) {
+      var tab = e.target.closest(".field-tab");
+      if (!tab) return;
+      var field = tab.dataset.field;
+      if (field === _currentField) return;
+
+      _currentField = field;
+      fieldTabs.querySelectorAll(".field-tab").forEach(function (t) {
+        var isActive = t.dataset.field === field;
+        t.classList.toggle("active", isActive);
+        t.setAttribute("aria-selected", isActive ? "true" : "false");
+      });
+      _renderFiltered(_allEntries);
+    });
+  }
+
+  // ─── 規則分頁按鈕 ───
   if (ruleTabs) {
     ruleTabs.addEventListener("click", function (e) {
       var tab = e.target.closest(".rule-tab");
@@ -47,7 +71,7 @@
         .auth()
         .signInAnonymously()
         .catch(function (err) {
-          console.error("匿名登入失敗", err);
+          Logger.error("匿名登入失敗", err);
         });
       return;
     }
@@ -55,7 +79,7 @@
     _loadWorldRanking();
   });
 
-  // === 讀取本地成績 ===
+  // === 讀取本地成績（最新一場）===
   function _loadLocalScore() {
     try {
       var raw = localStorage.getItem("efgame_leaderboard");
@@ -69,31 +93,59 @@
         return;
       }
 
-      // 找最高分（相容 nickname 和 name 兩種欄位）
-      var validEntries = data.filter(function (e) {
-        return e.nickname || e.name;
+      // 找有 latestGame 的紀錄中最新的
+      var withLatest = data.filter(function (e) {
+        return e.latestGame && (e.nickname || e.name || e.latestGame);
       });
 
-      if (validEntries.length === 0) {
-        _showNoData();
-        return;
+      var entry = null;
+      if (withLatest.length > 0) {
+        // 按 latestGame.playedAt 排序，取最新
+        entry = withLatest.reduce(function (a, b) {
+          var aTime =
+            a.latestGame && a.latestGame.playedAt
+              ? new Date(a.latestGame.playedAt).getTime()
+              : 0;
+          var bTime =
+            b.latestGame && b.latestGame.playedAt
+              ? new Date(b.latestGame.playedAt).getTime()
+              : 0;
+          return bTime > aTime ? b : a;
+        }, withLatest[0]);
+      } else {
+        // Fallback: 找 lastPlayed 最新的
+        var validEntries = data.filter(function (e) {
+          return e.nickname || e.name;
+        });
+        if (validEntries.length === 0) {
+          _showNoData();
+          return;
+        }
+        entry = validEntries.reduce(function (a, b) {
+          var aTime = a.lastPlayed ? new Date(a.lastPlayed).getTime() : 0;
+          var bTime = b.lastPlayed ? new Date(b.lastPlayed).getTime() : 0;
+          return bTime > aTime ? b : a;
+        }, validEntries[0]);
       }
 
-      var best = validEntries.reduce(function (a, b) {
-        return (b.bestScore || 0) > (a.bestScore || 0) ? b : a;
-      }, validEntries[0]);
+      _latestEntry = entry;
+      var latest = entry.latestGame || {};
 
-      _bestEntry = best;
       localNickname.textContent =
-        "🏷️ " + (best.nickname || best.name || "匿名");
-      localScoreValue.textContent = best.bestScore || 0;
+        "🏷️ " + (entry.nickname || entry.name || "匿名");
+      localScoreValue.textContent =
+        latest.score != null ? latest.score : entry.bestScore || 0;
 
       var details = [];
-      if (best.accuracy != null)
-        details.push("正確率 " + Math.round(best.accuracy) + "%");
-      if (best.avgRT) details.push("平均 RT " + Math.round(best.avgRT) + "ms");
-      if (best.totalStars != null) details.push("⭐ " + best.totalStars);
-      if (best.gamesPlayed) details.push("🎮 " + best.gamesPlayed + " 場");
+      var fieldLabel = FIELD_LABELS[latest.fieldId] || latest.fieldId || "";
+      var ruleLabel = RULE_LABELS[latest.ruleId] || latest.ruleId || "";
+      if (fieldLabel || ruleLabel) details.push(fieldLabel + " · " + ruleLabel);
+      var acc = latest.accuracy != null ? latest.accuracy : entry.accuracy;
+      if (acc != null) details.push("正確率 " + Math.round(acc) + "%");
+      if (latest.avgRT)
+        details.push("平均 RT " + Math.round(latest.avgRT) + "ms");
+      if (latest.totalStars) details.push("⭐ " + latest.totalStars);
+      if (latest.hasWM) details.push("🧠 WM");
       localScoreDetail.textContent = details.join(" · ");
 
       noDataNotice.style.display = "none";
@@ -111,24 +163,28 @@
 
   // === 上傳到世界排行榜 ===
   btnUpload.addEventListener("click", function () {
-    if (!_bestEntry) return;
+    if (!_latestEntry) return;
     btnUpload.disabled = true;
     btnUpload.textContent = "上傳中…";
     uploadStatus.textContent = "";
     uploadStatus.className = "upload-status";
 
+    var latest = _latestEntry.latestGame || {};
     var entry = {
-      nickname: _bestEntry.nickname || _bestEntry.name || "匿名",
-      totalStars: _bestEntry.totalStars || _bestEntry.stars || 0,
-      bestScore: _bestEntry.bestScore || 0,
-      bestAccuracy: _bestEntry.accuracy || 0,
-      bestAvgRT: _bestEntry.avgRT || 0,
-      totalCorrect: _bestEntry.totalCorrect || _bestEntry.bestScore || 0,
-      totalTrials: _bestEntry.totalTrials || 0,
-      mode: _bestEntry.mode || "adventure",
-      gamesPlayed: _bestEntry.gamesPlayed || 1,
-      fieldId: _bestEntry.fieldId || "",
-      ruleId: _bestEntry.ruleId || "",
+      nickname: _latestEntry.nickname || _latestEntry.name || "匿名",
+      totalStars: latest.totalStars || 0,
+      bestScore:
+        latest.score != null ? latest.score : _latestEntry.bestScore || 0,
+      bestAccuracy:
+        latest.accuracy != null ? latest.accuracy : _latestEntry.accuracy || 0,
+      bestAvgRT: latest.avgRT || 0,
+      totalCorrect: latest.totalCorrect || latest.score || 0,
+      totalTrials: latest.totalTrials || 0,
+      mode: latest.mode || "adventure",
+      gamesPlayed: _latestEntry.gamesPlayed || 1,
+      fieldId: latest.fieldId || "",
+      ruleId: latest.ruleId || "",
+      hasWM: latest.hasWM || false,
     };
 
     FirestoreLeaderboard.uploadToWorld(entry)
@@ -153,7 +209,6 @@
             ? "🌐 世界第 " + myRank + " 名 / " + entries.length + " 人"
             : "✅ 上傳成功！";
 
-        var b = _bestEntry;
         uploadStatus.innerHTML =
           '<div style="text-align:center;line-height:1.8;">' +
           '<div style="font-size:1.1rem;font-weight:700;color:#4caf50;margin-bottom:4px;">' +
@@ -161,15 +216,16 @@
           "</div>" +
           '<div style="font-size:0.85rem;color:#ccc;">' +
           "🎯 " +
-          Math.round(b.accuracy || 0) +
+          Math.round(entry.bestAccuracy || 0) +
           "% · " +
           "⚡ " +
-          (b.avgRT ? Math.round(b.avgRT) + "ms" : "—") +
+          (entry.bestAvgRT ? Math.round(entry.bestAvgRT) + "ms" : "—") +
           " · " +
           "✅ " +
-          (b.totalCorrect || b.bestScore || 0) +
+          (entry.totalCorrect || 0) +
           "/" +
-          (b.totalTrials || "—") +
+          (entry.totalTrials || "—") +
+          (entry.hasWM ? " · 🧠 WM" : "") +
           "</div></div>";
         uploadStatus.className = "upload-status success";
         _renderFiltered(entries);
@@ -199,11 +255,20 @@
       });
   }
 
-  // === 依規則篩選並渲染 ===
+  // === 依遊戲場+規則篩選並渲染 ===
   function _renderFiltered(entries) {
     var filtered = entries;
+
+    // 遊戲場篩選
+    if (_currentField !== "all") {
+      filtered = filtered.filter(function (e) {
+        return e.fieldId === _currentField;
+      });
+    }
+
+    // 規則篩選
     if (_currentRule !== "all") {
-      filtered = entries.filter(function (e) {
+      filtered = filtered.filter(function (e) {
         return e.ruleId === _currentRule;
       });
     }
@@ -213,22 +278,15 @@
       ? firebase.auth().currentUser.uid
       : null;
 
-    // 準備遊戲場/規則名稱對照
-    var ruleLabel = {
-      rule1: "規則一",
-      rule2: "規則二",
-      mixed: "混合規則",
-    };
-
-    // 在每筆資料加上可讀規則標籤（用於 showMode 顯示）
+    // 在每筆資料加上可讀標籤
     var displayEntries = filtered.map(function (e) {
       var copy = {};
       for (var k in e) copy[k] = e[k];
-      if (e.fieldId || e.ruleId) {
-        var fName = e.fieldId || "";
-        var rName = ruleLabel[e.ruleId] || e.ruleId || "";
-        copy.mode = fName + (rName ? " · " + rName : "");
-      }
+      var fName = FIELD_LABELS[e.fieldId] || e.fieldId || "";
+      var rName = RULE_LABELS[e.ruleId] || e.ruleId || "";
+      copy.mode = fName + (rName ? " · " + rName : "");
+      // WM 標示
+      copy._hasWM = e.hasWM || false;
       return copy;
     });
 
@@ -239,11 +297,12 @@
       showCorrect: true,
       showMode: true,
       showStars: true,
+      showGameEndTime: true,
       highlightUid: uid,
       emptyText:
-        _currentRule === "all"
+        _currentField === "all" && _currentRule === "all"
           ? "世界排行榜目前還沒有紀錄，成為第一個上榜的玩家吧！"
-          : "此規則目前尚無排行紀錄",
+          : "此篩選條件尚無排行紀錄",
       emptyIcon: "🌐",
     });
   }

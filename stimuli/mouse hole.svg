@@ -1,0 +1,56 @@
+<svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+  <title>實驗提示：老鼠洞 (Mouse Hole Cue)</title>
+  <style>
+    /* 將 CSS 樣式直接嵌入 SVG 中 */
+
+    /* 配色變數：中性色調 */
+    /* 注意：某些舊版瀏覽器或特定軟體的 SVG 渲染器可能不支援 CSS 變數。
+       如果遇到相容性問題，請直接將顏色代碼替換到下方的 fill 屬性中。 */
+    :root {
+      --wall-color: #E0CCB8; /* 淺橘牆面 */
+      --floor-color: #95a5a6; /* 深灰地板 */
+      --baseboard-color: #bdc3c7; /* 踢腳板 */
+      /* --hole-color 未被使用，已在 .hole 中直接定義 */
+    }
+
+    .wall {
+      fill: var(--wall-color);
+    }
+    .floor {
+      fill: var(--floor-color);
+    }
+    .baseboard {
+      fill: var(--baseboard-color);
+    }
+
+    .hole {
+      fill: #1a252f; /* 比背景更深的顏色，代表洞穴深處 */
+
+      /* 動畫關鍵設定 */
+      /* 重要：確保 transform-box 被支援，否則 transform-origin 可能不準確 */
+      transform-box: fill-box; /* 以路徑自身的邊界框為基準 */
+      transform-origin: bottom center; /* 設定變形原點在底部中心 */
+      animation: openHole 2s cubic-bezier(0.4, 0, 0.2, 1) forwards; /* 緩入緩出效果 */
+    }
+
+    @keyframes openHole {
+      0% {
+        transform: scaleY(0); /* 垂直壓縮至 0 (關閉狀態) */
+        opacity: 0;
+      }
+      100% {
+        transform: scaleY(1); /* 恢復原始大小 (開啟狀態) */
+        opacity: 1;
+      }
+    }
+  </style>
+
+  <rect x="0" y="0" width="300" height="250" class="wall" />
+  <rect x="0" y="250" width="300" height="50" class="floor" />
+  <rect x="0" y="235" width="300" height="15" class="baseboard" />
+
+  <path
+    class="hole"
+    d="M 110 250 L 110 200 A 40 40 0 0 1 190 200 L 190 250 Z"
+  />
+</svg>

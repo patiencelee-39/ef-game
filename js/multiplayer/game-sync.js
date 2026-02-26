@@ -51,6 +51,9 @@ var GameSync = (function () {
   var _expectedPlayerCount = 0;
   var _finishedDetected = false;
 
+  /** justCompleted 去重（避免同一事件重複觸發 callback） */
+  var _notifiedCompletions = {};
+
   /** 倒數同步 */
   var _countdownTimer = null;
 
@@ -72,6 +75,7 @@ var GameSync = (function () {
     _isHost = config.isHost || false;
     _finishedDetected = false;
     _playerSnapshots = {};
+    _notifiedCompletions = {};
 
     if (config.callbacks) {
       for (var key in config.callbacks) {
@@ -105,15 +109,15 @@ var GameSync = (function () {
     // 監聽 scores 節點（偵測全員完成）
     _startScoresListener();
 
-    // 監聽房間是否被刪除
-    _roomRef.on("value", function (snap) {
-      if (!snap.exists()) {
+    // 監聽房間是否被刪除（只監聽 status 而非整個房間樹，避免 OOM）
+    _roomRef.child("status").on("value", function (snap) {
+      if (snap.val() === null) {
         _cleanup();
         if (_callbacks.onRoomClosed) _callbacks.onRoomClosed();
       }
     });
 
-    console.log("🔗 [GameSync] 初始化完成 room=" + _roomCode);
+    Logger.debug("🔗 [GameSync] 初始化完成 room=" + _roomCode);
   }
 
   // =========================================
@@ -147,13 +151,17 @@ var GameSync = (function () {
         };
         _expectedPlayerCount++;
 
-        // 偵測場地完成通知
+        // 偵測場地完成通知（去重：同一 uid+stageName 只通知一次）
         if (p.justCompleted && _callbacks.onStageComplete) {
-          _callbacks.onStageComplete(
-            uid,
-            p.nickname || "玩家",
-            p.justCompleted,
-          );
+          var dedupeKey = uid + "_" + p.justCompleted;
+          if (!_notifiedCompletions[dedupeKey]) {
+            _notifiedCompletions[dedupeKey] = true;
+            _callbacks.onStageComplete(
+              uid,
+              p.nickname || "玩家",
+              p.justCompleted,
+            );
+          }
         }
 
         // 偵測斷線
@@ -182,7 +190,7 @@ var GameSync = (function () {
       // 全員完成？
       if (finishedCount >= _expectedPlayerCount && _expectedPlayerCount > 0) {
         _finishedDetected = true;
-        console.log(
+        Logger.debug(
           "🏁 [GameSync] 全員完成！(" +
             finishedCount +
             "/" +
@@ -275,6 +283,11 @@ var GameSync = (function () {
 
     _roomRef.child("scores/" + _playerId).set(scoreData);
 
+    // 從答題紀錄提取 fieldId / ruleId（供 result.html + 排行榜使用）
+    var _firstAns = (resultObj.answers || [])[0] || {};
+    var _fieldId = _firstAns.fieldId || _firstAns.stageId || "";
+    var _ruleId = _firstAns.ruleId || "";
+
     // 同時存 localStorage 給 result.html 讀取
     try {
       localStorage.setItem(
@@ -287,13 +300,16 @@ var GameSync = (function () {
           totalQuestions: scoreData.totalTrials,
           totalTime: resultObj.totalTime || 0,
           answers: resultObj.answers || [],
+          trialDetails: resultObj.answers || [],
           comboScores: resultObj.comboScores || [],
           playerId: _playerId,
           nickname: scoreData.nickname,
+          fieldId: _fieldId,
+          ruleId: _ruleId,
         }),
       );
     } catch (e) {
-      console.warn("[GameSync] localStorage 寫入失敗", e);
+      Logger.warn("[GameSync] localStorage 寫入失敗", e);
     }
   }
 
@@ -381,7 +397,10 @@ var GameSync = (function () {
   function _cleanup() {
     if (_playersRef) _playersRef.off();
     if (_scoresRef) _scoresRef.off();
-    if (_roomRef) _roomRef.off();
+    if (_roomRef) {
+      _roomRef.child("status").off();
+      _roomRef.child("countdownStartAt").off();
+    }
     if (_countdownTimer) {
       clearInterval(_countdownTimer);
       _countdownTimer = null;
@@ -392,7 +411,7 @@ var GameSync = (function () {
     _cleanup();
     _playerSnapshots = {};
     _finishedDetected = false;
-    console.log("🔌 [GameSync] 已斷開");
+    Logger.debug("🔌 [GameSync] 已斷開");
   }
 
   // =========================================

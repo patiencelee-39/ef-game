@@ -58,6 +58,42 @@ body {
   color: #fff;
 }
 
+/* === 玩家資料格子 === */
+.player-info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.player-info-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+.player-info-item__icon {
+  font-size: 1.4rem;
+  min-width: 32px;
+  text-align: center;
+}
+.player-info-item__content {
+  flex: 1;
+  min-width: 0;
+}
+.player-info-item__label {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+.player-info-item__value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+  word-break: break-word;
+}
+
 /* === 總覽格子 === */
 .overview-grid {
   display: grid;

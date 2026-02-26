@@ -71,7 +71,7 @@ async function isRoomCodeExists(roomCode) {
       .once("value");
     return snapshot.exists();
   } catch (error) {
-    console.error("檢查房間代碼失敗:", error);
+    Logger.error("檢查房間代碼失敗:", error);
     return false;
   }
 }

@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;"
+    />
+    <title>遊戲規則說明 — 執行功能訓練遊戲</title>
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="../favicon.svg" />
+    <link rel="manifest" href="../manifest.json" />
+    <meta name="theme-color" content="#302b63" />
+    <link rel="stylesheet" href="../css/themes/base.css" />
+    <link rel="stylesheet" href="../css/themes/theme-field-primary.css" />
+    <link rel="stylesheet" href="../css/themes/theme-rule-independent.css" />
+    <link rel="stylesheet" href="../css/main.css" />
+    <link rel="stylesheet" href="../css/pages/game.css" />
+    <link
+      rel="preload"
+      href="../css/components/navbar.css"
+      as="style"
+      onload="this.rel = 'stylesheet'"
+    />
+    <noscript
+      ><link rel="stylesheet" href="../css/components/navbar.css"
+    /></noscript>
+    <link rel="stylesheet" href="../css/components/landscape-hint.css" />
+    <style>
+      .intro-page {
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        background: var(--bg-dark);
+      }
+      .intro-page__header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 20px;
+        background: rgba(0, 0, 0, 0.2);
+      }
+      .intro-page__header .btn-back {
+        font-size: 1.3rem;
+        background: none;
+        border: none;
+        color: var(--text-white);
+        cursor: pointer;
+        padding: 4px 8px;
+      }
+      .intro-page__header h1 {
+        font-size: 1.1rem;
+        color: var(--text-white);
+        margin: 0;
+        font-weight: 700;
+      }
+      .intro-page__body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+      .intro-card {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        padding: 36px 28px;
+        max-width: 520px;
+        width: 100%;
+        text-align: center;
+      }
+      .intro-card__title {
+        font-size: 1.6rem;
+        color: var(--text-white);
+        margin: 0 0 8px;
+      }
+      .intro-card__target {
+        font-size: 1.05rem;
+        color: rgba(255, 255, 255, 0.7);
+        margin: 0 0 20px;
+        font-weight: 600;
+      }
+      .intro-card .rule-box-group {
+        margin: 0 auto 16px;
+      }
+      .intro-card .context-notice {
+        background: rgba(243, 156, 18, 0.12);
+        border: 1px solid rgba(243, 156, 18, 0.3);
+        border-radius: 10px;
+        padding: 10px 14px;
+        margin-top: 12px;
+        font-size: 0.9rem;
+        color: #f39c12;
+      }
+      .intro-card .wm-notice-tag {
+        padding: 8px 16px;
+        border-radius: 6px;
+        background: rgba(52, 152, 219, 0.15);
+        color: #3498db;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-top: 12px;
+        display: inline-block;
+      }
+      .intro-nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: center;
+        margin-top: 24px;
+      }
+      .intro-nav__btn {
+        padding: 8px 16px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        background: rgba(255, 255, 255, 0.06);
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.82rem;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .intro-nav__btn:hover,
+      .intro-nav__btn.active {
+        background: rgba(255, 255, 255, 0.12);
+        color: #fff;
+        border-color: rgba(255, 255, 255, 0.3);
+      }
+      .intro-nav__btn.active {
+        background: var(--primary-gradient, rgba(100, 181, 246, 0.2));
+        border-color: #64b5f6;
+        color: #64b5f6;
+      }
+    </style>
+    <script defer src="../js/game-config.js"></script>
+    <script defer src="../js/svg-assets.js"></script>
+    <script defer src="../js/shared/trial-renderer.js"></script>
+    <script defer src="../js/shared/navbar.js"></script>
+    <script defer src="../js/shared/game-intro-controller.js"></script>
+  </head>
+  <body>
+    <div class="landscape-overlay" aria-hidden="true">
+      <span class="landscape-overlay__icon">📱</span>
+      <p class="landscape-overlay__title">請將裝置直立</p>
+      <p class="landscape-overlay__msg">
+        本遊戲建議以直向模式使用，<br />請旋轉您的裝置。
+      </p>
+    </div>
+    <div class="intro-page">
+      <header class="intro-page__header">
+        <h1 id="pageTitle">📖 遊戲規則說明</h1>
+      </header>
+
+      <div class="intro-page__body">
+        <!-- 快速切換導航 -->
+        <nav class="intro-nav" id="introNav"></nav>
+
+        <!-- 規則說明卡片 -->
+        <div class="intro-card" id="introCard">
+          <h2 class="intro-card__title" id="introTitle"></h2>
+          <p class="intro-card__target" id="introTarget"></p>
+          <div class="rule-box-group" id="introBoxes"></div>
+          <div class="context-notice hidden" id="introContext"></div>
+          <div class="wm-notice-tag hidden" id="introWM">
+            🧠 本組含工作記憶測驗
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

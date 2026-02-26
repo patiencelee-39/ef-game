@@ -4,17 +4,45 @@
     "ignore": [
       "firebase.json",
       "**/.*",
+      ".venv/**",
       "**/node_modules/**",
       "_archive/**",
+      "docs/**",
       "**/*.md",
+      "**/*.pdf",
       "scripts/**",
       "src/**",
       "dist/**",
       "vite.config.js",
       "package.json",
-      "package-lock.json"
+      "package-lock.json",
+      "database.rules.json",
+      "firestore.rules",
+      "firestore.indexes.json",
+      "**/*.py",
+      "**/*.sh",
+      "**/Icon\r"
     ],
     "headers": [
+      {
+        "source": "**",
+        "headers": [
+          { "key": "X-Content-Type-Options", "value": "nosniff" },
+          { "key": "X-Frame-Options", "value": "DENY" },
+          {
+            "key": "Referrer-Policy",
+            "value": "strict-origin-when-cross-origin"
+          },
+          {
+            "key": "Permissions-Policy",
+            "value": "camera=(), microphone=(), geolocation=()"
+          }
+        ]
+      },
+      {
+        "source": "singleplayer/guides/**",
+        "headers": [{ "key": "X-Frame-Options", "value": "SAMEORIGIN" }]
+      },
       {
         "source": "**/*.@(js|css|svg|png|webp|mp3|ogg|woff2)",
         "headers": [

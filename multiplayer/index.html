@@ -18,6 +18,8 @@
     <link rel="manifest" href="../manifest.json" />
     <meta name="theme-color" content="#302b63" />
     <link rel="stylesheet" href="../css/themes/base.css" />
+    <link rel="stylesheet" href="../css/themes/theme-field-primary.css" />
+    <link rel="stylesheet" href="../css/themes/theme-rule-independent.css" />
     <link rel="stylesheet" href="../css/main.css" />
     <link
       rel="preload"
@@ -28,12 +30,14 @@
     <noscript
       ><link rel="stylesheet" href="../css/components/navbar.css"
     /></noscript>
+    <link rel="stylesheet" href="../css/components/landscape-hint.css" />
 
     <!-- Firebase Bundle -->
     <script defer src="../js/firebase-bundle.js"></script>
     <script defer src="../js/shared/navbar.js"></script>
   </head>
   <body>
+    <div class="landscape-overlay" aria-hidden="true"><span class="landscape-overlay__icon">📱</span><p class="landscape-overlay__title">請將裝置直立</p><p class="landscape-overlay__msg">本遊戲建議以直向模式使用，<br>請旋轉您的裝置。</p></div>
     <div class="container">
       <header>
         <h1>⚔️ 多人競賽</h1>

@@ -19,8 +19,11 @@ var MultiplayerBridge = (function () {
     _playerRole = params.get("role") || "player";
 
     if (!_roomCode) {
-      alert("Missing room code");
-      location.href = "../index.html";
+      GameModal.alert("缺少房間代碼", "將返回首頁", { icon: "❌" }).then(
+        function () {
+          location.href = "../index.html";
+        },
+      );
       return false;
     }
 
@@ -38,7 +41,7 @@ var MultiplayerBridge = (function () {
       _playerId = user.uid;
     }
 
-    console.log(
+    Logger.debug(
       "Multiplayer: room=" +
         _roomCode +
         " role=" +
@@ -62,11 +65,14 @@ var MultiplayerBridge = (function () {
         onPlayersUpdate: _updateLiveLeaderboard,
         onAllFinished: _onAllFinished,
         onPlayerDisconnect: function (uid, data) {
-          console.log("⚠️ 玩家斷線: " + data.nickname);
+          Logger.debug("⚠️ 玩家斷線: " + data.nickname);
         },
         onRoomClosed: function () {
-          alert("房間已關閉");
-          location.href = "../index.html";
+          GameModal.alert("房間已關閉", "將返回首頁", { icon: "🚪" }).then(
+            function () {
+              location.href = "../index.html";
+            },
+          );
         },
         onStageComplete: function (uid, nickname, stageName) {
           // 其他玩家完成場地時顯示通知
@@ -192,7 +198,9 @@ var MultiplayerBridge = (function () {
     try {
       var pd = JSON.parse(localStorage.getItem("currentPlayer") || "{}");
       resultObj.nickname = pd.nickname || "玩家";
-    } catch (e) {}
+    } catch (e) {
+      Logger.warn("[Bridge] currentPlayer parse failed:", e);
+    }
 
     GameSync.recordFinalScore(resultObj);
   }

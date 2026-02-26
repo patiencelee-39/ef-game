@@ -62,7 +62,7 @@
           .auth()
           .signInAnonymously()
           .catch(function (err) {
-            console.error("❌ 匿名登入失敗:", err);
+            Logger.error("❌ 匿名登入失敗:", err);
             if (els.authStatus) {
               els.authStatus.textContent = "❌ 連線失敗";
               els.authStatus.style.color = "#e74c3c";
@@ -83,7 +83,7 @@
         renderAll();
       })
       .catch(function (err) {
-        console.error("❌ 載入看板失敗:", err);
+        Logger.error("❌ 載入看板失敗:", err);
         showToast("❌ 載入班級看板失敗：" + (err.message || "未知錯誤"));
       });
   }
@@ -236,7 +236,7 @@
           updateStats();
         })
         .catch(function (err) {
-          console.error("❌ 載入成績失敗:", err);
+          Logger.error("❌ 載入成績失敗:", err);
           els.studentArea.innerHTML =
             '<div class="empty-state" style="padding:20px">' +
             '<p class="empty-state__text">❌ 載入失敗：' +
@@ -257,7 +257,7 @@
           updateStats();
         })
         .catch(function (err) {
-          console.error("❌ 載入成績失敗:", err);
+          Logger.error("❌ 載入成績失敗:", err);
           els.studentArea.innerHTML =
             '<div class="empty-state" style="padding:20px">' +
             '<p class="empty-state__text">❌ 載入失敗</p></div>';

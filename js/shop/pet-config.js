@@ -208,6 +208,58 @@ var PET_MOOD_RULES = {
 // 查詢工具函式
 // =========================================
 
+// ─── 心情×階段 語句庫 ───
+// petSpeech[mood][level] = ["phrase", ...]
+// 點擊寵物時依據目前心情 + 成長等級抽取語句
+
+var PET_SPEECH = {
+  hungry: {
+    1: ["肚子好餓…🥚", "嗚嗚，餵我…😢", "好餓好餓…💧"],
+    2: ["嘰嘰…好餓…🐣", "給我吃東西～😢", "肚子咕嚕叫…💧"],
+    3: ["好餓呀！快餵我！🐥", "嗚～好想吃東西…", "餓到飛不動了…💦"],
+    4: ["大王餓了！快上菜！🐓", "咕嚕嚕～餓到沒力了…", "身為大王…也是會餓…"],
+    5: ["王者之腹…在呼喚…🦅", "連金鷹也需要吃飯呢…", "好想吃星星糖…✨"],
+  },
+  normal: {
+    1: ["……💤", "嗯…🥚", "我在蛋裡面～"],
+    2: ["嘰嘰！🐣", "嗨嗨～", "外面好新鮮！✨"],
+    3: ["咕咕！🐥", "今天天氣好好～☀️", "想出去玩！🎮"],
+    4: ["咕咕咕！🐓", "身為大王很悠閒～", "來找我玩嘛～🎵"],
+    5: ["嘎～🦅", "翱翔中～✨", "彩虹山頂風景真好！🏔️"],
+  },
+  happy: {
+    1: ["嘻嘻～🥚💕", "蛋蛋好開心！", "搖啊搖～🎵"],
+    2: ["好開心！🐣✨", "破殼的世界好讚！", "嘰嘰嘰！💕"],
+    3: ["開心開心！🐥🎵", "最喜歡你了！❤️", "一起玩！😆"],
+    4: ["大王心情很好！🐓✨", "咕咕咕咕咕！🎶", "今天也很厲害喔！💪"],
+    5: ["金鷹王者…微笑中 🦅✨", "展翅翱翔的感覺真好！", "你是最棒的夥伴！❤️"],
+  },
+  excited: {
+    1: ["哇哇哇！🥚🎉", "蛋蛋超級開心！！", "要破殼了嗎！？✨✨"],
+    2: ["超開心！！🐣🎉🎉", "嘰嘰嘰嘰嘰！！！", "太幸福了～💕💕"],
+    3: ["太棒了太棒了！！🐥🎊", "飛起來了！！✈️", "愛死你了！！❤️❤️"],
+    4: [
+      "大王超級開心！！🐓🎉🎉",
+      "整個王國都是快樂的！👑",
+      "咕咕嗚嗚呼呼！！🎶",
+    ],
+    5: [
+      "金鷹王者大滿足！🦅🎊🎊",
+      "彩虹山都在閃耀！✨✨✨",
+      "最強最棒的冒險夥伴！🏆❤️",
+    ],
+  },
+};
+
+// 連擊特殊語句（combo ≥ 5 時使用）
+var PET_COMBO_PHRASES = [
+  "哇！好多愛心！❤️❤️❤️",
+  "好癢好癢！停不下來～🤣",
+  "你好喜歡我嗎！？💕💕💕",
+  "頭好暈～但好開心！🌀✨",
+  "超級 combo！！🎊🎊🎊",
+];
+
 /**
  * 依 ID 取得食物定義
  * @param {string} foodId
@@ -248,6 +300,35 @@ function getAllPetAccessories() {
   return PET_ACCESSORIES.slice();
 }
 
+/**
+ * 產生寵物心情語音檔案路徑
+ * @param {string} moodId - 'hungry'|'normal'|'happy'|'excited'
+ * @param {number} level - 1~5
+ * @param {number} index - 0, 1, 2
+ * @returns {string} e.g. 'audio/voice/pet/voice-pet-hungry-lv1-a.mp3'
+ */
+function getPetSpeechVoiceFile(moodId, level, index) {
+  var suffix = ["a", "b", "c"][index] || "a";
+  return (
+    "audio/voice/pet/voice-pet-" +
+    moodId +
+    "-lv" +
+    level +
+    "-" +
+    suffix +
+    ".mp3"
+  );
+}
+
+/**
+ * 產生寵物連擊語音檔案路徑
+ * @param {number} index - 0~4
+ * @returns {string} e.g. 'audio/voice/pet/voice-pet-combo-1.mp3'
+ */
+function getPetComboVoiceFile(index) {
+  return "audio/voice/pet/voice-pet-combo-" + (index + 1) + ".mp3";
+}
+
 // =========================================
 // 匯出
 // =========================================
@@ -257,10 +338,14 @@ if (typeof window !== "undefined") {
   window.PET_FOODS = PET_FOODS;
   window.PET_ACCESSORIES = PET_ACCESSORIES;
   window.PET_MOOD_RULES = PET_MOOD_RULES;
+  window.PET_SPEECH = PET_SPEECH;
+  window.PET_COMBO_PHRASES = PET_COMBO_PHRASES;
   window.getPetFoodById = getPetFoodById;
   window.getPetAccessoryById = getPetAccessoryById;
   window.getAllPetFoods = getAllPetFoods;
   window.getAllPetAccessories = getAllPetAccessories;
+  window.getPetSpeechVoiceFile = getPetSpeechVoiceFile;
+  window.getPetComboVoiceFile = getPetComboVoiceFile;
 }
 
 if (typeof module !== "undefined" && module.exports) {
@@ -269,9 +354,13 @@ if (typeof module !== "undefined" && module.exports) {
     PET_FOODS,
     PET_ACCESSORIES,
     PET_MOOD_RULES,
+    PET_SPEECH,
+    PET_COMBO_PHRASES,
     getPetFoodById,
     getPetAccessoryById,
     getAllPetFoods,
     getAllPetAccessories,
+    getPetSpeechVoiceFile,
+    getPetComboVoiceFile,
   };
 }

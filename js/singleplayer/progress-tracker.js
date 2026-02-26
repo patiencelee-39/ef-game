@@ -133,7 +133,7 @@ var ProgressTracker = (function () {
     progress.freeChoiceUnlocked = true;
 
     saveAdventureProgress(progress);
-    console.log("🔓 教師覆寫：全部探險點已解鎖");
+    Logger.info("🔓 教師覆寫：全部探險點已解鎖");
   }
 
   // ─── 通過判定（Flow-26）───
@@ -179,14 +179,74 @@ var ProgressTracker = (function () {
    */
   function processAdventureResult(params) {
     try {
-      var current = getCurrentPoint();
-      if (!current) {
-        console.error("❌ processAdventureResult: 無當前探險點");
-        return null;
+      // === 先判斷重玩，再取 current（修復全通關後重玩 comboResult 為 null）===
+      var current = getCurrentPoint(); // 可能為 null（全通關時）
+      var isReplay = false;
+      var played; // 實際遊玩的探險點資料
+
+      // 嘗試從 sessionPoint 建構 replay 資料（不依賴 current）
+      if (
+        params.sessionPoint &&
+        typeof params.sessionPoint.mapIndex === "number"
+      ) {
+        var spMapDef = ADVENTURE_MAPS[params.sessionPoint.mapIndex];
+        if (
+          spMapDef &&
+          params.sessionPoint.pointIndex < spMapDef.points.length
+        ) {
+          var spPointDef = spMapDef.points[params.sessionPoint.pointIndex];
+          var spRecord = getPointRecord(
+            spMapDef.id,
+            params.sessionPoint.pointIndex,
+          );
+
+          // 與 current 不同 → 重玩；或 current 為 null（全通關）→ 也是重玩
+          if (
+            !current ||
+            params.sessionPoint.mapIndex !== current.mapIndex ||
+            params.sessionPoint.pointIndex !== current.pointIndex
+          ) {
+            isReplay = true;
+            played = {
+              mapIndex: params.sessionPoint.mapIndex,
+              pointIndex: params.sessionPoint.pointIndex,
+              mapDef: spMapDef,
+              pointDef: spPointDef,
+              pointRecord: spRecord || {
+                bestScore: 0,
+                starsEarned: 0,
+                wmStarsEarned: 0,
+                bestTime: null,
+                passed: false,
+              },
+            };
+            Logger.info(
+              "🔁 重玩模式：實際遊玩",
+              spPointDef.id,
+              current
+                ? "（進度仍在 " + current.pointDef.id + "）"
+                : "（全地圖已通關）",
+            );
+          } else {
+            // sessionPoint === current → 非重玩
+            played = current;
+          }
+        }
       }
 
-      var pointDef = current.pointDef;
-      var mapDef = current.mapDef;
+      // 非重玩且尚未設定 played → 使用 current
+      if (!played) {
+        if (!current) {
+          Logger.error(
+            "❌ processAdventureResult: 無當前探險點且無 sessionPoint",
+          );
+          return null;
+        }
+        played = current;
+      }
+
+      var pointDef = played.pointDef;
+      var mapDef = played.mapDef;
 
       // === 1. 計分 ===
       var fieldRuleRecord = getFieldRuleRecord(pointDef.field, pointDef.rule);
@@ -197,14 +257,14 @@ var ProgressTracker = (function () {
         mode: "singleplayer",
         records: {
           bestAvgRT: fieldRuleRecord.bestAvgRT,
-          bestScore: current.pointRecord.bestScore,
+          bestScore: played.pointRecord.bestScore,
           firstClear: fieldRuleRecord.firstClear,
         },
       });
 
       var wmResult = null;
       if (pointDef.hasWM && params.wmData) {
-        var wmRecords = { bestWMTime: current.pointRecord.bestTime };
+        var wmRecords = { bestWMTime: played.pointRecord.bestTime };
         wmResult = calculateWMScore({
           correctCount: params.wmData.correctCount,
           totalPositions: params.wmData.totalPositions,
@@ -233,19 +293,19 @@ var ProgressTracker = (function () {
 
       // === 4. 更新探險點記錄 ===
       var pointUpdates = {};
-      if (ruleResult.finalScore > current.pointRecord.bestScore) {
+      if (ruleResult.finalScore > played.pointRecord.bestScore) {
         pointUpdates.bestScore = ruleResult.finalScore;
       }
-      if (starsResult.ruleStars > current.pointRecord.starsEarned) {
+      if (starsResult.ruleStars > played.pointRecord.starsEarned) {
         pointUpdates.starsEarned = starsResult.ruleStars;
       }
-      if (wmResult && starsResult.wmStars > current.pointRecord.wmStarsEarned) {
+      if (wmResult && starsResult.wmStars > played.pointRecord.wmStarsEarned) {
         pointUpdates.wmStarsEarned = starsResult.wmStars;
       }
       if (wmResult && wmResult.newBestWMTime !== null) {
         if (
-          current.pointRecord.bestTime === null ||
-          wmResult.newBestWMTime < current.pointRecord.bestTime
+          played.pointRecord.bestTime === null ||
+          wmResult.newBestWMTime < played.pointRecord.bestTime
         ) {
           pointUpdates.bestTime = wmResult.newBestWMTime;
         }
@@ -263,13 +323,13 @@ var ProgressTracker = (function () {
         updateFieldRuleRecord(pointDef.field, pointDef.rule, fieldRuleUpdates);
       }
 
-      // === 6. 通過 → 推進探險 ===
+      // === 6. 通過 → 推進探險（僅首次通過且非重玩已通過的關卡才推進） ===
       var adventureAdvanced = false;
       var freeChoiceJustUnlocked = false;
       var mapJustCompleted = null;
       var allMapsCompleted = false;
 
-      if (pointPassed && !current.pointRecord.passed) {
+      if (pointPassed && !played.pointRecord.passed && !isReplay) {
         pointUpdates.passed = true;
         adventureAdvanced = true;
 
@@ -300,9 +360,9 @@ var ProgressTracker = (function () {
         saveAdventureProgress(progress);
       }
 
-      // 更新 point record
+      // 更新 point record（使用實際遊玩的探險點）
       if (Object.keys(pointUpdates).length > 0) {
-        updatePointRecord(mapDef.id, current.pointIndex, pointUpdates);
+        updatePointRecord(mapDef.id, played.pointIndex, pointUpdates);
       }
 
       // === 7. 徽章 ===
@@ -346,7 +406,7 @@ var ProgressTracker = (function () {
         mapDef: mapDef,
       };
     } catch (err) {
-      console.error("❌ processAdventureResult 錯誤:", err);
+      Logger.error("❌ processAdventureResult 錯誤:", err);
       return null;
     }
   }
@@ -436,7 +496,7 @@ var ProgressTracker = (function () {
         newBadges: newBadges,
       };
     } catch (err) {
-      console.error("❌ processFreeSelectResult 錯誤:", err);
+      Logger.error("❌ processFreeSelectResult 錯誤:", err);
       return null;
     }
   }

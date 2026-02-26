@@ -106,3 +106,27 @@
 .checkbox-group input[type="checkbox"] {
   width: auto;
 }
+
+/* 房主參與遊戲提示 */
+.host-joins-hint {
+  display: block;
+  margin-left: 1.5rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* 隱藏元素 */
+.hidden {
+  display: none;
+}
+
+/* 按鈕群組 */
+.button-group {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+/* flex 填滿 */
+.flex-1 {
+  flex: 1;
+}

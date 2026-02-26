@@ -1,0 +1,169 @@
+{
+  "meta": {
+    "name": "繁體中文兒童執行功能量表 (TC-CHEXI)",
+    "fullName": "Taiwanese Traditional-Chinese Childhood Executive Functioning Inventory",
+    "reference": "蔡青霖、Thorell, L. B.、Siu, A. F. Y.、許育軒、林慧麗 (2020)。繁體中文兒童執行功能量表：編修、心理計量特質檢驗與常模建立。測驗學刊，67(2)，119-143。",
+    "doi": "10.7108/PT.202006_67(2).0002",
+    "totalItems": 24,
+    "scalePoints": 5,
+    "scaleLabels": ["完全不正確", "不正確", "部分正確", "正確", "完全正確"],
+    "note": "分數越高表示執行功能困難越大",
+    "instructions": "以下描述的是兒童在日常生活中可能出現的行為。請根據您對孩子的觀察，選擇最符合孩子目前表現的選項。請注意，每一題都必須作答。"
+  },
+  "subscales": [
+    {
+      "id": "wm",
+      "name": "工作記憶",
+      "nameEn": "Working Memory",
+      "itemCount": 8,
+      "maxScore": 40,
+      "description": "評估兒童在日常活動中維持和操控訊息的能力"
+    },
+    {
+      "id": "plan",
+      "name": "計畫",
+      "nameEn": "Planning",
+      "itemCount": 6,
+      "maxScore": 30,
+      "description": "評估兒童計畫和組織行為的能力"
+    },
+    {
+      "id": "reg",
+      "name": "調適",
+      "nameEn": "Regulation",
+      "itemCount": 5,
+      "maxScore": 25,
+      "description": "評估兒童調節情緒和行為的能力"
+    },
+    {
+      "id": "inhib",
+      "name": "抑制",
+      "nameEn": "Inhibition",
+      "itemCount": 5,
+      "maxScore": 25,
+      "description": "評估兒童抑制衝動反應的能力"
+    }
+  ],
+  "items": [
+    {
+      "id": 1,
+      "subscale": "wm",
+      "text": "很難記住冗長的指示。"
+    },
+    {
+      "id": 2,
+      "subscale": "reg",
+      "text": "似乎很少能激勵他去做一些自己不喜歡做的事。"
+    },
+    {
+      "id": 3,
+      "subscale": "wm",
+      "text": "活動進行到一半時，很難記得自己正在做什麼。"
+    },
+    {
+      "id": 4,
+      "subscale": "reg",
+      "text": "很難對一些欠缺吸引力的任務堅持到底，除非有人答應會給他獎勵。"
+    },
+    {
+      "id": 5,
+      "subscale": "inhib",
+      "text": "傾向在做事之前不會先想到後果。"
+    },
+    {
+      "id": 6,
+      "subscale": "wm",
+      "text": "當有好幾件事情要他去做的時候，只會記得第一件或最後一件事情。"
+    },
+    {
+      "id": 7,
+      "subscale": "wm",
+      "text": "當他無法解決當下問題時，很難想出其他的方法。"
+    },
+    {
+      "id": 8,
+      "subscale": "reg",
+      "text": "當有些事情必須要完成的時候，他常常會因為其他更具吸引力的事情而分心。"
+    },
+    {
+      "id": 9,
+      "subscale": "wm",
+      "text": "很容易忘記別人要他／她拿什麼東西回來。"
+    },
+    {
+      "id": 10,
+      "subscale": "reg",
+      "text": "顯然難以去做一些他認為沉悶／無聊的事。"
+    },
+    {
+      "id": 11,
+      "subscale": "plan",
+      "text": "很難計畫好一項活動（例如：記得帶齊戶外教學的用品或上學所需要的東西）。"
+    },
+    {
+      "id": 12,
+      "subscale": "inhib",
+      "text": "很難抑制他的行動，就算事前已經先告訴過他也一樣。"
+    },
+    {
+      "id": 13,
+      "subscale": "plan",
+      "text": "很難進行需要多個步驟的活動（例如：年紀較小的小孩在沒有提示下穿好衣服鞋襪；年紀較大的小孩獨自做完所有功課）。"
+    },
+    {
+      "id": 14,
+      "subscale": "reg",
+      "text": "他一定要覺得任務有吸引力才能全神貫注。"
+    },
+    {
+      "id": 15,
+      "subscale": "inhib",
+      "text": "很難在不適宜笑的場合忍住不笑。"
+    },
+    {
+      "id": 16,
+      "subscale": "plan",
+      "text": "很難把已發生的事情說得讓別人可以聽懂。"
+    },
+    {
+      "id": 17,
+      "subscale": "inhib",
+      "text": "即使被喝令停止，仍然很難在活動中立即停下來，例如：他在被喊停後總要多跳幾下，或是多玩電腦一會兒。"
+    },
+    {
+      "id": 18,
+      "subscale": "wm",
+      "text": "很難理解用言語表達的指示，除非同時向他示範怎樣做。"
+    },
+    {
+      "id": 19,
+      "subscale": "plan",
+      "text": "很難進行包含多個步驟的任務或活動。"
+    },
+    {
+      "id": 20,
+      "subscale": "plan",
+      "text": "很難預先想好未來的事或從經驗中學習。"
+    },
+    {
+      "id": 21,
+      "subscale": "inhib",
+      "text": "在一群小朋友當中會表現得比其他人更瘋狂（例如：生日派對上或團體活動中）。"
+    },
+    {
+      "id": 22,
+      "subscale": "wm",
+      "text": "很難做一些需要動腦筋的事，例如：倒數（由二十倒數到一）。"
+    },
+    {
+      "id": 23,
+      "subscale": "wm",
+      "text": "當他在做一件事情時，很難將其他事情記在心裡面。"
+    },
+    {
+      "id": 24,
+      "subscale": "plan",
+      "text": "跟年紀差不多的人比起來，很難理解時間的概念。"
+    }
+  ]
+}

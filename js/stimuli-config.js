@@ -158,10 +158,10 @@ function setStimuliPack(packId) {
   if (STIMULI_PACKS[packId]) {
     currentStimuliPack = packId;
     localStorage.setItem("efgame-stimuli-pack", packId);
-    console.log(`✅ 刺激物包已切換為：${STIMULI_PACKS[packId].packName}`);
+    Logger.debug(`✅ 刺激物包已切換為：${STIMULI_PACKS[packId].packName}`);
     return true;
   }
-  console.warn(`⚠️ 刺激物包 "${packId}" 不存在`);
+  Logger.warn(`⚠️ 刺激物包 "${packId}" 不存在`);
   return false;
 }
 

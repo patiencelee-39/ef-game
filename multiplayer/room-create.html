@@ -14,6 +14,8 @@
     <link rel="manifest" href="../manifest.json" />
     <meta name="theme-color" content="#302b63" />
     <link rel="stylesheet" href="../css/themes/base.css" />
+    <link rel="stylesheet" href="../css/themes/theme-field-primary.css" />
+    <link rel="stylesheet" href="../css/themes/theme-rule-independent.css" />
     <link rel="stylesheet" href="../css/main.css" />
     <link
       rel="preload"
@@ -25,6 +27,8 @@
       ><link rel="stylesheet" href="../css/components/landscape-hint.css"
     /></noscript>
     <link rel="stylesheet" href="../css/pages/room-create.css" />
+    <link rel="stylesheet" href="../css/components/stage-picker.css" />
+    <link rel="stylesheet" href="../css/components/relay.css" />
     <link
       rel="preload"
       href="../css/components/navbar.css"
@@ -36,19 +40,23 @@
     /></noscript>
     <!-- Firebase Bundle -->
     <script defer src="../js/firebase-bundle.js"></script>
-    <!-- 工具函式（注意順序：constants 必須最先載入）-->
-    <script defer src="../js/utils/constants.js"></script>
+    <script defer src="../js/utils/logger.js"></script>
+    <script defer src="../js/shared/game-modal.js"></script>
+    <!-- 工具函式 -->
     <script defer src="../js/game-config.js"></script>
+    <script defer src="../js/utils/constants.js"></script>
     <script defer src="../js/utils/question-generator.js"></script>
     <script defer src="../js/utils/room-code.js"></script>
     <!-- 場地×規則共用模組 -->
     <script defer src="../js/shared/combo-selector.js"></script>
+    <script defer src="../js/shared/stage-picker.js"></script>
     <!-- 頁面邏輯 -->
     <script defer src="../js/multiplayer/room-manager.js"></script>
     <script defer src="../js/shared/navbar.js"></script>
     <script defer src="../js/shared/landscape-hint.js"></script>
   </head>
   <body>
+    <a href="#main-content" class="skip-link">跳到主要內容</a>
     <div class="container">
       <header>
         <h1>🏠 建立遊戲房間</h1>
@@ -62,26 +70,47 @@
             <h2>📋 基本設定</h2>
 
             <div class="form-group">
+              <label for="hostNickname">👤 房主暱稱</label>
+              <input
+                type="text"
+                id="hostNickname"
+                placeholder="輸入你的暱稱（留空可匿名建立）"
+                maxlength="20"
+              />
+            </div>
+
+            <div class="form-group">
               <label for="roomName">房間名稱</label>
               <input
                 type="text"
                 id="roomName"
-                value="我的練習房"
+                value="我的遊戲房"
                 required
                 aria-required="true"
               />
             </div>
 
             <div class="form-group">
-              <label for="roomCode">房間代碼（自動生成）</label>
-              <input type="text" id="roomCode" readonly />
-              <button
-                type="button"
-                id="regenerateCode"
-                class="btn-secondary mt-sm"
+              <label for="roomCode"
+                >房間代碼（6位，可自行填入或留空自動生成）</label
               >
-                🔄 重新生成
-              </button>
+              <input
+                type="text"
+                id="roomCode"
+                placeholder="留空則自動生成"
+                maxlength="7"
+                style="
+                  text-transform: uppercase;
+                  letter-spacing: 2px;
+                  text-align: center;
+                  font-weight: 700;
+                "
+              />
+              <small
+                id="codeWarning"
+                style="color: #e74c3c; display: none; margin-top: 4px"
+                >⚠️ 代碼包含容易混淆的字元（0/O/I/1/l），建議避免使用</small
+              >
             </div>
 
             <div class="form-group checkbox-group">
@@ -89,7 +118,7 @@
               <label for="hasPassword">設定房間密碼</label>
             </div>
 
-            <div class="form-group" id="passwordGroup" style="display: none">
+            <div class="form-group hidden" id="passwordGroup">
               <label for="password">密碼（4位數字）</label>
               <input
                 type="password"
@@ -106,59 +135,162 @@
             <div class="checkbox-group">
               <input type="checkbox" id="hostJoinsGame" checked />
               <label for="hostJoinsGame">房主參與遊戲</label>
-              <small
-                style="
-                  display: block;
-                  margin-left: 1.5rem;
-                  color: rgba(255, 255, 255, 0.7);
-                "
-              >
+              <small class="host-joins-hint">
                 取消勾選後，房主將只能觀戰和管理遊戲
               </small>
             </div>
           </section>
 
-          <!-- 遊戲場選擇 -->
+          <!-- 遊戲模式 -->
+          <section class="form-section">
+            <h2>🏁 遊戲模式</h2>
+            <div class="game-mode-selector" id="gameModeSelector">
+              <button
+                type="button"
+                class="game-mode-btn active"
+                data-mode="individual"
+              >
+                <span class="mode-icon">👤</span>個人競賽
+              </button>
+              <button type="button" class="game-mode-btn" data-mode="team">
+                <span class="mode-icon">⚔️</span>隊伍對抗
+              </button>
+              <button type="button" class="game-mode-btn" data-mode="relay">
+                <span class="mode-icon">🏁</span>接力賽
+              </button>
+            </div>
+
+            <!-- 隊伍對抗選項 -->
+            <div class="team-options" id="teamOptions">
+              <div class="form-group">
+                <label for="teamCount">隊伍數量</label>
+                <div class="team-count-slider-row">
+                  <input
+                    type="range"
+                    id="teamCount"
+                    min="2"
+                    max="10"
+                    value="2"
+                    class="team-count-slider"
+                  />
+                  <span class="team-count-value" id="teamCountValue">2 隊</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>分隊方式</label>
+                <div class="team-assign-row" id="teamAssignRow">
+                  <button
+                    type="button"
+                    class="team-assign-btn active"
+                    data-assign="random"
+                  >
+                    🔀 隨機分隊
+                  </button>
+                  <button
+                    type="button"
+                    class="team-assign-btn"
+                    data-assign="selfSelect"
+                  >
+                    🙋 玩家自選
+                  </button>
+                  <button
+                    type="button"
+                    class="team-assign-btn"
+                    data-assign="manual"
+                  >
+                    ✋ 手動分隊
+                  </button>
+                </div>
+                <small class="team-assign-hint" id="teamAssignHint"
+                  >開始遊戲時自動隨機分隊</small
+                >
+              </div>
+              <div class="form-group">
+                <label>隊長選擇</label>
+                <div class="team-assign-row" id="captainSelectRow">
+                  <button
+                    type="button"
+                    class="team-assign-btn active"
+                    data-captain="hostAssign"
+                  >
+                    👑 房主指派
+                  </button>
+                  <button
+                    type="button"
+                    class="team-assign-btn"
+                    data-captain="random"
+                  >
+                    🎲 隨機產生
+                  </button>
+                </div>
+                <small class="team-assign-hint" id="captainSelectHint"
+                  >房主在等待室指定各隊隊長</small
+                >
+              </div>
+            </div>
+
+            <!-- 接力賽選項 -->
+            <div class="relay-options" id="relayOptions">
+              <label>隊伍數量</label>
+              <div class="team-count-row" id="teamCountRow">
+                <button
+                  type="button"
+                  class="team-count-btn active"
+                  data-count="2"
+                >
+                  2 隊
+                </button>
+                <button type="button" class="team-count-btn" data-count="3">
+                  3 隊
+                </button>
+                <button type="button" class="team-count-btn" data-count="4">
+                  4 隊
+                </button>
+              </div>
+              <div class="form-group" style="margin-top: 12px;">
+                <label>隊長選擇</label>
+                <div class="team-assign-row" id="relayCaptainSelectRow">
+                  <button
+                    type="button"
+                    class="team-assign-btn active"
+                    data-captain="hostAssign"
+                  >
+                    👑 房主指派
+                  </button>
+                  <button
+                    type="button"
+                    class="team-assign-btn"
+                    data-captain="random"
+                  >
+                    🎲 隨機產生
+                  </button>
+                </div>
+                <small class="team-assign-hint" id="relayCaptainSelectHint"
+                  >房主在等待室指定各隊隊長</small
+                >
+              </div>
+            </div>
+          </section>
+
+          <!-- 遊戲場選擇（StagePicker 共用元件） -->
           <section class="form-section stage-selector">
             <h2>🎮 遊戲場選擇（拖曳排序）</h2>
 
             <div
               class="selected-stages"
               id="selectedStages"
-              role="status"
+              role="list"
               aria-live="polite"
+              aria-label="已選擇的遊戲場"
             >
               <div class="selected-stages-empty">
-                👆 請從下方選擇遊戲場（最多4個）
+                👆 請從下方選擇遊戲場（可重複，最多20個）
               </div>
             </div>
 
-            <h3>可選擇的遊戲場：</h3>
-            <div class="available-stages" id="availableStages">
-              <div class="stage-card" data-stage="A">
-                <span class="emoji">🧀</span>
-                <div>場地A</div>
-                <div>起司森林</div>
-                <small>簡單</small>
-              </div>
-              <div class="stage-card" data-stage="B">
-                <span class="emoji">🧑</span>
-                <div>場地B</div>
-                <div>人類村莊</div>
-                <small>中等</small>
-              </div>
-              <div class="stage-card" data-stage="C">
-                <span class="emoji">🐟</span>
-                <div>場地C</div>
-                <div>海洋世界</div>
-                <small>中等</small>
-              </div>
-              <div class="stage-card" data-stage="D">
-                <span class="emoji">🌙</span>
-                <div>場地D</div>
-                <div>晝夜迷宮</div>
-                <small>困難</small>
-              </div>
+            <h3>可選擇的遊戲場（12 個）：</h3>
+            <div class="stage-picker-cards" id="availableStages">
+              <!-- 由 StagePicker 動態生成 -->
             </div>
           </section>
 
@@ -185,11 +317,46 @@
                 <option value="10">10秒</option>
               </select>
             </div>
+
+            <!-- WM 已整合至探險點設計，不再需要獨立開關 -->
+            <!--
+            <div class="checkbox-group">
+              <input type="checkbox" id="enableWM" />
+              <label for="enableWM">🧠 啟用工作記憶測驗</label>
+              <small
+                style="
+                  display: block;
+                  color: rgba(255, 255, 255, 0.6);
+                  font-size: 0.8rem;
+                  margin-top: 2px;
+                "
+                >每場地結束後加入工作記憶測驗</small
+              >
+            </div>
+            -->
           </section>
 
           <!-- 進階設定 -->
           <section class="form-section">
             <h2>🔧 進階設定</h2>
+
+            <div class="form-group">
+              <label for="maxPlayers">房間人數上限</label>
+              <div class="team-count-slider-row">
+                <input
+                  type="range"
+                  id="maxPlayers"
+                  min="2"
+                  max="20"
+                  value="8"
+                  class="team-count-slider"
+                />
+                <span class="team-count-value" id="maxPlayersValue">8 人</span>
+              </div>
+              <small style="color: rgba(255,255,255,0.5); font-size: 0.75rem;">
+                建議 8 人以內；超過 10 人時接力賽等待時間會增加
+              </small>
+            </div>
 
             <div class="checkbox-group">
               <input type="checkbox" id="showLeaderboard" checked />
@@ -213,20 +380,11 @@
           </section>
 
           <!-- 按鈕 -->
-          <div
-            class="button-group"
-            style="display: flex; gap: 1rem; margin-top: 2rem"
-          >
-            <button
-              type="button"
-              onclick="location.href = '../index.html'"
-              class="btn-secondary"
-            >
+          <div class="button-group">
+            <button type="button" id="backBtn" class="btn-secondary">
               返回
             </button>
-            <button type="submit" class="btn-primary" style="flex: 1">
-              建立房間
-            </button>
+            <button type="submit" class="btn-primary flex-1">建立房間</button>
           </div>
         </form>
       </main>

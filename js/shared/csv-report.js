@@ -20,6 +20,7 @@
  *   CsvReport.exportCsv(parsedData, filename)     → void（觸發下載）
  *   CsvReport.exportPdf(container, parsedData, filename) → Promise<void>（觸發 PDF 下載）
  *   CsvReport.exportScreenshot(container, filename) → Promise<void>（觸發 PNG 截圖下載）
+ *   CsvReport.calculateSDT(trialDetails)            → { dPrime, criterion, beta, ... }
  *   CsvReport.destroy()                           → void（銷毀所有圖表）
  *
  * @version 1.2.0
@@ -40,6 +41,7 @@ var CsvReport = (function () {
   var CV = GC.CSV_VALUES || {};
   var FN = GC.CSV_FILE_NAMING || {};
   var RM = GC.REPORT_META || {};
+  var FR2R = GC.FIELD_RULE_TO_ROUND || {};
 
   var ROUND_COLORS = GC.ROUND_CHART_COLORS || {
     1: "rgba(255, 99, 132, 0.8)",
@@ -104,7 +106,7 @@ var CsvReport = (function () {
             }
           },
           error: function (error) {
-            console.error("CSV 解析錯誤:", file.name, error);
+            Logger.error("CSV 解析錯誤:", file.name, error);
             completed++;
             if (completed === files.length) {
               try {
@@ -204,6 +206,8 @@ var CsvReport = (function () {
     for (var i = 0; i < data.length; i++) {
       var row = data[i];
       if (!row[F.ROUND]) continue;
+      // 跳過 SDT 摘要列（匯出時附加的統計列）
+      if (row[F.FILE_NAME] === "SDT_Summary") continue;
       if (row[F.ROUND].toString().indexOf(WM_PREFIX) === 0) {
         wmTrials.push(row);
       } else {
@@ -255,20 +259,52 @@ var CsvReport = (function () {
       var row = {};
       row[F.FILE_NAME] = fileName;
       row[F.PARTICIPANT] = pid;
-      row[F.ROUND] = t.round || t[F.ROUND] || "1";
+      // 兒童代碼（研究用，與量表配對）
+      row[F.CHILD_CODE] = t.childCode || t[F.CHILD_CODE] || "";
+      row[F.SESSION_ID] = t.sessionId || t[F.SESSION_ID] || "";
+      row[F.MODE] = t.mode || t[F.MODE] || "";
+      row[F.FIELD_ID] = t.fieldId || t[F.FIELD_ID] || "";
+      row[F.RULE_ID] = t.ruleId || t[F.RULE_ID] || "";
+      // 自動偵測 Round：優先使用 trial 自帶的 round，否則由 fieldId+ruleId 查表
+      var detectedRound = t.round || t[F.ROUND];
+      if (!detectedRound && t.fieldId && t.ruleId) {
+        detectedRound = FR2R[t.fieldId + "_" + t.ruleId];
+      }
+      row[F.ROUND] = detectedRound || "1";
       row[F.TRIAL] = t.trial || t[F.TRIAL] || index + 1;
       row[F.STIMULUS] = t.stimulus || t[F.STIMULUS] || "";
-      row[F.HAS_PERSON] = String(t.hasPerson || t[F.HAS_PERSON] || false);
-      row[F.IS_NIGHT_TIME] = String(
-        t.isNightTime || t[F.IS_NIGHT_TIME] || false,
-      );
-      row[F.INPUT_KEY] = t.input || t[F.INPUT_KEY] || "";
+      row[F.IS_GO] = t.isGo != null ? String(t.isGo) : t[F.IS_GO] || "";
+      row[F.CONTEXT] = t.context || t[F.CONTEXT] || "";
+      row[F.INPUT_KEY] = t.input || t.playerAction || t[F.INPUT_KEY] || "";
       row[F.CORRECT] =
-        t.correct === true || t[F.CORRECT] === CV.CORRECT_YES
+        t.correct === true ||
+        t.isCorrect === true ||
+        t[F.CORRECT] === CV.CORRECT_YES
           ? CV.CORRECT_YES
           : CV.CORRECT_NO;
+      row[F.RESULT] = t.result || t[F.RESULT] || "";
       row[F.RT_MS] = t.rt || t[F.RT_MS] || 0;
+      row[F.STIMULUS_DURATION] =
+        t.stimulusDurationMs != null
+          ? String(t.stimulusDurationMs)
+          : t[F.STIMULUS_DURATION] || "";
+      row[F.ISI] = t.isiMs != null ? String(t.isiMs) : t[F.ISI] || "";
+      row[F.WM_SPAN] = t.wmSpan != null ? String(t.wmSpan) : t[F.WM_SPAN] || "";
+      row[F.WM_DIRECTION] = t.wmDirection || t[F.WM_DIRECTION] || "";
+      row[F.WM_COMPLETION_TIME] =
+        t.wmCompletionTime != null
+          ? String(t.wmCompletionTime)
+          : t[F.WM_COMPLETION_TIME] || "";
       row[F.TIMESTAMP] = t.timestamp || t[F.TIMESTAMP] || now.toISOString();
+      row[F.GAME_END_TIME] = t[F.GAME_END_TIME] || t.gameEndTime || "";
+      // v4.7 自適應難度欄位
+      row[F.ADAPTIVE_ENGINE] = t.adaptiveEngine || t[F.ADAPTIVE_ENGINE] || "";
+      row[F.DIFFICULTY_LEVEL] =
+        t.difficultyLevel != null
+          ? String(t.difficultyLevel)
+          : t[F.DIFFICULTY_LEVEL] || "";
+      row[F.THETA] =
+        t.theta != null && t.theta !== "" ? String(t.theta) : t[F.THETA] || "";
       return row;
     });
   }
@@ -276,6 +312,97 @@ var CsvReport = (function () {
   // ═══════════════════════════════════════════════════════════════
   // 統計計算
   // ═══════════════════════════════════════════════════════════════
+
+  /**
+   * 標準常態分布反函數（Probit / Z-score）
+   * 使用 Abramowitz & Stegun 近似法 (誤差 < 4.5e-4)
+   * @param {number} p - 機率值 (0 < p < 1)
+   * @returns {number} Z 值
+   */
+  function _probit(p) {
+    if (p <= 0) return -5;
+    if (p >= 1) return 5;
+    if (p < 0.5) return -_probit(1 - p);
+    // Rational approximation for upper half
+    var t = Math.sqrt(-2 * Math.log(1 - p));
+    var c0 = 2.515517;
+    var c1 = 0.802853;
+    var c2 = 0.010328;
+    var d1 = 1.432788;
+    var d2 = 0.189269;
+    var d3 = 0.001308;
+    return (
+      t -
+      (c0 + c1 * t + c2 * t * t) / (1 + d1 * t + d2 * t * t + d3 * t * t * t)
+    );
+  }
+
+  /**
+   * 標準常態密度函數 φ(z)
+   * @param {number} z
+   * @returns {number}
+   */
+  function _phi(z) {
+    return Math.exp(-0.5 * z * z) / Math.sqrt(2 * Math.PI);
+  }
+
+  /**
+   * 計算 SDT 指標（Signal Detection Theory）
+   * @param {Object[]} data - CSV 列物件陣列（僅一般試驗，不含 WM）
+   * @returns {Object} { hits, fa, misses, cr, goTotal, noGoTotal, hitRate, faRate, dPrime, criterion, beta }
+   */
+  function _calculateSDTStats(data) {
+    var hits = 0,
+      fa = 0,
+      misses = 0,
+      cr = 0;
+
+    for (var i = 0; i < data.length; i++) {
+      var result = data[i][F.RESULT] || "";
+      switch (result) {
+        case "Hit":
+          hits++;
+          break;
+        case "FA":
+          fa++;
+          break;
+        case "Miss":
+          misses++;
+          break;
+        case "CR":
+          cr++;
+          break;
+      }
+    }
+
+    var goTotal = hits + misses;
+    var noGoTotal = fa + cr;
+
+    // log-linear 校正：(count + 0.5) / (total + 1)，避免 0% 或 100% 導致 Z → ±∞
+    var hitRate = goTotal > 0 ? (hits + 0.5) / (goTotal + 1) : 0.5;
+    var faRate = noGoTotal > 0 ? (fa + 0.5) / (noGoTotal + 1) : 0.5;
+
+    var zHit = _probit(hitRate);
+    var zFA = _probit(faRate);
+
+    var dPrime = zHit - zFA;
+    var criterion = -0.5 * (zHit + zFA);
+    var beta = _phi(zFA) !== 0 ? _phi(zHit) / _phi(zFA) : 1;
+
+    return {
+      hits: hits,
+      fa: fa,
+      misses: misses,
+      cr: cr,
+      goTotal: goTotal,
+      noGoTotal: noGoTotal,
+      hitRate: hitRate,
+      faRate: faRate,
+      dPrime: dPrime,
+      criterion: criterion,
+      beta: beta,
+    };
+  }
 
   function _calculateBasicStats(data) {
     var totalTrials = data.length;
@@ -298,11 +425,26 @@ var CsvReport = (function () {
           }, 0) / rtData.length
         : 0;
 
+    // SDT 指標
+    var sdt = _calculateSDTStats(data);
+
     return {
       totalTrials: totalTrials,
       correctRate: correctRate,
       avgRT: avgRT,
       correctTrials: correctTrials,
+      // SDT
+      hits: sdt.hits,
+      fa: sdt.fa,
+      misses: sdt.misses,
+      cr: sdt.cr,
+      goTotal: sdt.goTotal,
+      noGoTotal: sdt.noGoTotal,
+      hitRate: sdt.hitRate,
+      faRate: sdt.faRate,
+      dPrime: sdt.dPrime,
+      criterion: sdt.criterion,
+      beta: sdt.beta,
     };
   }
 
@@ -314,9 +456,13 @@ var CsvReport = (function () {
    * 在指定容器中渲染完整分析報告
    * @param {HTMLElement} container - 報告容器
    * @param {ParsedData} parsedData - 解析後的資料
+   * @param {Object} [options] - 選項
+   * @param {string} [options.mode] - 遊戲模式（'adventure' | 'free-select'）
    */
-  function renderReport(container, parsedData) {
+  function renderReport(container, parsedData, options) {
     if (!container || !parsedData) return;
+    var opts = options || {};
+    var gameMode = opts.mode || "";
 
     // 銷毀舊圖表
     destroy();
@@ -336,6 +482,43 @@ var CsvReport = (function () {
     html += _statCard("⏱️", Math.round(stats.avgRT) + " ms", "平均反應時間");
     html += _statCard("🧠", wm.length, "工作記憶測試數");
     html += "</div>";
+
+    // — SDT 信號偵測論指標 —
+    if (stats.goTotal > 0 || stats.noGoTotal > 0) {
+      html += '<div class="csv-report__section">';
+      html +=
+        '<div class="csv-report__round-header">📐 信號偵測論 (SDT) 指標</div>';
+      html += '<div class="csv-report__overview">';
+      html += _statCard("✅", stats.hits + "/" + stats.goTotal, "Hit (命中)");
+      html += _statCard("❌", stats.fa + "/" + stats.noGoTotal, "FA (虛報)");
+      html += _statCard(
+        "😶",
+        stats.misses + "/" + stats.goTotal,
+        "Miss (漏失)",
+      );
+      html += _statCard(
+        "🛡️",
+        stats.cr + "/" + stats.noGoTotal,
+        "CR (正確拒絕)",
+      );
+      html += "</div>";
+      html += '<div class="csv-report__overview">';
+      html += _statCard("📊", stats.dPrime.toFixed(2), "d′ 敏感度");
+      html += _statCard("⚖️", stats.criterion.toFixed(2), "c 決策準則");
+      html += _statCard("🎚️", stats.beta.toFixed(2), "β 決策權重");
+      html += _statCard(
+        "📈",
+        (stats.hitRate * 100).toFixed(1) + "%",
+        "Hit Rate",
+      );
+      html += "</div>";
+      html +=
+        '<div style="padding:8px 16px;font-size:0.85em;color:var(--text-light,#888);">';
+      html +=
+        "<p>💡 <strong>d′</strong>：越高表示辨識 Go/NoGo 的能力越強。<strong>c</strong>：正值=保守（傾向不按），負值=衝動（傾向按）。<strong>β</strong>：>1=保守，<1=冒險。</p>";
+      html += "</div>";
+      html += "</div>";
+    }
 
     // — 參與者摘要 —
     if (parsedData.participants && parsedData.participants.length > 0) {
@@ -360,14 +543,16 @@ var CsvReport = (function () {
       html += "</div>";
     });
 
-    // — 綜合比較 —
-    html += '<div class="csv-report__section">';
-    html += '<div class="csv-report__round-header">📊 綜合分析</div>';
-    html +=
-      '<div class="csv-report__chart-box"><h3>🎯 各回合正確率比較</h3><canvas id="csvAccChart"></canvas></div>';
-    html +=
-      '<div class="csv-report__chart-box"><h3>⏱️ 各回合平均反應時間</h3><canvas id="csvRTChart"></canvas></div>';
-    html += "</div>";
+    // — 綜合比較（僅自由選擇模式顯示） —
+    if (gameMode === "free-select") {
+      html += '<div class="csv-report__section">';
+      html += '<div class="csv-report__round-header">📊 綜合分析</div>';
+      html +=
+        '<div class="csv-report__chart-box"><h3>🎯 各回合正確率比較</h3><canvas id="csvAccChart"></canvas></div>';
+      html +=
+        '<div class="csv-report__chart-box"><h3>⏱️ 各回合平均反應時間</h3><canvas id="csvRTChart"></canvas></div>';
+      html += "</div>";
+    }
 
     // — 工作記憶測試 —
     if (wm.length > 0) {
@@ -388,8 +573,10 @@ var CsvReport = (function () {
     // 延遲一幀讓 DOM 渲染後再畫圖
     requestAnimationFrame(function () {
       _drawRoundCharts(reg);
-      _drawAccuracyComparison(reg);
-      _drawRTComparison(reg);
+      if (gameMode === "free-select") {
+        _drawAccuracyComparison(reg);
+        _drawRTComparison(reg);
+      }
       if (wm.length > 0) {
         _displayWMResults(wm, parsedData.allData);
         _drawWMCharts(wm, parsedData.allData);
@@ -453,7 +640,7 @@ var CsvReport = (function () {
       if (roundData.length === 0) return;
 
       var labels = roundData.map(function (row, i) {
-        var ts = row[F.TIMESTAMP] || "";
+        var ts = String(row[F.TIMESTAMP] || "");
         var parts = ts.split(" ");
         return [
           "第 " + (i + 1) + " 題",
@@ -518,8 +705,7 @@ var CsvReport = (function () {
             var isCorrect = row[F.CORRECT] === CV.CORRECT_YES;
             var info = isCorrect ? "✅ 正確" : "❌ 錯誤";
             info += "\n刺激物：" + (row[F.STIMULUS] || "");
-            if (row[F.HAS_PERSON] === CV.BOOL_TRUE) info += "\n👤 有人出現";
-            if (row[F.IS_NIGHT_TIME] === CV.BOOL_TRUE) info += "\n🌙 晚上";
+            if (row[F.CONTEXT]) info += "\n情境：" + row[F.CONTEXT];
             info += "\n按鍵：" + (row[F.INPUT_KEY] || "");
             return info;
           },
@@ -536,7 +722,15 @@ var CsvReport = (function () {
     var canvas = document.getElementById("csvAccChart");
     if (!canvas) return;
 
-    var accuracies = REGULAR_ROUNDS.map(function (r) {
+    // 動態偵測實際有資料的回合（支援自由選擇最多 12 回合）
+    var MAX_ROUNDS = 12;
+    var activeRounds = [];
+    for (var rr = 1; rr <= MAX_ROUNDS; rr++) {
+      if (_filterRound(regularTrials, rr).length > 0) activeRounds.push(rr);
+    }
+    if (activeRounds.length === 0) return;
+
+    var accuracies = activeRounds.map(function (r) {
       var rd = _filterRound(regularTrials, r);
       if (rd.length === 0) return 0;
       var correct = rd.filter(function (row) {
@@ -545,11 +739,11 @@ var CsvReport = (function () {
       return (correct / rd.length) * 100;
     });
 
-    var barLabels = REGULAR_ROUNDS.map(function (r) {
+    var barLabels = activeRounds.map(function (r) {
       return ROUND_LABELS[r] || "回合 " + r;
     });
-    var barColors = REGULAR_ROUNDS.map(function (r) {
-      return ROUND_COLORS[r];
+    var barColors = activeRounds.map(function (r) {
+      return ROUND_COLORS[r] || "rgba(201,203,207,0.8)";
     });
 
     if (charts.csvAccChart) charts.csvAccChart.destroy();
@@ -592,7 +786,15 @@ var CsvReport = (function () {
     var canvas = document.getElementById("csvRTChart");
     if (!canvas) return;
 
-    var avgRTs = REGULAR_ROUNDS.map(function (r) {
+    // 動態偵測實際有資料的回合（支援自由選擇最多 12 回合）
+    var MAX_ROUNDS = 12;
+    var activeRounds = [];
+    for (var rr = 1; rr <= MAX_ROUNDS; rr++) {
+      if (_filterRound(regularTrials, rr).length > 0) activeRounds.push(rr);
+    }
+    if (activeRounds.length === 0) return;
+
+    var avgRTs = activeRounds.map(function (r) {
       var rd = _filterRound(regularTrials, r);
       var rtData = [];
       for (var i = 0; i < rd.length; i++) {
@@ -606,11 +808,11 @@ var CsvReport = (function () {
         : 0;
     });
 
-    var lineLabels = REGULAR_ROUNDS.map(function (r) {
+    var lineLabels = activeRounds.map(function (r) {
       return ROUND_LABELS[r] || "回合 " + r;
     });
-    var pointColors = REGULAR_ROUNDS.map(function (r) {
-      return ROUND_COLORS[r];
+    var pointColors = activeRounds.map(function (r) {
+      return ROUND_COLORS[r] || "rgba(201,203,207,0.8)";
     });
 
     if (charts.csvRTChart) charts.csvRTChart.destroy();
@@ -774,7 +976,7 @@ var CsvReport = (function () {
     });
 
     var wmLabels = wmTrials.map(function (row) {
-      var ts = row[F.TIMESTAMP] || "";
+      var ts = String(row[F.TIMESTAMP] || "");
       var parts = ts.split(" ");
       return [
         row[F.ROUND],
@@ -944,7 +1146,7 @@ var CsvReport = (function () {
    */
   function exportCsv(parsedData, filename) {
     if (!parsedData || !parsedData.allData || parsedData.allData.length === 0) {
-      console.warn("CsvReport.exportCsv: 沒有資料可匯出");
+      Logger.warn("CsvReport.exportCsv: 沒有資料可匯出");
       return;
     }
 
@@ -954,22 +1156,35 @@ var CsvReport = (function () {
         : [
             "FileName",
             "Participant",
+            "SessionId",
+            "Mode",
+            "FieldId",
+            "RuleId",
             "Round",
             "Trial",
             "Stimulus",
-            "HasPerson",
-            "IsNightTime",
+            "IsGo",
+            "Context",
             "InputKey",
             "Correct",
+            "Result",
             "RT(ms)",
+            "StimulusDuration",
+            "ISI",
+            "WMSpan",
+            "WMDirection",
+            "WMCompletionTime",
             "Timestamp",
+            "GameEndTime",
           ];
     var csvContent = headers.join(",") + "\n";
 
     parsedData.allData.forEach(function (row) {
       var line = headers
         .map(function (h) {
-          var val = row[h] || "";
+          var raw = row[h];
+          // 空值（null / undefined / ""）一律填入 "-"
+          var val = raw === null || raw === undefined || raw === "" ? "-" : raw;
           // 如果值包含逗號或引號，用引號包裹
           if (String(val).indexOf(",") >= 0 || String(val).indexOf('"') >= 0) {
             return '"' + String(val).replace(/"/g, '""') + '"';
@@ -980,13 +1195,90 @@ var CsvReport = (function () {
       csvContent += line + "\n";
     });
 
-    var defaultName =
-      filename ||
-      FN.MERGE_PREFIX +
+    // === SDT 摘要列 ===
+    try {
+      var sdtStats = _calculateSDTStats(parsedData.allData);
+      // 計算平均 RT
+      var totalRT = 0,
+        rtCount = 0;
+      parsedData.allData.forEach(function (row) {
+        var rt = parseFloat(row["RT(ms)"]);
+        if (!isNaN(rt) && rt > 0) {
+          totalRT += rt;
+          rtCount++;
+        }
+      });
+      var avgRT = rtCount > 0 ? (totalRT / rtCount).toFixed(1) : "-";
+
+      var sdtRow = headers
+        .map(function (h) {
+          switch (h) {
+            case "FileName":
+              return "SDT_Summary";
+            case "Participant":
+              return parsedData.allData[0]
+                ? parsedData.allData[0]["Participant"] || "-"
+                : "-";
+            case "Result":
+              return (
+                "Hit:" +
+                sdtStats.hits +
+                "/FA:" +
+                sdtStats.fa +
+                "/Miss:" +
+                sdtStats.misses +
+                "/CR:" +
+                sdtStats.cr
+              );
+            case "RT(ms)":
+              return "avg:" + avgRT;
+            case "Correct":
+              return (
+                "d':" +
+                sdtStats.dPrime.toFixed(3) +
+                "/c:" +
+                sdtStats.criterion.toFixed(3) +
+                "/β:" +
+                sdtStats.beta.toFixed(3)
+              );
+            case "Context":
+              return "HitRate:" + (sdtStats.hitRate * 100).toFixed(1) + "%";
+            default:
+              return "-";
+          }
+        })
+        .join(",");
+      csvContent += sdtRow + "\n";
+    } catch (sdtErr) {
+      Logger.warn("SDT 摘要列產生失敗:", sdtErr);
+    }
+
+    // 預設檔名：從 parsedData 提取 participant + 完整時間戳
+    var defaultName = filename;
+    if (!defaultName) {
+      var now = new Date();
+      var dateStr =
+        now.getFullYear().toString() +
+        _pad(now.getMonth() + 1) +
+        _pad(now.getDate());
+      var timeStr =
+        _pad(now.getHours()) + _pad(now.getMinutes()) + _pad(now.getSeconds());
+      var pid =
+        (parsedData.participants && parsedData.participants[0]) ||
+        FN.DEFAULT_PARTICIPANT ||
+        "Player";
+      defaultName =
+        FN.DATA_PREFIX +
         FN.SEPARATOR +
-        _pad(new Date().getMonth() + 1) +
-        _pad(new Date().getDate()) +
+        pid +
+        FN.SEPARATOR +
+        dateStr +
+        FN.SEPARATOR +
+        timeStr +
         ".csv";
+    }
+    // 確保副檔名
+    if (defaultName.indexOf(".csv") === -1) defaultName += ".csv";
 
     var blob = new Blob(["\uFEFF" + csvContent], {
       type: "text/csv;charset=utf-8;",
@@ -1043,9 +1335,18 @@ var CsvReport = (function () {
    * @returns {Promise<void>}
    */
   function exportPdf(container, parsedData, filename) {
-    if (typeof html2pdf === "undefined") {
-      alert("PDF 匯出功能尚未載入，請確認 html2pdf.js 已引入");
-      return Promise.reject(new Error("html2pdf not loaded"));
+    // html2canvas 用於擷取 DOM → Canvas
+    var hasH2C = typeof html2canvas !== "undefined";
+    // html2pdf 用於 Canvas → PDF 分頁
+    var hasH2P = typeof html2pdf !== "undefined";
+
+    if (!hasH2C && !hasH2P) {
+      GameModal.alert(
+        "PDF 匯出失敗",
+        "PDF 匯出功能尚未載入，請確認 html2pdf.js 與 html2canvas 已引入",
+        { icon: "📄" },
+      );
+      return Promise.reject(new Error("html2pdf/html2canvas not loaded"));
     }
 
     if (!container) {
@@ -1063,23 +1364,66 @@ var CsvReport = (function () {
       now.getFullYear().toString() +
       _pad(now.getMonth() + 1) +
       _pad(now.getDate());
-    var defaultName = filename || FN.PDF_PREFIX + FN.SEPARATOR + fileDate;
+    var timeStr =
+      _pad(now.getHours()) + _pad(now.getMinutes()) + _pad(now.getSeconds());
 
-    // === 建立列印專用包裝容器 ===
+    // 若無自訂檔名，從 parsedData 提取參與者作為預設
+    var defaultName = filename;
+    if (
+      !defaultName &&
+      parsedData &&
+      parsedData.participants &&
+      parsedData.participants.length > 0
+    ) {
+      var pid = parsedData.participants[0] || "Data";
+      defaultName =
+        FN.PDF_PREFIX +
+        FN.SEPARATOR +
+        pid +
+        FN.SEPARATOR +
+        fileDate +
+        FN.SEPARATOR +
+        timeStr;
+    }
+    if (!defaultName) {
+      defaultName =
+        FN.PDF_PREFIX + FN.SEPARATOR + fileDate + FN.SEPARATOR + timeStr;
+    }
+
+    // ======================================================
+    // 策略：normal-flow 元素（不用 position:fixed / absolute）
+    //       手動 html2canvas → jsPDF 分頁，完全繞過 html2pdf 管線
+    // ======================================================
+
+    // (1) 注入臨時淺色主題到 <head>
+    var tempStyle = document.createElement("style");
+    tempStyle.id = "csv-report-pdf-light-override";
+    tempStyle.textContent =
+      "#csvPdfWrapper,#csvPdfWrapper *{color:#333!important;}" +
+      "#csvPdfWrapper{background:#fff!important;width:794px!important;}" +
+      ".csv-report__stat-value{color:#222!important;font-weight:700!important;}" +
+      ".csv-report__stat-label{color:#555!important;}" +
+      ".csv-report__round-header{color:#333!important;background:#f0f1f3!important;}" +
+      ".csv-report__overview{background:#f8f9fa!important;}" +
+      ".csv-report__section{background:#fff!important;border:1px solid #eee!important;}" +
+      ".csv-report__stat-card{background:#f0f1f3!important;}" +
+      ".csv-report__chart-box{background:#fff!important;}" +
+      "#csvPdfWrapper canvas{background:#1a1a2e!important;border-radius:8px!important;padding:4px!important;}";
+    document.head.appendChild(tempStyle);
+
+    // (2) 建立 normal-flow wrapper（不使用任何定位）
     var wrapper = document.createElement("div");
-    wrapper.className = "csv-report-pdf-wrapper";
+    wrapper.id = "csvPdfWrapper";
     wrapper.style.cssText =
-      "position:absolute;left:-9999px;top:0;" +
-      "width:794px;" /* A4 寬度 210mm ≈ 794px @96dpi */ +
-      "background:#fff;color:#333;" +
+      "width:794px;background:#fff;color:#333;" +
       "font-family:'Noto Sans TC','Microsoft JhengHei','PingFang TC',sans-serif;" +
       "padding:0;margin:0;";
 
-    // --- 封面標題區 ---
+    // (3) 封面標題區
     var header = document.createElement("div");
     header.style.cssText =
       "padding:40px 40px 30px;border-bottom:3px solid #667eea;" +
-      "margin-bottom:20px;";
+      "margin-bottom:20px;background:#fff;";
     header.innerHTML =
       '<div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">' +
       '<div style="width:50px;height:50px;border-radius:12px;' +
@@ -1087,15 +1431,15 @@ var CsvReport = (function () {
       "display:flex;align-items:center;justify-content:center;" +
       'font-size:28px;color:#fff;">📊</div>' +
       "<div>" +
-      '<h1 style="margin:0;font-size:24px;color:#333;letter-spacing:1px;">' +
+      '<h1 style="margin:0;font-size:24px;color:#333!important;letter-spacing:1px;">' +
       (RM.APP_NAME || "EF 執行功能訓練遊戲") +
       "</h1>" +
-      '<h2 style="margin:4px 0 0;font-size:16px;color:#667eea;font-weight:600;">' +
+      '<h2 style="margin:4px 0 0;font-size:16px;color:#667eea!important;font-weight:600;">' +
       (RM.REPORT_SUBTITLE || "資料分析報告") +
       "</h2>" +
       "</div>" +
       "</div>" +
-      '<div style="display:flex;gap:24px;font-size:13px;color:#666;">' +
+      '<div style="display:flex;gap:24px;font-size:13px;color:#666!important;">' +
       "<span>📅 報告日期：" +
       dateStr +
       "</span>" +
@@ -1110,76 +1454,158 @@ var CsvReport = (function () {
       "</div>";
     wrapper.appendChild(header);
 
-    // --- 報告內容（深度複製） ---
+    // (4) 深度複製報告內容
     var contentClone = container.cloneNode(true);
     contentClone.style.cssText = "padding:0 30px 20px;background:#fff;";
 
-    // 清除深色背景文字色，讓圖表底色為白色
-    var allEls = contentClone.querySelectorAll("*");
-    for (var i = 0; i < allEls.length; i++) {
-      var el = allEls[i];
-      var cs = el.style;
-      // 把 var(--xxx) 色彩改為具體值
-      if (cs.color && cs.color.indexOf("var(") >= 0) {
-        cs.color = "#333";
-      }
-      if (cs.background && cs.background.indexOf("var(") >= 0) {
-        cs.background = "#f8f9fa";
+    // cloneNode 不複製 Canvas 像素，手動繪製
+    var origCanvases = container.querySelectorAll("canvas");
+    var clonedCanvases = contentClone.querySelectorAll("canvas");
+    for (var ci = 0; ci < origCanvases.length; ci++) {
+      try {
+        clonedCanvases[ci].width = origCanvases[ci].width;
+        clonedCanvases[ci].height = origCanvases[ci].height;
+        clonedCanvases[ci].getContext("2d").drawImage(origCanvases[ci], 0, 0);
+      } catch (e) {
+        console.warn("PDF canvas copy failed for index " + ci, e);
       }
     }
     wrapper.appendChild(contentClone);
 
-    // --- 頁尾 ---
+    // (5) 頁尾
     var footer = document.createElement("div");
     footer.style.cssText =
       "padding:16px 40px;border-top:2px solid #eee;font-size:11px;" +
-      "color:#999;text-align:center;margin-top:20px;";
+      "color:#999!important;text-align:center;margin-top:20px;background:#fff;";
     footer.textContent = (
       RM.COPYRIGHT_TEMPLATE ||
       "© {year} 執行功能訓練遊戲 ─ 本報告由系統自動產生"
     ).replace("{year}", now.getFullYear());
     wrapper.appendChild(footer);
 
-    document.body.appendChild(wrapper);
+    // (6) 插入 body 最前面（normal flow，無定位）
+    document.body.insertBefore(wrapper, document.body.firstChild);
+    var savedScrollX = window.scrollX;
+    var savedScrollY = window.scrollY;
+    window.scrollTo(0, 0);
 
-    // === 等 canvas 重繪後再匯出 ===
+    // 清理函式
+    function _cleanup() {
+      if (wrapper.parentNode) document.body.removeChild(wrapper);
+      if (tempStyle.parentNode) document.head.removeChild(tempStyle);
+      window.scrollTo(savedScrollX, savedScrollY);
+    }
+
+    // (7) 等 DOM 渲染後，手動 html2canvas → jsPDF 分頁
     return new Promise(function (resolve) {
-      // 給 Chart.js 重繪 canvas 的時間
-      setTimeout(resolve, 500);
+      setTimeout(resolve, 1000);
     })
       .then(function () {
-        var opt = {
-          margin: [8, 8, 12, 8],
-          filename: defaultName + ".pdf",
-          image: { type: "jpeg", quality: 0.98 },
-          html2canvas: {
+        console.log(
+          "[PDF] wrapper offset:",
+          wrapper.offsetWidth,
+          "x",
+          wrapper.offsetHeight,
+        );
+
+        // 極簡 html2canvas 呼叫 — 不傳 x/y/scrollX/scrollY
+        // html2canvas 會根據元素的 bounding rect 自動定位
+        if (hasH2C) {
+          return html2canvas(wrapper, {
             scale: 2,
             useCORS: true,
             logging: false,
             backgroundColor: "#ffffff",
-            width: 794,
-            windowWidth: 794,
-          },
-          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-          pagebreak: {
-            mode: ["css"],
-            before: ".csv-report__section",
-            avoid: [
-              ".csv-report__chart-box",
-              ".csv-report__stat-card",
-              ".csv-report__overview",
-            ],
-          },
-        };
-
-        return html2pdf().set(opt).from(wrapper).save();
+          });
+        }
+        return html2pdf()
+          .set({
+            html2canvas: {
+              scale: 2,
+              useCORS: true,
+              logging: false,
+              backgroundColor: "#ffffff",
+            },
+          })
+          .from(wrapper)
+          .toCanvas();
       })
-      .then(function () {
-        document.body.removeChild(wrapper);
+      .then(function (canvas) {
+        console.log("[PDF] canvas:", canvas.width, "x", canvas.height);
+
+        // 取得 jsPDF 建構式
+        var JsPDFClass =
+          (window.jspdf && window.jspdf.jsPDF) || window.jsPDF || null;
+
+        if (!JsPDFClass) {
+          throw new Error("jsPDF 未載入，無法產生 PDF");
+        }
+
+        // A4 尺寸 mm
+        var pageW = 210;
+        var pageH = 297;
+        var mg = 8; // 統一邊距
+        var contentW = pageW - mg * 2; // 194mm
+        var contentH = pageH - mg * 2; // 281mm
+
+        // 整張 canvas 縮放到 contentW mm 寬度時的高度
+        var totalImgH = (canvas.height / canvas.width) * contentW;
+
+        var doc = new JsPDFClass("portrait", "mm", "a4");
+        var pageCount = Math.ceil(totalImgH / contentH);
+        console.log(
+          "[PDF] pages:",
+          pageCount,
+          "totalImgH:",
+          totalImgH.toFixed(1) + "mm",
+        );
+
+        for (var p = 0; p < pageCount; p++) {
+          if (p > 0) doc.addPage();
+
+          // canvas 中這一頁對應的像素範圍
+          var srcY = Math.round(((p * contentH) / totalImgH) * canvas.height);
+          var srcH = Math.round((contentH / totalImgH) * canvas.height);
+          if (srcY + srcH > canvas.height) srcH = canvas.height - srcY;
+          if (srcH <= 0) break;
+
+          // 切出這一頁的子 canvas
+          var slice = document.createElement("canvas");
+          slice.width = canvas.width;
+          slice.height = srcH;
+          var sCtx = slice.getContext("2d");
+          sCtx.fillStyle = "#ffffff";
+          sCtx.fillRect(0, 0, slice.width, slice.height);
+          sCtx.drawImage(
+            canvas,
+            0,
+            srcY,
+            canvas.width,
+            srcH,
+            0,
+            0,
+            canvas.width,
+            srcH,
+          );
+
+          // 子 canvas 寫入 PDF（寬度 = contentW，高度按比例）
+          var sliceH = (srcH / canvas.width) * contentW;
+          doc.addImage(
+            slice.toDataURL("image/jpeg", 0.95),
+            "JPEG",
+            mg,
+            mg,
+            contentW,
+            sliceH,
+          );
+        }
+
+        doc.save(defaultName + ".pdf");
+        _cleanup();
       })
       .catch(function (err) {
-        if (wrapper.parentNode) document.body.removeChild(wrapper);
-        console.error("PDF 匯出錯誤:", err);
+        _cleanup();
+        Logger.error("PDF 匯出錯誤:", err);
         throw err;
       });
   }
@@ -1195,8 +1621,15 @@ var CsvReport = (function () {
    * @returns {Promise<void>}
    */
   function exportScreenshot(container, filename) {
-    if (typeof html2canvas === "undefined") {
-      alert("截圖功能尚未載入，請確認 html2pdf.js 已引入");
+    // 支援兩種方式：獨立 html2canvas 或 html2pdf 內建的 toCanvas
+    var hasHtml2canvas = typeof html2canvas !== "undefined";
+    var hasHtml2pdf = typeof html2pdf !== "undefined";
+    if (!hasHtml2canvas && !hasHtml2pdf) {
+      GameModal.alert(
+        "截圖失敗",
+        "截圖功能尚未載入，請確認 html2pdf.js 已引入",
+        { icon: "📸" },
+      );
       return Promise.reject(new Error("html2canvas not loaded"));
     }
 
@@ -1209,45 +1642,81 @@ var CsvReport = (function () {
       now.getFullYear().toString() +
       _pad(now.getMonth() + 1) +
       _pad(now.getDate());
-    var defaultName =
-      (filename || FN.SCREENSHOT_PREFIX + FN.SEPARATOR + fileDate) + ".png";
+    var timeStr =
+      _pad(now.getHours()) + _pad(now.getMinutes()) + _pad(now.getSeconds());
+    var defaultName;
+    if (filename) {
+      defaultName = filename + ".png";
+    } else {
+      // 未提供檔名時，使用預設格式（含日期和時間）
+      defaultName =
+        FN.SCREENSHOT_PREFIX +
+        FN.SEPARATOR +
+        fileDate +
+        FN.SEPARATOR +
+        timeStr +
+        ".png";
+    }
 
-    // 暫時設白底以確保截圖乾淨
-    var origBg = container.style.background;
-    container.style.background = "#ffffff";
+    // 保留深色背景（避免白底白字問題）
+    var bgColor = "#1a1a2e";
 
-    return html2canvas(container, {
-      scale: 2,
-      useCORS: true,
-      logging: false,
-      backgroundColor: "#ffffff",
-    })
-      .then(function (canvas) {
-        container.style.background = origBg;
-
-        // 轉換為 Blob 並下載
-        return new Promise(function (resolve) {
-          canvas.toBlob(function (blob) {
-            var url = URL.createObjectURL(blob);
-            var link = document.createElement("a");
-            link.href = url;
-            link.download = defaultName;
-            link.style.display = "none";
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            setTimeout(function () {
-              URL.revokeObjectURL(url);
-            }, 1000);
-            resolve();
-          }, "image/png");
+    // 優先使用獨立 html2canvas
+    if (hasHtml2canvas) {
+      return html2canvas(container, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: bgColor,
+      })
+        .then(function (canvas) {
+          return _downloadCanvasAsPng(canvas, defaultName);
+        })
+        .catch(function (err) {
+          Logger.error("截圖匯出錯誤:", err);
+          throw err;
         });
+    }
+
+    // 備援：透過 html2pdf 內建的 html2canvas
+    return html2pdf()
+      .set({
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          backgroundColor: bgColor,
+        },
+      })
+      .from(container)
+      .toCanvas()
+      .then(function (canvas) {
+        return _downloadCanvasAsPng(canvas, defaultName);
       })
       .catch(function (err) {
-        container.style.background = origBg;
-        console.error("截圖匯出錯誤:", err);
+        Logger.error("截圖匯出錯誤:", err);
         throw err;
       });
+  }
+
+  /** 將 Canvas 轉為 PNG 並觸發下載 */
+  function _downloadCanvasAsPng(canvas, filename) {
+    return new Promise(function (resolve) {
+      canvas.toBlob(function (blob) {
+        var url = URL.createObjectURL(blob);
+        var link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        link.style.display = "none";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(function () {
+          URL.revokeObjectURL(url);
+        }, 1000);
+        resolve();
+      }, "image/png");
+    });
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -1263,5 +1732,23 @@ var CsvReport = (function () {
     exportPdf: exportPdf,
     exportScreenshot: exportScreenshot,
     destroy: destroy,
+
+    /**
+     * 從逐題 trialDetails 計算 SDT 指標（供外部模組使用）
+     * @param {Object[]} trialDetails - 原始 trialDetails（含 result 欄位）
+     * @returns {Object} { dPrime, criterion, beta, hits, fa, misses, cr, hitRate, faRate }
+     */
+    calculateSDT: function (trialDetails) {
+      if (!trialDetails || trialDetails.length === 0) {
+        return { dPrime: null, criterion: null, beta: null };
+      }
+      // 轉為 csv-report 內部格式
+      var data = trialDetails.map(function (t) {
+        var row = {};
+        row[F.RESULT] = t.result || "";
+        return row;
+      });
+      return _calculateSDTStats(data);
+    },
   };
 })();

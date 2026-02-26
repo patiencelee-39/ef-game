@@ -1,0 +1,647 @@
+/* ============================================================
+ *  📋 檔案說明
+ *  ─────────────────────────────────
+ *  檔案名稱：analysis.css
+ *  一句話說明：訓練效果分析頁面的樣式
+ *  用途：teacher/analysis.html
+ * ============================================================ */
+
+/* ====================================
+   頁面佈局
+   ==================================== */
+
+.analysis-page {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding-bottom: var(--spacing-xl);
+}
+
+.analysis-page header {
+  text-align: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.analysis-page header h1 {
+  font-size: var(--font-size-xl);
+}
+
+/* ====================================
+   區塊
+   ==================================== */
+
+.analysis-section {
+  background: var(--bg-dark);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+}
+
+.analysis-section h2 {
+  font-size: var(--font-size-lg);
+  margin-bottom: var(--spacing-md);
+  color: var(--text-white);
+}
+
+.section-hint {
+  font-size: var(--font-size-sm);
+  color: var(--text-light);
+  margin-bottom: var(--spacing-md);
+  line-height: 1.6;
+}
+
+.section-hint code {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.85em;
+}
+
+/* ====================================
+   上傳區域
+   ==================================== */
+
+.upload-area {
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-xl) var(--spacing-lg);
+  text-align: center;
+  cursor: pointer;
+  transition:
+    border-color var(--transition-normal),
+    background var(--transition-normal);
+  position: relative;
+}
+
+.upload-area:hover,
+.upload-area.dragover {
+  border-color: var(--primary-blue);
+  background: rgba(102, 126, 234, 0.05);
+}
+
+.upload-area .upload-icon {
+  font-size: 2.5rem;
+  margin-bottom: var(--spacing-sm);
+}
+
+.upload-area p {
+  color: var(--text-light);
+  font-size: var(--font-size-sm);
+}
+
+.upload-area input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* ====================================
+   檔案列表
+   ==================================== */
+
+.file-list {
+  margin-top: var(--spacing-md);
+}
+
+.file-list h3 {
+  font-size: var(--font-size-md);
+  margin-bottom: var(--spacing-sm);
+  color: var(--text-white);
+}
+
+.file-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--spacing-sm);
+}
+
+.file-list li {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: var(--border-radius-sm);
+  margin-bottom: 4px;
+  font-size: var(--font-size-sm);
+  color: var(--text-light);
+}
+
+.file-list li .file-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-list li .file-remove {
+  background: none;
+  border: none;
+  color: var(--error-red);
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 2px;
+  opacity: 0.7;
+  transition: opacity var(--transition-fast);
+}
+
+.file-list li .file-remove:hover {
+  opacity: 1;
+}
+
+.file-list-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+}
+
+/* ====================================
+   小按鈕
+   ==================================== */
+
+.btn-sm {
+  padding: 6px 14px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-white);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.btn-sm:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.btn-sm.btn-danger {
+  color: var(--error-red);
+  border-color: rgba(244, 67, 54, 0.3);
+}
+
+.btn-sm.btn-danger:hover {
+  background: rgba(244, 67, 54, 0.15);
+}
+
+.btn-sm.btn-add {
+  color: var(--primary-blue);
+  border-color: rgba(102, 126, 234, 0.3);
+}
+
+.btn-sm.btn-add:hover {
+  background: rgba(102, 126, 234, 0.15);
+}
+
+.btn-sm.btn-analyze {
+  background: linear-gradient(
+    135deg,
+    var(--primary-blue),
+    var(--primary-purple)
+  );
+  color: #fff;
+  border: none;
+  padding: 10px 24px;
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+}
+
+.btn-sm.btn-analyze:hover {
+  opacity: 0.9;
+}
+
+.btn-sm.btn-analyze:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ====================================
+   匹配資訊
+   ==================================== */
+
+.match-info {
+  font-size: var(--font-size-sm);
+  color: var(--text-light);
+  line-height: 1.7;
+}
+
+.match-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+}
+
+.match-card .match-label {
+  font-weight: 600;
+  color: var(--text-white);
+  margin-bottom: 4px;
+}
+
+.match-status {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.match-status.matched {
+  background: rgba(46, 204, 113, 0.15);
+  color: var(--success-green);
+}
+
+.match-status.no-match {
+  background: rgba(241, 196, 15, 0.15);
+  color: #f1c40f;
+}
+
+.match-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--spacing-md);
+}
+
+/* ====================================
+   報告區
+   ==================================== */
+
+.report-meta {
+  background: rgba(102, 126, 234, 0.08);
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  font-size: var(--font-size-sm);
+  color: var(--text-light);
+  line-height: 1.6;
+}
+
+.report-block {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+}
+
+.report-block h3 {
+  font-size: var(--font-size-lg);
+  color: var(--text-white);
+  margin-bottom: var(--spacing-md);
+}
+
+.report-block h4 {
+  font-size: var(--font-size-md);
+  color: var(--text-light);
+  margin-bottom: var(--spacing-sm);
+}
+
+/* ====================================
+   統計卡片行
+   ==================================== */
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+.stat-mini {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  text-align: center;
+}
+
+.stat-mini .stat-val {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--text-white);
+}
+
+.stat-mini .stat-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ====================================
+   圖表容器
+   ==================================== */
+
+.chart-wrapper {
+  margin-bottom: var(--spacing-lg);
+  position: relative;
+}
+
+.chart-wrapper canvas {
+  width: 100% !important;
+  max-height: 320px;
+}
+
+/* ====================================
+   量表摘要表格
+   ==================================== */
+
+.assessment-summary {
+  margin-bottom: var(--spacing-md);
+}
+
+.assess-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.assess-table th,
+.assess-table td {
+  padding: 8px 10px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.assess-table th {
+  color: var(--text-light);
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.assess-table td {
+  color: var(--text-white);
+}
+
+.change-positive {
+  color: var(--success-green);
+}
+
+.change-negative {
+  color: var(--error-red);
+}
+
+.change-neutral {
+  color: var(--text-muted);
+}
+
+/* ====================================
+   整合對照
+   ==================================== */
+
+.integration-pair {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.integration-pair h4 {
+  margin-bottom: var(--spacing-sm);
+}
+
+.integration-pair .pair-desc {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  margin-bottom: var(--spacing-sm);
+}
+
+/* ====================================
+   Toast
+   ==================================== */
+
+.analysis-toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: var(--border-radius-md);
+  font-size: var(--font-size-sm);
+  z-index: 9999;
+  opacity: 0;
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.analysis-toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+/* ====================================
+   前測 / 後測 單獨卡片
+   ==================================== */
+
+.single-test-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-md);
+}
+
+.test-meta {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.test-type-badge {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.test-date {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.test-role {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.test-scores-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: var(--spacing-md);
+}
+
+.test-score-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--border-radius-sm);
+  padding: 0.75rem;
+}
+
+.test-score-label {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 4px;
+}
+
+.test-score-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 6px;
+}
+
+.test-score-value small {
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.test-score-bar {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.test-score-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  border-radius: 2px;
+  transition: width 0.6s ease;
+}
+
+.test-total {
+  text-align: center;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.8);
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.test-total strong {
+  font-size: 1.3rem;
+  color: #fff;
+}
+
+/* ====================================
+   響應式
+   ==================================== */
+
+@media (max-width: 600px) {
+  .analysis-page {
+    padding: var(--spacing-md);
+  }
+
+  .stats-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .chart-wrapper canvas {
+    max-height: 250px;
+  }
+}
+
+/* ====================================
+   配對樣本 t 檢定區塊
+   ==================================== */
+
+.ttest-section {
+  margin-top: 24px;
+  padding: 20px;
+  background: rgba(102, 126, 234, 0.06);
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  border-radius: 12px;
+}
+
+.ttest-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.95);
+  margin: 0 0 6px;
+}
+
+.ttest-desc {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0 0 14px;
+}
+
+.ttest-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.ttest-table th,
+.ttest-table td {
+  padding: 8px 10px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  white-space: nowrap;
+}
+
+.ttest-table th {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.ttest-table td:first-child {
+  text-align: left;
+  white-space: normal;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.ttest-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.ttest-sig {
+  color: #4caf50;
+  font-weight: 700;
+}
+
+.ttest-ns {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.ttest-note {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.4);
+  margin: 8px 0 0;
+}
+
+@media (max-width: 600px) {
+  .ttest-table {
+    font-size: 0.72rem;
+  }
+  .ttest-table th,
+  .ttest-table td {
+    padding: 6px 5px;
+  }
+  .ttest-section {
+    padding: 12px;
+    overflow-x: auto;
+  }
+}

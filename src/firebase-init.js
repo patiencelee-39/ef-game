@@ -422,15 +422,29 @@ authCompat
   });
 
 function startRoomCleanup() {
-  cleanupExpiredRooms();
-  setInterval(cleanupExpiredRooms, 10 * 60 * 1000);
+  // 抽樣：僅 20% 的客戶端執行清理，避免所有人同時拉取數據
+  if (Math.random() > 0.2) {
+    console.log("🧹 本次客戶端跳過房間清理（抽樣機制）");
+    return;
+  }
+  // 隨機延遲 0～30 秒，分散請求壓力
+  var delay = Math.floor(Math.random() * 30000);
+  setTimeout(function () {
+    cleanupExpiredRooms();
+    setInterval(cleanupExpiredRooms, 10 * 60 * 1000);
+  }, delay);
 }
 
 async function cleanupExpiredRooms() {
   try {
     const now = Date.now();
     const roomsRef = databaseCompat.ref("rooms");
-    const snapshot = await roomsRef.once("value");
+
+    // 使用 orderByChild + endAt 精準查詢過期房間，而非拉取全部
+    const snapshot = await roomsRef
+      .orderByChild("expiresAt")
+      .endAt(now)
+      .once("value");
     const rooms = snapshot.val();
 
     if (!rooms) return;

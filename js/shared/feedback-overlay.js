@@ -55,7 +55,8 @@ var FEEDBACK_TYPES = {
     icon: "✅",
     label: "答對了！",
     ariaLabel: "答對",
-    sfxPath: "audio/sfx/correct-ding.mp3",
+    sfxPath: "audio/feedback/correct-ding.mp3",
+    sfxConfigKey: "feedback.correct",
     sfxPreset: "correct",
   },
   incorrect: {
@@ -64,7 +65,8 @@ var FEEDBACK_TYPES = {
     icon: "❌",
     label: "再試試！",
     ariaLabel: "答錯",
-    sfxPath: "audio/sfx/incorrect-buzz.mp3",
+    sfxPath: "audio/feedback/incorrect-buzz.mp3",
+    sfxConfigKey: "feedback.incorrect",
     sfxPreset: "error",
   },
 };
@@ -128,7 +130,11 @@ function _createBadge(typeDef) {
  */
 function _playSfx(typeDef) {
   if (typeof AudioPlayer !== "undefined" && AudioPlayer.playSfx) {
-    AudioPlayer.playSfx(typeDef.sfxPath, {
+    var path =
+      typeof getSoundFile === "function" && typeDef.sfxConfigKey
+        ? getSoundFile(typeDef.sfxConfigKey)
+        : null;
+    AudioPlayer.playSfx(path || typeDef.sfxPath, {
       synthPreset: typeDef.sfxPreset,
     });
   }
@@ -229,7 +235,7 @@ var FeedbackOverlay = {
           try {
             onComplete();
           } catch (e) {
-            console.error("FeedbackOverlay onComplete error:", e);
+            Logger.error("FeedbackOverlay onComplete error:", e);
           }
         }
 

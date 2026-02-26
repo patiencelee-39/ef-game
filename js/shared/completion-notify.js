@@ -167,7 +167,7 @@ var CompletionNotify = {
    */
   show: function (options) {
     if (!options || !options.message) {
-      console.warn("CompletionNotify: message is required");
+      Logger.warn("CompletionNotify: message is required");
       return;
     }
 
@@ -196,7 +196,7 @@ var CompletionNotify = {
         try {
           onClick();
         } catch (e) {
-          console.error("CompletionNotify onClick error:", e);
+          Logger.error("CompletionNotify onClick error:", e);
         }
       });
     }

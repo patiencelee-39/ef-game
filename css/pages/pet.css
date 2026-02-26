@@ -1018,3 +1018,157 @@ body {
   background: rgba(255, 255, 255, 0.08);
   color: rgba(255, 255, 255, 0.65);
 }
+
+/* =========================================
+         ✨ P5 新增動畫 — 連擊 / 餵食 / 配件閃光
+         ========================================= */
+
+/* --- 連擊旋轉 (combo 3-4) --- */
+.pet-combo-spin {
+  animation: combo-spin 0.6s ease-in-out !important;
+}
+@keyframes combo-spin {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  40% {
+    transform: scale(1.15) rotate(360deg);
+  }
+  70% {
+    transform: scale(0.95) rotate(380deg);
+  }
+  100% {
+    transform: scale(1) rotate(360deg);
+  }
+}
+
+/* --- 連擊慶祝 (combo 5+) --- */
+.pet-combo-celebrate {
+  animation: combo-celebrate 0.9s ease-out !important;
+}
+@keyframes combo-celebrate {
+  0% {
+    transform: scale(1) translateY(0);
+  }
+  20% {
+    transform: scale(1.3) translateY(-18px);
+  }
+  40% {
+    transform: scale(0.9) translateY(4px);
+  }
+  55% {
+    transform: scale(1.15) translateY(-8px);
+  }
+  70% {
+    transform: scale(0.95) translateY(2px);
+  }
+  85% {
+    transform: scale(1.05) translateY(-3px);
+  }
+  100% {
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* --- 星星粒子 (combo 5+ 用) --- */
+.star-particle {
+  position: absolute;
+  font-size: 1.1rem;
+  pointer-events: none;
+  z-index: 10;
+  animation: star-burst 1s ease-out forwards;
+}
+@keyframes star-burst {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(0.4) rotate(0deg);
+  }
+  60% {
+    opacity: 1;
+    transform: translate(var(--dx), var(--dy)) scale(1.1) rotate(180deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx), calc(var(--dy) - 20px)) scale(0.6)
+      rotate(270deg);
+  }
+}
+
+/* --- 餵食飛入食物 --- */
+.feed-fly-emoji {
+  position: absolute;
+  font-size: 2rem;
+  pointer-events: none;
+  z-index: 20;
+  animation: feed-fly 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+@keyframes feed-fly {
+  0% {
+    opacity: 1;
+    transform: translate(0, 60px) scale(0.4);
+  }
+  70% {
+    opacity: 1;
+    transform: translate(0, -10px) scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+/* --- 寵物咀嚼 --- */
+.pet-munch {
+  animation: munch 0.6s ease-in-out !important;
+}
+@keyframes munch {
+  0% {
+    transform: scale(1);
+  }
+  15% {
+    transform: scale(1.08, 0.92);
+  }
+  30% {
+    transform: scale(0.94, 1.06);
+  }
+  45% {
+    transform: scale(1.06, 0.94);
+  }
+  60% {
+    transform: scale(0.96, 1.04);
+  }
+  75% {
+    transform: scale(1.03, 0.97);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* --- 配件裝備閃光 --- */
+.equip-sparkle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  font-size: 1.4rem;
+  pointer-events: none;
+  z-index: 15;
+  animation: sparkle-out 0.85s ease-out forwards;
+}
+@keyframes sparkle-out {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translate(0, 0) scale(0.3) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translate(var(--sx), var(--sy)) scale(1.2)
+      rotate(180deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%)
+      translate(calc(var(--sx) * 1.4), calc(var(--sy) * 1.4)) scale(0.5)
+      rotate(300deg);
+  }
+}

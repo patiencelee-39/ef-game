@@ -14,6 +14,8 @@
     <link rel="manifest" href="../manifest.json" />
     <meta name="theme-color" content="#302b63" />
     <link rel="stylesheet" href="../css/themes/base.css" />
+    <link rel="stylesheet" href="../css/themes/theme-field-primary.css" />
+    <link rel="stylesheet" href="../css/themes/theme-rule-independent.css" />
     <link rel="stylesheet" href="../css/main.css" />
     <link rel="preload" href="../css/components/navbar.css" as="style" onload="this.rel='stylesheet'" />
     <noscript><link rel="stylesheet" href="../css/components/navbar.css" /></noscript>
@@ -21,6 +23,7 @@
     <noscript><link rel="stylesheet" href="../css/components/landscape-hint.css" /></noscript>
     <link rel="stylesheet" href="../css/pages/management.css" />
     <!-- === Scripts === -->
+    <script defer src="../js/utils/logger.js"></script>
     <script defer src="../js/firebase-bundle.js"></script>
     <script defer src="../js/shared/firestore-leaderboard.js"></script>
     <script defer src="../js/shared/navbar.js"></script>
@@ -29,6 +32,7 @@
   </head>
   <body>
     <main class="admin-page" id="main-content">
+      <a href="../teacher/index.html" class="back-link" style="display:inline-block;margin-bottom:12px;color:rgba(168,237,234,0.8);text-decoration:none;font-size:0.9rem">← 返回教師家長專區</a>
       <h1>🏫 教師管理後台</h1>
       <p class="admin-subtitle">
         班級管理 · 學生進度 · 資料匯出

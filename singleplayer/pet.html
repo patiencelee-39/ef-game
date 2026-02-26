@@ -2,10 +2,7 @@
 <html lang="zh-TW">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       http-equiv="Content-Security-Policy"
       content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;"
@@ -16,6 +13,8 @@
     <link rel="manifest" href="../manifest.json" />
     <meta name="theme-color" content="#302b63" />
     <link rel="stylesheet" href="../css/themes/base.css" />
+    <link rel="stylesheet" href="../css/themes/theme-field-primary.css" />
+    <link rel="stylesheet" href="../css/themes/theme-rule-independent.css" />
     <link rel="stylesheet" href="../css/main.css" />
     <link
       rel="preload"
@@ -37,6 +36,8 @@
       ><link rel="stylesheet" href="../css/components/navbar.css"
     /></noscript>
     <!-- ===== Scripts（依賴鏈載入順序）===== -->
+    <script defer src="../js/utils/logger.js"></script>
+    <script defer src="../js/shared/game-modal.js"></script>
     <script defer src="../js/game-config.js"></script>
     <script defer src="../js/utils/storage.js"></script>
     <script defer src="../js/utils/level-calculator.js"></script>
@@ -51,9 +52,9 @@
     <script defer src="../js/shared/landscape-hint.js"></script>
   </head>
   <body>
+    <a href="#main-content" class="skip-link">跳到主要內容</a>
     <header class="pet-header">
       <div class="header-left">
-        <button class="btn-back" onclick="goBack()" aria-label="返回">←</button>
         <span class="header-title">🐔 我的小雞</span>
       </div>
       <div class="stars-display">⭐ <span id="available-stars">0</span></div>

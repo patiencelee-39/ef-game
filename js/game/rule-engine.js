@@ -30,7 +30,7 @@
 function judgeAction(fieldId, ruleId, stimulus, context) {
   var field = GAME_CONFIG.FIELDS[fieldId];
   if (!field) {
-    console.error("❌ 找不到遊戲場：" + fieldId);
+    Logger.error("❌ 找不到遊戲場：" + fieldId);
     return { correctAction: "nopress", isGo: false, appliedRule: ruleId };
   }
 
@@ -39,7 +39,7 @@ function judgeAction(fieldId, ruleId, stimulus, context) {
   var appliedRule = field.rules[appliedRuleId];
 
   if (!appliedRule) {
-    console.error("❌ 找不到規則：" + fieldId + "." + appliedRuleId);
+    Logger.error("❌ 找不到規則：" + fieldId + "." + appliedRuleId);
     return {
       correctAction: "nopress",
       isGo: false,
@@ -60,7 +60,7 @@ function judgeAction(fieldId, ruleId, stimulus, context) {
   }
 
   // 安全回退（不應發生）
-  console.warn(
+  Logger.warn(
     "⚠️ 未知刺激物：" + stimulus + "（" + fieldId + "." + appliedRuleId + "）",
   );
   return { correctAction: "nopress", isGo: false, appliedRule: appliedRuleId };
@@ -92,7 +92,7 @@ function getAppliedRule(fieldId, ruleId, context) {
   }
 
   // context 不符 → 預設套用規則 A
-  console.warn("⚠️ 未知情境：" + context + "，預設套用規則 A");
+  Logger.warn("⚠️ 未知情境：" + context + "，預設套用規則 A");
   return mixedRule.contextA.appliesRule;
 }
 

@@ -337,14 +337,14 @@ var DifficultyProvider = (function () {
      */
     setEngine: function (engine) {
       if (!engine || typeof engine.getTrialParams !== "function") {
-        console.error(
+        Logger.error(
           "❌ DifficultyProvider.setEngine: 引擎缺少 getTrialParams 方法",
         );
         return false;
       }
       var prev = _engine.name || "unknown";
       _engine = engine;
-      console.log(
+      Logger.debug(
         "✅ DifficultyProvider 引擎切換：" +
           prev +
           " → " +
@@ -358,7 +358,7 @@ var DifficultyProvider = (function () {
      */
     resetEngine: function () {
       _engine = StaticEngine;
-      console.log("✅ DifficultyProvider 已恢復為 StaticEngine");
+      Logger.debug("✅ DifficultyProvider 已恢復為 StaticEngine");
     },
 
     /**

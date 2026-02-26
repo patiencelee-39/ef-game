@@ -9,6 +9,30 @@
   "orientation": "portrait",
   "background_color": "#0f0c29",
   "theme_color": "#302b63",
+  "lang": "zh-Hant",
+  "dir": "ltr",
+  "categories": ["education", "games"],
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "單人模式",
+      "short_name": "單人",
+      "url": "/singleplayer/game.html",
+      "icons": [{ "src": "/favicon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "多人模式",
+      "short_name": "多人",
+      "url": "/multiplayer/index.html",
+      "icons": [{ "src": "/favicon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "寵物小屋",
+      "short_name": "寵物",
+      "url": "/singleplayer/pet.html",
+      "icons": [{ "src": "/favicon.svg", "sizes": "any" }]
+    }
+  ],
   "icons": [
     {
       "src": "/favicon.svg",
@@ -33,6 +57,29 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/home-narrow.png",
+      "sizes": "540x960",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "遊戲首頁 — 選擇單人或多人模式"
+    },
+    {
+      "src": "/screenshots/game-narrow.png",
+      "sizes": "540x960",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "遊戲進行中 — DCCS 卡片分類"
+    },
+    {
+      "src": "/screenshots/home-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "遊戲首頁 — 桌面版"
     }
   ]
 }

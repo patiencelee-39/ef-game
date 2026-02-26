@@ -14,6 +14,8 @@
     <link rel="manifest" href="../manifest.json" />
     <meta name="theme-color" content="#302b63" />
     <link rel="stylesheet" href="../css/themes/base.css" />
+    <link rel="stylesheet" href="../css/themes/theme-field-primary.css" />
+    <link rel="stylesheet" href="../css/themes/theme-rule-independent.css" />
     <link rel="stylesheet" href="../css/main.css" />
     <link
       rel="preload"
@@ -44,6 +46,8 @@
       ><link rel="stylesheet" href="../css/components/navbar.css"
     /></noscript>
     <!-- Firebase Bundle -->
+    <script defer src="../js/utils/logger.js"></script>
+    <script defer src="../js/shared/game-modal.js"></script>
     <script defer src="../js/firebase-bundle.js"></script>
     <script defer src="../js/utils/constants.js"></script>
     <script defer src="../js/shared/ranking-renderer.js"></script>
@@ -64,10 +68,10 @@
       <div class="upload-section" id="uploadSection">
         <div class="upload-card">
           <h3>📤 上傳我的成績</h3>
-          <p>你的最新遊戲成績：</p>
+          <p>你的最新一場遊戲成績：</p>
           <div class="local-score">
             <div class="local-score__nickname" id="localNickname"></div>
-            <div class="local-score__label">最高分</div>
+            <div class="local-score__label">最新紀錄</div>
             <div class="local-score__value" id="localScoreValue">---</div>
             <div class="local-score__detail" id="localScoreDetail"></div>
           </div>
@@ -89,7 +93,38 @@
       <!-- Stats -->
       <div id="worldStatsContainer" style="display: none"></div>
 
-      <!-- Rule Tabs -->
+      <!-- Field + Rule Tabs -->
+      <div
+        class="field-tabs"
+        id="fieldTabs"
+        role="tablist"
+        aria-label="依遊戲場篩選"
+      >
+        <button
+          class="field-tab active"
+          data-field="all"
+          role="tab"
+          aria-selected="true"
+        >
+          全部
+        </button>
+        <button
+          class="field-tab"
+          data-field="mouse"
+          role="tab"
+          aria-selected="false"
+        >
+          🐭 小老鼠
+        </button>
+        <button
+          class="field-tab"
+          data-field="fishing"
+          role="tab"
+          aria-selected="false"
+        >
+          🐟 釣魚
+        </button>
+      </div>
       <div
         class="rule-tabs"
         id="ruleTabs"
@@ -158,21 +193,6 @@
           </li>
           <li>未輸入暱稱/座號 = 訪客，資料不儲存也不上傳</li>
         </ul>
-      </div>
-
-      <div class="world-footer">
-        <button
-          class="btn btn-secondary"
-          onclick="location.href = 'index.html'"
-        >
-          ← 返回排行榜
-        </button>
-        <button
-          class="btn btn-secondary"
-          onclick="location.href = '../index.html'"
-        >
-          🏠 回首頁
-        </button>
       </div>
     </main>
 

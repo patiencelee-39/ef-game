@@ -17,6 +17,19 @@
  * 5 個等級，依累計星星數分級
  * minStars: 進入該等級的最低星星數
  * maxStars: 該等級的上限（含），null = 無上限
+ *
+ * v4.7 對齊故事系統進化里程碑：
+ * ─────────────────────────────────────────────────────
+ * 故事進化在探險點 3 / 6 / 9 / 12 觸發。
+ * 探險必須依序通過（鎖關），因此到達里程碑時星星有保證最小值：
+ *
+ *   探險點 1-3 ：無 WM×2(1⭐) + 有 WM×1(2⭐) = 最少 4⭐ → 進化 🥚→🐣
+ *   探險點 1-6 ：最少 9⭐  → 進化 🐣→🐥
+ *   探險點 1-9 ：最少 13⭐ → 進化 🐥→🐓
+ *   探險點 1-12：最少 18⭐ → 進化 🐓→🦅
+ *
+ * 門檻設為 ≤ 保證最小值，確保等級系統、故事系統、寵物系統三者同步。
+ * ─────────────────────────────────────────────────────
  */
 var LEVEL_DEFINITIONS = [
   {
@@ -24,38 +37,38 @@ var LEVEL_DEFINITIONS = [
     name: "蛋寶寶",
     icon: "🥚",
     minStars: 0,
-    maxStars: 10,
+    maxStars: 3,
     description: "剛剛開始冒險的蛋寶寶",
   },
   {
     level: 2,
     name: "破殼雞",
     icon: "🐣",
-    minStars: 11,
-    maxStars: 20,
+    minStars: 4,
+    maxStars: 8,
     description: "破殼而出的小雞",
   },
   {
     level: 3,
     name: "小雞仔",
     icon: "🐥",
-    minStars: 21,
-    maxStars: 40,
+    minStars: 9,
+    maxStars: 12,
     description: "越來越厲害的小雞仔",
   },
   {
     level: 4,
     name: "雞大王",
     icon: "🐓",
-    minStars: 41,
-    maxStars: 60,
+    minStars: 13,
+    maxStars: 17,
     description: "威風凜凜的雞大王",
   },
   {
     level: 5,
     name: "金鷹王者",
     icon: "🦅",
-    minStars: 61,
+    minStars: 18,
     maxStars: null,
     description: "翱翔天際的金鷹王者",
   },

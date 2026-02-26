@@ -2,11 +2,14 @@
 .game-page {
   width: 100%;
   max-width: 640px;
-  min-height: 100vh;
+  height: 100%;
+  max-height: 100vh;
+  max-height: 100dvh;
   display: flex;
   flex-direction: column;
   margin: 0 auto;
   padding: 0;
+  overflow: hidden;
 }
 
 /* --- 頂部導航列 --- */
@@ -279,8 +282,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 24px;
-  padding: 24px;
+  gap: 16px;
+  padding: 16px;
   text-align: center;
   animation: fade-in 0.4s ease-out;
 }
@@ -297,7 +300,7 @@
 }
 
 .rule-intro h2 {
-  font-size: var(--font-size-xl);
+  font-size: 1.6rem;
   color: var(--text-white);
 }
 
@@ -306,41 +309,7 @@
   flex-direction: column;
   gap: 12px;
   width: 100%;
-  max-width: 360px;
-}
-
-.rule-box {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  padding: 16px;
-  border-radius: var(--border-radius-md);
-  font-size: var(--font-size-lg);
-}
-
-.rule-box--go {
-  background: rgba(46, 204, 113, 0.15);
-  border: 2px solid rgba(46, 204, 113, 0.3);
-}
-
-.rule-box--nogo {
-  background: rgba(231, 76, 60, 0.15);
-  border: 2px solid rgba(231, 76, 60, 0.3);
-}
-
-.rule-stim-icon {
-  width: 60px;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.rule-stim-icon svg {
-  width: 100%;
-  height: 100%;
+  max-width: 420px;
 }
 
 .rule-action-text {
@@ -365,9 +334,234 @@
 }
 
 .context-notice {
-  font-size: var(--font-size-sm);
+  font-size: 1rem;
   color: var(--text-light);
-  max-width: 300px;
+  max-width: 400px;
+  line-height: 1.6;
+}
+
+/* --- 規則口訣 (Plan C) --- */
+.rule-mnemonic {
+  padding: 10px 18px;
+  border-radius: 12px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 215, 0, 0.18),
+    rgba(255, 165, 0, 0.12)
+  );
+  border: 2px solid rgba(255, 215, 0, 0.35);
+  color: #ffe082;
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.8;
+  text-align: center;
+  white-space: pre-line;
+  animation: mnemonic-glow 2s ease-in-out infinite alternate;
+  max-width: 380px;
+}
+@keyframes mnemonic-glow {
+  from {
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.2);
+  }
+  to {
+    box-shadow: 0 0 18px rgba(255, 215, 0, 0.4);
+  }
+}
+
+/* --- 規則框 Plan B 加大 + 動畫 --- */
+.rule-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: var(--border-radius-md);
+  font-size: 1.15rem;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+.rule-box:hover {
+  transform: scale(1.02);
+}
+.rule-box--go {
+  background: rgba(46, 204, 113, 0.18);
+  border: 2.5px solid rgba(46, 204, 113, 0.45);
+}
+.rule-box--nogo {
+  background: rgba(231, 76, 60, 0.18);
+  border: 2.5px solid rgba(231, 76, 60, 0.45);
+}
+.rule-stim-icon {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.rule-stim-icon svg {
+  width: 100%;
+  height: 100%;
+}
+/* Go 動畫手指圖示 */
+.rule-action-icon {
+  font-size: 2.2rem;
+  flex-shrink: 0;
+}
+.rule-action-icon--go {
+  animation: hand-bounce 1s ease-in-out infinite;
+}
+@keyframes hand-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+.rule-action-icon--nogo {
+  animation: nogo-shake 0.8s ease-in-out infinite;
+}
+@keyframes nogo-shake {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-8deg);
+  }
+  75% {
+    transform: rotate(8deg);
+  }
+}
+
+/* 混合規則分頁指示器 */
+.rule-page-indicator {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+.page-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  transition: background 0.3s;
+}
+.page-dot.active {
+  background: var(--accent-gold, #ffd700);
+}
+.rule-page-label {
+  font-weight: 700;
+  color: var(--text-white);
+  margin-bottom: 4px;
+  font-size: 1.1rem;
+}
+
+/* --- 互動示範 + 練習畫面 (Plan A/D) --- */
+
+.btn-skip-demo {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    transform 0.15s;
+}
+.btn-skip-demo:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.05);
+}
+.btn-skip-demo:active {
+  transform: scale(0.95);
+}
+
+/* --- 練習跳過按鈕 --- */
+.practice-skip-btn {
+  position: absolute;
+  top: 52px;
+  right: 12px;
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.25);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  color: #fff;
+  padding: 8px 18px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  transition:
+    background 0.15s,
+    transform 0.1s;
+}
+.practice-skip-btn:hover {
+  background: rgba(255, 255, 255, 0.4);
+  transform: scale(1.05);
+}
+.practice-skip-btn:active {
+  transform: scale(0.97);
+}
+
+/* --- 練習回饋覆蓋層（在刺激物區內） --- */
+.practice-feedback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  border-radius: var(--border-radius-md);
+  z-index: 15;
+  pointer-events: none;
+  text-align: center;
+  padding: 16px;
+  line-height: 1.6;
+}
+.practice-feedback.correct {
+  background: rgba(46, 204, 113, 0.35);
+  color: var(--success-green);
+}
+.practice-feedback.incorrect {
+  background: rgba(231, 76, 60, 0.35);
+  color: var(--error-red);
+}
+
+/* --- 練習結果覆蓋層（全畫面） --- */
+.practice-result-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  font-size: 1.3rem;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.8;
+  padding: 24px;
+}
+.practice-result-overlay.pass {
+  background: rgba(0, 0, 0, 0.8);
+  color: var(--success-green);
+}
+.practice-result-overlay.retry {
+  background: rgba(0, 0, 0, 0.8);
+  color: #f1c40f;
 }
 
 /* --- 暫停覆蓋層 --- */
@@ -430,6 +624,18 @@
   margin-top: 8px;
 }
 
+/* --- 結束遊戲 / 確定離開按鈕 — 低調灰色樣式 --- */
+#btnQuit,
+#btnExitConfirm {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: rgba(255, 255, 255, 0.55) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+#btnQuit:active,
+#btnExitConfirm:active {
+  background: rgba(255, 255, 255, 0.18) !important;
+}
+
 /* --- WM 容器 --- */
 #wm-container {
   position: absolute;
@@ -457,24 +663,160 @@
   justify-content: center;
 }
 
+/* --- Demo/Practice 刺激物舞台（複製原始 ID 樣式） --- */
+#demoBackgroundLayer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#demoBackgroundLayer svg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+#demoContextIndicator {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 60px;
+  height: 60px;
+  z-index: 5;
+  display: none;
+}
+#demoContextIndicator svg {
+  width: 100%;
+  height: 100%;
+}
+#demoStimulus {
+  position: relative;
+  z-index: 10;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+#demoStimulus svg {
+  width: 100%;
+  height: 100%;
+}
+
 /* --- 響應式 --- */
 @media (max-width: 480px) {
   .game-play-area {
     margin: 4px;
   }
-  #stimulus {
+  #stimulus,
+  #demoStimulus {
     width: 100px;
     height: 100px;
   }
   .rule-stim-icon {
-    width: 48px;
-    height: 48px;
+    width: 56px;
+    height: 56px;
+  }
+  .rule-mnemonic {
+    font-size: 1rem;
+  }
+  .rule-action-icon {
+    font-size: 1.6rem;
   }
 }
 
 @media (min-width: 769px) {
-  #stimulus {
+  #stimulus,
+  #demoStimulus {
     width: 140px;
     height: 140px;
+  }
+}
+
+/* ==========================================
+   階段過場提示（規則/練習/正式 三階段共用）
+   ========================================== */
+.stage-transition {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+  animation: stage-fade-in 0.45s ease-out;
+}
+
+.stage-transition-icon {
+  font-size: 4.5rem;
+  line-height: 1;
+  margin-bottom: 0.8rem;
+  animation: stage-bounce 0.6s ease-out 0.2s both;
+}
+
+.stage-transition-title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--text-white, #fff);
+  margin: 0 0 0.5rem;
+}
+
+.stage-transition-subtitle {
+  font-size: 1.05rem;
+  color: rgba(255, 255, 255, 0.75);
+  margin: 0 0 1.6rem;
+  line-height: 1.5;
+}
+
+.stage-transition-progress {
+  width: 60%;
+  max-width: 200px;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.15);
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.stage-transition-bar {
+  height: 100%;
+  width: 0%;
+  border-radius: 3px;
+  background: var(--accent, #ffd700);
+  transition: width linear;
+}
+
+.stage-transition-hint {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+@keyframes stage-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes stage-bounce {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
   }
 }

@@ -7,7 +7,7 @@
  *
  * 兩條獨立的 Fallback 路線：
  *   🔊 音效（SFX）：MP3 → Web Audio 合成音 → 靜默跳過
- *   🗣️ 語音（Voice）：自訂 MP3 → gTTS 預生成 → Web Speech API → 純視覺
+ *   🗣️ 語音（Voice）：自訂 MP3 → Edge TTS → gTTS 預生成 → Web Speech API → 純視覺
  *
  * 依賴：
  *   - sound-config.js（getSoundFile 提供已解析的音檔路徑）
@@ -112,6 +112,14 @@ var _initialized = false;
 /** MP3 載入逾時（毫秒） */
 var LOAD_TIMEOUT_MS = 5000;
 
+// --- 語音強制停止追蹤 ---
+/** @type {AudioBufferSourceNode|null} 目前正在播放的語音 source 節點 */
+var _currentVoiceSource = null;
+/** @type {number|null} 目前語音播放的逾時 ID */
+var _currentVoiceTimeout = null;
+/** @type {Function|null} 目前語音播放的 resolve callback（用於提前完成 Promise） */
+var _currentVoiceResolve = null;
+
 // =========================================
 // 私有工具函式
 // =========================================
@@ -135,12 +143,26 @@ function _getAudioContext() {
 }
 
 /**
+ * 將相對音檔路徑正規化為根絕對路徑
+ * 避免子目錄頁面（如 /singleplayer/）載入時路徑解析錯誤
+ * @param {string} p - 音檔路徑
+ * @returns {string} 以 / 開頭的絕對路徑
+ */
+function _normalizePath(p) {
+  if (!p || p.charAt(0) === "/" || /^https?:\/\//.test(p) || /^data:/.test(p)) {
+    return p;
+  }
+  return "/" + p;
+}
+
+/**
  * 載入並播放 MP3 檔案
  *
  * @param {string} path - MP3 檔案路徑
  * @returns {Promise<void>} 播放完畢後 resolve
  */
 function _playMp3(path) {
+  path = _normalizePath(path);
   return new Promise(function (resolve, reject) {
     var audio = new Audio(path);
     audio.volume = _volume;
@@ -182,6 +204,7 @@ function _playMp3(path) {
  * @returns {Promise<void>} 播放結束後 resolve
  */
 function _playMp3UntilEnd(path) {
+  path = _normalizePath(path);
   return new Promise(function (resolve, reject) {
     var audio = new Audio(path);
     audio.volume = _volume;
@@ -235,7 +258,8 @@ function _playMp3UntilEnd(path) {
  * @param {number} [rate=1.0] - 播放速率 0.6~1.3
  * @returns {Promise<void>} 播放結束後 resolve
  */
-function _playMp3WithRate(path, rate) {
+function _playMp3WithRate(path, rate, isVoice) {
+  path = _normalizePath(path);
   var ctx = _getAudioContext();
   if (!ctx) {
     // 無 AudioContext → 降級回 HTMLAudioElement
@@ -246,7 +270,7 @@ function _playMp3WithRate(path, rate) {
 
   // 如果快取中已有 AudioBuffer，直接播放
   if (_bufferCache[path]) {
-    return _playBufferSource(_bufferCache[path], playbackRate);
+    return _playBufferSource(_bufferCache[path], playbackRate, isVoice);
   }
 
   // fetch → arrayBuffer → decodeAudioData → 快取 → 播放
@@ -262,8 +286,42 @@ function _playMp3WithRate(path, rate) {
     .then(function (audioBuffer) {
       // 存入快取
       _bufferCache[path] = audioBuffer;
-      return _playBufferSource(audioBuffer, playbackRate);
+      return _playBufferSource(audioBuffer, playbackRate, isVoice);
     });
+}
+
+/**
+ * 強制停止目前正在播放的語音
+ * 包含 Web Audio API source 節點與 Web Speech API
+ */
+function _stopCurrentVoice() {
+  // 停止 Web Audio source
+  if (_currentVoiceSource) {
+    try {
+      _currentVoiceSource.stop();
+    } catch (e) {
+      /* 已停止 */
+    }
+    _currentVoiceSource = null;
+  }
+  // 清除逾時計時器
+  if (_currentVoiceTimeout) {
+    clearTimeout(_currentVoiceTimeout);
+    _currentVoiceTimeout = null;
+  }
+  // 提前 resolve 上一次的 Promise（避免掛起）
+  if (_currentVoiceResolve) {
+    _currentVoiceResolve();
+    _currentVoiceResolve = null;
+  }
+  // 停止 Web Speech API（L4）
+  if (window.speechSynthesis) {
+    try {
+      window.speechSynthesis.cancel();
+    } catch (e) {
+      /* ignore */
+    }
+  }
 }
 
 /**
@@ -271,9 +329,10 @@ function _playMp3WithRate(path, rate) {
  *
  * @param {AudioBuffer} audioBuffer - 已解碼的音訊資料
  * @param {number} rate - 播放速率
+ * @param {boolean} [isVoice=false] - 是否為語音播放（啟用強制停止追蹤）
  * @returns {Promise<void>}
  */
-function _playBufferSource(audioBuffer, rate) {
+function _playBufferSource(audioBuffer, rate, isVoice) {
   return new Promise(function (resolve) {
     var ctx = _getAudioContext();
     if (!ctx) {
@@ -291,20 +350,40 @@ function _playBufferSource(audioBuffer, rate) {
     source.connect(gainNode);
     gainNode.connect(ctx.destination);
 
-    // 逾時保護（與 _playMp3UntilEnd 一致）
+    // 逾時保護：依實際音訊長度 / 播放速率 + 3 秒緩衝
+    var estimatedMs = Math.ceil((audioBuffer.duration / rate) * 1000) + 3000;
     var timeout = setTimeout(function () {
       try {
         source.stop();
       } catch (e) {
         /* 已停止 */
       }
+      // 清除語音追蹤
+      if (isVoice) {
+        _currentVoiceSource = null;
+        _currentVoiceTimeout = null;
+        _currentVoiceResolve = null;
+      }
       resolve();
-    }, LOAD_TIMEOUT_MS + 3000); // 語音最長 8 秒
+    }, estimatedMs);
 
     source.onended = function () {
       clearTimeout(timeout);
+      // 清除語音追蹤
+      if (isVoice) {
+        _currentVoiceSource = null;
+        _currentVoiceTimeout = null;
+        _currentVoiceResolve = null;
+      }
       resolve();
     };
+
+    // 語音播放追蹤：儲存 source / timeout / resolve 供強制停止使用
+    if (isVoice) {
+      _currentVoiceSource = source;
+      _currentVoiceTimeout = timeout;
+      _currentVoiceResolve = resolve;
+    }
 
     source.start();
   });
@@ -350,6 +429,37 @@ function _guessSynthPreset(path) {
 }
 
 /**
+ * 將原始語音路徑映射到 Edge TTS fallback 路徑
+ *
+ * 映射規則與 gTTS 相同，但使用 audio/voice/edge-tts/ 目錄
+ *
+ * @param {string|null} originalPath - 原始語音檔路徑
+ * @returns {string|null} Edge TTS fallback 路徑，或 null
+ */
+function _getEdgeTtsFallbackPath(originalPath) {
+  if (!originalPath) return null;
+
+  var EDGE_DIR = "audio/voice/edge-tts/";
+  var filename = originalPath.split("/").pop();
+
+  // 規則說明語音太長，無 TTS 備用
+  if (originalPath.indexOf("audio/guide/") === 0) {
+    return null;
+  }
+
+  // 男聲/女聲 刺激物語音 → stimulus- 前綴
+  if (
+    originalPath.indexOf("/female/") !== -1 ||
+    originalPath.indexOf("/male/") !== -1
+  ) {
+    return EDGE_DIR + "stimulus-" + filename;
+  }
+
+  // 其他語音（wm, badge, level, unlock）→ 直接搬到 edge-tts/
+  return EDGE_DIR + filename;
+}
+
+/**
  * 將原始語音路徑映射到 gTTS fallback 路徑
  *
  * 映射規則：
@@ -390,11 +500,11 @@ function _getTtsFallbackPath(originalPath) {
 /**
  * 使用 Web Speech API 即時合成語音（Level 3）
  *
- * @todo E4 決策 — Web Speech API 男/女聲替代策略
- *   目前用語速差異作為替代提示：
+ * 設計決策（E4）：Web Speech API 男/女聲替代策略
+ *   現行方案：以語速差異作為替代提示——
  *   - 女聲情境（rule1/mixed-rule1）：rate = 1.0（正常）
  *   - 男聲情境（mixed-rule2）：rate = 0.8（稍慢）
- *   等媒體素材完成後再最終決定策略。
+ *   狀態：可運作，待自訂 MP3 素材完成後可進一步替換。
  *
  * @param {string} text   - 要朗讀的文字
  * @param {string} gender - 'female' 或 'male'
@@ -469,7 +579,7 @@ function _initFromStorage() {
       }
     }
   } catch (e) {
-    console.warn("⚠️ AudioPlayer: localStorage 讀取失敗", e);
+    Logger.warn("⚠️ AudioPlayer: localStorage 讀取失敗", e);
   }
 }
 
@@ -490,7 +600,7 @@ var AudioPlayer = {
     if (_initialized) return;
     _initFromStorage();
     _initialized = true;
-    console.log(
+    Logger.debug(
       "🔊 AudioPlayer 已初始化 — SFX:" +
         (_sfxEnabled ? "ON" : "OFF") +
         " Voice:" +
@@ -547,7 +657,7 @@ var AudioPlayer = {
           return { level: "L1", played: true };
         })
         .catch(function (err) {
-          console.warn("🔊 L1 MP3 音效失敗: " + soundPath, err.message);
+          Logger.warn("🔊 L1 MP3 音效失敗: " + soundPath, err.message);
 
           // L2: Web Audio 合成音
           var presetName = opts.synthPreset || _guessSynthPreset(soundPath);
@@ -558,7 +668,7 @@ var AudioPlayer = {
           }
 
           // L3: 靜默跳過
-          console.warn("🔊 L3 靜默跳過: " + soundPath);
+          Logger.warn("🔊 L3 靜默跳過: " + soundPath);
           return { level: "L3", played: false };
         });
     }
@@ -571,7 +681,7 @@ var AudioPlayer = {
       return Promise.resolve({ level: "L2-synth", played: true });
     }
 
-    console.warn("🔊 L3 靜默跳過（無路徑）");
+    Logger.warn("🔊 L3 靜默跳過（無路徑）");
     return Promise.resolve({ level: "L3", played: false });
   },
 
@@ -584,9 +694,10 @@ var AudioPlayer = {
    *
    * Fallback 順序：
    *   L1: 自訂語音 MP3（人聲錄製，有男/女聲區分）
-   *   L2: gTTS 預生成 MP3（無男/女聲區分）
-   *   L3: Web Speech API 即時合成（語速差異替代男/女聲）
-   *   L4: 純視覺模式（觸發 onVisualFallback 回調）
+   *   L2: Edge TTS 預生成 MP3（高品質 AI 語音）
+   *   L3: gTTS 預生成 MP3（無男/女聲區分）
+   *   L4: Web Speech API 即時合成（語速差異替代男/女聲）
+   *   L5: 純視覺模式（觸發 onVisualFallback 回調）
    *
    * @param {string|null} filePath - 語音 MP3 路徑（來自 getStimulusVoiceFile()）
    * @param {Object}      options
@@ -623,15 +734,18 @@ var AudioPlayer = {
       return Promise.resolve({ level: "off", played: false });
     }
 
+    // 強制停止上一次語音播放，避免重疊
+    _stopCurrentVoice();
+
     // L1: 自訂語音 MP3（方案 B — Web Audio API + playbackRate）
     var l1Promise;
     if (filePath) {
-      l1Promise = _playMp3WithRate(filePath, _voiceRate)
+      l1Promise = _playMp3WithRate(filePath, _voiceRate, true)
         .then(function () {
           return { level: "L1", played: true };
         })
         .catch(function (err) {
-          console.warn("🗣️ L1 自訂語音失敗: " + filePath, err.message);
+          Logger.warn("🗣️ L1 自訂語音失敗: " + filePath, err.message);
           return null; // 繼續降級
         });
     } else {
@@ -642,16 +756,19 @@ var AudioPlayer = {
       .then(function (result) {
         if (result) return result;
 
-        // L2: gTTS 預生成 MP3
-        var ttsFallback = _getTtsFallbackPath(filePath);
+        // L2: Edge TTS 預生成 MP3
+        var edgeFallback = _getEdgeTtsFallbackPath(filePath);
         var l2Promise;
-        if (ttsFallback) {
-          l2Promise = _playMp3WithRate(ttsFallback, _voiceRate)
+        if (edgeFallback) {
+          l2Promise = _playMp3WithRate(edgeFallback, _voiceRate, true)
             .then(function () {
               return { level: "L2", played: true };
             })
             .catch(function (err) {
-              console.warn("🗣️ L2 gTTS 備用失敗: " + ttsFallback, err.message);
+              Logger.warn(
+                "🗣️ L2 Edge TTS 備用失敗: " + edgeFallback,
+                err.message,
+              );
               return null;
             });
         } else {
@@ -661,30 +778,58 @@ var AudioPlayer = {
         return l2Promise.then(function (result2) {
           if (result2) return result2;
 
-          // L3: Web Speech API
-          if (text && window.speechSynthesis) {
-            return _speakWithWebSpeech(text, gender)
+          // L3: gTTS 預生成 MP3
+          var ttsFallback = _getTtsFallbackPath(filePath);
+          var l3Promise;
+          if (ttsFallback) {
+            l3Promise = _playMp3WithRate(ttsFallback, _voiceRate, true)
               .then(function () {
                 return { level: "L3", played: true };
               })
               .catch(function (err) {
-                console.warn("🗣️ L3 Web Speech API 失敗:", err.message);
+                Logger.warn("🗣️ L3 gTTS 備用失敗: " + ttsFallback, err.message);
                 return null;
               });
+          } else {
+            l3Promise = Promise.resolve(null);
           }
-          return null;
+
+          return l3Promise.then(function (result3) {
+            if (result3) return result3;
+
+            // L4: Web Speech API
+            if (text && window.speechSynthesis) {
+              return _speakWithWebSpeech(text, gender)
+                .then(function () {
+                  return { level: "L4", played: true };
+                })
+                .catch(function (err) {
+                  Logger.warn("🗣️ L4 Web Speech API 失敗:", err.message);
+                  return null;
+                });
+            }
+            return null;
+          });
         });
       })
       .then(function (finalResult) {
         if (finalResult) return finalResult;
 
-        // L4: 純視覺模式
-        console.warn('🗣️ L4 純視覺模式 — 語音完全不可用: "' + text + '"');
+        // L5: 純視覺模式
+        Logger.warn('🗣️ L5 純視覺模式 — 語音完全不可用: "' + text + '"');
         if (typeof onVisualFallback === "function") {
           onVisualFallback({ text: text, gender: gender });
         }
-        return { level: "L4", played: false };
+        return { level: "L5", played: false };
       });
+  },
+
+  /**
+   * 強制停止當前語音播放
+   * 外部可呼叫此方法在切換動作時打斷尚未播完的語音
+   */
+  stopVoice: function () {
+    _stopCurrentVoice();
   },
 
   // -----------------------------------------
@@ -782,9 +927,9 @@ var AudioPlayer = {
    * 🐇 1.0 = 正常（預設）
    * 🐆 1.2 = 快速（進階練習）
    *
-   * 影響 L1（自訂 MP3）、L2（gTTS MP3）、L3（Web Speech API）全部三級。
-   * L1/L2 透過 Web Audio API AudioBufferSourceNode.playbackRate 實現。
-   * L3 透過 SpeechSynthesisUtterance.rate 實現（方案 C 補充）。
+   * 影響 L1（自訂 MP3）、L2（Edge TTS MP3）、L3（gTTS MP3）、L4（Web Speech API）全部四級。
+   * L1/L2/L3 透過 Web Audio API AudioBufferSourceNode.playbackRate 實現。
+   * L4 透過 SpeechSynthesisUtterance.rate 實現（方案 C 補充）。
    *
    * @param {number} rate - 語速 0.6~1.3（超出範圍會被 clamp）
    */
@@ -795,7 +940,7 @@ var AudioPlayer = {
     } catch (e) {
       /* ignore */
     }
-    console.log("🗣️ 語速已設定: " + _voiceRate + "x");
+    Logger.debug("🗣️ 語速已設定: " + _voiceRate + "x");
   },
 
   /**
@@ -815,7 +960,7 @@ var AudioPlayer = {
     var count = Object.keys(_bufferCache).length;
     _bufferCache = {};
     if (count > 0) {
-      console.log("🧹 AudioBuffer 快取已清除（" + count + " 筆）");
+      Logger.debug("🧹 AudioBuffer 快取已清除（" + count + " 筆）");
     }
   },
 
@@ -857,7 +1002,7 @@ var AudioPlayer = {
       });
     });
     return Promise.all(promises).then(function () {
-      console.log(
+      Logger.debug(
         "📦 預載完成：✅ " + loaded + " 成功 ｜ ❌ " + failed + " 失敗",
       );
       return { loaded: loaded, failed: failed };

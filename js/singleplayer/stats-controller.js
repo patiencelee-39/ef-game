@@ -15,12 +15,84 @@
 
   // ─── 初始化 ───
   document.addEventListener("DOMContentLoaded", function () {
+    renderPlayerInfo();
     renderOverview();
     renderProgress();
     renderRuleCompare();
     renderChart();
     renderBadges();
   });
+
+  // ─── 0. 玩家資料 ───
+  function renderPlayerInfo() {
+    var profile = getPlayerProfile();
+    var infoGrid = document.getElementById("playerInfoGrid");
+
+    if (!infoGrid) return;
+
+    var items = [];
+
+    // 暱稱 / 座號
+    if (profile && profile.nickname) {
+      items.push({
+        icon: "📝",
+        label: "暱稱 / 座號",
+        value: profile.nickname,
+      });
+    }
+
+    // 兒童代碼
+    if (profile && profile.childCode) {
+      items.push({
+        icon: "🔑",
+        label: "兒童代碼",
+        value: profile.childCode,
+      });
+    }
+
+    // 班級 / 看板名稱
+    if (profile && profile.playerClass) {
+      items.push({
+        icon: "🏫",
+        label: "班級",
+        value: profile.playerClass,
+      });
+    } else if (profile && profile.boardName) {
+      items.push({
+        icon: "🏫",
+        label: "看板",
+        value: profile.boardName,
+      });
+    }
+
+    // 如果沒有任何資料，顯示提升消息
+    if (items.length === 0) {
+      infoGrid.innerHTML =
+        '<p style="text-align: center; color: var(--text-muted); padding: 16px; font-size: 0.9rem;">尚未輸入玩家資料</p>';
+      return;
+    }
+
+    // 生成 HTML
+    infoGrid.innerHTML = items
+      .map(function (item) {
+        return (
+          '<div class="player-info-item">' +
+          '<div class="player-info-item__icon">' +
+          item.icon +
+          "</div>" +
+          '<div class="player-info-item__content">' +
+          '<div class="player-info-item__label">' +
+          item.label +
+          "</div>" +
+          '<div class="player-info-item__value">' +
+          item.value +
+          "</div>" +
+          "</div>" +
+          "</div>"
+        );
+      })
+      .join("");
+  }
 
   // ─── 1. 總覽 ───
   function renderOverview() {

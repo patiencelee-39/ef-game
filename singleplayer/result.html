@@ -3,13 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="preconnect" href="https://www.googleapis.com" crossorigin />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, user-scalable=no"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://*.firebasedatabase.app https://*.firebaseio.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://*.firebasedatabase.app https://*.firebaseio.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; connect-src 'self' https://cdn.jsdelivr.net https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app"
     />
     <title>遊戲結算</title>
     <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
@@ -19,6 +16,8 @@
 
     <!-- CSS 載入順序：base → main → 本頁行內 -->
     <link rel="stylesheet" href="../css/themes/base.css" />
+    <link rel="stylesheet" href="../css/themes/theme-field-primary.css" />
+    <link rel="stylesheet" href="../css/themes/theme-rule-independent.css" />
     <link rel="stylesheet" href="../css/main.css" />
     <link
       rel="preload"
@@ -50,6 +49,8 @@
     /></noscript>
     <!-- ==================== 模組載入 ==================== -->
     <!-- Firebase Bundle -->
+    <script defer src="../js/utils/logger.js"></script>
+    <script defer src="../js/shared/game-modal.js"></script>
     <script defer src="../js/firebase-bundle.js"></script>
     <!-- ==================== 遊戲核心 ==================== -->
     <script defer src="../js/game-config.js"></script>
@@ -66,14 +67,31 @@
     <script
       defer
       src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"
+      integrity="sha384-9nhczxUqK87bcKHh20fSQcTGD4qq5GhayNYSYWqwBkINBhOfQLg/P5HG5lF1urn4"
+      crossorigin="anonymous"
     ></script>
     <script
       defer
       src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"
+      integrity="sha384-D/t0ZMqQW31H3az8ktEiNb39wyKnS82iFY52QPACM+IjKW3jDUhyIgh2PApRqJZs"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"
+      integrity="sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"
+      crossorigin="anonymous"
     ></script>
     <script
       defer
       src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"
+      integrity="sha384-Yv5O+t3uE3hunW8uyrbpPW3iw6/5/Y7HitWJBLgqfMoA36NogMmy+8wWZMpn3HWc"
+      crossorigin="anonymous"
     ></script>
     <script defer src="../js/utils/constants.js"></script>
     <script defer src="../js/shared/csv-report.js"></script>
@@ -84,7 +102,8 @@
   </head>
 
   <body>
-    <main class="result-page" id="main-content">
+    <a href="#main-content" class="skip-link">跳到主要內容</a>
+    <main class="result-page" id="main-content" aria-live="polite">
       <!-- === 頂部 === -->
       <div class="result-header">
         <h1 id="resultHeaderTitle">遊戲結算</h1>

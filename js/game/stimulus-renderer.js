@@ -10,11 +10,8 @@
  *
  * 三級 Fallback：SVG → Emoji → 文字 label
  *
- * @todo Phase 3 — 語音四級 Fallback 整合
- *   本檔 getStimulusVoiceFile() 目前只回傳路徑，無 fallback 邏輯。
- *   Phase 3 新建 audio-player.js 時，需實作語音四級降級：
- *   L1 自訂 MP3 → L2 gTTS 預生成 → L3 Web Speech API → L4 純視覺
- *   詳見 §5.4c 第 5 項 + Flow-20 語音分支
+ * NOTE: 語音四級 Fallback 已於 Phase 3 在 audio-player.js 完整實作。
+ *   本檔 getStimulusVoiceFile() 負責回傳路徑，fallback 降級由 AudioPlayer 處理。
  * ============================================
  */
 
@@ -32,14 +29,14 @@
 function renderStimulus(fieldId, stimulusType) {
   var fieldStimuli = getFieldStimuli(fieldId);
   if (!fieldStimuli) {
-    console.warn("⚠️ 找不到遊戲場刺激物：" + fieldId);
+    Logger.warn("⚠️ 找不到遊戲場刺激物：" + fieldId);
     return '<span class="stimulus-fallback">?</span>';
   }
 
   var stim =
     stimulusType === "go" ? fieldStimuli.goStimulus : fieldStimuli.noGoStimulus;
   if (!stim) {
-    console.warn("⚠️ 找不到刺激物類型：" + stimulusType);
+    Logger.warn("⚠️ 找不到刺激物類型：" + stimulusType);
     return '<span class="stimulus-fallback">?</span>';
   }
 
@@ -107,7 +104,7 @@ function renderStimulusByKey(fieldId, stimulusKey) {
     return renderStimulus(fieldId, "noGo");
   }
 
-  console.warn("⚠️ 未知的刺激物 key：" + stimulusKey);
+  Logger.warn("⚠️ 未知的刺激物 key：" + stimulusKey);
   return '<span class="stimulus-fallback">' + stimulusKey + "</span>";
 }
 

@@ -69,7 +69,7 @@ function storageGet(key) {
     var raw = storage.getItem(key);
     return raw ? JSON.parse(raw) : null;
   } catch (e) {
-    console.warn("⚠️ storage 讀取失敗 [" + key + "]:", e);
+    Logger.warn("⚠️ storage 讀取失敗 [" + key + "]:", e);
     return null;
   }
 }
@@ -86,7 +86,7 @@ function storageSet(key, value) {
     storage.setItem(key, JSON.stringify(value));
     return true;
   } catch (e) {
-    console.error("❌ storage 寫入失敗 [" + key + "]:", e);
+    Logger.error("❌ storage 寫入失敗 [" + key + "]:", e);
     return false;
   }
 }
@@ -101,7 +101,7 @@ function storageRemove(key) {
     localStorage.removeItem(key);
     sessionStorage.removeItem(key);
   } catch (e) {
-    console.warn("⚠️ storage 刪除失敗 [" + key + "]:", e);
+    Logger.warn("⚠️ storage 刪除失敗 [" + key + "]:", e);
   }
 }
 
@@ -140,6 +140,7 @@ function createDefaultPlayerProfile(seatNumber, nickname) {
   return {
     seatNumber: seatNumber || "",
     nickname: nickname || "",
+    childCode: "",
     playerClass: "",
     totalStars: 0,
     spentStars: 0,
@@ -380,7 +381,7 @@ function initPlayerProfile(seatNumber, nickname, playerClass) {
     profile = createDefaultPlayerProfile(seatNumber, nickname);
     if (playerClass) profile.playerClass = playerClass;
     savePlayerProfile(profile);
-    console.log(`✅ 玩家 profile 已初始化：${nickname}`);
+    Logger.debug(`✅ 玩家 profile 已初始化：${nickname}`);
   }
   return profile;
 }
@@ -393,7 +394,7 @@ function initPlayerProfile(seatNumber, nickname, playerClass) {
 function updatePlayerProfile(updates) {
   const profile = getPlayerProfile();
   if (!profile) {
-    console.warn("⚠️ 尚未初始化 playerProfile");
+    Logger.warn("⚠️ 尚未初始化 playerProfile");
     return null;
   }
   const updated = { ...profile, ...updates };
@@ -473,7 +474,7 @@ function getPointRecord(mapId, pointIndex) {
     return m.id === mapId;
   });
   if (!map || !map.points[pointIndex]) {
-    console.warn(`⚠️ 找不到探險點：${mapId}[${pointIndex}]`);
+    Logger.warn(`⚠️ 找不到探險點：${mapId}[${pointIndex}]`);
     return null;
   }
   return map.points[pointIndex];
@@ -492,7 +493,7 @@ function updatePointRecord(mapId, pointIndex, updates) {
     return m.id === mapId;
   });
   if (!map || !map.points[pointIndex]) {
-    console.warn(`⚠️ 找不到探險點：${mapId}[${pointIndex}]`);
+    Logger.warn(`⚠️ 找不到探險點：${mapId}[${pointIndex}]`);
     return null;
   }
 
@@ -1045,7 +1046,7 @@ function clearGuestData() {
   } catch (e) {
     /* ignore */
   }
-  console.log("🧹 訪客資料已清除（00NoName）");
+  Logger.debug("🧹 訪客資料已清除（00NoName）");
 }
 
 /**
@@ -1063,6 +1064,12 @@ function clearAllGameData() {
   storageRemove("efgame_leaderboard");
   // 清除徽章計數器
   storageRemove("efgame-badge-counters");
+  // 清除難度引擎與音訊偏好
+  storageRemove("ef_engine_choice");
+  storageRemove("efgame-sfx-enabled");
+  storageRemove("efgame-voice-enabled");
+  storageRemove("efgame-volume");
+  storageRemove("efgame-voice-rate");
   // 清除 sessionStorage
   try {
     sessionStorage.removeItem("efgame-current-session");
@@ -1070,7 +1077,50 @@ function clearAllGameData() {
   } catch (e) {
     /* ignore */
   }
-  console.log("✅ 所有遊戲資料已清除");
+  // 清除 Cache Storage（Service Worker 快取）
+  clearCacheStorage();
+  Logger.info("✅ 所有遊戲資料已清除（含快取）");
+}
+
+/**
+ * 清除所有 Cache Storage + 註銷 Service Worker
+ * @returns {Promise<void>}
+ */
+function clearCacheStorage() {
+  // 1. 刪除所有 Cache Storage
+  if ("caches" in window) {
+    caches
+      .keys()
+      .then(function (names) {
+        names.forEach(function (name) {
+          caches.delete(name);
+        });
+        Logger.info(
+          "✅ Cache Storage 已全部清除 (" + names.length + " 個快取)",
+        );
+      })
+      .catch(function (e) {
+        Logger.warn("⚠️ 清除 Cache Storage 失敗:", e);
+      });
+  }
+  // 2. 註銷 Service Worker（讓下次載入重新安裝乾淨的 SW）
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker
+      .getRegistrations()
+      .then(function (registrations) {
+        registrations.forEach(function (reg) {
+          reg.unregister();
+        });
+        if (registrations.length > 0) {
+          Logger.info(
+            "✅ Service Worker 已註銷 (" + registrations.length + " 個)",
+          );
+        }
+      })
+      .catch(function (e) {
+        Logger.warn("⚠️ 註銷 Service Worker 失敗:", e);
+      });
+  }
 }
 
 /**
@@ -1108,10 +1158,10 @@ function importGameData(jsonString) {
       localStorage.setItem("efgame-sound-pack", data.soundPack);
     if (data.soundOverrides)
       localStorage.setItem("efgame-sound-overrides", data.soundOverrides);
-    console.log("✅ 遊戲資料已匯入");
+    Logger.info("✅ 遊戲資料已匯入");
     return true;
   } catch (e) {
-    console.error("❌ 匯入失敗：", e);
+    Logger.error("❌ 匯入失敗：", e);
     return false;
   }
 }
@@ -1175,6 +1225,7 @@ if (typeof window !== "undefined") {
   window.getClassData = getClassData;
   window.saveClassData = saveClassData;
   window.clearAllGameData = clearAllGameData;
+  window.clearCacheStorage = clearCacheStorage;
   window.exportGameData = exportGameData;
   window.importGameData = importGameData;
   window.isGuestPlayer = isGuestPlayer;

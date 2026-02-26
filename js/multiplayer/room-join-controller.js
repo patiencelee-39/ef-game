@@ -6,7 +6,7 @@ window.addEventListener("DOMContentLoaded", () => {
   firebase.auth().onAuthStateChanged((user) => {
     if (user) {
       firebaseReady = true;
-      console.log("✅ Firebase 已就緒，uid:", user.uid);
+      Logger.debug("✅ Firebase 已就緒，uid:", user.uid);
     }
   });
 
@@ -112,7 +112,11 @@ async function joinRoom() {
       await window.RoomManager.joinRoom(cleanRoomCode, null);
     } catch (pwError) {
       if (pwError.message === "此房間需要密碼") {
-        joinPassword = prompt("🔒 此房間需要密碼，請輸入：");
+        joinPassword = await GameModal.prompt(
+          "🔒 此房間需要密碼",
+          "請輸入房間密碼",
+          { icon: "🔒", inputType: "password" },
+        );
         if (!joinPassword) {
           showStatus("❌ 已取消加入", "error");
           return;
@@ -166,7 +170,7 @@ async function joinRoom() {
       location.href = `room-lobby.html?code=${cleanRoomCode}`;
     }, 1000);
   } catch (error) {
-    console.error("加入房間失敗:", error);
+    Logger.error("加入房間失敗:", error);
     showStatus("❌ " + error.message, "error");
   } finally {
     document.getElementById("loading").style.display = "none";
@@ -175,7 +179,8 @@ async function joinRoom() {
 }
 
 // Enter 鍵提交
-document.getElementById("playerName").addEventListener("keypress", (e) => {
+document.getElementById("playerName").addEventListener("keydown", (e) => {
+  if (e.isComposing || e.keyCode === 229) return;
   if (e.key === "Enter") {
     codeInputs[0].focus();
   }

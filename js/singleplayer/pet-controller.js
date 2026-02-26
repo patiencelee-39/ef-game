@@ -409,7 +409,7 @@ function filterStickerCat(catId) {
 function handleOpenPack() {
   var result = StickerManager.openPack();
   if (!result.success) {
-    alert(result.reason);
+    GameModal.alert("無法開包", result.reason, { icon: "🎴" });
     return;
   }
 
@@ -595,7 +595,7 @@ function showAvatarItemPopup(item, owned, equipped) {
         showFeedSuccess("🎉 獲得 " + result.item.emoji + "！");
         refreshAll();
       } else {
-        alert(result.reason);
+        GameModal.alert("購買失敗", result.reason, { icon: "❌" });
       }
     };
     btnsEl.appendChild(btnBuy);
@@ -645,11 +645,56 @@ function handleFeed(foodId) {
   closePopup();
 
   if (result.success) {
-    showFeedSuccess(result.food.emoji + " 好好吃！");
-    refreshAll();
+    playFeedAnimation(result.food, function () {
+      refreshAll();
+    });
   } else {
-    alert(result.reason);
+    GameModal.alert("餉食失敗", result.reason, { icon: "🍽️" });
   }
+}
+
+/**
+ * 強化餵食動畫：食物飛入 → 咀嚼 → 滿足粒子爆發
+ */
+function playFeedAnimation(food, onDone) {
+  var display = document.getElementById("pet-display");
+  var emoji = document.getElementById("pet-emoji");
+
+  // 1) 食物飛入動畫
+  var flyEl = document.createElement("span");
+  flyEl.className = "feed-fly-emoji";
+  flyEl.textContent = food.emoji;
+  display.appendChild(flyEl);
+
+  // 2) 飛入完畢 → 咀嚼動畫
+  setTimeout(function () {
+    flyEl.remove();
+
+    // 咀嚼（寵物快速縮放）
+    emoji.classList.add("pet-munch");
+    setTimeout(function () {
+      emoji.classList.remove("pet-munch");
+    }, 600);
+
+    // 3) 滿足粒子爆發
+    var particles = ["😋", "✨", "💕", "⭐", "🎵"];
+    for (var p = 0; p < 6; p++) {
+      spawnParticle(
+        display,
+        particles[Math.floor(Math.random() * particles.length)],
+        "heart-particle",
+      );
+    }
+
+    // 顯示開心語句
+    showSpeechBubble(display, food.emoji + " 好好吃！😋");
+  }, 500);
+
+  // 4) 延遲後觸發完成
+  setTimeout(function () {
+    showFeedSuccess(food.emoji + " 好好吃！");
+    if (onDone) onDone();
+  }, 1200);
 }
 
 function showFeedSuccess(msg) {
@@ -686,6 +731,10 @@ function showAccessoryPopup(acc, owned, isEquipped) {
     btnToggle.onclick = function () {
       togglePetAccessory(acc.id);
       closePopup();
+      if (!isEquipped) {
+        // 穿上 → 播放閃光特效
+        playEquipSparkle();
+      }
       refreshAll();
     };
     btnsEl.appendChild(btnToggle);
@@ -718,10 +767,35 @@ function handleBuyAccessory(accId) {
   closePopup();
 
   if (result.success) {
+    playEquipSparkle();
     showFeedSuccess("🎉 獲得 " + result.accessory.emoji + "！");
     refreshAll();
   } else {
-    alert(result.reason);
+    GameModal.alert("購買失敗", result.reason, { icon: "❌" });
+  }
+}
+
+/**
+ * 配件穿戴 / 購買閃光特效
+ */
+function playEquipSparkle() {
+  var display = document.getElementById("pet-display");
+  var sparkles = ["✨", "💫", "⭐"];
+  for (var i = 0; i < 6; i++) {
+    (function (idx) {
+      setTimeout(function () {
+        var sp = document.createElement("span");
+        sp.className = "equip-sparkle";
+        sp.textContent = sparkles[idx % sparkles.length];
+        var angle = (idx / 6) * Math.PI * 2;
+        sp.style.setProperty("--sx", Math.round(Math.cos(angle) * 50) + "px");
+        sp.style.setProperty("--sy", Math.round(Math.sin(angle) * 50) + "px");
+        display.appendChild(sp);
+        setTimeout(function () {
+          sp.remove();
+        }, 900);
+      }, idx * 80);
+    })(i);
   }
 }
 
@@ -739,20 +813,14 @@ document.getElementById("action-popup").addEventListener("click", function (e) {
 });
 
 /* =========================================
-         🐔 寵物點擊互動
+         🐔 寵物點擊互動（含連擊系統）
          ========================================= */
-var PET_PHRASES = [
-  "咕咕！🐔",
-  "摸摸我～ 💕",
-  "好開心！😆",
-  "給我吃的～ 🍽️",
-  "嘰嘰！🐣",
-  "想跟你玩！🎮",
-  "最喜歡你了！❤️",
-  "今天也加油！💪",
-  "好無聊啊～ 😴",
-  "咕嚕咕嚕 🎵",
-];
+
+// ─── 連擊 combo 狀態 ───
+var _comboCount = 0;
+var _comboTimer = null;
+var COMBO_WINDOW_MS = 600; // 600ms 內連續點擊算 combo
+
 var _bubbleTimer = null;
 
 document.getElementById("pet-display").addEventListener("click", function (e) {
@@ -773,38 +841,135 @@ function handlePetTap(e) {
   var display = document.getElementById("pet-display");
   var emoji = document.getElementById("pet-emoji");
 
-  // 1) 彈跳動畫
-  emoji.classList.remove("pet-tap-bounce");
-  void emoji.offsetWidth; // reflow
-  emoji.classList.add("pet-tap-bounce");
-  setTimeout(function () {
+  // 累計 combo
+  _comboCount++;
+  if (_comboTimer) clearTimeout(_comboTimer);
+  _comboTimer = setTimeout(function () {
+    _comboCount = 0;
+  }, COMBO_WINDOW_MS);
+
+  // ─── 依 combo 等級給不同反應 ───
+  if (_comboCount >= 5) {
+    // 🎊 大慶祝
+    emoji.classList.remove("pet-tap-bounce", "pet-combo-spin");
+    void emoji.offsetWidth;
+    emoji.classList.add("pet-combo-celebrate");
+    setTimeout(function () {
+      emoji.classList.remove("pet-combo-celebrate");
+    }, 800);
+
+    // 星星噴射 ×8
+    for (var s = 0; s < 8; s++) {
+      spawnParticle(display, "⭐", "star-particle");
+    }
+
+    // 特殊 combo 語句
+    var comboIdx = Math.floor(Math.random() * PET_COMBO_PHRASES.length);
+    showSpeechBubble(display, PET_COMBO_PHRASES[comboIdx]);
+
+    // 🔊 播放連擊語音
+    if (
+      typeof getPetComboVoiceFile === "function" &&
+      typeof AudioPlayer !== "undefined" &&
+      AudioPlayer.playVoice
+    ) {
+      AudioPlayer.playVoice(getPetComboVoiceFile(comboIdx), {
+        text: PET_COMBO_PHRASES[comboIdx],
+      });
+    }
+
+    _comboCount = 0; // reset
+  } else if (_comboCount >= 3) {
+    // 🌀 旋轉 + 更多愛心
+    emoji.classList.remove("pet-tap-bounce", "pet-combo-celebrate");
+    void emoji.offsetWidth;
+    emoji.classList.add("pet-combo-spin");
+    setTimeout(function () {
+      emoji.classList.remove("pet-combo-spin");
+    }, 600);
+
+    for (var h = 0; h < 5; h++) {
+      spawnParticle(display, "❤️", "heart-particle");
+    }
+
+    showMoodSpeechBubble(display);
+  } else {
+    // 🐔 基本彈跳
     emoji.classList.remove("pet-tap-bounce");
-  }, 450);
+    void emoji.offsetWidth;
+    emoji.classList.add("pet-tap-bounce");
+    setTimeout(function () {
+      emoji.classList.remove("pet-tap-bounce");
+    }, 450);
 
-  // 2) 愛心粒子 ×3
-  for (var i = 0; i < 3; i++) {
-    spawnHeart(display);
+    for (var i = 0; i < 3; i++) {
+      spawnParticle(display, "❤️", "heart-particle");
+    }
+
+    showMoodSpeechBubble(display);
   }
-
-  // 3) 對話氣泡
-  showSpeechBubble(display);
 }
 
-function spawnHeart(container) {
-  var heart = document.createElement("span");
-  heart.className = "heart-particle";
-  heart.textContent = "❤️";
-  var dx = Math.round(Math.random() * 60 - 30);
-  heart.style.setProperty("--dx", dx + "px");
-  heart.style.left = 50 + Math.round(Math.random() * 20 - 10) + "%";
-  heart.style.top = "30%";
-  container.appendChild(heart);
+/**
+ * 通用粒子生成（❤️ / ⭐）
+ */
+function spawnParticle(container, char, className) {
+  var el = document.createElement("span");
+  el.className = className;
+  el.textContent = char;
+  var dx = Math.round(Math.random() * 80 - 40);
+  el.style.setProperty("--dx", dx + "px");
+  el.style.left = 50 + Math.round(Math.random() * 30 - 15) + "%";
+  el.style.top = "30%";
+  container.appendChild(el);
   setTimeout(function () {
-    heart.remove();
+    el.remove();
   }, 1300);
 }
 
-function showSpeechBubble(container) {
+// 舊版相容
+function spawnHeart(container) {
+  spawnParticle(container, "❤️", "heart-particle");
+}
+
+/**
+ * 心情×階段 對話氣泡
+ */
+function showMoodSpeechBubble(container) {
+  var status = PetManager.getFullPetStatus();
+  var moodId = status.mood ? status.mood.id : "normal";
+  var level = status.stage ? status.stage.level : 1;
+
+  var phrase;
+  var phraseIndex = 0;
+  if (
+    typeof PET_SPEECH !== "undefined" &&
+    PET_SPEECH[moodId] &&
+    PET_SPEECH[moodId][level]
+  ) {
+    var pool = PET_SPEECH[moodId][level];
+    phraseIndex = Math.floor(Math.random() * pool.length);
+    phrase = pool[phraseIndex];
+  } else {
+    // fallback
+    phrase = "咕咕！🐔";
+  }
+
+  showSpeechBubble(container, phrase);
+
+  // 🔊 播放寵物心情語音
+  if (
+    typeof getPetSpeechVoiceFile === "function" &&
+    typeof AudioPlayer !== "undefined" &&
+    AudioPlayer.playVoice
+  ) {
+    AudioPlayer.playVoice(getPetSpeechVoiceFile(moodId, level, phraseIndex), {
+      text: phrase,
+    });
+  }
+}
+
+function showSpeechBubble(container, text) {
   // 清除舊的
   var old = container.querySelector(".speech-bubble");
   if (old) old.remove();
@@ -812,8 +977,7 @@ function showSpeechBubble(container) {
 
   var bubble = document.createElement("div");
   bubble.className = "speech-bubble";
-  bubble.textContent =
-    PET_PHRASES[Math.floor(Math.random() * PET_PHRASES.length)];
+  bubble.textContent = text;
   container.appendChild(bubble);
 
   _bubbleTimer = setTimeout(function () {
@@ -847,7 +1011,7 @@ function confirmRename() {
     // 空字串 → 清除自訂名，恢復預設
     setPetName("");
   } else if (name.length > 8) {
-    alert("名字最多 8 個字喔！");
+    GameModal.alert("名字太長", "名字最多 8 個字喔！", { icon: "✏️" });
     return;
   } else {
     setPetName(name);
@@ -865,6 +1029,7 @@ document.getElementById("rename-modal").addEventListener("click", function (e) {
 document
   .getElementById("rename-input")
   .addEventListener("keydown", function (e) {
+    if (e.isComposing || e.keyCode === 229) return;
     if (e.key === "Enter") {
       e.preventDefault();
       confirmRename();

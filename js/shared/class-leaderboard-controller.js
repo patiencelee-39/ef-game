@@ -9,8 +9,8 @@
   var _importParsedData = null;
 
   // DOM
-  var boardNameInput = document.getElementById("boardNameInput");
-  var joinCodeInput = document.getElementById("joinCodeInput");
+  var codeInput = document.getElementById("codeInput");
+  var codeStatus = document.getElementById("codeStatus");
   var boardSetup = document.getElementById("boardSetup");
   var shareMethods = document.getElementById("shareMethods");
   var liveRankingContainer = document.getElementById("liveRankingContainer");
@@ -57,60 +57,24 @@
     });
   });
 
-  // === 建立看板 ===
-  document
-    .getElementById("btnCreateBoard")
-    .addEventListener("click", function () {
-      var name = boardNameInput.value.trim();
-      if (!name) {
-        boardNameInput.style.borderColor = "#e74c3c";
-        boardNameInput.focus();
-        return;
-      }
-      this.disabled = true;
-      this.textContent = "建立中…";
-      var btn = this;
+  // === 進入看板（代碼查詢 → 進入 / 建立）===
+  document.getElementById("btnEnter").addEventListener("click", function () {
+    var code = codeInput.value.trim().toUpperCase();
+    if (!code || code.length < 4) {
+      codeInput.style.borderColor = "#e74c3c";
+      codeInput.focus();
+      codeStatus.textContent = "⚠️ 請輸入至少 4 位代碼";
+      codeStatus.style.color = "#e74c3c";
+      return;
+    }
+    var btn = this;
+    btn.disabled = true;
+    btn.textContent = "搜尋中…";
+    codeStatus.textContent = "";
 
-      FirestoreLeaderboard.createClassBoard(name)
-        .then(function (result) {
-          _currentBoardId = result.boardId;
-          _currentCode = result.code;
-          _currentShareUrl = result.shareUrl;
-          _isOwner = true;
-          _showBoardUI(name, result.code, result.shareUrl);
-          _startListening(result.boardId);
-          _loadMyBoards();
-          _toast("✅ 看板已建立！");
-        })
-        .catch(function (err) {
-          alert("❌ 建立失敗：" + err.message);
-        })
-        .finally(function () {
-          btn.disabled = false;
-          btn.textContent = "建立";
-        });
-    });
-
-  // === 加入看板 ===
-  document
-    .getElementById("btnJoinBoard")
-    .addEventListener("click", function () {
-      var code = joinCodeInput.value.trim().toUpperCase();
-      if (!code || code.length < 4) {
-        joinCodeInput.style.borderColor = "#e74c3c";
-        joinCodeInput.focus();
-        return;
-      }
-      this.disabled = true;
-      this.textContent = "搜尋中…";
-      var btn = this;
-
-      FirestoreLeaderboard.findBoardByCode(code)
-        .then(function (board) {
-          if (!board) {
-            alert("⚠️ 找不到此代碼對應的看板");
-            return;
-          }
+    FirestoreLeaderboard.findBoardByCode(code)
+      .then(function (board) {
+        if (board) {
           _currentBoardId = board.boardId;
           _currentCode = board.code;
           _isOwner = board.ownerId === firebase.auth().currentUser.uid;
@@ -123,16 +87,70 @@
           _currentShareUrl = shareUrl;
           _showBoardUI(board.boardName, board.code, shareUrl);
           _startListening(board.boardId);
-          _toast("✅ 已加入看板！");
+          _toast("✅ 已進入看板：" + board.boardName);
+        } else {
+          // 代碼不存在 → 詢問是否建立
+          codeStatus.innerHTML =
+            '<span style="color:#ffa726">⚠️ 此代碼不存在</span>';
+          GameModal.confirm(
+            "代碼不存在",
+            "此代碼不存在。\n是否要建立新看板？",
+            { icon: "⚠️" },
+          ).then(function (ok) {
+            if (ok) _promptCreateBoard();
+          });
+        }
+      })
+      .catch(function (err) {
+        GameModal.alert("查詢失敗", err.message, { icon: "❌" });
+      })
+      .finally(function () {
+        btn.disabled = false;
+        btn.textContent = "進入";
+      });
+  });
+
+  // Enter 鍵快捷
+  codeInput.addEventListener("keydown", function (e) {
+    if (e.isComposing || e.keyCode === 229) return;
+    if (e.key === "Enter") document.getElementById("btnEnter").click();
+  });
+  codeInput.addEventListener("input", function () {
+    codeInput.style.borderColor = "";
+    codeStatus.textContent = "";
+  });
+
+  // === 直接建立新看板 ===
+  document
+    .getElementById("btnCreateNew")
+    .addEventListener("click", function (e) {
+      e.preventDefault();
+      _promptCreateBoard();
+    });
+
+  function _promptCreateBoard() {
+    GameModal.prompt("📋 建立班級看板", "請輸入名稱（例如：中班第三週）", {
+      icon: "📋",
+    }).then(function (name) {
+      if (!name || !name.trim()) return;
+      name = name.trim();
+
+      FirestoreLeaderboard.createClassBoard(name)
+        .then(function (result) {
+          _currentBoardId = result.boardId;
+          _currentCode = result.code;
+          _currentShareUrl = result.shareUrl;
+          _isOwner = true;
+          _showBoardUI(name, result.code, result.shareUrl);
+          _startListening(result.boardId);
+          _loadMyBoards();
+          _toast("✅ 看板已建立！代碼：" + result.code);
         })
         .catch(function (err) {
-          alert("❌ 查詢失敗：" + err.message);
-        })
-        .finally(function () {
-          btn.disabled = false;
-          btn.textContent = "加入";
+          GameModal.alert("❌ 建立失敗", err.message, { icon: "❌" });
         });
-    });
+    }); // GameModal.prompt .then
+  }
 
   // === 看板 UI ===
   function _showBoardUI(boardName, code, shareUrl) {
@@ -215,7 +233,7 @@
         _startListening(boardId);
       })
       .catch(function (err) {
-        console.error("開啟看板失敗", err);
+        Logger.error("開啟看板失敗", err);
         _toast("❌ 開啟看板失敗：" + err.message);
       });
   }
@@ -235,7 +253,9 @@
           showAccuracy: true,
           showRT: true,
           showTime: true,
+          showGameEndTime: true,
           highlightUid: uid,
+          pageSize: 10,
           onDelete: _isOwner
             ? function (entryId) {
                 FirestoreLeaderboard.deleteClassEntry(boardId, entryId)
@@ -243,7 +263,7 @@
                     _toast("✅ 已刪除");
                   })
                   .catch(function (err) {
-                    alert("❌ " + err.message);
+                    GameModal.alert("刪除失敗", err.message, { icon: "❌" });
                   });
               }
             : null,
@@ -306,34 +326,69 @@
   // === 看板操作 ===
   window.exportBoardCSV = function () {
     if (!_currentBoardId) return;
+    var GC = window.GameConstants || {};
+    var LF = GC.LEADERBOARD_CSV_FIELDS || {};
+    var LFO = GC.LEADERBOARD_CSV_FIELD_ORDER || [];
+
+    // fallback headers
+    var headers =
+      LFO.length > 0
+        ? LFO
+        : [
+            "排名",
+            "玩家",
+            "總分",
+            "平均正確率(%)",
+            "平均RT(ms)",
+            "d′(敏感度)",
+            "c(決策準則)",
+            "β(決策權重)",
+            "遊戲場規則+WM順序",
+            "遊戲總花費時間(s)",
+            "遊戲結束時間",
+            "數據上傳時間",
+          ];
+
     FirestoreLeaderboard.getClassBoardEntries(_currentBoardId).then(
       function (entries) {
         if (!entries.length) {
           _toast("⚠️ 無資料");
           return;
         }
-        var csv = "排名,暱稱,分數,正確率(%),平均RT(ms),星星,上傳時間\n";
+        var csv = headers.join(",") + "\n";
         entries.forEach(function (e, i) {
           var t =
             e.uploadedAt && e.uploadedAt.toDate
               ? e.uploadedAt.toDate().toISOString()
               : "";
-          csv +=
-            i +
-            1 +
-            "," +
-            e.nickname +
-            "," +
-            e.score +
-            "," +
-            (e.accuracy || 0) +
-            "," +
-            (e.avgRT || 0) +
-            "," +
-            (e.stars || 0) +
-            "," +
-            t +
-            "\n";
+
+          var row = {};
+          row[LF.RANK || "排名"] = i + 1;
+          row[LF.PLAYER || "玩家"] = e.nickname || "";
+          row[LF.TOTAL_SCORE || "總分"] = e.score || 0;
+          row[LF.AVG_ACCURACY || "平均正確率(%)"] = e.accuracy || 0;
+          row[LF.AVG_RT || "平均RT(ms)"] = e.avgRT || 0;
+          row[LF.D_PRIME || "d′(敏感度)"] =
+            e.dPrime != null ? Number(e.dPrime).toFixed(2) : "";
+          row[LF.CRITERION || "c(決策準則)"] =
+            e.criterion != null ? Number(e.criterion).toFixed(2) : "";
+          row[LF.BETA || "β(決策權重)"] =
+            e.beta != null ? Number(e.beta).toFixed(2) : "";
+          row[LF.COMBO_ORDER || "遊戲場規則+WM順序"] = e.comboOrder || "";
+          row[LF.TOTAL_TIME || "遊戲總花費時間(s)"] =
+            e.totalTimeMs != null ? (e.totalTimeMs / 1000).toFixed(1) : "";
+          row[LF.GAME_END_TIME || "遊戲結束時間"] = e.gameEndTime || "";
+          row[LF.UPLOAD_TIME || "數據上傳時間"] = t;
+
+          var line = headers
+            .map(function (h) {
+              var val = String(row[h] != null ? row[h] : "");
+              return val.indexOf(",") >= 0 || val.indexOf('"') >= 0
+                ? '"' + val.replace(/"/g, '""') + '"'
+                : val;
+            })
+            .join(",");
+          csv += line + "\n";
         });
         var blob = new Blob(["\uFEFF" + csv], {
           type: "text/csv;charset=utf-8;",
@@ -381,31 +436,40 @@
   };
   window.deleteBoard = function () {
     if (!_currentBoardId || !_isOwner) return;
-    if (
-      !confirm(
-        "⚠️ 確定要刪除此看板嗎？\n\n刪除後所有學生成績將永久消失，無法恢復。\n建議先匯出 CSV 備份。",
-      )
+    GameModal.confirm(
+      "刪除看板",
+      "⚠️ 確定要刪除此看板嗎？\n\n刪除後所有學生成績將永久消失，無法恢復。\n建議先匯出 CSV 備份。",
+      { icon: "⚠️" },
     )
-      return;
-    if (!confirm("⚠️⚠️ 再次確認刪除？")) return;
-    FirestoreLeaderboard.deleteClassBoard(_currentBoardId)
-      .then(function () {
-        _toast("✅ 看板已刪除");
-        _currentBoardId = null;
-        _currentCode = null;
-        if (_unsubscribe) _unsubscribe();
-        shareMethods.classList.remove("visible");
-        boardActions.style.display = "none";
-        deleteRulesLive.style.display = "none";
-        boardNameDisplay.style.display = "none";
-        boardSetup.style.display = "";
-        liveRankingContainer.innerHTML =
-          '<div class="ranking-empty"><span class="ranking-empty__icon">📡</span><p>建立或加入看板後，排行榜將在此即時更新</p></div>';
-        liveStatsContainer.style.display = "none";
-        _loadMyBoards();
+      .then(function (ok) {
+        if (!ok) return;
+        return GameModal.confirm(
+          "再次確認",
+          "⚠️⚠️ 再次確認刪除？此操作無法復原。",
+          { icon: "🗑️" },
+        );
       })
-      .catch(function (err) {
-        alert("❌ " + err.message);
+      .then(function (ok2) {
+        if (!ok2) return;
+        FirestoreLeaderboard.deleteClassBoard(_currentBoardId)
+          .then(function () {
+            _toast("✅ 看板已刪除");
+            _currentBoardId = null;
+            _currentCode = null;
+            if (_unsubscribe) _unsubscribe();
+            shareMethods.classList.remove("visible");
+            boardActions.style.display = "none";
+            deleteRulesLive.style.display = "none";
+            boardNameDisplay.style.display = "none";
+            boardSetup.style.display = "";
+            liveRankingContainer.innerHTML =
+              '<div class="ranking-empty"><span class="ranking-empty__icon">📡</span><p>建立或加入看板後，排行榜將在此即時更新</p></div>';
+            liveStatsContainer.style.display = "none";
+            _loadMyBoards();
+          })
+          .catch(function (err) {
+            GameModal.alert("操作失敗", err.message, { icon: "❌" });
+          });
       });
   };
 
@@ -455,12 +519,13 @@
           sortBy: "score",
           showAccuracy: true,
           showRT: true,
+          pageSize: 10,
           emptyText: "沒有一般試題資料",
         });
         CsvReport.renderReport(importReportContainer, parsed);
       })
       .catch(function (err) {
-        alert("⚠️ " + err.message);
+        GameModal.alert("匯入失敗", err.message, { icon: "⚠️" });
       });
   }
 

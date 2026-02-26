@@ -13,7 +13,8 @@
           ".write": "auth != null && (!data.exists() || data.parent().child('hostId').val() === auth.uid)"
         },
         "roomName": {
-          ".write": "auth != null && data.parent().child('hostId').val() === auth.uid"
+          ".write": "auth != null && data.parent().child('hostId').val() === auth.uid",
+          ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 50"
         },
         "hostId": {
           ".write": "auth != null && (!data.exists() || data.parent().child('hostId').val() === auth.uid || data.parent().child('players').child(data.val()).child('online').val() === false)"
@@ -32,7 +33,8 @@
           ".write": "auth != null && (!data.exists() || data.parent().child('hostId').val() === auth.uid)"
         },
         "status": {
-          ".write": "auth != null && data.parent().child('hostId').val() === auth.uid"
+          ".write": "auth != null && data.parent().child('hostId').val() === auth.uid",
+          ".validate": "newData.isString() && (newData.val() === 'waiting' || newData.val() === 'playing' || newData.val() === 'finished')"
         },
         "gameStarted": {
           ".write": "auth != null && data.parent().child('hostId').val() === auth.uid"
@@ -83,7 +85,8 @@
         "scores": {
           "$uid": {
             ".read": "auth != null",
-            ".write": "auth != null && ($uid === auth.uid || data.parent().parent().child('hostId').val() === auth.uid)"
+            ".write": "auth != null && ($uid === auth.uid || data.parent().parent().child('hostId').val() === auth.uid)",
+            ".validate": "newData.hasChildren(['totalScore']) && newData.child('totalScore').isNumber() && newData.child('totalScore').val() >= 0 && newData.child('totalScore').val() <= 99999"
           }
         },
 
@@ -99,8 +102,56 @@
         "players": {
           "$uid": {
             ".read": "auth != null",
-            ".write": "auth != null && ($uid === auth.uid || data.parent().parent().child('hostId').val() === auth.uid)"
+            ".write": "auth != null && ($uid === auth.uid || data.parent().parent().child('hostId').val() === auth.uid)",
+            ".validate": "newData.hasChildren(['nickname']) && newData.child('nickname').isString() && newData.child('nickname').val().length <= 30"
           }
+        },
+
+        // --- 接力賽遊戲模式 ---
+        "gameMode": {
+          ".write": "auth != null && data.parent().child('hostId').val() === auth.uid",
+          ".validate": "newData.isString() && (newData.val() === 'individual' || newData.val() === 'relay' || newData.val() === 'team')"
+        },
+        "teamCount": {
+          ".write": "auth != null && data.parent().child('hostId').val() === auth.uid",
+          ".validate": "newData.isNumber() && newData.val() >= 2 && newData.val() <= 10"
+        },
+        "teamAssignment": {
+          ".write": "auth != null && data.parent().child('hostId').val() === auth.uid",
+          ".validate": "newData.isString() && (newData.val() === 'random' || newData.val() === 'manual' || newData.val() === 'selfSelect')"
+        },
+        "captainSelection": {
+          ".write": "auth != null && data.parent().child('hostId').val() === auth.uid",
+          ".validate": "newData.isString() && (newData.val() === 'hostAssign' || newData.val() === 'random')"
+        },
+        "maxPlayers": {
+          ".write": "auth != null && data.parent().child('hostId').val() === auth.uid",
+          ".validate": "newData.isNumber() && newData.val() >= 2 && newData.val() <= 20"
+        },
+
+        // --- 隊伍資料（房主可設定全部；selfSelect 模式玩家可寫自己的成員資料）---
+        "teams": {
+          ".read": "auth != null",
+          ".write": "auth != null && data.parent().child('hostId').val() === auth.uid",
+          "$teamId": {
+            "members": {
+              "$uid": {
+                ".write": "auth != null && $uid === auth.uid && data.parent().parent().parent().parent().child('teamAssignment').val() === 'selfSelect'"
+              }
+            },
+            "order": {
+              ".write": "auth != null && data.parent().parent().parent().child('teamAssignment').val() === 'selfSelect' && data.parent().parent().parent().child('players').child(auth.uid).exists()"
+            },
+            "captainId": {
+              ".write": "auth != null && data.parent().parent().parent().child('players').child(auth.uid).exists()"
+            }
+          }
+        },
+
+        // --- 接力賽即時狀態（房主可設定，且當前棒次玩家可推進）---
+        "relayState": {
+          ".read": "auth != null",
+          ".write": "auth != null && (data.parent().child('hostId').val() === auth.uid || data.parent().child('players').child(auth.uid).exists())"
         }
       }
     }

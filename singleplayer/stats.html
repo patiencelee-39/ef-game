@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data:;"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://cdn.jsdelivr.net;"
     />
     <title>我的統計 — 執行功能訓練遊戲</title>
     <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
@@ -13,6 +13,8 @@
     <link rel="manifest" href="../manifest.json" />
     <meta name="theme-color" content="#302b63" />
     <link rel="stylesheet" href="../css/themes/base.css" />
+    <link rel="stylesheet" href="../css/themes/theme-field-primary.css" />
+    <link rel="stylesheet" href="../css/themes/theme-rule-independent.css" />
     <link rel="stylesheet" href="../css/main.css" />
     <link
       rel="preload"
@@ -35,6 +37,7 @@
     <link rel="stylesheet" href="../css/pages/stats.css" />
     <!-- style block extracted → css/pages/stats.css -->
     <!-- === 依賴 === -->
+    <script defer src="../js/utils/logger.js"></script>
     <script defer src="../js/game-config.js"></script>
     <script defer src="../js/adventure-maps-config.js"></script>
     <script defer src="../js/utils/storage.js"></script>
@@ -57,6 +60,12 @@
           ←
         </button>
         <h1>📈 我的統計</h1>
+      </div>
+
+      <!-- 玩家資料 -->
+      <div class="stats-card player-info-card" id="playerInfoCard">
+        <h2>👤 玩家資料</h2>
+        <div class="player-info-grid" id="playerInfoGrid"></div>
       </div>
 
       <!-- 總覽 -->

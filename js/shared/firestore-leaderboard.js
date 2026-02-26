@@ -26,7 +26,7 @@ var FirestoreLeaderboard = (function () {
       !window.firebaseServices ||
       !window.firebaseServices.firestore
     ) {
-      console.warn("⚠️ Firestore 尚未載入");
+      Logger.warn("⚠️ Firestore 尚未載入");
       return null;
     }
     return window.firebaseServices.firestore;
@@ -99,7 +99,7 @@ var FirestoreLeaderboard = (function () {
           "&code=" +
           code;
 
-        console.log("✅ 班級看板已建立：" + boardId + "（代碼：" + code + "）");
+        Logger.info("✅ 班級看板已建立：" + boardId + "（代碼：" + code + "）");
         return {
           boardId: boardId,
           code: code,
@@ -164,6 +164,18 @@ var FirestoreLeaderboard = (function () {
       avgRT: Math.round(entry.avgRT || 0),
       stars: Math.max(0, Math.min(3, entry.stars || 0)),
       totalTrials: entry.totalTrials || 0,
+      // SDT 指標
+      dPrime:
+        entry.dPrime != null ? Math.round(entry.dPrime * 100) / 100 : null,
+      criterion:
+        entry.criterion != null
+          ? Math.round(entry.criterion * 100) / 100
+          : null,
+      beta: entry.beta != null ? Math.round(entry.beta * 100) / 100 : null,
+      // 遊戲組合順序 & 總花費時間
+      comboOrder: (entry.comboOrder || "").substring(0, 200),
+      totalTimeMs: entry.totalTimeMs || null,
+      gameEndTime: entry.gameEndTime || new Date().toISOString(),
       uploadedAt: firebase.firestore.FieldValue.serverTimestamp(),
     };
 
@@ -185,7 +197,7 @@ var FirestoreLeaderboard = (function () {
             /* 非關鍵操作 */
           });
 
-        console.log("✅ 成績已上傳：" + entryData.nickname + " → " + boardId);
+        Logger.info("✅ 成績已上傳：" + entryData.nickname + " → " + boardId);
         return user.uid;
       });
   }
@@ -199,7 +211,7 @@ var FirestoreLeaderboard = (function () {
   function listenClassBoard(boardId, callback) {
     var db = _getFirestore();
     if (!db) {
-      console.warn("⚠️ Firestore 未就緒");
+      Logger.warn("⚠️ Firestore 未就緒");
       return function () {};
     }
 
@@ -228,10 +240,64 @@ var FirestoreLeaderboard = (function () {
           callback(entries);
         },
         function (error) {
-          console.error("❌ 監聽失敗：", error);
+          Logger.error("❌ 監聽失敗：", error);
           callback([]);
         },
       );
+  }
+
+  /**
+   * 取得目前使用者在特定班級看板中的已有紀錄
+   * @param {string} boardId
+   * @returns {Promise<Object|null>}
+   */
+  function getMyClassEntry(boardId) {
+    var db = _getFirestore();
+    var user = _getCurrentUser();
+    if (!db || !user) return Promise.resolve(null);
+
+    return db
+      .collection("classLeaderboards")
+      .doc(boardId)
+      .collection("entries")
+      .doc(user.uid)
+      .get()
+      .then(function (doc) {
+        if (!doc.exists) return null;
+        var data = doc.data();
+        data.entryId = doc.id;
+        return data;
+      })
+      .catch(function () {
+        return null;
+      });
+  }
+
+  /**
+   * 取得目前使用者在世界排行榜的所有紀錄
+   * @returns {Promise<Array>}
+   */
+  function getMyWorldEntries() {
+    var db = _getFirestore();
+    var user = _getCurrentUser();
+    if (!db || !user) return Promise.resolve([]);
+
+    return db
+      .collection("worldLeaderboard")
+      .where("uid", "==", user.uid)
+      .get()
+      .then(function (snapshot) {
+        var entries = [];
+        snapshot.forEach(function (doc) {
+          var data = doc.data();
+          data.docId = doc.id;
+          entries.push(data);
+        });
+        return entries;
+      })
+      .catch(function () {
+        return [];
+      });
   }
 
   /**
@@ -318,7 +384,7 @@ var FirestoreLeaderboard = (function () {
         return db.collection("classLeaderboards").doc(boardId).delete();
       })
       .then(function () {
-        console.log("✅ 看板已刪除：" + boardId);
+        Logger.info("✅ 看板已刪除：" + boardId);
       });
   }
 
@@ -354,7 +420,7 @@ var FirestoreLeaderboard = (function () {
 
     var provider = new firebase.auth.GoogleAuthProvider();
     return auth.signInWithPopup(provider).then(function (result) {
-      console.log("✅ Google 登入成功：" + result.user.displayName);
+      Logger.info("✅ Google 登入成功：" + result.user.displayName);
       return result.user;
     });
   }
@@ -418,6 +484,8 @@ var FirestoreLeaderboard = (function () {
     if (data.totalTrials != null) uploadData.totalTrials = data.totalTrials;
     if (data.mode) uploadData.mode = data.mode;
     if (data.badges) uploadData.badges = data.badges;
+    if (data.hasWM != null) uploadData.hasWM = data.hasWM;
+    if (data.gameEndTime) uploadData.gameEndTime = data.gameEndTime;
 
     return db
       .collection("worldLeaderboard")
@@ -427,7 +495,69 @@ var FirestoreLeaderboard = (function () {
         var label = data.fieldId
           ? uploadData.nickname + " [" + data.fieldId + "/" + data.ruleId + "]"
           : uploadData.nickname;
-        console.log("✅ 世界排行榜已更新：" + label);
+        Logger.info("✅ 世界排行榜已更新：" + label);
+
+        // 上傳後自動修剪至前 10 名
+        return _trimWorldToTop10();
+      });
+  }
+
+  /**
+   * 修剪世界排行榜：每個規則（fieldId + ruleId）各自保留前 10 名
+   * 沒有 fieldId/ruleId 的舊紀錄視為同一組
+   * @returns {Promise}
+   */
+  function _trimWorldToTop10() {
+    var db = _getFirestore();
+    if (!db) return Promise.resolve();
+
+    var TOP_N = 10;
+
+    return db
+      .collection("worldLeaderboard")
+      .orderBy("bestScore", "desc")
+      .get()
+      .then(function (snapshot) {
+        // 按 fieldId+ruleId 分組
+        var groups = {}; // key → [docRef, ...]
+        snapshot.forEach(function (doc) {
+          var d = doc.data();
+          var key = (d.fieldId || "_none") + "|" + (d.ruleId || "_none");
+          if (!groups[key]) groups[key] = [];
+          groups[key].push(doc.ref);
+        });
+
+        // 每組只保留前 TOP_N 筆（已按 bestScore desc 排序）
+        var docsToDelete = [];
+        Object.keys(groups).forEach(function (key) {
+          var refs = groups[key];
+          if (refs.length > TOP_N) {
+            for (var i = TOP_N; i < refs.length; i++) {
+              docsToDelete.push(refs[i]);
+            }
+          }
+        });
+
+        if (docsToDelete.length === 0) return;
+
+        // Firestore batch 每次最多 500 筆
+        var batch = db.batch();
+        docsToDelete.forEach(function (ref) {
+          batch.delete(ref);
+        });
+        return batch.commit().then(function () {
+          Logger.info(
+            "🧹 排行榜已修剪：刪除 " +
+              docsToDelete.length +
+              " 筆排名外資料，每規則保留前 " +
+              TOP_N +
+              " 名",
+          );
+        });
+      })
+      .catch(function (e) {
+        // 修剪失敗不影響主流程
+        Logger.warn("排行榜修剪失敗：" + e.message);
       });
   }
 
@@ -502,7 +632,7 @@ var FirestoreLeaderboard = (function () {
         return batch.commit();
       })
       .then(function () {
-        console.log("✅ 已從世界排行榜移除自己的所有資料");
+        Logger.info("✅ 已從世界排行榜移除自己的所有資料");
       });
   }
 
@@ -517,6 +647,7 @@ var FirestoreLeaderboard = (function () {
     uploadToClassBoard: uploadToClassBoard,
     listenClassBoard: listenClassBoard,
     getClassBoardEntries: getClassBoardEntries,
+    getMyClassEntry: getMyClassEntry,
     getMyBoards: getMyBoards,
     deleteClassBoard: deleteClassBoard,
     deleteClassEntry: deleteClassEntry,
@@ -526,7 +657,9 @@ var FirestoreLeaderboard = (function () {
     isGoogleUser: isGoogleUser,
     uploadToWorld: uploadToWorld,
     getWorldLeaderboard: getWorldLeaderboard,
+    getMyWorldEntries: getMyWorldEntries,
     deleteMyWorldEntry: deleteMyWorldEntry,
+    trimWorldToTop10: _trimWorldToTop10,
 
     // 工具
     generateCode: _generateCode,

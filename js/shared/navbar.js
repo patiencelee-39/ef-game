@@ -22,6 +22,12 @@
   // 導覽項目定義
   var NAV_ITEMS = [
     {
+      id: "home",
+      icon: "🏠",
+      label: "首頁",
+      href: "/home.html",
+    },
+    {
       id: "adventure",
       icon: "🗺️",
       label: "冒險",
@@ -44,12 +50,6 @@
       icon: "🐔",
       label: "養雞場",
       href: "/singleplayer/pet.html",
-    },
-    {
-      id: "shop",
-      icon: "🛒",
-      label: "商店",
-      href: "/singleplayer/avatar-shop.html",
     },
     { id: "settings", icon: "⚙️", label: "設定", href: "/settings/index.html" },
   ];
@@ -77,15 +77,12 @@
     if (path.indexOf("/leaderboard/") !== -1) return "leaderboard";
     if (path.indexOf("/settings/") !== -1) return "settings";
     if (path.indexOf("pet") !== -1) return "pet";
-    if (
-      path.indexOf("shop") !== -1 ||
-      path.indexOf("avatar-shop") !== -1 ||
-      path.indexOf("sticker-book") !== -1
-    )
-      return "shop";
 
-    // 首頁 → 冒險
-    if (path === "/" || path.endsWith("/index.html")) return "adventure";
+    // home.html → 首頁
+    if (path.endsWith("/home.html")) return "home";
+
+    // 根目錄 index.html 是 Landing Page，不標記 active
+    if (path === "/" || path.endsWith("/index.html")) return "";
 
     return "";
   }
@@ -98,13 +95,15 @@
   function _getPathPrefix() {
     var path = window.location.pathname;
 
-    // 在子資料夾中（singleplayer/ multiplayer/ leaderboard/ settings/）
+    // 在子資料夾中（singleplayer/ multiplayer/ leaderboard/ settings/ assessment/ management/ teacher/）
     if (
       path.indexOf("/singleplayer/") !== -1 ||
       path.indexOf("/multiplayer/") !== -1 ||
       path.indexOf("/leaderboard/") !== -1 ||
       path.indexOf("/settings/") !== -1 ||
-      path.indexOf("/management/") !== -1
+      path.indexOf("/management/") !== -1 ||
+      path.indexOf("/teacher/") !== -1 ||
+      path.indexOf("/assessment/") !== -1
     ) {
       return "../";
     }

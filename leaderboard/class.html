@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://*.firebasedatabase.app https://*.firebaseio.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://*.firebasedatabase.app https://*.firebaseio.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; connect-src 'self' https://cdn.jsdelivr.net https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app"
     />
     <title>班級排行榜 - 執行功能訓練遊戲</title>
     <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
@@ -14,6 +14,8 @@
     <link rel="manifest" href="../manifest.json" />
     <meta name="theme-color" content="#302b63" />
     <link rel="stylesheet" href="../css/themes/base.css" />
+    <link rel="stylesheet" href="../css/themes/theme-field-primary.css" />
+    <link rel="stylesheet" href="../css/themes/theme-rule-independent.css" />
     <link rel="stylesheet" href="../css/main.css" />
     <link
       rel="preload"
@@ -53,10 +55,12 @@
       ><link rel="stylesheet" href="../css/components/navbar.css"
     /></noscript>
     <!-- === 依賴 === -->
+    <script defer src="../js/utils/logger.js"></script>
+    <script defer src="../js/shared/game-modal.js"></script>
     <script defer src="../js/firebase-bundle.js"></script>
     <script
       defer
-      src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"
+      src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"
     ></script>
     <script
       defer
@@ -98,39 +102,50 @@
       <div class="panel active" id="panelLive">
         <div class="board-setup" id="boardSetup">
           <div class="setup-card">
-            <h3>🏫 老師：建立新看板</h3>
+            <h3>🔢 輸入看板代碼</h3>
+            <p
+              style="
+                color: rgba(255, 255, 255, 0.5);
+                font-size: 0.85rem;
+                margin: 0 0 12px;
+              "
+            >
+              輸入 6 位代碼加入看板，或直接建立新看板
+            </p>
             <div class="input-row">
               <input
                 type="text"
-                id="boardNameInput"
-                placeholder="看板名稱（如：中班第三週）"
-                maxlength="50"
-                aria-label="看板名稱"
-              />
-              <button class="btn btn-primary" id="btnCreateBoard">建立</button>
-            </div>
-          </div>
-          <div class="setup-card">
-            <h3>🎒 學生：輸入代碼上傳成績</h3>
-            <div class="input-row">
-              <input
-                type="text"
-                id="joinCodeInput"
-                placeholder="輸入 6 位代碼"
+                id="codeInput"
+                placeholder="例如：AB3K7X"
                 maxlength="6"
-                aria-label="看板代碼"
                 style="
                   text-transform: uppercase;
                   letter-spacing: 2px;
+                  font-size: 1.1rem;
                   text-align: center;
-                  font-weight: 700;
                 "
+                aria-label="看板代碼"
               />
-              <button class="btn btn-primary" id="btnJoinBoard">加入</button>
+              <button class="btn btn-primary" id="btnEnter">進入</button>
+            </div>
+            <div
+              id="codeStatus"
+              style="margin-top: 8px; font-size: 0.85rem; min-height: 1.2em"
+            ></div>
+            <div style="margin-top: 12px; text-align: center">
+              <a
+                href="#"
+                id="btnCreateNew"
+                style="color: #64b5f6; font-size: 0.85rem"
+                >＋ 直接建立新看板</a
+              >
             </div>
           </div>
+
           <div class="my-boards" id="myBoardsSection" style="display: none">
-            <h3 style="margin: 0 0 0.75rem; color: #555">📂 我的看板</h3>
+            <h3 style="margin: 0 0 0.75rem; color: rgba(255, 255, 255, 0.85)">
+              📂 我的看板
+            </h3>
             <div id="myBoardsList"></div>
           </div>
         </div>
@@ -247,21 +262,6 @@
             <li>匯入後可匯出 CSV / PDF / 截圖，保存分析結果</li>
           </ul>
         </div>
-      </div>
-
-      <div class="class-footer">
-        <button
-          class="btn btn-secondary"
-          onclick="location.href = 'index.html'"
-        >
-          ← 返回排行榜
-        </button>
-        <button
-          class="btn btn-secondary"
-          onclick="location.href = '../index.html'"
-        >
-          🏠 回首頁
-        </button>
       </div>
     </main>
 

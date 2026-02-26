@@ -78,67 +78,13 @@ body {
   border-radius: 20px;
 }
 
-.btn-sticker-book {
-  background: none;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: var(--accent-yellow);
-  font-size: 1.2rem;
-  cursor: pointer;
-  padding: 4px 10px;
-  border-radius: 20px;
-  transition: all var(--transition-fast);
-  min-width: 40px;
-  min-height: 40px;
+.badges-display {
   display: flex;
   align-items: center;
-  justify-content: center;
-}
-
-.btn-sticker-book:hover {
-  background: rgba(255, 215, 0, 0.15);
-  border-color: var(--accent-yellow);
-}
-
-.btn-shop {
-  background: none;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: var(--accent-yellow);
-  font-size: 1.2rem;
-  cursor: pointer;
-  padding: 4px 10px;
-  border-radius: 20px;
-  transition: all var(--transition-fast);
-  min-width: 40px;
-  min-height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.btn-shop:hover {
-  background: rgba(255, 215, 0, 0.15);
-  border-color: var(--accent-yellow);
-}
-
-.btn-pet {
-  background: none;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: var(--accent-yellow);
-  font-size: 1.2rem;
-  cursor: pointer;
-  padding: 4px 10px;
-  border-radius: 20px;
-  transition: all var(--transition-fast);
-  min-width: 40px;
-  min-height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.btn-pet:hover {
-  background: rgba(255, 215, 0, 0.15);
-  border-color: var(--accent-yellow);
+  gap: 4px;
+  font-size: var(--font-size-md);
+  color: #e0a050;
+  font-weight: 700;
 }
 
 /* --- 地圖容器 --- */
@@ -233,19 +179,20 @@ body {
 
 /* 狀態：locked */
 .point-locked .point-circle {
-  background: rgba(100, 100, 100, 0.7);
-  border-color: rgba(150, 150, 150, 0.5);
-  color: #888;
+  background: rgba(80, 80, 80, 0.75);
+  border-color: rgba(120, 120, 120, 0.5);
+  color: #aaa;
+  font-size: 1.3rem;
 }
 
 .point-locked {
   cursor: not-allowed;
-  opacity: 0.6;
+  opacity: 0.55;
 }
 
 .adventure-point:disabled {
   cursor: not-allowed;
-  opacity: 0.6;
+  opacity: 0.55;
 }
 
 /* 狀態：current */
@@ -253,6 +200,7 @@ body {
   background: linear-gradient(135deg, #f39c12, #e67e22);
   border-color: #fff;
   color: #fff;
+  font-size: 1.6rem;
   animation: point-pulse 2s ease-in-out infinite;
 }
 
@@ -266,11 +214,12 @@ body {
   }
 }
 
-/* 狀態：passed */
+/* 狀態：passed（已通過，顯示規則 emoji）*/
 .point-passed .point-circle {
   background: linear-gradient(135deg, var(--success-green), #27ae60);
   border-color: rgba(255, 255, 255, 0.8);
   color: #fff;
+  font-size: 1.6rem;
 }
 
 .point-stars {

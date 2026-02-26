@@ -73,7 +73,7 @@ function shuffleWithConstraint(arr, keyFn, maxRun, maxAttempts) {
     }
   }
   // 超過嘗試次數，回傳最後一次結果
-  console.warn("⚠️ shuffleWithConstraint: 達到最大嘗試次數，使用最後結果");
+  Logger.warn("⚠️ shuffleWithConstraint: 達到最大嘗試次數，使用最後結果");
   return shuffle(arr);
 }
 

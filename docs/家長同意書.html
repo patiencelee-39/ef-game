@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>家長同意書 — 執行功能訓練遊戲體驗</title>
+    <style>
+      /* ===== 全局 ===== */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family:
+          "Noto Sans TC", "Microsoft JhengHei", "Heiti TC", sans-serif;
+        color: #2c3e50;
+        line-height: 1.8;
+        background: #f5f7fa;
+        padding: 24px;
+      }
+      @media print {
+        body {
+          background: #fff;
+          padding: 0;
+          font-size: 12pt;
+        }
+        .no-print {
+          display: none !important;
+        }
+        .page {
+          box-shadow: none;
+          border: none;
+          margin: 0;
+          padding: 32px 40px;
+        }
+        .page-break {
+          page-break-before: always;
+        }
+      }
+
+      /* ===== 頁面 ===== */
+      .page {
+        max-width: 780px;
+        margin: 0 auto 24px;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        padding: 40px 48px;
+      }
+
+      /* ===== 標題 ===== */
+      h1 {
+        text-align: center;
+        font-size: 1.5rem;
+        border-bottom: 3px double #2c3e50;
+        padding-bottom: 12px;
+        margin-bottom: 20px;
+        letter-spacing: 2px;
+      }
+      .doc-info {
+        text-align: center;
+        color: #7f8c8d;
+        font-size: 0.9rem;
+        margin-bottom: 24px;
+      }
+
+      h2 {
+        font-size: 1.1rem;
+        margin: 20px 0 8px;
+        padding-left: 8px;
+        border-left: 4px solid #3498db;
+      }
+
+      /* ===== 內容 ===== */
+      p {
+        margin: 8px 0;
+        text-align: justify;
+      }
+      ul,
+      ol {
+        margin: 8px 0 8px 20px;
+      }
+      li {
+        margin-bottom: 4px;
+      }
+
+      .highlight {
+        background: #fef9e7;
+        border: 1px solid #f0e68c;
+        border-radius: 6px;
+        padding: 12px 16px;
+        margin: 12px 0;
+      }
+
+      .important {
+        background: #fdedec;
+        border-left: 4px solid #e74c3c;
+        padding: 10px 14px;
+        margin: 12px 0;
+        border-radius: 0 6px 6px 0;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0;
+        font-size: 0.95rem;
+      }
+      th,
+      td {
+        border: 1px solid #ccc;
+        padding: 8px 12px;
+        text-align: left;
+      }
+      th {
+        background: #f8f9fa;
+        font-weight: 600;
+      }
+
+      /* ===== 簽署區 ===== */
+      .consent-section {
+        border: 2px solid #2c3e50;
+        border-radius: 8px;
+        padding: 20px 24px;
+        margin-top: 24px;
+      }
+      .consent-section h2 {
+        border-left: none;
+        padding-left: 0;
+        text-align: center;
+        margin-top: 0;
+      }
+
+      .consent-check {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin: 12px 0;
+        padding: 8px 12px;
+        background: #f8f9fa;
+        border-radius: 6px;
+      }
+      .consent-check input[type="checkbox"] {
+        margin-top: 6px;
+        transform: scale(1.3);
+        flex-shrink: 0;
+      }
+      .consent-check label {
+        cursor: pointer;
+        font-size: 0.95rem;
+      }
+
+      .sign-area {
+        margin-top: 24px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+      .sign-block {
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 16px;
+      }
+      .sign-block h4 {
+        font-size: 0.9rem;
+        color: #7f8c8d;
+        margin-bottom: 12px;
+      }
+      .sign-line {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        margin: 10px 0;
+      }
+      .sign-label {
+        font-weight: 600;
+        white-space: nowrap;
+        font-size: 0.95rem;
+      }
+      .sign-field {
+        flex: 1;
+        border-bottom: 1px solid #999;
+        min-height: 24px;
+        min-width: 120px;
+      }
+
+      .tear-line {
+        border: none;
+        border-top: 2px dashed #95a5a6;
+        margin: 32px 0 24px;
+        position: relative;
+      }
+      .tear-line::before {
+        content: "✂ 請沿虛線撕下回條";
+        position: absolute;
+        top: -12px;
+        left: 20px;
+        background: #fff;
+        padding: 0 8px;
+        color: #95a5a6;
+        font-size: 0.85rem;
+      }
+
+      .receipt {
+        border: 2px solid #3498db;
+        border-radius: 8px;
+        padding: 20px 24px;
+        background: #f0f8ff;
+      }
+      .receipt h3 {
+        text-align: center;
+        margin-bottom: 12px;
+        color: #2980b9;
+      }
+
+      .btn-print {
+        display: inline-block;
+        background: #3498db;
+        color: #fff;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 8px;
+        font-size: 1rem;
+        cursor: pointer;
+        margin-top: 16px;
+      }
+      .btn-print:hover {
+        background: #2980b9;
+      }
+      .footer {
+        text-align: center;
+        margin-top: 20px;
+        color: #95a5a6;
+        font-size: 0.85rem;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ====== 第一頁：同意書說明 ====== -->
+    <div class="page">
+      <h1>兒童遊戲體驗 家長同意書</h1>
+      <p class="doc-info">
+        專案名稱：3–6 歲兒童執行功能訓練遊戲 ｜ 文件版本 v1.0 ｜ 2026 年 2 月 24
+        日
+      </p>
+
+      <p>親愛的家長，您好：</p>
+      <p>
+        感謝您撥冗閱讀此說明。我是中原大學特殊教育學系碩士班的研究生<strong>李珮瑄</strong>，
+        目前正在進行一項關於<strong>兒童執行功能訓練</strong>的碩士學位專業實務報告。
+        為此，我開發了一款專為兒童設計的線上互動訓練遊戲，現誠摯邀請您的孩子參與本次<strong>遊戲體驗</strong>。
+        以下針對本次體驗活動的相關事項進行說明，請您詳閱後決定是否同意您的孩子參加。
+      </p>
+
+      <!-- 一、目的 -->
+      <h2>一、活動目的</h2>
+      <p>
+        本次體驗的目的在於觀察兒童實際操作時的遊戲流暢度、介面適切性與遊戲規則的理解情形，
+        作為遊戲優化的重要依據。<strong>本活動非正式實驗或診斷測驗</strong>，
+        不會對孩子進行任何能力評定或標籤化。
+      </p>
+
+      <!-- 二、遊戲簡介 -->
+      <h2>二、遊戲簡介</h2>
+      <p>
+        本遊戲名為<strong>「執行功能訓練遊戲」</strong>，以卡片分類任務為核心設計，
+        透過色彩豐富、操作直覺的互動介面，讓兒童在「玩」的過程中訓練以下三項認知能力：
+      </p>
+      <table>
+        <tr>
+          <th>訓練目標</th>
+          <th>說明</th>
+        </tr>
+        <tr>
+          <td><strong>抑制控制</strong></td>
+          <td>學習「該做就做、不該做就忍住」，培養衝動控制能力</td>
+        </tr>
+        <tr>
+          <td><strong>工作記憶</strong></td>
+          <td>記住遊戲規則並正確執行，鍛鍊短期記憶與規則運用</td>
+        </tr>
+        <tr>
+          <td><strong>認知彈性</strong></td>
+          <td>當規則改變時能靈活切換思考方式，提升應變能力</td>
+        </tr>
+      </table>
+      <p>
+        遊戲採用冒險闖關形式，共有 2 張探險地圖、12 個關卡，由淺入深、逐步解鎖。
+        每一關約需 2–3 分鐘，畫面可愛明亮，適合兒童的專注力節奏。
+      </p>
+
+      <!-- 三、體驗方式 -->
+      <h2>三、體驗方式與所需時間</h2>
+      <ul>
+        <li>
+          <strong>體驗時間：</strong>預計 25–35 分鐘（含操作說明與實際遊戲）。
+        </li>
+        <li>
+          <strong>操作設備：</strong
+          >使用平板電腦或筆記型電腦，開啟瀏覽器即可遊玩，無需安裝任何程式。
+        </li>
+        <li>
+          <strong>引導方式：</strong
+          >由研究者現場一對一引導，先進行示範教學，確認孩子理解規則後才開始遊戲。
+        </li>
+        <li>
+          <strong>自由步調：</strong
+          >孩子可依照自己的步調體驗，隨時可以休息或中止，不需要趕進度。
+        </li>
+        <li>
+          <strong>遊戲網址：</strong
+          ><code>https://reurl.cc/GGWRGA</code>（體驗後亦可在家繼續使用）。
+        </li>
+      </ul>
+
+      <!-- 四、隱私保障 -->
+      <h2>四、隱私保障</h2>
+      <div class="highlight">
+        <strong>🔒 本活動不會蒐集孩子的姓名、照片或任何個人識別資訊。</strong>
+      </div>
+      <ul>
+        <li>
+          孩子以<strong>匿名代碼</strong>（如 P01、P02）參與，不會記錄真實姓名。
+        </li>
+        <li>遊戲進度儲存於體驗用裝置，體驗結束後即清除。</li>
+        <li>
+          遊戲自動記錄的操作數據（正確率、反應時間等）僅用於遊戲優化分析，並經去識別化處理。
+        </li>
+        <li>所有資料不會提供給任何第三方，亦不會用於商業用途。</li>
+      </ul>
+
+      <!-- 五、錄音說明 -->
+      <h2>五、體驗過程錄音說明</h2>
+      <p>
+        為更完整地記錄孩子在體驗過程中的口語反應與操作情形，體驗當天可能會進行<strong>錄音</strong>，
+        以利後續分析與遊戲改進。相關說明如下：
+      </p>
+      <ul>
+        <li>
+          錄音內容僅記錄孩子操作遊戲時的<strong>口語反應與互動過程</strong>，不會錄製影像。
+        </li>
+        <li>
+          錄音檔案僅供紀錄使用反饋，<strong>不會對外公開或提供給第三方</strong>。
+        </li>
+        <li>
+          錄音資料以<strong>匿名編碼方式保存</strong>，無法辨識孩子的身份。
+        </li>
+        <li>遊戲優化完成後，錄音檔案即<strong>永久刪除</strong>。</li>
+      </ul>
+      <div class="important">
+        <strong>您有權拒絕錄音。</strong
+        >若您不同意錄音，孩子仍可正常參與遊戲體驗，不會影響任何權益。
+      </div>
+
+      <!-- 六、權益說明 -->
+      <h2>六、參加者權益</h2>
+      <ol>
+        <li>
+          <strong>自願參加：</strong
+          >您與孩子的參與完全自願，可隨時決定退出，無須說明理由，不會產生任何不利影響。
+        </li>
+        <li>
+          <strong>隨時中止：</strong
+          >體驗過程中，若孩子表示不想繼續或感到不適，將立即停止。
+        </li>
+        <li>
+          <strong>無風險：</strong
+          >本遊戲為教育類訓練遊戲，內容正向無害，不含任何暴力、恐怖或不當元素。
+        </li>
+        <li>
+          <strong>感謝禮：</strong
+          >完成遊戲體驗後，將致贈孩子小禮物一份，感謝寶貴的參與。
+        </li>
+        <li>
+          <strong>疑問權：</strong
+          >您有權在任何時候向研究者提出與本活動相關的任何疑問。
+        </li>
+      </ol>
+
+      <!-- 七、聯絡資訊 -->
+      <h2>七、研究團隊聯絡資訊</h2>
+      <table>
+        <tr>
+          <td><strong>研究生</strong></td>
+          <td>李珮瑄</td>
+        </tr>
+        <tr>
+          <td><strong>指導教授</strong></td>
+          <td>王文伶 副教授</td>
+        </tr>
+        <tr>
+          <td><strong>系所</strong></td>
+          <td>中原大學 特殊教育學系 碩士班</td>
+        </tr>
+        <tr>
+          <td><strong>電子信箱</strong></td>
+          <td>jamie.tp.psychology@gmail.com</td>
+        </tr>
+      </table>
+      <p style="margin-top: 12px">如有任何疑問，歡迎隨時與研究者聯繫。</p>
+    </div>
+
+    <!-- ====== 第二頁：簽署區 + 回條 ====== -->
+    <div class="page page-break">
+      <div class="consent-section">
+        <h2>📋 家長同意書 — 簽署欄</h2>
+
+        <p style="margin-bottom: 16px">
+          本人已詳閱上述說明，瞭解本次遊戲體驗活動的目的、進行方式、隱私保護措施及相關權益。
+          本人自願同意讓孩子參與本次體驗活動，並確認以下事項：
+        </p>
+
+        <div class="consent-check">
+          <input type="checkbox" id="c1" />
+          <label for="c1">我已瞭解本次遊戲體驗的活動目的與進行方式。</label>
+        </div>
+
+        <div class="consent-check">
+          <input type="checkbox" id="c2" />
+          <label for="c2"
+            >我已瞭解孩子的資料將以匿名方式處理，不會蒐集任何個人識別資訊。</label
+          >
+        </div>
+
+        <div class="consent-check">
+          <input type="checkbox" id="c3" />
+          <label for="c3">我已瞭解參與完全自願，可隨時無條件退出。</label>
+        </div>
+
+        <div class="consent-check">
+          <input type="checkbox" id="c4" />
+          <label for="c4">
+            關於體驗過程中的<strong>錄音</strong>，我的決定如下：<br />
+            <span style="margin-left: 20px">☐ <strong>同意</strong>錄音</span
+            ><br />
+            <span style="margin-left: 20px"
+              >☐ <strong>不同意</strong>錄音（孩子仍可正常參與體驗）</span
+            >
+          </label>
+        </div>
+
+        <div class="sign-area">
+          <div class="sign-block">
+            <h4>👨‍👩‍👧 家長/法定代理人</h4>
+            <div class="sign-line">
+              <span class="sign-label">姓名：</span>
+              <span class="sign-field"></span>
+            </div>
+            <div class="sign-line">
+              <span class="sign-label">與孩子關係：</span>
+              <span class="sign-field"></span>
+            </div>
+            <div class="sign-line">
+              <span class="sign-label">簽名：</span>
+              <span class="sign-field" style="min-height: 36px"></span>
+            </div>
+            <div class="sign-line">
+              <span class="sign-label">日期：</span>
+              <span class="sign-field"></span>
+            </div>
+          </div>
+
+          <div class="sign-block">
+            <h4>👩‍🔬 研究者</h4>
+            <div class="sign-line">
+              <span class="sign-label">姓名：</span>
+              <span class="sign-field"></span>
+            </div>
+            <div class="sign-line">
+              <span class="sign-label">簽名：</span>
+              <span class="sign-field" style="min-height: 36px"></span>
+            </div>
+            <div class="sign-line">
+              <span class="sign-label">日期：</span>
+              <span class="sign-field"></span>
+            </div>
+          </div>
+        </div>
+
+        <p
+          style="
+            text-align: center;
+            margin-top: 16px;
+            color: #7f8c8d;
+            font-size: 0.85rem;
+          "
+        >
+          ＊本同意書一式兩份，一份由家長留存，一份由研究者留存。
+        </p>
+      </div>
+
+      <!-- ===== 撕線回條 ===== -->
+      <hr class="tear-line" />
+
+      <div class="receipt">
+        <h3>📬 回條（請撕下交回研究者）</h3>
+
+        <p>孩子姓名／代碼：＿＿＿＿＿＿＿＿＿＿＿</p>
+        <p style="margin-top: 8px">
+          家長姓名：＿＿＿＿＿＿＿＿＿＿＿　聯絡電話：＿＿＿＿＿＿＿＿＿＿＿
+        </p>
+
+        <p style="margin-top: 12px">
+          ☐ <strong>同意</strong>孩子參與遊戲體驗<br />
+          ☐ <strong>不同意</strong>孩子參與遊戲體驗
+        </p>
+        <p style="margin-top: 8px">
+          錄音部分：<br />
+          ☐ <strong>同意</strong>錄音　　☐ <strong>不同意</strong>錄音
+        </p>
+
+        <div class="sign-line" style="margin-top: 16px">
+          <span class="sign-label">家長簽名：</span>
+          <span class="sign-field"></span>
+          <span class="sign-label" style="margin-left: 16px">日期：</span>
+          <span class="sign-field" style="max-width: 160px"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 列印 ===== -->
+    <div style="text-align: center" class="no-print">
+      <button class="btn-print" onclick="window.print()">
+        🖨️ 列印本同意書
+      </button>
+    </div>
+
+    <div class="footer no-print">
+      執行功能訓練遊戲 — 家長同意書 v1.0 ｜ 2026/02/24<br />
+      中原大學特殊教育學系 ｜ 研究生：李珮瑄 ｜ 指導教授：王文伶 副教授
+    </div>
+  </body>
+</html>

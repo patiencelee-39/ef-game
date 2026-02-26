@@ -11,10 +11,12 @@
   var voiceToggle = document.getElementById("voiceToggle");
   var rateSelector = document.getElementById("rateSelector");
   var countSelector = document.getElementById("countSelector");
+  var engineSelector = document.getElementById("engineSelector");
   var themeSelector = document.getElementById("themeSelector");
   var btnExport = document.getElementById("btnExport");
   var btnImport = document.getElementById("btnImport");
   var btnClearAll = document.getElementById("btnClearAll");
+  var btnClearCache = document.getElementById("btnClearCache");
   var importFileInput = document.getElementById("importFileInput");
   var toast = document.getElementById("toast");
 
@@ -23,6 +25,7 @@
     loadPlayerInfo();
     loadAudioSettings();
     loadGameSettings();
+    loadEngineSettings();
     loadThemeSettings();
     bindEvents();
   }
@@ -31,6 +34,10 @@
   // 👤 玩家資訊
   // =========================================
   function loadPlayerInfo() {
+    // 玩家資訊已移至「玩家資訊」頁面（stats.html）
+    // 若 DOM 元素不存在則跳過
+    if (!document.getElementById("infoSeatNumber")) return;
+
     var profile =
       typeof getPlayerProfile === "function" ? getPlayerProfile() : null;
     if (!profile) {
@@ -126,6 +133,26 @@
   }
 
   // =========================================
+  // 🧠 難度調整引擎設定
+  // =========================================
+  function loadEngineSettings() {
+    if (!engineSelector) return;
+    var choice;
+    try {
+      choice = localStorage.getItem("ef_engine_choice");
+    } catch (e) {
+      Logger.warn("[Settings] localStorage read failed:", e);
+    }
+    if (!choice) {
+      var cfg = (typeof GAME_CONFIG !== "undefined" && GAME_CONFIG.DEV) || {};
+      choice = cfg.ADAPTIVE_ENGINE || "simple";
+    }
+    engineSelector.querySelectorAll(".engine-btn").forEach(function (b) {
+      b.classList.toggle("active", b.getAttribute("data-engine") === choice);
+    });
+  }
+
+  // =========================================
   // 🎨 配色主題
   // =========================================
   function loadThemeSettings() {
@@ -215,6 +242,34 @@
       showToast("每回合題數已設定為 " + count + " 題");
     });
 
+    // --- 難度引擎選擇 ---
+    if (engineSelector) {
+      engineSelector.addEventListener("click", function (e) {
+        var btn = e.target.closest(".engine-btn");
+        if (!btn) return;
+        var engine = btn.getAttribute("data-engine");
+        try {
+          localStorage.setItem("ef_engine_choice", engine);
+        } catch (ex) {
+          Logger.warn("[Settings] localStorage write failed:", ex);
+        }
+        engineSelector.querySelectorAll(".engine-btn").forEach(function (b) {
+          b.classList.toggle(
+            "active",
+            b.getAttribute("data-engine") === engine,
+          );
+        });
+        var names = {
+          static: "📊 固定難度",
+          simple: "🎯 簡易自適應",
+          irt: "🧠 IRT 智慧調整",
+        };
+        showToast(
+          "已切換為「" + (names[engine] || engine) + "」，下次遊戲生效",
+        );
+      });
+    }
+
     // --- 配色主題 ---
     if (themeSelector) {
       themeSelector.addEventListener("click", function (e) {
@@ -239,16 +294,23 @@
     }
 
     // --- 匯出 ---
-    btnExport.addEventListener("click", handleExport);
+    if (btnExport) btnExport.addEventListener("click", handleExport);
 
     // --- 匯入 ---
-    btnImport.addEventListener("click", function () {
-      importFileInput.click();
-    });
-    importFileInput.addEventListener("change", handleImport);
+    if (btnImport) {
+      btnImport.addEventListener("click", function () {
+        importFileInput.click();
+      });
+    }
+    if (importFileInput)
+      importFileInput.addEventListener("change", handleImport);
 
     // --- 清除所有資料 ---
-    btnClearAll.addEventListener("click", handleClearAll);
+    if (btnClearAll) btnClearAll.addEventListener("click", handleClearAll);
+
+    // --- 僅清除快取 ---
+    if (btnClearCache)
+      btnClearCache.addEventListener("click", handleClearCache);
   }
 
   // =========================================
@@ -276,7 +338,7 @@
       URL.revokeObjectURL(url);
       showToast("✅ 遊戲紀錄已匯出");
     } catch (e) {
-      console.error("匯出失敗:", e);
+      Logger.error("匯出失敗:", e);
       showToast("❌ 匯出失敗");
     }
   }
@@ -319,16 +381,54 @@
     showConfirm(
       "⚠️",
       "清除所有資料",
-      "此操作將刪除所有遊戲紀錄、進度、星星和徽章，且無法復原。建議先匯出備份。",
+      "此操作將刪除所有遊戲紀錄、進度、星星、徽章和快取，且無法復原。建議先匯出備份。",
       function () {
         if (typeof clearAllGameData === "function") {
           clearAllGameData();
           showToast("✅ 所有資料已清除，重新載入中…");
           setTimeout(function () {
             location.reload();
-          }, 1200);
+          }, 1500);
         } else {
           showToast("❌ 清除功能不可用");
+        }
+      },
+    );
+  }
+
+  // =========================================
+  // 🧹 僅清除快取儲存空間
+  // =========================================
+  function handleClearCache() {
+    showConfirm(
+      "🧹",
+      "清除快取儲存空間",
+      "僅清除離線快取（不影響遊戲紀錄和進度）。清除後頁面會重新載入以重建快取。",
+      function () {
+        if (typeof clearCacheStorage === "function") {
+          clearCacheStorage();
+          showToast("✅ 快取已清除，重新載入中…");
+          setTimeout(function () {
+            location.reload();
+          }, 1500);
+        } else {
+          // fallback: 直接用 caches API
+          if ("caches" in window) {
+            caches.keys().then(function (names) {
+              Promise.all(
+                names.map(function (n) {
+                  return caches.delete(n);
+                }),
+              ).then(function () {
+                showToast("✅ 快取已清除，重新載入中…");
+                setTimeout(function () {
+                  location.reload();
+                }, 1500);
+              });
+            });
+          } else {
+            showToast("❌ 此瀏覽器不支援快取清除");
+          }
         }
       },
     );

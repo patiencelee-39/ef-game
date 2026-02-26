@@ -1,0 +1,893 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>兒童試玩當天引導流程 — 執行功能訓練遊戲</title>
+    <style>
+      /* ===== 全局 ===== */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+        background: #f5f7fa;
+        color: #2c3e50;
+        line-height: 1.7;
+        padding: 24px;
+      }
+      @media print {
+        body {
+          background: #fff;
+          padding: 12px;
+          font-size: 11pt;
+        }
+        .no-print {
+          display: none !important;
+        }
+        .phase {
+          break-inside: avoid;
+        }
+      }
+
+      /* ===== 容器 ===== */
+      .container {
+        max-width: 820px;
+        margin: 0 auto;
+      }
+      h1 {
+        text-align: center;
+        font-size: 1.6rem;
+        margin-bottom: 4px;
+        color: #1a2332;
+      }
+      .subtitle {
+        text-align: center;
+        color: #7f8c8d;
+        font-size: 0.95rem;
+        margin-bottom: 28px;
+      }
+
+      /* ===== 時間軸 ===== */
+      .timeline {
+        position: relative;
+        padding-left: 36px;
+      }
+      .timeline::before {
+        content: "";
+        position: absolute;
+        left: 14px;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background: linear-gradient(
+          to bottom,
+          #3498db,
+          #2ecc71,
+          #e67e22,
+          #9b59b6
+        );
+        border-radius: 2px;
+      }
+
+      /* ===== 階段 ===== */
+      .phase {
+        position: relative;
+        background: #fff;
+        border-radius: 12px;
+        padding: 20px 24px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        border-left: 4px solid #3498db;
+      }
+      .phase::before {
+        content: "";
+        position: absolute;
+        left: -30px;
+        top: 24px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #3498db;
+        border: 3px solid #fff;
+        box-shadow: 0 0 0 2px #3498db;
+      }
+      .phase.prep {
+        border-left-color: #95a5a6;
+      }
+      .phase.prep::before {
+        background: #95a5a6;
+        box-shadow: 0 0 0 2px #95a5a6;
+      }
+      .phase.warmup {
+        border-left-color: #e67e22;
+      }
+      .phase.warmup::before {
+        background: #e67e22;
+        box-shadow: 0 0 0 2px #e67e22;
+      }
+      .phase.demo {
+        border-left-color: #3498db;
+      }
+      .phase.demo::before {
+        background: #3498db;
+        box-shadow: 0 0 0 2px #3498db;
+      }
+      .phase.play {
+        border-left-color: #2ecc71;
+      }
+      .phase.play::before {
+        background: #2ecc71;
+        box-shadow: 0 0 0 2px #2ecc71;
+      }
+      .phase.wm {
+        border-left-color: #9b59b6;
+      }
+      .phase.wm::before {
+        background: #9b59b6;
+        box-shadow: 0 0 0 2px #9b59b6;
+      }
+      .phase.close {
+        border-left-color: #e74c3c;
+      }
+      .phase.close::before {
+        background: #e74c3c;
+        box-shadow: 0 0 0 2px #e74c3c;
+      }
+      .phase.record {
+        border-left-color: #1abc9c;
+      }
+      .phase.record::before {
+        background: #1abc9c;
+        box-shadow: 0 0 0 2px #1abc9c;
+      }
+
+      .phase-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      .phase-icon {
+        font-size: 1.5rem;
+      }
+      .phase-title {
+        font-size: 1.15rem;
+        font-weight: 700;
+      }
+      .phase-time {
+        margin-left: auto;
+        font-size: 0.85rem;
+        background: #ecf0f1;
+        padding: 2px 10px;
+        border-radius: 12px;
+        color: #7f8c8d;
+        white-space: nowrap;
+      }
+
+      /* ===== 內容 ===== */
+      .step-list {
+        padding-left: 20px;
+        margin: 8px 0;
+      }
+      .step-list li {
+        margin-bottom: 6px;
+      }
+      .script {
+        background: #fef9e7;
+        border-left: 3px solid #f39c12;
+        padding: 10px 14px;
+        margin: 10px 0;
+        border-radius: 0 8px 8px 0;
+        font-size: 0.95rem;
+      }
+      .script::before {
+        content: "🗣️ 口語範例：";
+        font-weight: 700;
+      }
+      .tip {
+        background: #eaf7fd;
+        border-left: 3px solid #3498db;
+        padding: 10px 14px;
+        margin: 10px 0;
+        border-radius: 0 8px 8px 0;
+        font-size: 0.9rem;
+      }
+      .tip::before {
+        content: "💡 提示：";
+        font-weight: 700;
+      }
+      .warning {
+        background: #fdedec;
+        border-left: 3px solid #e74c3c;
+        padding: 10px 14px;
+        margin: 10px 0;
+        border-radius: 0 8px 8px 0;
+        font-size: 0.9rem;
+      }
+      .warning::before {
+        content: "⚠️ 注意：";
+        font-weight: 700;
+      }
+      .checklist {
+        background: #f0faf0;
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin: 10px 0;
+      }
+      .checklist h4 {
+        margin-bottom: 6px;
+      }
+      .checklist label {
+        display: block;
+        margin: 4px 0;
+        cursor: pointer;
+      }
+      .checklist input[type="checkbox"] {
+        margin-right: 8px;
+        transform: scale(1.1);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0;
+        font-size: 0.95rem;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 8px 12px;
+        text-align: left;
+      }
+      th {
+        background: #f8f9fa;
+        font-weight: 600;
+      }
+
+      .summary-box {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #fff;
+        border-radius: 12px;
+        padding: 20px 24px;
+        margin-bottom: 24px;
+      }
+      .summary-box h2 {
+        font-size: 1.1rem;
+        margin-bottom: 10px;
+      }
+      .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 10px;
+      }
+      .summary-item {
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 8px;
+        padding: 10px;
+        text-align: center;
+      }
+      .summary-item .label {
+        font-size: 0.8rem;
+        opacity: 0.85;
+      }
+      .summary-item .value {
+        font-size: 1.3rem;
+        font-weight: 700;
+      }
+
+      .observation-form {
+        background: #fff;
+        border: 2px dashed #bdc3c7;
+        border-radius: 12px;
+        padding: 20px 24px;
+        margin-top: 16px;
+      }
+      .observation-form h3 {
+        margin-bottom: 12px;
+      }
+      .obs-row {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 10px;
+        align-items: center;
+      }
+      .obs-label {
+        width: 140px;
+        font-weight: 600;
+        flex-shrink: 0;
+      }
+      .obs-field {
+        flex: 1;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 6px 10px;
+        min-height: 32px;
+      }
+      .obs-field.tall {
+        min-height: 60px;
+      }
+
+      .btn-print {
+        display: inline-block;
+        background: #3498db;
+        color: #fff;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 8px;
+        font-size: 1rem;
+        cursor: pointer;
+        margin-top: 16px;
+      }
+      .btn-print:hover {
+        background: #2980b9;
+      }
+      .footer {
+        text-align: center;
+        margin-top: 32px;
+        color: #95a5a6;
+        font-size: 0.85rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🎮 兒童試玩當天 — 引導流程手冊</h1>
+      <p class="subtitle">執行功能訓練遊戲 ｜ 個別施測版（1-3 位兒童）</p>
+
+      <!-- ===== 總覽 ===== -->
+      <div class="summary-box">
+        <h2>📋 流程總覽</h2>
+        <div class="summary-grid">
+          <div class="summary-item">
+            <div class="label">總時長</div>
+            <div class="value">25–35 分鐘</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">階段數</div>
+            <div class="value">7 個階段</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">適用對象</div>
+            <div class="value">3–6 歲</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">設備</div>
+            <div class="value">平板 / 電腦</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== 時間軸 ===== -->
+      <div class="timeline">
+        <!-- ====== Phase 0: 事前準備 ====== -->
+        <div class="phase prep">
+          <div class="phase-header">
+            <span class="phase-icon">📦</span>
+            <span class="phase-title">Phase 0｜事前準備（孩子到場前）</span>
+            <span class="phase-time">提前 15 分鐘</span>
+          </div>
+
+          <div class="checklist">
+            <h4>✅ 準備清單</h4>
+            <label
+              ><input type="checkbox" /> 設備已充電（平板 / 筆電），電量 >
+              80%</label
+            >
+            <label
+              ><input type="checkbox" /> 已連上穩定 Wi-Fi，測試開啟遊戲網址
+              <code>https://reurl.cc/GGWRGA</code></label
+            >
+            <label
+              ><input type="checkbox" /> 螢幕亮度調至最亮，音量調至適中</label
+            >
+            <label
+              ><input type="checkbox" />
+              開啟遊戲首頁，確認可正常進入單人模式</label
+            >
+            <label
+              ><input type="checkbox" /> 快速跑一次「小老鼠 ×
+              規則一」確認遊戲流暢</label
+            >
+            <label
+              ><input type="checkbox" /> 清除前一位受試者的 localStorage（設定 →
+              清除資料）</label
+            >
+            <label
+              ><input type="checkbox" /> 準備錄音設備（若家長已同意錄音）</label
+            >
+            <label
+              ><input type="checkbox" /> 準備觀察紀錄表（本文件最後一頁）</label
+            >
+            <label><input type="checkbox" /> 準備小禮物</label>
+            <label
+              ><input type="checkbox" />
+              桌椅高度適合兒童，環境安靜、光線充足</label
+            >
+            <label><input type="checkbox" /> 家長同意書已簽署回收</label>
+          </div>
+
+          <div class="tip">
+            若在機構進行，先與現場教師確認孩子的慣用名/暱稱，方便建立親近感。若為聽障兒童，確認其主要溝通方式（口語、手語、混合）。
+          </div>
+        </div>
+
+        <!-- ====== Phase 1: 暖場 ====== -->
+        <div class="phase warmup">
+          <div class="phase-header">
+            <span class="phase-icon">👋</span>
+            <span class="phase-title">Phase 1｜暖場與建立關係</span>
+            <span class="phase-time">約 3 分鐘</span>
+          </div>
+
+          <p><strong>目標：</strong>讓孩子放鬆、建立信任，降低陌生焦慮。</p>
+
+          <ol class="step-list">
+            <li>蹲下到與孩子平視的高度，微笑打招呼。</li>
+            <li>簡單自我介紹，詢問孩子的名字（或使用已知暱稱）。</li>
+            <li>聊 1–2 句輕鬆話題（例如：今天吃了什麼？喜歡什麼動物？）。</li>
+            <li>介紹今天要做的事情（用「玩遊戲」而非「測驗」來描述）。</li>
+          </ol>
+
+          <div class="script">
+            「嗨！我是珮瑄姐姐～你叫什麼名字呀？（等待回應）好棒！今天姐姐帶了一個很有趣的遊戲要跟你一起玩喔！裡面有小老鼠、起司、還有小魚耶！你想不想看看？」
+          </div>
+
+          <div class="warning">
+            不要催促孩子。如果孩子害羞或緊張，多花一些時間暖場，讓家長/老師先陪在旁邊也可以。
+          </div>
+        </div>
+
+        <!-- ====== Phase 2: 示範教學 ====== -->
+        <div class="phase demo">
+          <div class="phase-header">
+            <span class="phase-icon">📖</span>
+            <span class="phase-title">Phase 2｜遊戲示範與規則教學</span>
+            <span class="phase-time">約 5 分鐘</span>
+          </div>
+
+          <p>
+            <strong>目標：</strong
+            >用孩子能理解的方式說明遊戲規則，確認孩子理解後才開始。
+          </p>
+
+          <h4 style="margin-top: 12px">Step 1：進入遊戲</h4>
+          <ol class="step-list">
+            <li>點選「📱 單人模式」→ 進入探險地圖。</li>
+            <li>指著地圖第一關（🐭 小老鼠 × 規則一）跟孩子說：</li>
+          </ol>
+
+          <div class="script">
+            「你看！這是一張冒險地圖，我們要一關一關地闖喔！先從這一關開始！」
+          </div>
+
+          <h4 style="margin-top: 12px">Step 2：用示範動畫教規則</h4>
+          <p>
+            遊戲內建示範動畫（Plan A），會自動用 5
+            個階段展示規則。引導者配合動畫口語說明：
+          </p>
+
+          <table>
+            <tr>
+              <th>動畫階段</th>
+              <th>畫面內容</th>
+              <th>引導者口語配合</th>
+            </tr>
+            <tr>
+              <td>1. 準備</td>
+              <td>「注意看喔！」提示</td>
+              <td>「眼睛看好喔～」</td>
+            </tr>
+            <tr>
+              <td>2. 出現刺激物</td>
+              <td>🧀 起司出現 + 名字標籤</td>
+              <td>「你看！是起司耶！」</td>
+            </tr>
+            <tr>
+              <td>3. 指示動作</td>
+              <td>綠色指示「看到🧀起司 → 按按鈕！」<br />按鈕會跳動</td>
+              <td>「看到起司就要趕快按這個按鈕喔！」</td>
+            </tr>
+            <tr>
+              <td>4. 模擬動作</td>
+              <td>按鈕被按下 → 答對回饋</td>
+              <td>「按對了！好棒！出現 ✓ 就是答對喔！」</td>
+            </tr>
+            <tr>
+              <td>5. No-Go 示範</td>
+              <td>😺 貓出現 →「看到😺貓咪 → 不要按！」</td>
+              <td>「看到貓咪的時候，手手不要動喔！因為貓咪會把起司吃掉～」</td>
+            </tr>
+          </table>
+
+          <h4 style="margin-top: 12px">Step 3：練習試驗（Plan D）</h4>
+          <p>示範結束後自動進入 3 題練習：</p>
+          <ol class="step-list">
+            <li>讓孩子自己操作，觀察是否理解規則。</li>
+            <li>
+              如果按錯，遊戲會自動顯示提示（例如：「😺 貓咪 → 不要按喔！」）。
+            </li>
+            <li>引導者可在旁邊口頭鼓勵，但<strong>不要幫孩子按</strong>。</li>
+          </ol>
+
+          <div class="script">
+            「現在換你自己試試看！記得喔：看到起司就按，看到貓咪就不要按～」
+          </div>
+
+          <div class="tip">
+            如果孩子練習 3
+            題後仍不太理解，可以再跑一次示範動畫（遊戲會提供重看選項）。最多重複
+            2 次示範即可開始正式遊戲，避免孩子失去興趣。
+          </div>
+        </div>
+
+        <!-- ====== Phase 3: 正式遊戲 ====== -->
+        <div class="phase play">
+          <div class="phase-header">
+            <span class="phase-icon">🎮</span>
+            <span class="phase-title">Phase 3｜正式遊戲進行</span>
+            <span class="phase-time">約 12–18 分鐘</span>
+          </div>
+
+          <p>
+            <strong>目標：</strong
+            >讓孩子按自己的節奏完成探險地圖關卡，引導者觀察並記錄。
+          </p>
+
+          <h4>遊戲進行順序（探險地圖）</h4>
+          <table>
+            <tr>
+              <th>關卡</th>
+              <th>內容</th>
+              <th>預估時間</th>
+              <th>引導重點</th>
+            </tr>
+            <tr>
+              <td>① 🐭 規則一</td>
+              <td>起司按、貓不按（6 題）</td>
+              <td>2–3 分鐘</td>
+              <td>基礎規則建立，多鼓勵</td>
+            </tr>
+            <tr>
+              <td>② 🐭 規則一+WM</td>
+              <td>規則一 + 位置記憶</td>
+              <td>3–4 分鐘</td>
+              <td>第一次出現 WM，需額外說明</td>
+            </tr>
+            <tr>
+              <td>③ 🐭 規則二</td>
+              <td>起司不按、貓按（規則反轉）</td>
+              <td>2–3 分鐘</td>
+              <td><strong>關鍵轉折！</strong>需提醒規則改變</td>
+            </tr>
+            <tr>
+              <td>④ 🐭 規則二+WM</td>
+              <td>規則二 + 位置記憶</td>
+              <td>3–4 分鐘</td>
+              <td>觀察適應程度</td>
+            </tr>
+            <tr>
+              <td>⑤ 🐭 混合</td>
+              <td>沒人→規則一、有人→規則二（12 題）</td>
+              <td>4–5 分鐘</td>
+              <td><strong>最具挑戰！</strong>注意情境線索</td>
+            </tr>
+            <tr>
+              <td>⑥ 🐭 混合+WM</td>
+              <td>混合 + 位置記憶</td>
+              <td>5–6 分鐘</td>
+              <td>最高難度，適時鼓勵</td>
+            </tr>
+          </table>
+
+          <div class="tip">
+            <strong>試玩當天不一定要全部完成。</strong>建議至少完成前 3
+            關（①②③），讓孩子體驗「規則建立→規則反轉」的核心機制。如果孩子狀態好，可以繼續往後闖關。
+          </div>
+
+          <h4 style="margin-top: 12px">引導原則</h4>
+          <ol class="step-list">
+            <li>
+              <strong>鼓勵為主：</strong
+              >「好棒！」「你好厲害！」「沒關係，再試一次！」
+            </li>
+            <li>
+              <strong>不主動介入：</strong
+              >讓孩子自己操作，即使按錯也不要馬上糾正（遊戲會提供回饋）。
+            </li>
+            <li>
+              <strong>適時提醒核心規則：</strong>進入新關卡時，用簡短話語提醒。
+            </li>
+            <li>
+              <strong>觀察記錄：</strong
+              >在觀察表上記錄孩子的表情、口語反應、猶豫點、求助行為。
+            </li>
+            <li>
+              <strong>尊重孩子意願：</strong
+              >如果孩子表示不想繼續，不強迫，可以休息後再嘗試或結束。
+            </li>
+          </ol>
+
+          <h4 style="margin-top: 12px">各關卡轉場口語提示</h4>
+
+          <div class="script">
+            <strong>進入規則二（③）時：</strong
+            >「接下來喔，規則要變了！以前看到起司要按對不對？但是這一關不一樣喔～看到起司反而不能按，看到貓咪才要按！因為現在起司已經被藏起來了，貓咪變成好朋友囉！」
+          </div>
+          <div class="script">
+            <strong>進入混合（⑤）時：</strong
+            >「哇！這一關更特別喔！你要注意看畫面上有沒有出現人喔。沒有人的時候，就跟第一關一樣
+            — 看到起司就按。但如果有人出現，就要反過來 —
+            看到貓咪才按！要注意看有沒有人出現喔！」
+          </div>
+          <div class="script">
+            <strong>遇到 WM 附加環節（②④⑥）時：</strong
+            >「等一下玩完之後，會出現一個記憶小遊戲喔！螢幕上面的格子會一個一個亮起來，你要記住亮了哪些，然後照順序按出來。跟記路線一樣！」
+          </div>
+
+          <div class="warning">
+            如果孩子在某一關連續失敗情緒低落，可以暫時跳過或回到已通過的關卡重玩，讓孩子恢復信心。遊戲支援重玩已通過的關卡。
+          </div>
+        </div>
+
+        <!-- ====== Phase 4: 休息彈性 ====== -->
+        <div class="phase wm">
+          <div class="phase-header">
+            <span class="phase-icon">☕</span>
+            <span class="phase-title">Phase 4｜彈性休息（視需要）</span>
+            <span class="phase-time">約 2–3 分鐘</span>
+          </div>
+
+          <p>
+            <strong>目標：</strong>根據孩子的專注力與情緒狀態，適時安排休息。
+          </p>
+
+          <ol class="step-list">
+            <li>
+              <strong>觀察訊號：</strong
+              >孩子開始東張西望、摸摸臉、身體扭動、嘆氣、反應變慢 → 需要休息。
+            </li>
+            <li>
+              <strong>自然轉場：</strong>在關卡之間穿插休息，而非遊戲中途打斷。
+            </li>
+            <li>
+              <strong>休息活動：</strong
+              >喝水、伸懶腰、聊聊剛剛玩到什麼、看看窗外。
+            </li>
+            <li>
+              <strong>復歸確認：</strong
+              >休息後先問「準備好了嗎？我們繼續冒險吧！」。
+            </li>
+          </ol>
+
+          <div class="tip">
+            3–4 歲建議每 2 關休息一次；5–6 歲通常可以連續完成 3–4
+            關。依孩子個別差異彈性調整。遊戲支援暫停，進度不會消失。
+          </div>
+        </div>
+
+        <!-- ====== Phase 5: 體驗結束 ====== -->
+        <div class="phase close">
+          <div class="phase-header">
+            <span class="phase-icon">🎉</span>
+            <span class="phase-title">Phase 5｜體驗結束與回饋收集</span>
+            <span class="phase-time">約 3–5 分鐘</span>
+          </div>
+
+          <p><strong>目標：</strong>收集孩子的主觀感受反饋，正向結束體驗。</p>
+
+          <h4>Step 1：正向收尾</h4>
+          <div class="script">
+            「你今天好棒喔！闖了好多關！你最喜歡哪一個部分？覺得哪裡最好玩？」
+          </div>
+
+          <h4 style="margin-top: 12px">
+            Step 2：簡易回饋問題（用臉譜 / 手勢回答也可以）
+          </h4>
+          <table>
+            <tr>
+              <th>#</th>
+              <th>問題</th>
+              <th>回答方式</th>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>你覺得這個遊戲好玩嗎？</td>
+              <td>😊 很好玩 / 😐 還好 / 😞 不好玩</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>哪個部分最好玩？</td>
+              <td>開放回答（記錄原話）</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>有沒有哪裡太難了？</td>
+              <td>開放回答</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td>畫面上的東西你都看得懂嗎？</td>
+              <td>是 / 哪裡看不懂</td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td>你還想再玩嗎？</td>
+              <td>😊 想！/ 😐 嗯 / 😞 不想</td>
+            </tr>
+          </table>
+
+          <h4 style="margin-top: 12px">Step 3：致贈小禮物</h4>
+          <div class="script">
+            「謝謝你今天幫姐姐一起玩遊戲！你幫了好大的忙喔！這是送給你的小禮物，謝謝你～」
+          </div>
+
+          <h4 style="margin-top: 12px">Step 4：與家長簡短溝通（若家長在場）</h4>
+          <ol class="step-list">
+            <li>
+              簡短分享孩子的表現亮點（例如：「他在規則切換那邊適應得很快」）。
+            </li>
+            <li>如果家長有興趣，可以介紹遊戲網址讓他們回家繼續玩。</li>
+            <li>提醒遊戲是免費的學術研究工具，歡迎繼續使用。</li>
+          </ol>
+        </div>
+
+        <!-- ====== Phase 6: 資料整理 ====== -->
+        <div class="phase record">
+          <div class="phase-header">
+            <span class="phase-icon">📝</span>
+            <span class="phase-title">Phase 6｜資料整理（孩子離開後）</span>
+            <span class="phase-time">約 5–10 分鐘</span>
+          </div>
+
+          <p><strong>目標：</strong>趁記憶鮮明時儘速完成觀察紀錄與資料匯出。</p>
+
+          <ol class="step-list">
+            <li>
+              <strong>匯出成績 CSV：</strong>進入成績結算頁面 → 點選「📤 匯出
+              CSV」→ 儲存檔案。
+            </li>
+            <li>
+              <strong>截圖成績畫面：</strong>使用遊戲內建截圖功能或手動截圖。
+            </li>
+            <li>
+              <strong>完成觀察紀錄表：</strong>補齊剛才來不及記錄的觀察內容。
+            </li>
+            <li>
+              <strong>停止錄音並備份：</strong
+              >以匿名編碼命名（例：P01_20260301.m4a）。
+            </li>
+            <li>
+              <strong>清除裝置資料：</strong>設定 →
+              清除資料（為下一位受試者準備）。
+            </li>
+            <li>
+              <strong>回顧重點：</strong>孩子在哪些關卡表現特別好/差？哪些 UI
+              讓孩子困惑？
+            </li>
+          </ol>
+
+          <div class="tip">
+            建議當天結束後統一整理所有受試者的觀察紀錄，彙整成結構化的改善建議清單。
+          </div>
+        </div>
+      </div>
+      <!-- /timeline -->
+
+      <!-- ===== 觀察紀錄表 ===== -->
+      <div class="observation-form">
+        <h3>📋 觀察紀錄表（每位兒童一份）</h3>
+        <div class="obs-row">
+          <span class="obs-label">兒童代碼：</span>
+          <span class="obs-field" contenteditable="true"></span>
+          <span class="obs-label" style="width: 80px">日期：</span>
+          <span
+            class="obs-field"
+            contenteditable="true"
+            style="max-width: 160px"
+          ></span>
+        </div>
+        <div class="obs-row">
+          <span class="obs-label">年齡 / 性別：</span>
+          <span class="obs-field" contenteditable="true"></span>
+          <span class="obs-label" style="width: 80px">場域：</span>
+          <span
+            class="obs-field"
+            contenteditable="true"
+            style="max-width: 160px"
+            >☐ 學校 ☐ 家庭</span
+          >
+        </div>
+        <div class="obs-row">
+          <span class="obs-label">聽力狀況：</span>
+          <span class="obs-field" contenteditable="true"
+            >☐ 聽常 ☐ 輕度 ☐ 中度 ☐ 重度 ☐ 極重度 ☐ 人工電子耳 ☐ 助聽器</span
+          >
+        </div>
+        <div class="obs-row">
+          <span class="obs-label">溝通方式：</span>
+          <span class="obs-field" contenteditable="true"
+            >☐ 口語 ☐ 手語 ☐ 混合</span
+          >
+        </div>
+
+        <hr style="margin: 16px 0; border: none; border-top: 1px dashed #ccc" />
+
+        <div class="obs-row">
+          <span class="obs-label">完成關卡：</span>
+          <span class="obs-field" contenteditable="true"
+            >☐①R1 ☐②R1+WM ☐③R2 ☐④R2+WM ☐⑤混合 ☐⑥混合+WM</span
+          >
+        </div>
+        <div class="obs-row">
+          <span class="obs-label">總耗時：</span>
+          <span class="obs-field" contenteditable="true"></span>
+          <span class="obs-label" style="width: 80px">休息次數：</span>
+          <span
+            class="obs-field"
+            contenteditable="true"
+            style="max-width: 160px"
+          ></span>
+        </div>
+
+        <hr style="margin: 16px 0; border: none; border-top: 1px dashed #ccc" />
+        <h4>🔍 觀察重點</h4>
+
+        <div class="obs-row">
+          <span class="obs-label">規則理解度：</span>
+          <span class="obs-field tall" contenteditable="true"
+            >示範後是否能掌握？需要幾次示範？練習試驗的表現？</span
+          >
+        </div>
+        <div class="obs-row">
+          <span class="obs-label">規則切換適應：</span>
+          <span class="obs-field tall" contenteditable="true"
+            >進入規則二/混合時的反應？切換困難程度？</span
+          >
+        </div>
+        <div class="obs-row">
+          <span class="obs-label">操作順暢度：</span>
+          <span class="obs-field tall" contenteditable="true"
+            >觸控/鍵盤操作是否順利？有無按錯位置？</span
+          >
+        </div>
+        <div class="obs-row">
+          <span class="obs-label">情緒與投入度：</span>
+          <span class="obs-field tall" contenteditable="true"
+            >表情？口語反應？主動性？遇挫折的反應？</span
+          >
+        </div>
+        <div class="obs-row">
+          <span class="obs-label">UI 問題回報：</span>
+          <span class="obs-field tall" contenteditable="true"
+            >哪些畫面讓孩子困惑？文字/圖示/按鈕大小適不適合？</span
+          >
+        </div>
+        <div class="obs-row">
+          <span class="obs-label">兒童回饋摘要：</span>
+          <span class="obs-field tall" contenteditable="true"
+            >孩子的原話記錄、最喜歡/最不喜歡的部分</span
+          >
+        </div>
+        <div class="obs-row">
+          <span class="obs-label">其他觀察：</span>
+          <span class="obs-field tall" contenteditable="true"></span>
+        </div>
+      </div>
+
+      <!-- ===== 列印按鈕 ===== -->
+      <div style="text-align: center" class="no-print">
+        <button class="btn-print" onclick="window.print()">
+          🖨️ 列印本文件
+        </button>
+      </div>
+
+      <div class="footer">
+        執行功能訓練遊戲 — 兒童試玩引導流程 v1.0 ｜ 2026/02/24 ｜ 李珮瑄<br />
+        中原大學特殊教育學系 ｜ 指導教授：王文伶 副教授
+      </div>
+    </div>
+  </body>
+</html>

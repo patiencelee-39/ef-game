@@ -16,6 +16,8 @@
     <link rel="manifest" href="../manifest.json" />
     <meta name="theme-color" content="#302b63" />
     <link rel="stylesheet" href="../css/themes/base.css" />
+    <link rel="stylesheet" href="../css/themes/theme-field-primary.css" />
+    <link rel="stylesheet" href="../css/themes/theme-rule-independent.css" />
     <link rel="stylesheet" href="../css/main.css" />
     <link
       rel="preload"
@@ -27,6 +29,7 @@
       ><link rel="stylesheet" href="../css/components/landscape-hint.css"
     /></noscript>
     <link rel="stylesheet" href="../css/pages/free-select.css" />
+    <link rel="stylesheet" href="../css/components/stage-picker.css" />
     <link
       rel="preload"
       href="../css/components/navbar.css"
@@ -37,12 +40,16 @@
       ><link rel="stylesheet" href="../css/components/navbar.css"
     /></noscript>
     <!-- JS 依賴 -->
+    <script defer src="../js/utils/logger.js"></script>
+    <script defer src="../js/shared/game-modal.js"></script>
     <script defer src="../js/game-config.js"></script>
     <script defer src="../js/adventure-maps-config.js"></script>
     <script defer src="../js/utils/storage.js"></script>
     <script defer src="../js/utils/score-calculator.js"></script>
     <script defer src="../js/utils/level-calculator.js"></script>
     <script defer src="../js/utils/badge-checker.js"></script>
+    <script defer src="../js/shared/combo-selector.js"></script>
+    <script defer src="../js/shared/stage-picker.js"></script>
     <script defer src="../js/shared/game-session-builder.js"></script>
     <script defer src="../js/singleplayer/progress-tracker.js"></script>
     <script defer src="../js/singleplayer/mode-controller.js"></script>
@@ -64,29 +71,27 @@
         <h1 class="fs-title">🆓 自由選擇</h1>
       </div>
 
-      <!-- 遊戲場選擇 -->
-      <p class="section-label">選擇遊戲場</p>
-      <div class="field-selector" id="field-selector">
-        <button
-          class="field-btn"
-          data-field="mouse"
-          onclick="toggleField('mouse')"
-        >
-          🐭 小老鼠
-        </button>
-        <button
-          class="field-btn"
-          data-field="fishing"
-          onclick="toggleField('fishing')"
-        >
-          🐟 釣魚
-        </button>
+      <!-- 遊戲場選擇（StagePicker 共用元件） -->
+      <p class="section-label">選擇遊戲場（可重複，拖曳排序）</p>
+
+      <div
+        class="selected-stages"
+        id="selectedStages"
+        role="list"
+        aria-live="polite"
+        aria-label="已選擇的遊戲場"
+      >
+        <div class="selected-stages-empty">
+          👆 請從下方選擇遊戲場（可重複，最多20個）
+        </div>
       </div>
 
-      <!-- 各遊戲場的規則選擇（動態產生） -->
-      <div id="per-field-rules"></div>
+      <div class="stage-picker-cards" id="availableStages">
+        <!-- 由 StagePicker 動態生成 12 張卡片 -->
+      </div>
 
-      <!-- WM 開關 -->
+      <!-- WM 已整合至探險點設計（每個探險點自帶 hasWM 屬性），不再需要獨立開關 -->
+      <!--
       <div class="wm-toggle-section">
         <button
           type="button"
@@ -100,10 +105,11 @@
           <div class="toggle-switch" id="wm-toggle" aria-hidden="true"></div>
         </button>
       </div>
+      -->
 
       <!-- 題數 -->
       <div class="question-count-section">
-        <p class="section-label">每規則題數</p>
+        <p class="section-label">每場題數</p>
         <div class="count-slider-row">
           <input
             type="range"
@@ -118,14 +124,6 @@
           />
           <span class="count-value" id="count-value">6</span>
         </div>
-      </div>
-
-      <!-- 組合預覽 -->
-      <div class="combo-preview">
-        <p class="section-label">組合預覽</p>
-        <ul class="combo-list" id="combo-list">
-          <li class="no-combo-msg">請選擇遊戲場和規則</li>
-        </ul>
       </div>
 
       <!-- 開始按鈕 -->

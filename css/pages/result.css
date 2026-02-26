@@ -188,6 +188,57 @@
   color: var(--wm-color);
 }
 
+/* --- SDT 信號偵測理論 --- */
+.sdt-card {
+  border-top: 2px solid rgba(52, 152, 219, 0.35);
+}
+
+.sdt-detail-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sdt-count {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.sdt-hit {
+  background: rgba(46, 204, 113, 0.15);
+  color: #2ecc71;
+}
+
+.sdt-miss {
+  background: rgba(231, 76, 60, 0.15);
+  color: #e74c3c;
+}
+
+.sdt-fa {
+  background: rgba(243, 156, 18, 0.15);
+  color: #f39c12;
+}
+
+.sdt-cr {
+  background: rgba(52, 152, 219, 0.15);
+  color: #3498db;
+}
+
+.sdt-notes {
+  text-align: center;
+  font-size: var(--font-size-xs);
+  color: var(--text-light);
+  margin-top: 10px;
+  line-height: 1.6;
+}
+
 .stat-label {
   font-size: var(--font-size-xs);
   color: var(--text-light);

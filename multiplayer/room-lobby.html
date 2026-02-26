@@ -14,6 +14,8 @@
     <link rel="manifest" href="../manifest.json" />
     <meta name="theme-color" content="#302b63" />
     <link rel="stylesheet" href="../css/themes/base.css" />
+    <link rel="stylesheet" href="../css/themes/theme-field-primary.css" />
+    <link rel="stylesheet" href="../css/themes/theme-rule-independent.css" />
     <link rel="stylesheet" href="../css/main.css" />
     <link
       rel="preload"
@@ -25,6 +27,7 @@
       ><link rel="stylesheet" href="../css/components/landscape-hint.css"
     /></noscript>
     <link rel="stylesheet" href="../css/pages/room-lobby.css" />
+    <link rel="stylesheet" href="../css/components/relay.css" />
     <link
       rel="preload"
       href="../css/components/navbar.css"
@@ -36,12 +39,15 @@
     /></noscript>
     <!-- Firebase Bundle -->
     <script defer src="../js/firebase-bundle.js"></script>
+    <script defer src="../js/utils/logger.js"></script>
     <script defer src="../js/utils/constants.js"></script>
     <script defer src="../js/utils/question-generator.js"></script>
+    <script defer src="../js/shared/game-modal.js"></script>
     <script defer src="../js/shared/navbar.js"></script>
     <script defer src="../js/shared/landscape-hint.js"></script>
   </head>
   <body>
+    <a href="#main-content" class="skip-link">跳到主要內容</a>
     <main class="container" id="main-content">
       <div class="header">
         <h1>🎮 遊戲等待室</h1>
@@ -72,6 +78,32 @@
           <!-- 場地資訊將動態生成 -->
         </div>
       </div>
+
+      <!-- 接力賽隊伍面板（僅接力模式顯示）-->
+      <div class="relay-team-panel" id="relayTeamPanel" style="display: none">
+        <div class="section-title">🏁 接力隊伍分配</div>
+        <div class="relay-team-actions">
+          <button class="btn btn-sm" id="autoAssignBtn">🔀 自動分隊</button>
+          <button class="btn btn-sm" id="shuffleBatonBtn">🎲 隨機棒次</button>
+        </div>
+        <div class="relay-teams-grid" id="relayTeamsGrid">
+          <!-- 隊伍卡片由 JS 動態生成 -->
+        </div>
+      </div>
+
+      <!-- 隊伍對抗面板（僅 team 模式顯示）-->
+      <div class="team-battle-panel" id="teamBattlePanel" style="display: none">
+        <div class="section-title">⚔️ 隊伍分配</div>
+        <div id="myTeamBadge" style="display: none; margin-bottom: 12px"></div>
+        <div class="team-battle-actions">
+          <button class="btn btn-sm" id="teamBattleAutoBtn">🔀 自動分隊</button>
+        </div>
+        <div class="team-battle-grid" id="teamBattleGrid">
+          <!-- 隊伍卡片由 JS 動態生成 -->
+        </div>
+      </div>
+
+      <!-- (第二個重複的 teamBattlePanel 已移除) -->
 
       <!-- 等待訊息 -->
       <div class="waiting-message" id="waitingMessage">
@@ -108,6 +140,7 @@
     <!-- Toast 通知 -->
     <div class="toast" id="toast"></div>
 
+    <script defer src="../js/multiplayer/relay-manager.js"></script>
     <script defer src="../js/multiplayer/room-lobby-controller.js"></script>
   </body>
 </html>

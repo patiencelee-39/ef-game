@@ -207,7 +207,7 @@ var SimpleAdaptiveEngine = (function () {
       };
       _levelHistory.push(entry);
       _saveLevel(); // 持久化新等級
-      console.log(
+      Logger.debug(
         "🎯 [" +
           ENGINE_NAME +
           "] 難度調整：L" +
@@ -362,7 +362,7 @@ var SimpleAdaptiveEngine = (function () {
      */
     onSessionComplete: function (sessionResult) {
       _saveLevel(); // 確保 session 結束時儲存最新難度
-      console.log(
+      Logger.debug(
         "📊 [" +
           ENGINE_NAME +
           "] Session 結束 — 最終難度 L" +
@@ -382,7 +382,7 @@ var SimpleAdaptiveEngine = (function () {
       _consecutiveCorrect = 0;
       _consecutiveIncorrect = 0;
       _levelHistory = [];
-      console.log(
+      Logger.debug(
         "🔄 [" +
           ENGINE_NAME +
           "] 已重置 — 起始難度 L" +

@@ -151,6 +151,38 @@
   opacity: 1;
 }
 
+/* Field Tabs */
+.field-tabs {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+.field-tab {
+  padding: 0.5rem 1.2rem;
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+.field-tab:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+.field-tab.active {
+  background: rgba(100, 180, 255, 0.15);
+  border-color: #64b4ff;
+  color: #64b4ff;
+}
+
 /* Rule Tabs */
 .rule-tabs {
   display: flex;

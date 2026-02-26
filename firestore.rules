@@ -72,15 +72,28 @@ service cloud.firestore {
         && request.resource.data.nickname is string
         && request.resource.data.nickname.size() >= 1
         && request.resource.data.nickname.size() <= 20
+        && (
+             (request.resource.data.keys().hasAny(['score']) && request.resource.data.score is int && request.resource.data.score >= 0 && request.resource.data.score <= 99999)
+          || (request.resource.data.keys().hasAny(['bestScore']) && request.resource.data.bestScore is int && request.resource.data.bestScore >= 0 && request.resource.data.bestScore <= 99999)
+          || (!request.resource.data.keys().hasAny(['score', 'bestScore']))
+        )
         && request.resource.data.keys().size() <= 25;
 
-      // ✅ 只能刪除自己的資料（用 uid 欄位驗證）
-      allow delete: if request.auth != null
-        && resource.data.uid == request.auth.uid;
+      // ✅ 已驗證用戶可刪除（排行榜循全剪裁用，僅保留前 10 名）
+      allow delete: if request.auth != null;
     }
 
     // ─────────────────────────────────
-    // 🚫 其他所有集合：預設拒絕
+    // � 觀察紀錄表（研究者工具）
+    // 路徑：/observationRecords/{docId}
+    // 任何已驗證用戶可讀寫
+    // ─────────────────────────────────
+    match /observationRecords/{docId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // ─────────────────────────────────
+    // �🚫 其他所有集合：預設拒絕
     // ─────────────────────────────────
     match /{document=**} {
       allow read, write: if false;

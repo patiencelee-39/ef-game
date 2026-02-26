@@ -56,7 +56,7 @@ var ModeController = (function () {
       pointIndex = pointOverride.pointIndex;
       mapDef = ADVENTURE_MAPS[mapIndex];
       if (!mapDef || pointIndex >= mapDef.points.length) {
-        console.error("❌ 指定探險點不存在:", pointOverride);
+        Logger.error("❌ 指定探險點不存在:", pointOverride);
         return null;
       }
       pointDef = mapDef.points[pointIndex];
@@ -69,7 +69,7 @@ var ModeController = (function () {
       // 預設：取得進度追蹤的當前探險點
       var current = ProgressTracker.getCurrentPoint();
       if (!current) {
-        console.error("❌ 無當前探險點可開始");
+        Logger.error("❌ 無當前探險點可開始");
         return null;
       }
       mapIndex = current.mapIndex;
@@ -150,7 +150,7 @@ var ModeController = (function () {
     try {
       sessionStorage.removeItem(SESSION_KEY);
     } catch (e) {
-      console.warn("⚠️ session 清除失敗");
+      Logger.warn("⚠️ session 清除失敗");
     }
   }
 
@@ -159,7 +159,7 @@ var ModeController = (function () {
     try {
       sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
     } catch (e) {
-      console.error("❌ session 儲存失敗:", e);
+      Logger.error("❌ session 儲存失敗:", e);
     }
   }
 
@@ -167,11 +167,22 @@ var ModeController = (function () {
   // 導航
   // =========================================
 
+  /** @private 標記導航中，防止 pagehide 清除 session 資料 */
+  function _navigateTo(url) {
+    window._efgameNavigating = true;
+    window.location.href = url;
+  }
+
   /**
    * 導航到探險地圖頁
+   * @param {number} [mapIndex] - 要顯示的地圖索引（0=小老鼠, 1=釣魚）
    */
-  function goToAdventureMap() {
-    window.location.href = PAGES.ADVENTURE_MAP;
+  function goToAdventureMap(mapIndex) {
+    var url = PAGES.ADVENTURE_MAP;
+    if (typeof mapIndex === "number" && mapIndex > 0) {
+      url += "?map=" + mapIndex;
+    }
+    _navigateTo(url);
   }
 
   /**
@@ -179,10 +190,12 @@ var ModeController = (function () {
    */
   function goToFreeSelect() {
     if (!ProgressTracker.isFreeSelectAvailable()) {
-      alert("🔒 請先完成探險地圖所有探險點！");
+      GameModal.alert("🔒 尚未解鎖", "請先完成探險地圖所有探險點！", {
+        icon: "🔒",
+      });
       return;
     }
-    window.location.href = PAGES.FREE_SELECT;
+    _navigateTo(PAGES.FREE_SELECT);
   }
 
   /**
@@ -197,7 +210,7 @@ var ModeController = (function () {
 
     var params = new URLSearchParams();
     params.set("mode", MODES.ADVENTURE);
-    window.location.href = PAGES.GAME + "?" + params.toString();
+    _navigateTo(PAGES.GAME + "?" + params.toString());
   }
 
   /**
@@ -209,7 +222,7 @@ var ModeController = (function () {
 
     var params = new URLSearchParams();
     params.set("mode", MODES.FREE_SELECT);
-    window.location.href = PAGES.GAME + "?" + params.toString();
+    _navigateTo(PAGES.GAME + "?" + params.toString());
   }
 
   /**
@@ -220,14 +233,14 @@ var ModeController = (function () {
     try {
       sessionStorage.setItem("efgame-result-data", JSON.stringify(resultData));
     } catch (e) {
-      console.error("❌ 結算資料儲存失敗:", e);
+      Logger.error("❌ 結算資料儲存失敗:", e);
     }
 
     var session = getSession();
     var mode = session ? session.mode : MODES.ADVENTURE;
     var params = new URLSearchParams();
     params.set("mode", mode);
-    window.location.href = PAGES.RESULT + "?" + params.toString();
+    _navigateTo(PAGES.RESULT + "?" + params.toString());
   }
 
   /**
@@ -256,7 +269,7 @@ var ModeController = (function () {
 
     var params = new URLSearchParams();
     params.set("mode", MODES.ADVENTURE);
-    window.location.href = PAGES.GAME + "?" + params.toString();
+    _navigateTo(PAGES.GAME + "?" + params.toString());
   }
 
   /**
@@ -264,7 +277,7 @@ var ModeController = (function () {
    */
   function goToHome() {
     clearSession();
-    window.location.href = PAGES.HOME;
+    _navigateTo(PAGES.HOME);
   }
 
   // =========================================

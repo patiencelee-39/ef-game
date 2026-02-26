@@ -57,6 +57,8 @@ var GameController = (function () {
   var _totalTrials = 0;
   var _allTrialResults = []; // 跨 combo 累積（修復原 finishGame 僅取最後 combo 的 bug）
   var _comboScores = []; // 每個 combo 的 calculateRuleScore 結果
+  var _isRelayMode = false;
+  var _isTeamMode = false;
 
   function showScreen(el) {
     var screens = dom.gameContainer.querySelectorAll(".screen");
@@ -105,9 +107,12 @@ var GameController = (function () {
 
     // 防呆：題目生成失敗
     if (!_questions || _questions.length === 0) {
-      console.error("❌ 題目生成失敗:", combo.fieldId, combo.ruleId);
-      alert("題目生成失敗，將返回大廳");
-      location.href = "../index.html";
+      Logger.error("❌ 題目生成失敗:", combo.fieldId, combo.ruleId);
+      GameModal.alert("題目生成失敗", "將返回大廳", { icon: "❌" }).then(
+        function () {
+          location.href = "../index.html";
+        },
+      );
       return;
     }
 
@@ -266,6 +271,28 @@ var GameController = (function () {
     // 委派 TrialRenderer 渲染背景 + 情境指示 + 刺激物
     TrialRenderer.render(_stimEls(), question, combo.fieldId, combo.ruleId);
 
+    // 🔊 播放刺激物語音
+    if (
+      typeof AudioPlayer !== "undefined" &&
+      AudioPlayer.playVoice &&
+      typeof getVoiceFileForQuestion === "function"
+    ) {
+      var voicePath = getVoiceFileForQuestion(
+        combo.fieldId,
+        question,
+        combo.ruleId,
+      );
+      if (voicePath) {
+        AudioPlayer.playVoice(voicePath, {
+          text: question.stimulus || "",
+          gender:
+            combo.ruleId === "mixed" && question.appliedRule === "rule2"
+              ? "male"
+              : "female",
+        });
+      }
+    }
+
     dom.btnSpace.disabled = false;
     _stimOnTime = Date.now();
 
@@ -312,6 +339,36 @@ var GameController = (function () {
       stageId: combo ? combo.stageId || null : null,
       fieldId: combo ? combo.fieldId : null,
       ruleId: combo ? combo.ruleId : null,
+      // v4.7 自適應難度欄位
+      adaptiveEngine:
+        typeof DifficultyProvider !== "undefined"
+          ? DifficultyProvider.getEngineName()
+          : "",
+      difficultyLevel: (function () {
+        var en =
+          typeof DifficultyProvider !== "undefined"
+            ? DifficultyProvider.getEngineName()
+            : "";
+        if (en === "IRTSimpleEngine" && typeof IRTSimpleEngine !== "undefined")
+          return IRTSimpleEngine.getCurrentLevel();
+        if (typeof SimpleAdaptiveEngine !== "undefined")
+          return SimpleAdaptiveEngine.getCurrentLevel();
+        return "";
+      })(),
+      theta: (function () {
+        var en =
+          typeof DifficultyProvider !== "undefined"
+            ? DifficultyProvider.getEngineName()
+            : "";
+        if (
+          en === "IRTSimpleEngine" &&
+          typeof IRTSimpleEngine !== "undefined"
+        ) {
+          var s = IRTSimpleEngine.getIRTState();
+          return s && s.theta != null ? Math.round(s.theta * 1000) / 1000 : "";
+        }
+        return "";
+      })(),
     };
     _trialResults.push(record);
     _allTrialResults.push(record);
@@ -368,7 +425,7 @@ var GameController = (function () {
     dom.wmContainer.classList.remove("hidden");
 
     if (typeof WorkingMemory === "undefined") {
-      console.warn("⚠️ WorkingMemory 模組未載入，跳過 WM 測驗");
+      Logger.warn("⚠️ WorkingMemory 模組未載入，跳過 WM 測驗");
       dom.wmContainer.classList.add("hidden");
       _processComboEnd(null);
       return;
@@ -391,7 +448,7 @@ var GameController = (function () {
         });
       })
       .catch(function (err) {
-        console.error("❌ WM 測驗錯誤:", err);
+        Logger.error("❌ WM 測驗錯誤:", err);
         dom.wmContainer.classList.add("hidden");
         _processComboEnd(null);
       });
@@ -455,7 +512,20 @@ var GameController = (function () {
     xhr.open("GET", "../shared/combo-transition.html", true);
     xhr.onload = function () {
       if (xhr.status >= 200 && xhr.status < 300) {
-        ctr.innerHTML = xhr.responseText;
+        // P15: 使用 DOMParser 安全解析，避免直接 innerHTML 注入
+        var parser = new DOMParser();
+        var doc = parser.parseFromString(xhr.responseText, "text/html");
+        var template = doc.querySelector(".combo-transition");
+        ctr.innerHTML = "";
+        if (template) {
+          ctr.appendChild(document.importNode(template, true));
+        } else {
+          // fallback：若結構不含 .combo-transition 則取整個 body 內容
+          var body = doc.body;
+          while (body && body.firstChild) {
+            ctr.appendChild(document.importNode(body.firstChild, true));
+          }
+        }
         _fillTransition(ctr, nextCombo);
       } else {
         ctr.classList.add("hidden");
@@ -536,6 +606,82 @@ var GameController = (function () {
     }
   }
 
+  // =========================================
+  // 接力模式 — 狀態列 & 棒次閘控
+  // =========================================
+
+  function _showRelayStatusBar(roomData) {
+    var bar = document.getElementById("relayStatusBar");
+    if (!bar) return;
+    bar.style.display = "";
+    _updateRelayStatusBar(roomData);
+  }
+
+  function _updateRelayStatusBar() {
+    var badge = document.getElementById("relayTeamBadge");
+    var curEl = document.getElementById("relayBatonCurrent");
+    var totEl = document.getElementById("relayBatonTotal");
+    var dotsEl = document.getElementById("relayProgressDots");
+    if (!badge || !window.RelayManager) return;
+
+    var myTeam = RelayManager.getMyTeamId();
+    var progress = RelayManager.getBatonProgress();
+    if (myTeam && progress) {
+      badge.textContent = myTeam;
+      curEl.textContent = progress.current + 1;
+      totEl.textContent = progress.total;
+
+      // 進度圓點
+      var html = "";
+      for (var i = 0; i < progress.total; i++) {
+        var cls =
+          i < progress.current
+            ? "relay-dot done"
+            : i === progress.current
+              ? "relay-dot active"
+              : "relay-dot";
+        html += '<span class="' + cls + '"></span>';
+      }
+      if (dotsEl) dotsEl.innerHTML = html;
+    }
+  }
+
+  function _checkRelayTurn() {
+    if (!_isRelayMode || !window.RelayManager) return;
+    var overlay = document.getElementById("relayWaitOverlay");
+    if (!overlay) return;
+
+    if (RelayManager.isMyTurn()) {
+      overlay.style.display = "none";
+    } else {
+      overlay.style.display = "";
+      // 顯示當前跑者名稱
+      var runnerEl = document.getElementById("relayCurrentRunnerName");
+      var myBatonEl = document.getElementById("relayMyBatonNum");
+      var currentUid = RelayManager.getCurrentBatonUid();
+      if (runnerEl) {
+        runnerEl.textContent = currentUid ? currentUid.slice(0, 6) : "--";
+      }
+      if (myBatonEl) {
+        var progress = RelayManager.getBatonProgress();
+        var myTeam = RelayManager.getMyTeamId();
+        if (progress && myTeam) {
+          // 找到我在棒次中的位置
+          var teams = RelayManager._state
+            ? RelayManager._state.teams || {}
+            : {};
+          var team = teams[myTeam] || {};
+          var order = team.order || [];
+          var myUid = firebase.auth().currentUser
+            ? firebase.auth().currentUser.uid
+            : null;
+          var myIdx = order.indexOf(myUid);
+          myBatonEl.textContent = myIdx >= 0 ? myIdx + 1 : "-";
+        }
+      }
+    }
+  }
+
   function finishGame() {
     var accuracy = _totalTrials > 0 ? (_totalCorrect / _totalTrials) * 100 : 0;
 
@@ -566,7 +712,9 @@ var GameController = (function () {
         "mp_showFinalRanking",
         _displaySettings.showFinalRanking !== false ? "1" : "0",
       );
-    } catch (e) {}
+    } catch (e) {
+      Logger.warn("[MP-Game] localStorage write failed:", e);
+    }
 
     MultiplayerBridge.recordFinalScore({
       totalScore: calculatedTotal,
@@ -579,6 +727,35 @@ var GameController = (function () {
       comboScores: _comboScores,
     });
 
+    // 隊伍對抗模式：將個人分數累加到隊伍總分
+    if (_isTeamMode && window.RelayManager) {
+      var myTeamId = RelayManager.getMyTeamId();
+      if (myTeamId) {
+        RelayManager.advanceBaton(myTeamId, {
+          score: calculatedTotal,
+          correct: _totalCorrect,
+          trials: _totalTrials,
+          accuracy: accuracy,
+          avgRT: avgRT,
+        })
+          .catch(function (err) {
+            Logger.warn("[MP-Game] team score update failed:", err);
+          })
+          .finally(function () {
+            MultiplayerBridge.goToResult();
+          });
+        return;
+      }
+    }
+
+    // 接力模式：推進棒次（下一位隊友開始遊戲）
+    if (_isRelayMode && window.RelayManager) {
+      RelayManager.advanceBaton().then(function () {
+        MultiplayerBridge.goToResult();
+      });
+      return;
+    }
+
     MultiplayerBridge.goToResult();
   }
 
@@ -589,8 +766,22 @@ var GameController = (function () {
   var _prevDiffLevel = 0;
 
   function _updateDifficultyBadge() {
-    if (typeof SimpleAdaptiveEngine === "undefined") return;
-    var level = SimpleAdaptiveEngine.getCurrentLevel();
+    // 相容多引擎：優先用 IRT，其次 Simple
+    var level;
+    var engineName =
+      typeof DifficultyProvider !== "undefined"
+        ? DifficultyProvider.getEngineName()
+        : "";
+    if (
+      engineName === "IRTSimpleEngine" &&
+      typeof IRTSimpleEngine !== "undefined"
+    ) {
+      level = IRTSimpleEngine.getCurrentLevel();
+    } else if (typeof SimpleAdaptiveEngine !== "undefined") {
+      level = SimpleAdaptiveEngine.getCurrentLevel();
+    } else {
+      return;
+    }
     var badge = document.getElementById("diffBadge");
     var dotsEl = document.getElementById("diffDots");
     if (!badge || !dotsEl) return;
@@ -636,10 +827,29 @@ var GameController = (function () {
     if (!MultiplayerBridge.parseRoomInfo()) return;
     MultiplayerBridge.initRoom();
 
-    if (typeof SimpleAdaptiveEngine !== "undefined") {
+    // 自適應引擎選擇（優先順序：URL > localStorage > config > default）
+    var _engineChoice = (function () {
+      var url = new URLSearchParams(window.location.search).get("engine");
+      if (url) return url;
+      try {
+        var ls = localStorage.getItem("ef_engine_choice");
+        if (ls) return ls;
+      } catch (e) {
+        Logger.warn("[MP-Game] engine choice localStorage read failed:", e);
+      }
+      var cfg = (typeof GAME_CONFIG !== "undefined" && GAME_CONFIG.DEV) || {};
+      return cfg.ADAPTIVE_ENGINE || "simple";
+    })();
+
+    if (_engineChoice === "irt" && typeof IRTSimpleEngine !== "undefined") {
+      DifficultyProvider.setEngine(IRTSimpleEngine);
+    } else if (_engineChoice === "static") {
+      DifficultyProvider.resetEngine();
+    } else if (typeof SimpleAdaptiveEngine !== "undefined") {
       DifficultyProvider.setEngine(SimpleAdaptiveEngine);
     }
     DifficultyProvider.reset();
+    Logger.info("🎮 [MP] 使用引擎: " + DifficultyProvider.getEngineName());
     _updateDifficultyBadge(); // 初始渲染難度指示器
 
     var role = MultiplayerBridge.getRole();
@@ -658,8 +868,11 @@ var GameController = (function () {
     roomRef.once("value").then(function (snapshot) {
       var roomData = snapshot.val();
       if (!roomData) {
-        alert("Room data not found");
-        location.href = "../index.html";
+        GameModal.alert("找不到房間", "房間資料不存在", { icon: "❌" }).then(
+          function () {
+            location.href = "../index.html";
+          },
+        );
         return;
       }
 
@@ -705,6 +918,38 @@ var GameController = (function () {
 
       // 讀取顯示設定
       _displaySettings = roomData.displaySettings || {};
+
+      // ── 接力 / 隊伍對抗模式偵測 ──
+      _isRelayMode = roomData.gameMode === "relay";
+      _isTeamMode = roomData.gameMode === "team";
+      if ((_isRelayMode || _isTeamMode) && window.RelayManager) {
+        var myUid = firebase.auth().currentUser
+          ? firebase.auth().currentUser.uid
+          : null;
+        RelayManager.init({
+          roomCode: MultiplayerBridge.getRoomCode(),
+          playerId: myUid,
+          isHost: false,
+          callbacks: {
+            onBatonChange: function (info) {
+              if (_isRelayMode) {
+                _updateRelayStatusBar(roomData);
+                _checkRelayTurn();
+              }
+            },
+            onTeamFinished: function (teamId) {
+              Logger.debug("🏁 隊伍完成:", teamId);
+            },
+            onAllTeamsFinished: function () {
+              Logger.info("🏁 所有隊伍完成");
+            },
+          },
+        });
+        if (_isRelayMode) {
+          _showRelayStatusBar(roomData);
+          _checkRelayTurn();
+        }
+      }
 
       beginCombo();
     });

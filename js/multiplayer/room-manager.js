@@ -30,9 +30,14 @@ class RoomManager {
         questionsCount,
         countdownSeconds,
         displaySettings,
+        gameMode = "individual",
+        teamCount = 2,
+        teamAssignment = "random",
+        captainSelection = "hostAssign",
+        maxPlayers = window.GameConstants?.MAX_PLAYERS_PER_ROOM || 8,
       } = roomData;
 
-      // 將 UI 的 stage ID（A/B/C/D）透過 ComboSelector 轉換為 game-config 的 fieldId + ruleId
+      // 將 UI 的 stage ID（A~L）透過 ComboSelector 轉換為 game-config 的 fieldId + ruleId + hasWM
       const combos = ComboSelector.toCombos(selectedStages, questionsCount);
 
       // 生成題目序列，並保留 stage ID / UI 資訊供下游使用
@@ -58,6 +63,15 @@ class RoomManager {
         createdAt: Date.now(),
         expiresAt: Date.now() + window.GameConstants.ROOM_EXPIRY_TIME_MS,
         status: window.GameConstants.ROOM_STATUS.WAITING,
+
+        // 遊戲模式
+        gameMode,
+        maxPlayers,
+        teamCount:
+          gameMode === "relay" || gameMode === "team" ? teamCount : null,
+        teamAssignment: gameMode === "team" ? teamAssignment : null,
+        captainSelection:
+          gameMode === "relay" || gameMode === "team" ? captainSelection : null,
 
         // 遊戲開始狀態
         isGameStarted: false,
@@ -94,10 +108,19 @@ class RoomManager {
       // 寫入 Firebase
       await this.database.ref(`rooms/${roomCode}`).set(room);
 
-      console.log("✅ 房間建立成功:", roomCode);
+      // 設定房主斷線自動清理：標記房間狀態為 disconnected
+      // 如果房主意外斷線，其他客戶端的定時清理會刾掉過期房間
+      if (hostJoinsGame) {
+        this.database
+          .ref(`rooms/${roomCode}/players/${user.uid}/online`)
+          .onDisconnect()
+          .set(false);
+      }
+
+      Logger.info("✅ 房間建立成功:", roomCode);
       return roomCode;
     } catch (error) {
-      console.error("❌ 建立房間失敗:", error);
+      Logger.error("❌ 建立房間失敗:", error);
       throw error;
     }
   }
@@ -146,6 +169,13 @@ class RoomManager {
         throw new Error("房間已過期");
       }
 
+      // 檢查人數上限
+      const currentPlayerCount = room.players ? Object.keys(room.players).length : 0;
+      const roomMaxPlayers = room.maxPlayers || window.GameConstants?.MAX_PLAYERS_PER_ROOM || 8;
+      if (currentPlayerCount >= roomMaxPlayers) {
+        throw new Error("房間已滿（上限 " + roomMaxPlayers + " 人）");
+      }
+
       // 加入房間
       const playerData = {
         nickname:
@@ -169,10 +199,10 @@ class RoomManager {
         .ref(`rooms/${roomCode}/players/${user.uid}`)
         .set(playerData);
 
-      console.log("✅ 加入房間成功:", roomCode);
+      Logger.info("✅ 加入房間成功:", roomCode);
       return roomCode;
     } catch (error) {
-      console.error("❌ 加入房間失敗:", error);
+      Logger.error("❌ 加入房間失敗:", error);
       throw error;
     }
   }
@@ -189,7 +219,7 @@ class RoomManager {
         .ref(`rooms/${roomCode}/players/${user.uid}/nickname`)
         .set(nickname);
     } catch (error) {
-      console.error("更新暱稱失敗:", error);
+      Logger.error("更新暱稱失敗:", error);
     }
   }
 
@@ -219,10 +249,10 @@ class RoomManager {
         status: window.GameConstants.ROOM_STATUS.PLAYING,
       });
 
-      console.log("✅ 遊戲開始");
+      Logger.info("✅ 遊戲開始");
       return true;
     } catch (error) {
-      console.error("❌ 開始遊戲失敗:", error);
+      Logger.error("❌ 開始遊戲失敗:", error);
       throw error;
     }
   }
@@ -236,9 +266,35 @@ class RoomManager {
       if (!user) return;
 
       await this.database.ref(`rooms/${roomCode}/players/${user.uid}`).remove();
-      console.log("✅ 離開房間");
+      Logger.info("✅ 離開房間");
     } catch (error) {
-      console.error("離開房間失敗:", error);
+      Logger.error("離開房間失敗:", error);
+    }
+  }
+
+  /**
+   * 銷毀房間（房主專用，刪除整個房間節點）
+   * @param {string} roomCode 房間代碼
+   * @returns {Promise<void>}
+   */
+  async destroyRoom(roomCode) {
+    try {
+      const user = this.auth.currentUser;
+      if (!user) return;
+
+      // 檢查是否為房主
+      const snapshot = await this.database
+        .ref(`rooms/${roomCode}/hostId`)
+        .once("value");
+      if (snapshot.val() !== user.uid) {
+        Logger.warn("只有房主可以銷毀房間");
+        return;
+      }
+
+      await this.database.ref(`rooms/${roomCode}`).remove();
+      Logger.info("✅ 房間已銷毀:", roomCode);
+    } catch (error) {
+      Logger.error("銷毀房間失敗:", error);
     }
   }
 

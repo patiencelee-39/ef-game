@@ -199,7 +199,7 @@ function saveBadgeCounters(counters) {
   try {
     localStorage.setItem(BADGE_COUNTER_KEY, JSON.stringify(counters));
   } catch (e) {
-    console.warn("⚠️ 徽章計數儲存失敗:", e);
+    Logger.warn("⚠️ 徽章計數儲存失敗:", e);
   }
 }
 

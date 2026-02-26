@@ -24,10 +24,12 @@ var RankingRenderer = (function () {
    * @param {boolean} [options.showStars]   - 顯示星星欄（預設 false）
    * @param {boolean} [options.showLevel]   - 顯示等級欄（預設 false）
    * @param {boolean} [options.showTime]    - 顯示上傳時間（預設 false）
+   * @param {boolean} [options.showGameEndTime] - 顯示遊戲結束時間（預設 false）
    * @param {string} [options.emptyIcon]    - 空狀態圖示（預設 "📭"）
    * @param {string} [options.emptyText]    - 空狀態文字
    * @param {string} [options.highlightUid] - 高亮顯示的 uid
    * @param {Function} [options.onDelete]   - 刪除回呼 (entryId) => void
+   * @param {number} [options.pageSize]     - 每頁筆數（預設 0 = 全部顯示，不分頁）
    */
   function render(container, entries, options) {
     var opts = options || {};
@@ -37,10 +39,12 @@ var RankingRenderer = (function () {
     var showStars = opts.showStars || false;
     var showLevel = opts.showLevel || false;
     var showTime = opts.showTime || false;
+    var showGameEndTime = opts.showGameEndTime || false;
     var showCorrect = opts.showCorrect || false;
     var showMode = opts.showMode || false;
     var highlightUid = opts.highlightUid || null;
     var onDelete = opts.onDelete || null;
+    var pageSize = opts.pageSize || 0;
 
     if (!container) return;
 
@@ -72,6 +76,25 @@ var RankingRenderer = (function () {
       }
     });
 
+    // 分頁
+    var totalPages = 1;
+    var currentPage = 1;
+    if (pageSize > 0 && sorted.length > pageSize) {
+      totalPages = Math.ceil(sorted.length / pageSize);
+      // 儲存分頁狀態到容器上
+      if (!container._rankingPage || container._rankingPage > totalPages) {
+        container._rankingPage = 1;
+      }
+      currentPage = container._rankingPage;
+    }
+
+    var startIdx = pageSize > 0 ? (currentPage - 1) * pageSize : 0;
+    var endIdx =
+      pageSize > 0
+        ? Math.min(startIdx + pageSize, sorted.length)
+        : sorted.length;
+    var pageEntries = sorted.slice(startIdx, endIdx);
+
     // 計算欄位數量
     var colCount = 3; // 排名、名稱、分數（基本欄位）
     if (showAccuracy) colCount++;
@@ -80,6 +103,7 @@ var RankingRenderer = (function () {
     if (showStars) colCount++;
     if (showLevel) colCount++;
     if (showMode) colCount++;
+    if (showGameEndTime) colCount++;
     if (showTime) colCount++;
     if (onDelete) colCount++;
 
@@ -91,6 +115,7 @@ var RankingRenderer = (function () {
       showStars,
       showLevel,
       showMode,
+      showGameEndTime,
       showTime,
       onDelete,
     );
@@ -115,16 +140,19 @@ var RankingRenderer = (function () {
       html += '<div class="ranking-cell ranking-cell--level">等級</div>';
     if (showMode)
       html += '<div class="ranking-cell ranking-cell--mode">模式</div>';
+    if (showGameEndTime)
+      html +=
+        '<div class="ranking-cell ranking-cell--game-end-time">遊戲結束時間</div>';
     if (showTime)
       html += '<div class="ranking-cell ranking-cell--time">時間</div>';
     if (onDelete)
       html += '<div class="ranking-cell ranking-cell--action"></div>';
     html += "</div>";
 
-    // 表身
-    for (var i = 0; i < sorted.length; i++) {
-      var e = sorted[i];
-      var rank = i + 1;
+    // 表身（只渲染當前頁）
+    for (var i = 0; i < pageEntries.length; i++) {
+      var e = pageEntries[i];
+      var rank = startIdx + i + 1; // 真實排名
       var rankIcon =
         rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : rank;
       var rankClass =
@@ -212,6 +240,31 @@ var RankingRenderer = (function () {
           "</div>";
       }
 
+      if (showGameEndTime) {
+        var getStr = "—";
+        if (e.gameEndTime) {
+          var gd = new Date(e.gameEndTime);
+          getStr =
+            gd.getFullYear() +
+            "/" +
+            (gd.getMonth() + 1) +
+            "/" +
+            gd.getDate() +
+            " " +
+            String(gd.getHours()).padStart(2, "0") +
+            ":" +
+            String(gd.getMinutes()).padStart(2, "0") +
+            ":" +
+            String(gd.getSeconds()).padStart(2, "0") +
+            "." +
+            String(gd.getMilliseconds()).padStart(3, "0");
+        }
+        html +=
+          '<div class="ranking-cell ranking-cell--game-end-time">' +
+          getStr +
+          "</div>";
+      }
+
       if (showLevel) {
         html +=
           '<div class="ranking-cell ranking-cell--level">' +
@@ -226,14 +279,19 @@ var RankingRenderer = (function () {
           // Firestore Timestamp 或 Date 或 ISO string
           var d = t.toDate ? t.toDate() : new Date(t);
           timeStr =
-            d.getMonth() +
-            1 +
+            d.getFullYear() +
+            "/" +
+            (d.getMonth() + 1) +
             "/" +
             d.getDate() +
             " " +
             String(d.getHours()).padStart(2, "0") +
             ":" +
-            String(d.getMinutes()).padStart(2, "0");
+            String(d.getMinutes()).padStart(2, "0") +
+            ":" +
+            String(d.getSeconds()).padStart(2, "0") +
+            "." +
+            String(d.getMilliseconds()).padStart(3, "0");
         }
         html +=
           '<div class="ranking-cell ranking-cell--time">' + timeStr + "</div>";
@@ -254,7 +312,57 @@ var RankingRenderer = (function () {
 
     html += "</div>";
 
+    // 分頁控制列
+    if (totalPages > 1) {
+      html += '<div class="ranking-pagination">';
+      html +=
+        '<button class="ranking-page-btn" data-page="prev"' +
+        (currentPage === 1 ? " disabled" : "") +
+        ">‹</button>";
+      for (var p = 1; p <= totalPages; p++) {
+        html +=
+          '<button class="ranking-page-btn' +
+          (p === currentPage ? " active" : "") +
+          '" data-page="' +
+          p +
+          '">' +
+          p +
+          "</button>";
+      }
+      html +=
+        '<button class="ranking-page-btn" data-page="next"' +
+        (currentPage === totalPages ? " disabled" : "") +
+        ">›</button>";
+      html +=
+        '<span class="ranking-page-info">' +
+        currentPage +
+        "/" +
+        totalPages +
+        "（共 " +
+        sorted.length +
+        " 筆）</span>";
+      html += "</div>";
+    }
+
     container.innerHTML = html;
+
+    // 綁定分頁事件
+    if (totalPages > 1) {
+      var pageBtns = container.querySelectorAll(".ranking-page-btn");
+      pageBtns.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var target = btn.getAttribute("data-page");
+          if (target === "prev") {
+            container._rankingPage = Math.max(1, currentPage - 1);
+          } else if (target === "next") {
+            container._rankingPage = Math.min(totalPages, currentPage + 1);
+          } else {
+            container._rankingPage = parseInt(target, 10);
+          }
+          render(container, entries, options);
+        });
+      });
+    }
 
     // 綁定刪除事件
     if (onDelete) {
@@ -262,8 +370,12 @@ var RankingRenderer = (function () {
       deleteButtons.forEach(function (btn) {
         btn.addEventListener("click", function () {
           var entryId = btn.getAttribute("data-entry-id");
-          if (entryId && confirm("確定要刪除這筆記錄嗎？")) {
-            onDelete(entryId);
+          if (entryId) {
+            GameModal.confirm("刪除記錄", "確定要刪除這筆記錄嗎？", {
+              icon: "🗑️",
+            }).then(function (ok) {
+              if (ok) onDelete(entryId);
+            });
           }
         });
       });
@@ -338,6 +450,7 @@ var RankingRenderer = (function () {
     showStars,
     showLevel,
     showMode,
+    showGameEndTime,
     showTime,
     hasDelete,
   ) {
@@ -348,7 +461,8 @@ var RankingRenderer = (function () {
     if (showStars) cols.push("40px");
     if (showLevel) cols.push("50px");
     if (showMode) cols.push("45px");
-    if (showTime) cols.push("90px");
+    if (showGameEndTime) cols.push("155px");
+    if (showTime) cols.push("155px");
     if (hasDelete) cols.push("40px");
     return "--ranking-cols: " + cols.join(" ") + ";";
   }

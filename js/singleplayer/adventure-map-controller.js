@@ -4,6 +4,8 @@
 
 var currentViewMapIndex = 0;
 var selectedPointData = null;
+var _boardDetectTimer = null;
+var _detectedBoard = null;
 
 // ─── 探險點座標（百分比，相對於地圖圖片）───
 // 座標會在地圖圖片載入後套用
@@ -41,37 +43,148 @@ function _showIdentityModal(callback) {
   var modal = document.getElementById("identityModal");
   modal.style.display = "flex";
   FocusTrap.activate(modal);
+  var inputChildCode = document.getElementById("idChildCode");
   var inputNick = document.getElementById("idNickname");
   var inputClass = document.getElementById("idClass");
   var btnSubmit = document.getElementById("idSubmit");
+
+  // 重置偵測狀態
+  _detectedBoard = null;
+  if (_boardDetectTimer) clearTimeout(_boardDetectTimer);
 
   // 自動 focus
   setTimeout(function () {
     inputNick.focus();
   }, 200);
 
+  // === 看板代碼即時偵測 ===
+  _setupBoardCodeDetection(inputClass);
+
   // --- 正式提交 ---
   btnSubmit.addEventListener("click", function () {
     var nick = inputNick.value.trim();
     var cls = inputClass.value.trim();
     if (!nick) {
-      inputNick.style.borderColor = "#e74c3c";
-      inputNick.setAttribute("placeholder", "請輸入暱稱或座號");
-      inputNick.focus();
+      // 未填暱稱 → 彈出匿名確認視窗
+      GameModal.confirm(
+        "⚠️ 尚未填寫暱稱",
+        '<p style="text-align:left;line-height:1.8;margin:0">' +
+          "您尚未輸入暱稱或座號。<br>" +
+          "若繼續，系統將以預設匿名身份 <b>00NoName</b> 進行遊戲：" +
+          "</p>" +
+          '<ul style="text-align:left;margin:8px 0 0 16px;padding:0;line-height:1.8">' +
+          "<li>遊戲紀錄僅存於本次瀏覽階段</li>" +
+          "<li>關閉分頁後紀錄自動清除</li>" +
+          "<li>成績不會上傳至班級排行榜</li>" +
+          "</ul>",
+        {
+          icon: "🙈",
+          okText: "以匿名繼續",
+          cancelText: "返回填寫",
+          rawHtml: true,
+        },
+      ).then(function (confirmed) {
+        if (confirmed) {
+          _enterGuestMode();
+        } else {
+          inputNick.focus();
+        }
+      });
       return;
     }
     // 建立 / 更新 profile
+    var childCode = inputChildCode ? inputChildCode.value.trim() : "";
     var profile = getPlayerProfile();
     if (profile) {
       profile.nickname = nick;
       profile.seatNumber = nick;
-      profile.playerClass = cls || "未分班";
+      profile.childCode = childCode;
+      if (_detectedBoard) {
+        profile.boardCode = _detectedBoard.code;
+        profile.boardId = _detectedBoard.boardId;
+        profile.boardName = _detectedBoard.boardName;
+        profile.playerClass = _detectedBoard.boardName;
+      } else {
+        profile.playerClass = cls || "未分班";
+        delete profile.boardCode;
+        delete profile.boardId;
+        delete profile.boardName;
+      }
       savePlayerProfile(profile);
     } else {
-      var p = initPlayerProfile(nick, nick, cls || "未分班");
+      var className = _detectedBoard
+        ? _detectedBoard.boardName
+        : cls || "未分班";
+      var p = initPlayerProfile(nick, nick, className);
+      // 儲存兒童代碼
+      var newPf = getPlayerProfile();
+      if (newPf) {
+        newPf.childCode = childCode;
+        if (_detectedBoard) {
+          newPf.boardCode = _detectedBoard.code;
+          newPf.boardId = _detectedBoard.boardId;
+          newPf.boardName = _detectedBoard.boardName;
+        }
+        savePlayerProfile(newPf);
+      } else if (_detectedBoard) {
+        var pf = getPlayerProfile();
+        if (pf) {
+          pf.boardCode = _detectedBoard.code;
+          pf.boardId = _detectedBoard.boardId;
+          pf.boardName = _detectedBoard.boardName;
+          savePlayerProfile(pf);
+        }
+      }
     }
     modal.style.display = "none";
     FocusTrap.deactivate();
+
+    // === 前測量表提醒 ===
+    if (childCode) {
+      try {
+        var chexiRecords = JSON.parse(
+          localStorage.getItem("efgame-chexi-records") || "[]",
+        );
+        var hasPreTest = chexiRecords.some(function (r) {
+          var base = (r.childCode || "").replace(
+            /\(\d{4}_\d{2}_\d{2}_\d{2}_\d{2}_\d{2}\)$/,
+            "",
+          );
+          return (
+            base.toLowerCase() === childCode.toLowerCase() &&
+            r.testType === "pre"
+          );
+        });
+        if (
+          !hasPreTest &&
+          typeof GameModal !== "undefined" &&
+          GameModal.confirm
+        ) {
+          GameModal.confirm(
+            "📋 尚未完成前測量表",
+            "兒童代碼 <b>" +
+              childCode +
+              "</b> 尚未完成 TC-CHEXI 前測量表。<br>建議在開始訓練前，請家長或教師先完成前測評估。",
+            {
+              icon: "📋",
+              okText: "前往填寫",
+              cancelText: "稍後再說",
+              rawHtml: true,
+            },
+          ).then(function (go) {
+            if (go) {
+              window.location.href = "../assessment/index.html";
+            } else {
+              if (callback) callback();
+            }
+          });
+          return; // 不立即 callback，等使用者決定
+        }
+      } catch (e) {
+        /* ignore */
+      }
+    }
+
     if (callback) callback();
   });
 
@@ -88,18 +201,76 @@ function _showIdentityModal(callback) {
     if (callback) callback();
   }
 
-  // --- 點擊背景半透明區域 = 取消（訪客模式 00NoName）---
+  // --- 點擊背景半透明區域 = 取消（關閉彈窗回到地圖）---
   modal.addEventListener("click", function (e) {
     if (e.target === modal) {
-      _enterGuestMode();
+      modal.style.display = "none";
+      FocusTrap.deactivate();
     }
   });
 
   // Enter 鍵提交
   [inputNick, inputClass].forEach(function (el) {
     el.addEventListener("keydown", function (e) {
+      if (e.isComposing || e.keyCode === 229) return;
       if (e.key === "Enter") btnSubmit.click();
     });
+  });
+}
+
+// === 看板代碼即時偵測 ===
+function _setupBoardCodeDetection(inputClass) {
+  var statusEl = document.getElementById("idClassStatus");
+
+  inputClass.addEventListener("input", function () {
+    var val = inputClass.value.trim().toUpperCase();
+    _detectedBoard = null;
+
+    if (_boardDetectTimer) clearTimeout(_boardDetectTimer);
+
+    // 不像代碼（太短或含中文等非英數字）→ 不查詢
+    if (val.length < 4 || !/^[A-Z0-9]+$/.test(val)) {
+      if (statusEl) statusEl.textContent = "";
+      return;
+    }
+
+    // debounce 500ms
+    _boardDetectTimer = setTimeout(function () {
+      if (
+        typeof FirestoreLeaderboard === "undefined" ||
+        !FirestoreLeaderboard.findBoardByCode
+      ) {
+        return;
+      }
+
+      if (statusEl) {
+        statusEl.textContent = "🔍 查詢中…";
+        statusEl.style.color = "rgba(255,255,255,0.5)";
+      }
+
+      FirestoreLeaderboard.findBoardByCode(val)
+        .then(function (board) {
+          // 確保輸入值沒變
+          if (inputClass.value.trim().toUpperCase() !== val) return;
+
+          if (board) {
+            _detectedBoard = board;
+            if (statusEl) {
+              statusEl.textContent = "✅ 有效看板代碼：" + board.boardName;
+              statusEl.style.color = "#4caf50";
+            }
+          } else {
+            _detectedBoard = null;
+            if (statusEl) {
+              statusEl.textContent = "將儲存為班級名稱";
+              statusEl.style.color = "rgba(255,255,255,0.4)";
+            }
+          }
+        })
+        .catch(function () {
+          if (statusEl) statusEl.textContent = "";
+        });
+    }, 500);
   });
 }
 
@@ -111,8 +282,40 @@ function _initMap() {
 
   updateHeaderInfo();
   setupMapTabs();
-  renderMap(0);
-  scrollToCurrentPoint();
+
+  // 讀取 URL 參數決定預設地圖（從釣魚結算回來時顯示釣魚地圖）
+  var initialMap = 0;
+  try {
+    var params = new URLSearchParams(window.location.search);
+    var mapParam = parseInt(params.get("map"), 10);
+    if (
+      !isNaN(mapParam) &&
+      mapParam >= 0 &&
+      mapParam <
+        (typeof ADVENTURE_MAPS !== "undefined" ? ADVENTURE_MAPS.length : 2)
+    ) {
+      initialMap = mapParam;
+    }
+  } catch (e) {
+    /* ignore */
+  }
+
+  if (initialMap > 0) {
+    switchMap(initialMap);
+  } else {
+    renderMap(0);
+  }
+
+  // === 故事系統：檢查是否有待播放的完成對話 / 進化動畫 ===
+  if (typeof StoryDialogue !== "undefined" && StoryDialogue.checkPendingEvent) {
+    StoryDialogue.checkPendingEvent(function () {
+      // 對話結束後刷新 header（可能已進化）
+      updateHeaderInfo();
+      scrollToCurrentPoint();
+    });
+  } else {
+    scrollToCurrentPoint();
+  }
 }
 
 // ─── Header 更新 ───
@@ -134,6 +337,11 @@ function updateHeaderInfo() {
     document.querySelector(".level-icon").textContent = levelDef.icon;
     document.querySelector(".level-name").textContent = levelDef.name;
   }
+
+  // 徽章數
+  var badgeCount = typeof getBadges === "function" ? getBadges().length : 0;
+  var badgeEl = document.getElementById("total-badges");
+  if (badgeEl) badgeEl.textContent = badgeCount;
 }
 
 // ─── Tab 控制 ───
@@ -157,7 +365,26 @@ function setupMapTabs() {
   // Tab 點擊事件
   document.getElementById("map-tabs").addEventListener("click", function (e) {
     var tab = e.target.closest(".map-tab");
-    if (!tab || tab.classList.contains("locked")) return;
+    if (!tab) return;
+
+    // 鎖定的 tab → 顯示提示
+    if (tab.classList.contains("locked")) {
+      var mapIndex = tab.dataset.map;
+      if (mapIndex === "free") {
+        GameModal.alert(
+          "🔒 尚未解鎖",
+          "完成全部 12 個探險關卡後，即可開啟自由選擇模式！",
+          { icon: "🔒" },
+        );
+      } else {
+        GameModal.alert(
+          "🔒 尚未解鎖",
+          "完成上一張地圖的所有關卡後，即可解鎖此地圖！",
+          { icon: "🔒" },
+        );
+      }
+      return;
+    }
 
     var mapIndex = tab.dataset.map;
 
@@ -262,13 +489,11 @@ function renderMap(mapIndex) {
     circle.setAttribute("aria-hidden", "true");
 
     if (point.status === "locked") {
-      // 鎖定的探險點：顯示規則對應的刺激物圖案（作為暗示）
-      circle.textContent = _getPointHintIcon(point.field, point.rule);
-      circle.style.filter = "grayscale(0.7) brightness(0.7)";
-    } else if (point.status === "current") {
-      circle.textContent = idx + 1 + mapIndex * 6;
+      // 鎖定 → 顯示鎖頭
+      circle.textContent = "🔒";
     } else {
-      circle.textContent = "⭐";
+      // 解鎖（current 或 passed）→ 顯示規則對應 emoji
+      circle.textContent = _getPointHintIcon(point.field, point.rule);
     }
 
     el.appendChild(circle);
@@ -280,7 +505,7 @@ function renderMap(mapIndex) {
     label.textContent = pointName;
     el.appendChild(label);
 
-    // 已通過的星星數
+    // 已通過的星星數（顯示在標籤下方）
     if (
       point.status === "passed" &&
       point.starsEarned + point.wmStarsEarned > 0
@@ -292,10 +517,20 @@ function renderMap(mapIndex) {
       el.appendChild(starsEl);
     }
 
-    // 點擊事件（locked 已 disabled，不需額外判斷）
+    // 點擊事件
     if (point.status !== "locked") {
       el.addEventListener("click", function () {
         showPointInfo(point, idx, mapIndex);
+      });
+    } else {
+      // 鎖定的探險點 → 提示使用者
+      el.disabled = false; // 讓點擊事件能觸發
+      el.addEventListener("click", function () {
+        GameModal.alert(
+          "🔒 尚未解鎖",
+          "需先完成前面的關卡才能挑戰此探險點喔！",
+          { icon: "🔒" },
+        );
       });
     }
 
@@ -333,6 +568,29 @@ function showPointInfo(point, pointIndex, mapIndex) {
     " × " +
     point.rule;
 
+  // === 故事系統：注入開場對話 ===
+  var storyContainer = document.getElementById("popup-story-opening");
+  if (storyContainer) {
+    var storyHTML = "";
+    if (typeof StoryDialogue !== "undefined" && StoryDialogue.getOpeningHTML) {
+      storyHTML = StoryDialogue.getOpeningHTML(point.pointId || point.id);
+    }
+    if (storyHTML) {
+      storyContainer.innerHTML = storyHTML;
+      storyContainer.style.display = "block";
+      // 🔊 播放開場對話語音
+      if (
+        typeof StoryDialogue !== "undefined" &&
+        StoryDialogue.playOpeningVoice
+      ) {
+        StoryDialogue.playOpeningVoice(point.pointId || point.id);
+      }
+    } else {
+      storyContainer.innerHTML = "";
+      storyContainer.style.display = "none";
+    }
+  }
+
   // WM 提示
   var wmEl = document.getElementById("popup-wm");
   wmEl.style.display = point.hasWM ? "block" : "none";
@@ -351,6 +609,18 @@ function showPointInfo(point, pointIndex, mapIndex) {
   // 開始按鈕文字
   var playBtn = document.getElementById("popup-play-btn");
   playBtn.textContent = point.status === "passed" ? "🔄 再玩一次" : "▶️ 開始";
+
+  // 規則說明連結
+  var ruleLink = document.getElementById("popup-rule-link");
+  if (ruleLink) {
+    var introUrl =
+      "../shared/game-intro.html?field=" +
+      encodeURIComponent(point.field) +
+      "&rule=" +
+      encodeURIComponent(point.rule) +
+      (point.hasWM ? "&wm=1" : "");
+    ruleLink.href = introUrl;
+  }
 
   document.getElementById("point-info-popup").classList.add("visible");
   FocusTrap.activate(document.getElementById("point-info-popup"));

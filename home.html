@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="preconnect" href="https://www.googleapis.com" crossorigin />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://*.firebasedatabase.app https://*.firebaseio.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app"
+    />
+    <title>主選單 - 執行功能訓練遊戲</title>
+    <meta
+      name="description"
+      content="專為 3–6 歲聽障幼兒設計的執行功能訓練遊戲主選單。"
+    />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="favicon.svg" />
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#302b63" />
+    <link rel="stylesheet" href="css/themes/base.css" />
+    <link rel="stylesheet" href="css/themes/theme-field-primary.css" />
+    <link rel="stylesheet" href="css/themes/theme-rule-independent.css" />
+    <link rel="stylesheet" href="css/main.css" />
+    <link
+      rel="preload"
+      href="css/components/navbar.css"
+      as="style"
+      onload="this.rel = 'stylesheet'"
+    />
+    <noscript
+      ><link rel="stylesheet" href="css/components/navbar.css"
+    /></noscript>
+    <link
+      rel="preload"
+      href="css/components/landscape-hint.css"
+      as="style"
+      onload="this.rel = 'stylesheet'"
+    />
+    <noscript
+      ><link rel="stylesheet" href="css/components/landscape-hint.css"
+    /></noscript>
+
+    <!-- Firebase Bundle -->
+    <script defer src="js/firebase-bundle.js"></script>
+    <script defer src="js/utils/logger.js"></script>
+    <script defer src="js/shared/navbar.js"></script>
+    <script defer src="js/shared/landscape-hint.js"></script>
+  </head>
+  <body>
+    <a href="#main-content" class="skip-link">跳到主要內容</a>
+    <div class="container">
+      <header>
+        <h1>🎮 執行功能訓練遊戲</h1>
+        <p class="subtitle">選擇你想進行的模式</p>
+      </header>
+
+      <main class="mode-selection" id="main-content">
+        <a class="mode-card" href="singleplayer/adventure-map.html">
+          <div class="mode-icon" aria-hidden="true">🗺️</div>
+          <h2>單人冒險</h2>
+          <p>踏上探險旅程，挑戰各種關卡</p>
+        </a>
+
+        <a class="mode-card" href="multiplayer/index.html">
+          <div class="mode-icon" aria-hidden="true">⚔️</div>
+          <h2>多人競賽</h2>
+          <p>與朋友一起競賽比拼</p>
+        </a>
+
+        <a class="mode-card" href="leaderboard/index.html">
+          <div class="mode-icon" aria-hidden="true">🏆</div>
+          <h2>排行榜</h2>
+          <p>全球・班級・即時排行</p>
+        </a>
+
+        <a class="mode-card" href="singleplayer/pet.html">
+          <div class="mode-icon" aria-hidden="true">🐔</div>
+          <h2>養雞場</h2>
+          <p>照顧你的虛擬寵物小雞</p>
+        </a>
+
+        <a class="mode-card" href="teacher/index.html">
+          <div class="mode-icon" aria-hidden="true">👩‍🏫</div>
+          <h2>教師家長專區</h2>
+          <p>量表評估 · 訓練效果分析 · 教師管理後台</p>
+        </a>
+
+        <a class="mode-card" href="settings/index.html">
+          <div class="mode-icon" aria-hidden="true">⚙️</div>
+          <h2>設定</h2>
+          <p>調整音效、語速、遊戲偏好</p>
+        </a>
+      </main>
+
+      <footer>
+        <p>© 2026 執行功能訓練遊戲 | 學術研究專案</p>
+        <p style="margin-top: 6px">
+          <a
+            href="privacy.html"
+            style="
+              color: rgba(168, 237, 234, 0.85);
+              font-size: 0.8rem;
+              text-decoration: none;
+            "
+            >隱私權政策</a
+          >
+        </p>
+      </footer>
+    </div>
+
+    <!-- Service Worker 註冊 -->
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("/sw.js").catch(function (err) {
+          console.warn("SW 註冊失敗:", err);
+        });
+      }
+    </script>
+  </body>
+</html>

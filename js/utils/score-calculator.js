@@ -251,6 +251,7 @@ function calculateWMScore(params) {
     correctCount: correctCount,
     totalPositions: totalPositions,
     accuracy: accuracy,
+    direction: direction,
     allCorrectBonus: allCorrectBonus,
     speedBonus: speedBonus,
     finalScore: finalScore,

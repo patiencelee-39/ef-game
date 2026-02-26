@@ -11,11 +11,9 @@
  *   🔊 音效（sfx）：三級 — 自訂 → 預設 → 靜默跳過
  *   🗣️ 語音（voice）：四級 — 自訂 MP3 → gTTS 預生成 → Web Speech API → 純視覺
  *
- * @todo Phase 3 — 語音播放元件需實作四級 Fallback
- *   getSoundFile() 的三級 fallback 只適用於音效。
- *   語音部分需由 Phase 3 新建的 audio-player.js 實作獨立的四級降級。
- *   gTTS 預生成 MP3 放置於 audio/voice/tts-fallback/
- *   詳見 §5.4c 第 5 項 + Flow-20 語音分支
+ * NOTE: 語音四級 Fallback 已於 Phase 3 在 audio-player.js 完整實作。
+ *   getSoundFile() 負責音效的三級 fallback。
+ *   語音四級降級（L1→L2→L3→L4）由 AudioPlayer._playVoice() 處理。
  * ============================================
  */
 
@@ -325,7 +323,7 @@ function getSoundFile(path) {
   // 2. 從當前音效包取得
   const pack = getCurrentSoundPack();
   if (!pack) {
-    console.warn(`⚠️ 音效包 "${currentSoundPack}" 不存在`);
+    Logger.warn(`⚠️ 音效包 "${currentSoundPack}" 不存在`);
     return null;
   }
 
@@ -335,7 +333,7 @@ function getSoundFile(path) {
     if (result && typeof result === "object" && key in result) {
       result = result[key];
     } else {
-      console.warn(`⚠️ 音效路徑 "${path}" 不存在，靜默跳過`);
+      Logger.warn(`⚠️ 音效路徑 "${path}" 不存在，靜默跳過`);
       return null;
     }
   }
@@ -352,10 +350,10 @@ function setSoundPack(packId) {
   if (SOUND_PACKS[packId]) {
     currentSoundPack = packId;
     localStorage.setItem("efgame-sound-pack", packId);
-    console.log(`✅ 音效包已切換為：${SOUND_PACKS[packId].packName}`);
+    Logger.debug(`✅ 音效包已切換為：${SOUND_PACKS[packId].packName}`);
     return true;
   }
-  console.warn(`⚠️ 音效包 "${packId}" 不存在`);
+  Logger.warn(`⚠️ 音效包 "${packId}" 不存在`);
   return false;
 }
 
@@ -396,7 +394,7 @@ function clearSoundOverrides() {
     try {
       soundOverrides = JSON.parse(savedOverrides);
     } catch (e) {
-      console.warn("⚠️ 自訂音效覆蓋解析失敗，已重置");
+      Logger.warn("⚠️ 自訂音效覆蓋解析失敗，已重置");
       soundOverrides = {};
     }
   }

@@ -1,0 +1,195 @@
+/* ============================================
+ * StagePicker — 共用遊戲場選擇元件樣式
+ * ============================================
+ * 同時用於：
+ *   - 多人建房 (room-create.html)
+ *   - 單人自由選擇 (free-select.html)
+ * ============================================ */
+
+/* ── 可選卡片網格 ── */
+.stage-picker-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.stage-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  padding: 14px 10px;
+  border-radius: 12px;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+  min-height: 44px;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ── 場地×規則 主題配色 ── */
+/* 🐭 小老鼠 — 暖色系 */
+.stage-card[data-field="mouse"][data-rule="rule1"] {
+  background: linear-gradient(
+    135deg,
+    var(--mouse-rule1, #e67e22) 0%,
+    #d35400 100%
+  );
+}
+.stage-card[data-field="mouse"][data-rule="rule2"] {
+  background: linear-gradient(
+    135deg,
+    var(--mouse-rule2, #eb984e) 0%,
+    #ca6f1e 100%
+  );
+}
+.stage-card[data-field="mouse"][data-rule="mixed"] {
+  background: linear-gradient(
+    135deg,
+    var(--mouse-mixed, #dc7633) 0%,
+    #a04000 100%
+  );
+}
+/* 🐟 釣魚 — 冷色系 */
+.stage-card[data-field="fishing"][data-rule="rule1"] {
+  background: linear-gradient(
+    135deg,
+    var(--fishing-rule1, #3498db) 0%,
+    #2471a3 100%
+  );
+}
+.stage-card[data-field="fishing"][data-rule="rule2"] {
+  background: linear-gradient(
+    135deg,
+    var(--fishing-rule2, #5dade2) 0%,
+    #2e86c1 100%
+  );
+}
+.stage-card[data-field="fishing"][data-rule="mixed"] {
+  background: linear-gradient(
+    135deg,
+    var(--fishing-mixed, #2e86c1) 0%,
+    #1a5276 100%
+  );
+}
+/* 🧠 WM 卡片 — 加光暈邊框 */
+.stage-card[data-wm="true"] {
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.5),
+    0 0 12px rgba(255, 215, 0, 0.4);
+}
+
+.stage-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+}
+.stage-card:active {
+  transform: scale(0.96);
+}
+
+.stage-card .emoji {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 4px;
+}
+.stage-card-name {
+  font-size: var(--font-size-sm, 0.875rem);
+  font-weight: 700;
+  line-height: 1.3;
+}
+.stage-card-rule {
+  font-size: var(--font-size-xs, 0.75rem);
+  opacity: 0.85;
+  margin-top: 2px;
+}
+.stage-card-diff {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 1px 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+/* ── 已選 chip 列 ── */
+.selected-stages {
+  min-height: 60px;
+  border: 2px dashed rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  padding: 10px;
+  margin-bottom: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.selected-stages-empty {
+  width: 100%;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5);
+  padding: 12px 0;
+  font-size: var(--font-size-sm, 0.875rem);
+}
+
+.stage-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 7px 10px;
+  border-radius: 10px;
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--text-light, #ddd);
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  transition:
+    background 0.15s,
+    opacity 0.2s,
+    box-shadow 0.15s;
+  min-height: 36px;
+}
+.stage-chip:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+.stage-chip.dragging {
+  opacity: 0.4;
+}
+.stage-chip.drag-over {
+  box-shadow: 0 0 0 2px var(--primary-blue, #667eea);
+}
+
+.chip-drag-handle {
+  font-size: 1rem;
+  opacity: 0.35;
+  cursor: grab;
+}
+.chip-label {
+  font-weight: 600;
+}
+.stage-chip .emoji {
+  font-size: 1.2rem;
+}
+.stage-chip .remove-btn {
+  background: rgba(244, 67, 54, 0.8);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+.stage-chip .remove-btn:hover {
+  background: #f44336;
+}

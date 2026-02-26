@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; connect-src 'self'"
+    />
+    <title>教師家長專區 - 執行功能訓練遊戲</title>
+    <meta
+      name="description"
+      content="教師家長專區：量表評估、訓練效果分析、教師管理後台。"
+    />
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="../favicon.svg" />
+    <link rel="manifest" href="../manifest.json" />
+    <meta name="theme-color" content="#302b63" />
+    <link rel="stylesheet" href="../css/themes/base.css" />
+    <link rel="stylesheet" href="../css/themes/theme-field-primary.css" />
+    <link rel="stylesheet" href="../css/themes/theme-rule-independent.css" />
+    <link rel="stylesheet" href="../css/main.css" />
+    <link rel="stylesheet" href="../css/pages/teacher.css" />
+    <link
+      rel="preload"
+      href="../css/components/navbar.css"
+      as="style"
+      onload="this.rel = 'stylesheet'"
+    />
+    <noscript
+      ><link rel="stylesheet" href="../css/components/navbar.css"
+    /></noscript>
+    <link
+      rel="preload"
+      href="../css/components/landscape-hint.css"
+      as="style"
+      onload="this.rel = 'stylesheet'"
+    />
+    <noscript
+      ><link rel="stylesheet" href="../css/components/landscape-hint.css"
+    /></noscript>
+
+    <script defer src="../js/utils/logger.js"></script>
+    <script defer src="../js/shared/navbar.js"></script>
+    <script defer src="../js/shared/landscape-hint.js"></script>
+  </head>
+  <body>
+    <div class="container teacher-hub">
+      <!-- 返回 -->
+      <a href="../home.html" class="back-link">← 返回主選單</a>
+
+      <header>
+        <h1>👩‍🏫 教師家長專區</h1>
+        <p class="subtitle">量表評估 · 訓練效果分析 · 教師管理後台</p>
+      </header>
+
+      <main class="mode-selection" id="main-content">
+        <!-- 量表評估 -->
+        <a class="mode-card" href="../assessment/index.html">
+          <div class="mode-icon" aria-hidden="true">📋</div>
+          <h2>量表評估</h2>
+          <p>TC-CHEXI 前後測量表（家長／教師填寫）</p>
+        </a>
+
+        <!-- 訓練效果分析 -->
+        <a class="mode-card" href="analysis.html">
+          <div class="mode-icon" aria-hidden="true">📊</div>
+          <h2>訓練效果分析</h2>
+          <p>整合遊戲數據與量表，分析訓練成效趨勢</p>
+        </a>
+
+        <!-- 教師管理後台 -->
+        <a class="mode-card" href="../management/index.html">
+          <div class="mode-icon" aria-hidden="true">🏫</div>
+          <h2>教師管理後台</h2>
+          <p>班級管理 · 學生進度 · 資料匯出</p>
+        </a>
+      </main>
+
+      <footer>
+        <p>© 2026 執行功能訓練遊戲 | 學術研究專案</p>
+      </footer>
+    </div>
+  </body>
+</html>

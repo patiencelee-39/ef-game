@@ -209,6 +209,37 @@ body {
   font-weight: 700;
 }
 
+/* === 引擎選擇 === */
+.engine-selector {
+  display: flex;
+  gap: 6px;
+}
+.engine-btn {
+  padding: 6px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.engine-btn.active {
+  background: rgba(155, 89, 182, 0.25);
+  border-color: #9b59b6;
+  color: #9b59b6;
+  font-weight: 700;
+}
+
+/* === 引擎說明提示 === */
+.settings-item__hint {
+  margin-top: 8px;
+  font-size: 0.72rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.4);
+}
+
 /* === 按鈕 === */
 .settings-btn {
   display: flex;

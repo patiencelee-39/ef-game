@@ -8,7 +8,7 @@
     />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; connect-src 'self'"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://*.firebasedatabase.app https://*.firebaseio.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app"
     />
     <title>執行功能訓練遊戲</title>
     <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
@@ -18,6 +18,8 @@
 
     <!-- CSS 載入順序：base → theme → main → 本頁行內 -->
     <link rel="stylesheet" href="../css/themes/base.css" />
+    <link rel="stylesheet" href="../css/themes/theme-field-primary.css" />
+    <link rel="stylesheet" href="../css/themes/theme-rule-independent.css" />
     <link rel="stylesheet" href="../css/main.css" />
     <link
       rel="preload"
@@ -32,11 +34,16 @@
 
     <!-- ==================== 模組載入（依賴順序）==================== -->
     <!-- 配置 -->
+    <script defer src="../js/utils/logger.js"></script>
+    <script defer src="../js/shared/game-modal.js"></script>
     <script defer src="../js/game-config.js"></script>
     <script defer src="../js/adaptive/difficulty-provider.js"></script>
     <script defer src="../js/adaptive/simple-adaptive-engine.js"></script>
+    <script defer src="../js/adaptive/irt-simple-engine.js"></script>
     <script defer src="../js/adventure-maps-config.js"></script>
     <script defer src="../js/svg-assets.js"></script>
+    <script defer src="../js/stimuli-config.js"></script>
+    <script defer src="../js/game/stimulus-renderer.js"></script>
     <script defer src="../js/shared/trial-renderer.js"></script>
     <!-- 工具 -->
     <script defer src="../js/utils/storage.js"></script>
@@ -53,15 +60,25 @@
     <script defer src="../js/shared/working-memory.js"></script>
     <script defer src="../js/shared/completion-notify.js"></script>
     <script defer src="../js/shared/game-session-builder.js"></script>
+    <script defer src="../js/story-config.js"></script>
+    <script defer src="../js/shared/story-dialogue-controller.js"></script>
     <!-- 單人模式 -->
     <script defer src="../js/singleplayer/progress-tracker.js"></script>
     <script defer src="../js/singleplayer/mode-controller.js"></script>
     <script defer src="../js/shared/landscape-hint.js"></script>
   </head>
 
-  <body>
+  <body
+    style="
+      overflow: hidden;
+      touch-action: none;
+      position: fixed;
+      width: 100%;
+      height: 100%;
+    "
+  >
     <a href="#main-content" class="skip-link">跳到主要內容</a>
-    <main class="game-page" id="main-content">
+    <main class="game-page" id="main-content" tabindex="-1">
       <h1 class="sr-only">單人遊戲</h1>
       <!-- === 頂部導航 === -->
       <div class="game-header">
@@ -85,15 +102,27 @@
 
       <!-- === 遊戲主區域 === -->
       <div class="game-play-area" id="gameContainer">
-        <!-- 畫面 1：規則說明 -->
+        <!-- 畫面 1：規則說明（舊版，Plan C 後備用） -->
         <div id="rule-intro-screen" class="screen">
           <div class="rule-intro">
             <h2 id="ruleIntroTitle"></h2>
+            <!-- 口訣區 (Plan C) -->
+            <div id="ruleIntroMnemonic" class="rule-mnemonic hidden"></div>
+            <!-- 規則框 (Plan B：大圖 + 動畫手/X) -->
             <div id="ruleIntroBoxes" class="rule-box-group"></div>
+            <!-- 混合分頁指示 -->
+            <div id="ruleIntroPageIndicator" class="rule-page-indicator hidden">
+              <span id="rulePageDot1" class="page-dot active"></span>
+              <span id="rulePageDot2" class="page-dot"></span>
+            </div>
             <div id="ruleIntroContext" class="context-notice hidden"></div>
             <div id="ruleIntroWM" class="wm-notice-tag hidden">
               🧠 本組含工作記憶測驗
             </div>
+            <!-- 混合規則「下一頁」按鈕 -->
+            <button id="btnRuleNext" class="btn btn-secondary hidden">
+              下一頁 ▶
+            </button>
             <button id="btnRuleStart" class="btn btn-primary">
               ▶️ 開始<span
                 style="
@@ -106,6 +135,108 @@
               >
             </button>
           </div>
+        </div>
+
+        <!-- 階段過場提示（三階段共用） -->
+        <div id="stageTransitionScreen" class="screen">
+          <div class="stage-transition">
+            <div id="stageTransIcon" class="stage-transition-icon"></div>
+            <h2 id="stageTransTitle" class="stage-transition-title"></h2>
+            <p id="stageTransSubtitle" class="stage-transition-subtitle"></p>
+            <div class="stage-transition-progress">
+              <div id="stageTransBar" class="stage-transition-bar"></div>
+            </div>
+            <span class="stage-transition-hint">點擊畫面或按空白鍵跳過</span>
+          </div>
+        </div>
+
+        <!-- 畫面 1.2：規則動畫示範（iframe embed, Plan C） -->
+        <div id="guideAnimScreen" class="screen">
+          <iframe
+            id="guideIframe"
+            style="
+              border: none;
+              width: 100%;
+              height: 100%;
+              position: absolute;
+              top: 0;
+              left: 0;
+            "
+            allow="autoplay"
+          ></iframe>
+        </div>
+
+        <!-- 畫面 1.3：WM 提示過場 -->
+        <div id="wmTransitionScreen" class="screen">
+          <div
+            style="
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              height: 100%;
+              text-align: center;
+              padding: 2rem;
+              color: var(--text);
+            "
+          >
+            <div style="font-size: 3rem; margin-bottom: 1rem">🧠</div>
+            <h2 style="margin: 0 0 1rem; font-size: 1.4rem">注意！</h2>
+            <p style="font-size: 1.1rem; line-height: 1.6; margin: 0 0 1.5rem">
+              這一組包含<strong>工作記憶測驗</strong
+              ><br />遊戲中會出現記憶問題，<br />要記住剛才看到的東西喔！
+            </p>
+            <button id="btnWmTransitionReady" class="btn btn-primary">
+              我知道了！✅
+            </button>
+          </div>
+        </div>
+
+        <!-- 畫面 1.5：練習 (Plan D) — 與正式遊戲畫面一致 -->
+        <div id="demoPracticeScreen" class="screen">
+          <!-- 練習跳過按鈕 -->
+          <button id="btnSkipPractice" class="practice-skip-btn">
+            跳過練習 ⏩
+          </button>
+
+          <!-- 練習資訊列（與正式遊戲 trial-info 結構一致） -->
+          <div class="trial-info">
+            <span id="practiceRoundLabel" class="round-label">🎯 練習</span>
+            <span class="trial-counter">
+              <span id="practiceCurrent">0</span> /
+              <span id="practiceTotal">0</span>
+            </span>
+            <div
+              class="progress-bar-container"
+              role="progressbar"
+              aria-valuenow="0"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-label="練習進度"
+            >
+              <div id="practiceProgressBar" class="progress-bar"></div>
+            </div>
+          </div>
+
+          <!-- 刺激物舞台（與正式遊戲一致） -->
+          <div class="stimulus-container" id="demoStimulusContainer">
+            <div id="demoBackgroundLayer"></div>
+            <div id="demoContextIndicator"></div>
+            <div id="demoStimulus"></div>
+            <!-- 練習回饋覆蓋 -->
+            <div id="demoFeedback" class="practice-feedback hidden"></div>
+          </div>
+
+          <!-- 控制按鈕（與正式遊戲一致） -->
+          <div class="control-area" id="demoBtnArea">
+            <button id="btnDemoSpace" class="btn-key" disabled>
+              <span id="btnDemoLabel">準備中…</span>
+              <span class="key-hint">按空白鍵 或 點此</span>
+            </button>
+          </div>
+
+          <!-- 練習結果覆蓋 -->
+          <div id="practiceResult" class="practice-result-overlay hidden"></div>
         </div>
 
         <!-- 畫面 2：遊戲進行 -->

@@ -201,6 +201,7 @@
 /* --- 深色主題覆寫 --- */
 body[data-theme="dark"] .ranking-row,
 .world-page .ranking-row,
+.class-page .ranking-row,
 .container .ranking-row {
   background: rgba(255, 255, 255, 0.06);
   border-bottom-color: rgba(255, 255, 255, 0.08);
@@ -208,12 +209,14 @@ body[data-theme="dark"] .ranking-row,
 
 body[data-theme="dark"] .ranking-row:hover,
 .world-page .ranking-row:hover,
+.class-page .ranking-row:hover,
 .container .ranking-row:hover {
   background: rgba(255, 255, 255, 0.1);
 }
 
 body[data-theme="dark"] .ranking-row--highlight,
 .world-page .ranking-row--highlight,
+.class-page .ranking-row--highlight,
 .container .ranking-row--highlight {
   background: rgba(102, 126, 234, 0.2) !important;
   border-left-color: #667eea;
@@ -221,64 +224,171 @@ body[data-theme="dark"] .ranking-row--highlight,
 
 body[data-theme="dark"] .ranking-cell--name,
 .world-page .ranking-cell--name,
+.class-page .ranking-cell--name,
 .container .ranking-cell--name {
   color: #fff;
 }
 
 body[data-theme="dark"] .ranking-cell--score,
 .world-page .ranking-cell--score,
+.class-page .ranking-cell--score,
 .container .ranking-cell--score {
   color: #4caf50;
 }
 
 body[data-theme="dark"] .ranking-cell--acc,
 .world-page .ranking-cell--acc,
+.class-page .ranking-cell--acc,
 .container .ranking-cell--acc {
   color: rgba(255, 255, 255, 0.9);
 }
 
 body[data-theme="dark"] .ranking-cell--rt,
 .world-page .ranking-cell--rt,
+.class-page .ranking-cell--rt,
 .container .ranking-cell--rt {
   color: #82b1ff;
 }
 
 body[data-theme="dark"] .ranking-cell--correct,
 .world-page .ranking-cell--correct,
+.class-page .ranking-cell--correct,
 .container .ranking-cell--correct {
   color: rgba(255, 255, 255, 0.85);
 }
 
 body[data-theme="dark"] .ranking-cell--mode,
 .world-page .ranking-cell--mode,
+.class-page .ranking-cell--mode,
 .container .ranking-cell--mode {
   color: rgba(255, 255, 255, 0.7);
 }
 
 body[data-theme="dark"] .ranking-cell--stars,
 .world-page .ranking-cell--stars,
+.class-page .ranking-cell--stars,
 .container .ranking-cell--stars {
   color: #ffd700;
 }
 
 body[data-theme="dark"] .ranking-cell--level,
 .world-page .ranking-cell--level,
+.class-page .ranking-cell--level,
 .container .ranking-cell--level {
   color: rgba(255, 255, 255, 0.7);
 }
 
+body[data-theme="dark"] .ranking-cell--time,
+.world-page .ranking-cell--time,
+.class-page .ranking-cell--time,
+.container .ranking-cell--time {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+body[data-theme="dark"] .ranking-cell--game-end-time,
+.world-page .ranking-cell--game-end-time,
+.class-page .ranking-cell--game-end-time,
+.container .ranking-cell--game-end-time {
+  color: rgba(255, 255, 255, 0.5);
+}
+
 body[data-theme="dark"] .ranking-stat-card,
-.world-page .ranking-stat-card {
+.world-page .ranking-stat-card,
+.class-page .ranking-stat-card {
   background: rgba(255, 255, 255, 0.06);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 body[data-theme="dark"] .ranking-stat-card__val,
-.world-page .ranking-stat-card__val {
+.world-page .ranking-stat-card__val,
+.class-page .ranking-stat-card__val {
   color: #fff;
 }
 
 body[data-theme="dark"] .ranking-stat-card__lbl,
-.world-page .ranking-stat-card__lbl {
+.world-page .ranking-stat-card__lbl,
+.class-page .ranking-stat-card__lbl {
   color: rgba(255, 255, 255, 0.6);
+}
+
+/* --- 分頁控制 --- */
+.ranking-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.ranking-page-btn {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 8px;
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ranking-page-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.ranking-page-btn.active {
+  background: rgba(102, 126, 234, 0.25);
+  border-color: #667eea;
+  color: #82b1ff;
+}
+
+.ranking-page-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.ranking-page-info {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0 4px;
+}
+
+/* 淺色主題分頁 */
+.ranking-pagination:not(.class-page .ranking-pagination):not(
+    .world-page .ranking-pagination
+  )
+  .ranking-page-btn {
+  border-color: #ddd;
+  background: #fff;
+  color: #555;
+}
+
+.ranking-pagination:not(.class-page .ranking-pagination):not(
+    .world-page .ranking-pagination
+  )
+  .ranking-page-btn:hover:not(:disabled) {
+  background: #f0f0f0;
+}
+
+.ranking-pagination:not(.class-page .ranking-pagination):not(
+    .world-page .ranking-pagination
+  )
+  .ranking-page-btn.active {
+  background: #667eea;
+  color: #fff;
+  border-color: #667eea;
+}
+
+.ranking-pagination:not(.class-page .ranking-pagination):not(
+    .world-page .ranking-pagination
+  )
+  .ranking-page-info {
+  color: #888;
 }

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>離線中 — EF Game</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+        color: #e0e0e0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        text-align: center;
+        padding: 24px;
+      }
+      .offline-icon {
+        font-size: 5rem;
+        margin-bottom: 16px;
+        animation: float 3s ease-in-out infinite;
+      }
+      h1 {
+        font-size: 1.6rem;
+        font-weight: 700;
+        margin-bottom: 12px;
+        color: #fff;
+      }
+      p {
+        font-size: 1.05rem;
+        line-height: 1.6;
+        max-width: 360px;
+        margin-bottom: 24px;
+        color: rgba(255, 255, 255, 0.75);
+      }
+      .btn-retry {
+        display: inline-block;
+        padding: 12px 32px;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #fff;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border: none;
+        border-radius: 28px;
+        cursor: pointer;
+        text-decoration: none;
+        transition:
+          transform 0.2s,
+          box-shadow 0.2s;
+        min-height: 48px;
+        min-width: 48px;
+      }
+      .btn-retry:active {
+        transform: scale(0.95);
+      }
+      .btn-retry:hover {
+        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+      }
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-12px);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="offline-icon" aria-hidden="true">📡</div>
+    <h1>目前沒有網路連線</h1>
+    <p>
+      請確認 Wi-Fi
+      或行動數據已開啟，然後重新嘗試。已經玩過的頁面仍可在離線時使用喔！
+    </p>
+    <button class="btn-retry" onclick="location.reload()">🔄 重新嘗試</button>
+  </body>
+</html>

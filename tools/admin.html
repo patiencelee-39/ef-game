@@ -1,0 +1,1184 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self' blob:; script-src 'self' 'unsafe-inline' https://*.firebasedatabase.app https://*.firebaseio.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app"
+    />
+    <title>🛠️ 開發者與研究者工具 - EF Game</title>
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../css/themes/base.css" />
+    <link rel="stylesheet" href="../css/main.css" />
+    <link rel="preload" href="../css/components/navbar.css" as="style" onload="this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="../css/components/navbar.css" /></noscript>
+    <style>
+      /* ======================== */
+      /*  開發者工具頁面樣式       */
+      /* ======================== */
+      body {
+        background: linear-gradient(
+          135deg,
+          #1a1a2e 0%,
+          #16213e 50%,
+          #0f3460 100%
+        );
+        min-height: 100vh;
+        color: #e0e0e0;
+        font-family: var(--font-family-main, "Noto Sans TC", sans-serif);
+      }
+      .dev-page {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 24px 16px 60px;
+      }
+      .dev-page h1 {
+        text-align: center;
+        margin-bottom: 4px;
+        font-size: 1.5rem;
+      }
+      .dev-subtitle {
+        text-align: center;
+        color: #aaa;
+        font-size: 0.85rem;
+        margin-bottom: 24px;
+      }
+      .dev-warning {
+        background: rgba(255, 100, 100, 0.1);
+        border: 1px solid rgba(255, 100, 100, 0.3);
+        border-radius: 12px;
+        padding: 12px 16px;
+        margin-bottom: 24px;
+        font-size: 0.85rem;
+        line-height: 1.5;
+        text-align: center;
+      }
+      .auth-status {
+        text-align: center;
+        margin-bottom: 16px;
+        font-size: 0.8rem;
+      }
+      .dev-section {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+      .dev-section h2 {
+        font-size: 1.1rem;
+        margin: 0 0 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .dev-section h2 .badge {
+        font-size: 0.7rem;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-weight: normal;
+        color: #aaa;
+      }
+      .data-list {
+        max-height: 300px;
+        overflow-y: auto;
+        margin-bottom: 12px;
+      }
+      .data-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 12px;
+        margin-bottom: 6px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 10px;
+        font-size: 0.85rem;
+        gap: 8px;
+      }
+      .data-item .info {
+        flex: 1;
+        min-width: 0;
+      }
+      .data-item .info .name {
+        font-weight: 600;
+        color: #fff;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .data-item .info .meta {
+        font-size: 0.75rem;
+        color: #888;
+        margin-top: 2px;
+      }
+      .data-item .btn-delete {
+        background: rgba(255, 80, 80, 0.15);
+        border: 1px solid rgba(255, 80, 80, 0.3);
+        color: #ff6b6b;
+        border-radius: 8px;
+        padding: 6px 12px;
+        cursor: pointer;
+        font-size: 0.8rem;
+        white-space: nowrap;
+        transition: all 0.2s;
+      }
+      .data-item .btn-delete:hover {
+        background: rgba(255, 80, 80, 0.3);
+      }
+      .data-item input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+      .btn-row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .btn-action {
+        flex: 1;
+        min-width: 120px;
+        padding: 10px 16px;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        font-size: 0.85rem;
+        transition: all 0.2s;
+      }
+      .btn-action:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+      .btn-refresh {
+        background: rgba(100, 180, 255, 0.15);
+        border: 1px solid rgba(100, 180, 255, 0.3);
+        color: #64b5f6;
+      }
+      .btn-refresh:hover:not(:disabled) {
+        background: rgba(100, 180, 255, 0.3);
+      }
+      .btn-danger {
+        background: rgba(255, 80, 80, 0.15);
+        border: 1px solid rgba(255, 80, 80, 0.3);
+        color: #ff6b6b;
+      }
+      .btn-danger:hover:not(:disabled) {
+        background: rgba(255, 80, 80, 0.3);
+      }
+      .btn-back {
+        display: inline-block;
+        color: #aaa;
+        text-decoration: none;
+        font-size: 0.85rem;
+        margin-bottom: 16px;
+      }
+      .btn-back:hover {
+        color: #fff;
+      }
+      .empty {
+        text-align: center;
+        color: #666;
+        padding: 20px;
+        font-size: 0.85rem;
+      }
+      .log-area {
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 10px;
+        padding: 12px;
+        font-family: monospace;
+        font-size: 0.8rem;
+        max-height: 200px;
+        overflow-y: auto;
+        line-height: 1.6;
+        margin-top: 12px;
+      }
+      .log-area .log-ok {
+        color: #81c784;
+      }
+      .log-area .log-err {
+        color: #ff6b6b;
+      }
+      .log-area .log-info {
+        color: #64b5f6;
+      }
+      .select-all-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        font-size: 0.8rem;
+        color: #aaa;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        margin-bottom: 6px;
+      }
+      /* ======================== */
+      /*  研究者工具樣式           */
+      /* ======================== */
+      .section-divider {
+        text-align: center;
+        margin: 36px 0 24px;
+        position: relative;
+      }
+      .section-divider::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.1);
+      }
+      .section-divider span {
+        position: relative;
+        background: #16213e;
+        padding: 0 16px;
+        font-size: 1rem;
+        color: #4db6ac;
+        font-weight: 600;
+      }
+      .guide-phase {
+        margin-bottom: 8px;
+      }
+      .guide-phase summary {
+        cursor: pointer;
+        padding: 10px 14px;
+        background: rgba(77, 182, 172, 0.08);
+        border: 1px solid rgba(77, 182, 172, 0.15);
+        border-radius: 10px;
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: #e0e0e0;
+        list-style: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: background 0.2s;
+      }
+      .guide-phase summary:hover {
+        background: rgba(77, 182, 172, 0.15);
+      }
+      .guide-phase summary::-webkit-details-marker {
+        display: none;
+      }
+      .guide-phase summary::before {
+        content: "▶";
+        font-size: 0.65rem;
+        transition: transform 0.2s;
+        flex-shrink: 0;
+      }
+      .guide-phase[open] summary::before {
+        transform: rotate(90deg);
+      }
+      .guide-phase .phase-body {
+        padding: 12px 14px 4px;
+        font-size: 0.83rem;
+        line-height: 1.75;
+        color: #ccc;
+      }
+      .guide-phase .phase-body ul {
+        margin: 4px 0 8px;
+        padding-left: 20px;
+      }
+      .guide-phase .phase-body li {
+        margin-bottom: 3px;
+      }
+      .guide-tip {
+        background: rgba(255, 180, 50, 0.08);
+        border-left: 3px solid #ffb432;
+        padding: 8px 12px;
+        margin: 8px 0;
+        border-radius: 0 8px 8px 0;
+        font-size: 0.82rem;
+        color: #e0c080;
+      }
+      .guide-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.82rem;
+        margin: 8px 0;
+      }
+      .guide-table td {
+        padding: 6px 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        vertical-align: top;
+      }
+      .guide-table td:first-child {
+        white-space: nowrap;
+        color: #ff8a80;
+        font-weight: 600;
+        width: 140px;
+      }
+      .obs-form {
+        margin-top: 12px;
+      }
+      .obs-row {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+      }
+      .obs-field {
+        flex: 1;
+        min-width: 140px;
+      }
+      .obs-field > label {
+        display: block;
+        font-size: 0.8rem;
+        color: #aaa;
+        margin-bottom: 4px;
+        font-weight: 600;
+      }
+      .obs-field input[type="text"],
+      .obs-field input[type="date"],
+      .obs-field input[type="time"],
+      .obs-field input[type="number"],
+      .obs-field select,
+      .obs-field textarea {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 8px 12px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 8px;
+        color: #e0e0e0;
+        font-size: 0.85rem;
+        font-family: inherit;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+      .obs-field input:focus,
+      .obs-field select:focus,
+      .obs-field textarea:focus {
+        border-color: rgba(77, 182, 172, 0.5);
+      }
+      .obs-field textarea {
+        resize: vertical;
+        min-height: 80px;
+      }
+      .obs-radio-group,
+      .obs-check-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 4px;
+      }
+      .obs-radio-group label,
+      .obs-check-group label {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.83rem;
+        color: #ccc;
+        cursor: pointer;
+        padding: 5px 10px;
+        background: rgba(255, 255, 255, 0.04);
+        border-radius: 6px;
+        transition: background 0.2s;
+        font-weight: normal;
+      }
+      .obs-radio-group label:hover,
+      .obs-check-group label:hover {
+        background: rgba(255, 255, 255, 0.08);
+      }
+      .obs-other-input {
+        width: 70px !important;
+        display: inline-block !important;
+        padding: 4px 8px !important;
+        font-size: 0.82rem !important;
+        border-radius: 6px !important;
+        background: rgba(255, 255, 255, 0.06) !important;
+        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        color: #e0e0e0 !important;
+        outline: none !important;
+      }
+      .obs-msg {
+        text-align: center;
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-size: 0.83rem;
+        margin-top: 12px;
+        display: none;
+        transition: opacity 0.3s;
+      }
+      .obs-msg.show {
+        display: block;
+      }
+      .obs-msg.ok {
+        background: rgba(129, 199, 132, 0.12);
+        color: #81c784;
+      }
+      .obs-msg.err {
+        background: rgba(255, 80, 80, 0.12);
+        color: #ff6b6b;
+      }
+      .obs-saved-section {
+        margin-top: 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        padding-top: 16px;
+      }
+      .obs-saved-section h3 {
+        font-size: 0.9rem;
+        color: #aaa;
+        margin: 0 0 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .btn-teal {
+        background: rgba(77, 182, 172, 0.15);
+        border: 1px solid rgba(77, 182, 172, 0.3);
+        color: #4db6ac;
+      }
+      .btn-teal:hover:not(:disabled) {
+        background: rgba(77, 182, 172, 0.3);
+      }
+      .btn-green {
+        background: rgba(129, 199, 132, 0.15);
+        border: 1px solid rgba(129, 199, 132, 0.3);
+        color: #81c784;
+      }
+      .btn-green:hover:not(:disabled) {
+        background: rgba(129, 199, 132, 0.3);
+      }
+      .btn-amber {
+        background: rgba(255, 180, 50, 0.15);
+        border: 1px solid rgba(255, 180, 50, 0.3);
+        color: #ffb432;
+      }
+      .btn-amber:hover:not(:disabled) {
+        background: rgba(255, 180, 50, 0.3);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="dev-page">
+      <a class="btn-back" href="../settings/index.html">← 返回設定</a>
+      <h1>🛠️ 開發者與研究者工具</h1>
+      <p class="dev-subtitle">
+        Firebase 資料管理 · 房間清理 · 排行榜管理 · 研究觀察工具
+      </p>
+
+      <div class="dev-warning">
+        ⚠️
+        此頁面僅供開發者使用。刪除操作<strong>不可復原</strong>，請確認後再操作。
+      </div>
+
+      <div class="auth-status" id="authStatus">⏳ 連線中…</div>
+
+      <!-- ===== 1. 多人房間 (RTDB) ===== -->
+      <div class="dev-section">
+        <h2>🏠 多人競賽房間 <span class="badge" id="roomCount">0 筆</span></h2>
+        <div class="data-list" id="roomList">
+          <div class="empty">載入中…</div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-action btn-refresh" id="btnRefreshRooms">
+            🔄 重新整理
+          </button>
+          <button
+            class="btn-action btn-danger"
+            id="btnDeleteSelectedRooms"
+            disabled
+          >
+            🗑️ 刪除勾選
+          </button>
+          <button class="btn-action btn-danger" id="btnDeleteAllRooms">
+            💣 清空全部房間
+          </button>
+        </div>
+      </div>
+
+      <!-- ===== 2. 班級看板 (Firestore) ===== -->
+      <div class="dev-section">
+        <h2>📚 班級看板 <span class="badge" id="boardCount">0 筆</span></h2>
+        <div class="data-list" id="boardList">
+          <div class="empty">載入中…</div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-action btn-refresh" id="btnRefreshBoards">
+            🔄 重新整理
+          </button>
+          <button
+            class="btn-action btn-danger"
+            id="btnDeleteSelectedBoards"
+            disabled
+          >
+            🗑️ 刪除勾選
+          </button>
+          <button class="btn-action btn-danger" id="btnDeleteAllBoards">
+            💣 清空全部看板
+          </button>
+        </div>
+      </div>
+
+      <!-- ===== 3. 世界排行榜 (Firestore) ===== -->
+      <div class="dev-section">
+        <h2>🌍 世界排行榜 <span class="badge" id="worldCount">0 筆</span></h2>
+        <div class="data-list" id="worldList">
+          <div class="empty">載入中…</div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-action btn-refresh" id="btnRefreshWorld">
+            🔄 重新整理
+          </button>
+          <button
+            class="btn-action btn-danger"
+            id="btnDeleteSelectedWorld"
+            disabled
+          >
+            🗑️ 刪除勾選
+          </button>
+          <button class="btn-action btn-danger" id="btnDeleteAllWorld">
+            💣 清空世界排行榜
+          </button>
+          <button
+            class="btn-action btn-refresh"
+            id="btnTrimWorld"
+            style="
+              background: rgba(255, 180, 50, 0.15);
+              border-color: rgba(255, 180, 50, 0.3);
+              color: #ffb432;
+            "
+          >
+            ✂️ 修剪至前 10 名
+          </button>
+        </div>
+      </div>
+
+      <!-- ===== 4. 本機快取清除 ===== -->
+      <div class="dev-section">
+        <h2>🧹 本機快取一鍵清除</h2>
+        <p style="font-size: 0.82rem; color: #aaa; margin-bottom: 12px">
+          清除當前瀏覽器中 EF-Game 的 localStorage、sessionStorage 與 Service
+          Worker 快取。
+        </p>
+        <div class="btn-row" style="margin-bottom: 8px">
+          <button class="btn-action btn-danger" id="btnClearLocal">
+            🗑️ localStorage
+          </button>
+          <button class="btn-action btn-danger" id="btnClearSession">
+            🗑️ sessionStorage
+          </button>
+          <button class="btn-action btn-danger" id="btnClearSwCache">
+            🗑️ SW 快取
+          </button>
+        </div>
+        <div class="btn-row">
+          <button
+            class="btn-action btn-danger"
+            id="btnClearAll"
+            style="flex: 1; font-weight: 700; font-size: 0.95rem; padding: 12px"
+          >
+            💣 一鍵全部清除（localStorage + sessionStorage + SW 快取）
+          </button>
+        </div>
+        <div class="log-area" id="cacheLog" style="margin-top: 10px">
+          <span class="log-info">等待操作…</span>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════ -->
+      <!-- 📋 研究者工具                       -->
+      <!-- ═══════════════════════════════════ -->
+      <div class="section-divider">
+        <span>📋 研究者工具</span>
+      </div>
+
+      <!-- ===== 5. 引導流程手冊 ===== -->
+      <div class="dev-section">
+        <h2>📖 兒童試玩當天 — 引導流程手冊</h2>
+        <p style="font-size: 0.82rem; color: #aaa; margin-bottom: 14px">
+          試玩當天的完整標準化流程，點擊各階段展開詳細步驟。
+        </p>
+
+        <details class="guide-phase" open>
+          <summary>📋 階段一：事前準備（測試前 30 分鐘）</summary>
+          <div class="phase-body">
+            <ul>
+              <li>✅ 設備已充電，確認電量足夠完成測試</li>
+              <li>✅ Wi-Fi 連線穩定，開啟遊戲網站確認載入正常</li>
+              <li>✅ 將瀏覽器設為全螢幕模式（避免兒童誤觸網址列）</li>
+              <li>✅ 音量調至適中（遊戲有語音提示）</li>
+              <li>✅ 準備觀察紀錄表（可用下方數位版或紙本）</li>
+              <li>✅ 場地安靜、光線充足、桌椅高度適合兒童</li>
+              <li>✅ 準備獎勵貼紙或小禮物</li>
+            </ul>
+          </div>
+        </details>
+
+        <details class="guide-phase">
+          <summary>🤝 階段二：接待與暖身（5~10 分鐘）</summary>
+          <div class="phase-body">
+            <ul>
+              <li>親切迎接兒童與家長／老師</li>
+              <li>向家長／老師說明測試流程：「大約需要 15~20 分鐘」</li>
+              <li>確認知情同意書已簽署</li>
+              <li>與兒童輕鬆聊天建立信任：「你喜歡什麼動物呀？」</li>
+              <li>簡單介紹活動：「我們今天要來玩一個好玩的遊戲喔！」</li>
+            </ul>
+            <div class="guide-tip">
+              💡 如果兒童害羞，不急著開始，先讓他熟悉環境和施測者。
+            </div>
+          </div>
+        </details>
+
+        <details class="guide-phase">
+          <summary>🎮 階段三：遊戲操作引導（主要流程）</summary>
+          <div class="phase-body">
+            <ul>
+              <li>
+                <strong>1.</strong>
+                協助兒童在設備前坐好，確認手指可舒適觸碰螢幕／鍵盤
+              </li>
+              <li><strong>2.</strong> 開啟遊戲 → 首頁 → 點選「單人練習」</li>
+              <li>
+                <strong>3.</strong>
+                選擇遊戲關卡後，系統會詢問「要先觀看示範和做練習嗎？」 <br />→
+                第一次玩：選「<strong>觀看示範與練習</strong>」 <br />→
+                已熟悉規則：可選「跳過，直接開始」
+              </li>
+              <li>
+                <strong>4.</strong>
+                規則動畫播放時，可說：「我們先來看看怎麼玩喔～」
+              </li>
+              <li>
+                <strong>5.</strong> 練習階段：鼓勵嘗試
+                —「很棒！」「沒關係，再試一次！」
+              </li>
+              <li>
+                <strong>6.</strong>
+                正式測驗：「現在要正式開始囉，盡量又快又對！加油！」
+              </li>
+            </ul>
+            <div class="guide-tip">
+              💡 若兒童在練習階段仍不理解規則，可重新進入該關卡再看一次動畫。
+            </div>
+          </div>
+        </details>
+
+        <details class="guide-phase">
+          <summary>👀 階段四：觀察重點</summary>
+          <div class="phase-body">
+            <ul>
+              <li>🧠 <strong>規則理解</strong>：兒童是否能跟上規則切換？</li>
+              <li>
+                ⏱️ <strong>反應速度</strong>：按鍵是否猶豫？有無明顯變快／變慢？
+              </li>
+              <li>🎯 <strong>正確率</strong>：是否頻繁出錯？出錯時的反應？</li>
+              <li>
+                😊 <strong>情緒狀態</strong>：開心、專注、焦慮、無聊、挫折？
+              </li>
+              <li>💪 <strong>投入程度</strong>：主動想繼續還是想停下？</li>
+              <li>👆 <strong>操作能力</strong>：手指協調、能否自行操作？</li>
+              <li>
+                📝 <strong>額外提示</strong>：是否需要口頭提示？提示了幾次？
+              </li>
+            </ul>
+          </div>
+        </details>
+
+        <details class="guide-phase">
+          <summary>🏁 階段五：結束與感謝（5 分鐘）</summary>
+          <div class="phase-body">
+            <ul>
+              <li>遊戲結束後讚美兒童：「你好厲害！玩得很棒！」</li>
+              <li>發送獎勵貼紙或小禮物</li>
+              <li>儲存紀錄：上傳至伺服器 或 儲存到本機 或 匯出檔案</li>
+              <li>向家長／老師簡要回饋兒童表現</li>
+              <li>感謝參與：「謝謝你今天來玩遊戲！」</li>
+            </ul>
+          </div>
+        </details>
+
+        <details class="guide-phase">
+          <summary>⚠️ 常見狀況處理</summary>
+          <div class="phase-body">
+            <table class="guide-table">
+              <tr>
+                <td>兒童不想玩／哭鬧</td>
+                <td>
+                  不勉強，先安撫情緒。可聊天或玩其他活動後再嘗試；仍拒絕則記錄後結束
+                </td>
+              </tr>
+              <tr>
+                <td>遊戲卡住／當機</td>
+                <td>重新整理頁面（F5 / 下拉重新整理），遊戲資料會自動保存</td>
+              </tr>
+              <tr>
+                <td>兒童按錯位置</td>
+                <td>適當口頭提示按鈕位置，在紀錄中標註「需口頭提示」</td>
+              </tr>
+              <tr>
+                <td>家長想提示答案</td>
+                <td>請家長坐在視線外，說明：「讓孩子自己試試看效果最好」</td>
+              </tr>
+              <tr>
+                <td>中途想上廁所</td>
+                <td>暫停遊戲，記錄中斷情形，回來後可繼續或重新開始</td>
+              </tr>
+              <tr>
+                <td>觸控不靈敏</td>
+                <td>確認螢幕乾淨、手指乾燥，必要時改用觸控筆</td>
+              </tr>
+            </table>
+          </div>
+        </details>
+      </div>
+
+      <!-- ===== 6. 觀察紀錄表 ===== -->
+      <div class="dev-section">
+        <h2>📝 觀察紀錄表</h2>
+        <div class="obs-form">
+          <div class="obs-field" style="margin-bottom: 12px">
+            <label>回饋者身份</label>
+            <div class="obs-radio-group">
+              <label
+                ><input type="radio" name="obsRole" value="P0" checked />
+                兒童（P0）</label
+              >
+              <label
+                ><input type="radio" name="obsRole" value="P1" />
+                家長（P1）</label
+              >
+              <label
+                ><input type="radio" name="obsRole" value="P2" />
+                教師（P2）</label
+              >
+              <label>
+                <input type="radio" name="obsRole" value="P9" /> 其它（P9）
+                <input
+                  type="text"
+                  class="obs-other-input"
+                  id="obsRoleOtherText"
+                  placeholder="請填寫"
+                />
+              </label>
+            </div>
+          </div>
+          <div class="obs-field" style="margin-bottom: 12px">
+            <label>事前準備確認（可複選）</label>
+            <div class="obs-check-group">
+              <label><input type="checkbox" name="obsPrep" value="設備已充電"> 設備已充電</label>
+              <label><input type="checkbox" name="obsPrep" value="Wi-Fi連線穩定"> Wi-Fi連線穩定</label>
+              <label><input type="checkbox" name="obsPrep" value="全螢幕模式"> 全螢幕模式</label>
+              <label><input type="checkbox" name="obsPrep" value="音量適中"> 音量適中</label>
+              <label><input type="checkbox" name="obsPrep" value="觀察紀錄表已備"> 觀察紀錄表已備</label>
+              <label><input type="checkbox" name="obsPrep" value="場地準備完成"> 場地準備完成</label>
+              <label><input type="checkbox" name="obsPrep" value="獎勵已準備"> 獎勵已準備</label>
+            </div>
+          </div>
+          <div class="obs-row">
+            <div class="obs-field">
+              <label for="obsDate">日期</label>
+              <input type="date" id="obsDate" />
+            </div>
+            <div class="obs-field">
+              <label for="obsTime">時間</label>
+              <input type="time" id="obsTime" />
+            </div>
+          </div>
+          <div class="obs-row">
+            <div class="obs-field">
+              <label for="obsChildCode">兒童／回饋者代碼</label>
+              <input
+                type="text"
+                id="obsChildCode"
+                value="P00"
+                placeholder="P00"
+              />
+            </div>
+            <div class="obs-field">
+              <label for="obsTester">施測者</label>
+              <select id="obsTester">
+                <option value="">— 請選擇 —</option>
+                <!-- ★ 在這裡新增施測者選項 ★ -->
+                <option value="阿摩">阿摩</option>
+                <option value="王老師">王老師</option>
+                <option value="林老師">林老師</option>
+                <option value="吳老師">吳老師</option>
+              </select>
+            </div>
+          </div>
+          <div class="obs-row">
+            <div class="obs-field">
+              <label>年齡（選填）</label>
+              <div style="display: flex; gap: 6px; align-items: center">
+                <input
+                  type="number"
+                  id="obsAgeY"
+                  min="2"
+                  max="12"
+                  style="width: 60px"
+                  placeholder=""
+                />
+                <span style="color: #aaa; font-size: 0.85rem">歲</span>
+                <input
+                  type="number"
+                  id="obsAgeM"
+                  min="0"
+                  max="11"
+                  style="width: 60px"
+                  placeholder=""
+                />
+                <span style="color: #aaa; font-size: 0.85rem">月</span>
+              </div>
+            </div>
+            <div class="obs-field">
+              <label>性別</label>
+              <div class="obs-radio-group">
+                <label
+                  ><input type="radio" name="obsGender" value="男" /> 男</label
+                >
+                <label
+                  ><input type="radio" name="obsGender" value="女" /> 女</label
+                >
+              </div>
+            </div>
+          </div>
+          <div class="obs-field" style="margin-bottom: 12px">
+            <label>場域</label>
+            <div class="obs-radio-group">
+              <label
+                ><input type="radio" name="obsVenue" value="幼兒園" />
+                幼兒園</label
+              >
+              <label
+                ><input type="radio" name="obsVenue" value="國小" /> 國小</label
+              >
+              <label
+                ><input type="radio" name="obsVenue" value="家庭" /> 家庭</label
+              >
+              <label
+                ><input type="radio" name="obsVenue" value="機構" /> 機構</label
+              >
+              <label>
+                <input
+                  type="radio"
+                  name="obsVenue"
+                  value="其它"
+                  id="obsVenueOther"
+                />
+                其它
+                <input
+                  type="text"
+                  class="obs-other-input"
+                  id="obsVenueOtherText"
+                  placeholder="請填寫"
+                />
+              </label>
+            </div>
+          </div>
+          <div class="obs-field" style="margin-bottom: 12px">
+            <label>聽力狀況</label>
+            <div class="obs-check-group">
+              <label
+                ><input type="checkbox" name="obsHearing" value="聽常" />
+                聽常</label
+              >
+              <label
+                ><input type="checkbox" name="obsHearing" value="輕度" />
+                輕度</label
+              >
+              <label
+                ><input type="checkbox" name="obsHearing" value="中度" />
+                中度</label
+              >
+              <label
+                ><input type="checkbox" name="obsHearing" value="重度" />
+                重度</label
+              >
+              <label
+                ><input type="checkbox" name="obsHearing" value="極重度" />
+                極重度</label
+              >
+              <label
+                ><input type="checkbox" name="obsHearing" value="人工電子耳" />
+                人工電子耳</label
+              >
+              <label
+                ><input type="checkbox" name="obsHearing" value="助聽器" />
+                助聽器</label
+              >
+            </div>
+          </div>
+          <div class="obs-field" style="margin-bottom: 12px">
+            <label>溝通方式</label>
+            <div class="obs-check-group">
+              <label
+                ><input type="checkbox" name="obsComm" value="口語" />
+                口語</label
+              >
+              <label
+                ><input type="checkbox" name="obsComm" value="手語" />
+                手語</label
+              >
+              <label
+                ><input type="checkbox" name="obsComm" value="混合" />
+                混合</label
+              >
+            </div>
+          </div>
+          <div class="obs-field" style="margin-bottom: 12px">
+            <label>完成關卡（可複選）</label>
+            <div class="obs-check-group">
+              <label
+                ><input type="checkbox" name="obsLevels" value="單人" />
+                單人</label
+              >
+              <label
+                ><input type="checkbox" name="obsLevels" value="多人" />
+                多人</label
+              >
+              <label
+                ><input type="checkbox" name="obsLevels" value="①R1" />
+                ①R1</label
+              >
+              <label
+                ><input type="checkbox" name="obsLevels" value="②R1+WM" />
+                ②R1+WM</label
+              >
+              <label
+                ><input type="checkbox" name="obsLevels" value="③R2" />
+                ③R2</label
+              >
+              <label
+                ><input type="checkbox" name="obsLevels" value="④R2+WM" />
+                ④R2+WM</label
+              >
+              <label
+                ><input type="checkbox" name="obsLevels" value="⑤混合" />
+                ⑤混合</label
+              >
+              <label
+                ><input type="checkbox" name="obsLevels" value="⑥混合+WM" />
+                ⑥混合+WM</label
+              >
+            </div>
+          </div>
+          <div class="obs-row">
+            <div class="obs-field">
+              <label for="obsTotalTime">總耗時（分鐘）</label>
+              <input
+                type="number"
+                id="obsTotalTime"
+                min="0"
+                placeholder="例：15"
+              />
+            </div>
+            <div class="obs-field">
+              <label for="obsBreaks">休息次數</label>
+              <input type="number" id="obsBreaks" min="0" placeholder="例：0" />
+            </div>
+          </div>
+          <div class="obs-field" style="margin-bottom: 12px">
+            <label>觀察重點（可複選）</label>
+            <div class="obs-check-group">
+              <label
+                ><input type="checkbox" value="注意力集中度" />
+                注意力集中度</label
+              >
+              <label><input type="checkbox" value="反應速度" /> 反應速度</label>
+              <label
+                ><input type="checkbox" value="規則理解能力" />
+                規則理解能力</label
+              >
+              <label
+                ><input type="checkbox" value="操作流暢度" /> 操作流暢度</label
+              >
+              <label><input type="checkbox" value="情緒反應" /> 情緒反應</label>
+              <label
+                ><input type="checkbox" value="動機與投入度" />
+                動機與投入度</label
+              >
+              <label
+                ><input type="checkbox" value="家長/教師回饋" />
+                家長/教師回饋</label
+              >
+            </div>
+          </div>
+          <div class="obs-field" style="margin-bottom: 10px">
+            <label for="obsRuleUnderstand">規則理解度</label>
+            <textarea
+              id="obsRuleUnderstand"
+              rows="2"
+              placeholder="示範後是否能掌握？需要幾次示範？練習試驗的表現？"
+            ></textarea>
+          </div>
+          <div class="obs-field" style="margin-bottom: 10px">
+            <label for="obsRuleSwitch">規則切換適應</label>
+            <textarea
+              id="obsRuleSwitch"
+              rows="2"
+              placeholder="進入規則二/混合時的反應？切換困難程度？"
+            ></textarea>
+          </div>
+          <div class="obs-field" style="margin-bottom: 10px">
+            <label for="obsOperation">操作順暢度</label>
+            <textarea
+              id="obsOperation"
+              rows="2"
+              placeholder="觸控/鍵盤操作是否順利？有無按錯位置？"
+            ></textarea>
+          </div>
+          <div class="obs-field" style="margin-bottom: 10px">
+            <label for="obsEmotion">情緒與投入度</label>
+            <textarea
+              id="obsEmotion"
+              rows="2"
+              placeholder="表情？口語反應？主動性？遇挫折的反應？"
+            ></textarea>
+          </div>
+          <div class="obs-field" style="margin-bottom: 10px">
+            <label for="obsUIIssue">UI 問題回報</label>
+            <textarea
+              id="obsUIIssue"
+              rows="2"
+              placeholder="哪些畫面讓孩子困惑？文字/圖示/按鈕大小適不適合？"
+            ></textarea>
+          </div>
+          <div class="obs-field" style="margin-bottom: 10px">
+            <label for="obsChildFeedback">兒童回饋摘要</label>
+            <textarea
+              id="obsChildFeedback"
+              rows="2"
+              placeholder="孩子的原話記錄、最喜歡/最不喜歡的部分"
+            ></textarea>
+          </div>
+          <div class="obs-field" style="margin-bottom: 12px">
+            <label for="obsNotes">綜合觀察紀錄</label>
+            <textarea
+              id="obsNotes"
+              rows="3"
+              placeholder="其他觀察記錄…"
+            ></textarea>
+          </div>
+          <div class="obs-field" style="margin-bottom: 12px">
+            <label for="obsSpecial">特殊情況備註</label>
+            <textarea
+              id="obsSpecial"
+              rows="2"
+              placeholder="中斷原因、需口頭提示次數、其他特殊狀況…"
+            ></textarea>
+          </div>
+
+          <div
+            style="
+              border-top: 1px solid rgba(255, 255, 255, 0.08);
+              margin: 16px 0 12px;
+              padding-top: 14px;
+            "
+          >
+            <h3 style="font-size: 0.92rem; color: #4db6ac; margin: 0 0 10px">
+              👨‍👩‍👧 家長／教師使用回饋
+            </h3>
+            <div class="obs-field" style="margin-bottom: 10px">
+              <label for="obsParentUsability">操作易用性回饋</label>
+              <textarea
+                id="obsParentUsability"
+                rows="2"
+                placeholder="家長/教師自行操作時，覺得好用嗎？有什麼困難？"
+              ></textarea>
+            </div>
+            <div class="obs-field" style="margin-bottom: 10px">
+              <label for="obsParentChildReaction">觀察到的兒童反應</label>
+              <textarea
+                id="obsParentChildReaction"
+                rows="2"
+                placeholder="家長/教師觀察到孩子使用時的反應？"
+              ></textarea>
+            </div>
+            <div class="obs-field" style="margin-bottom: 10px">
+              <label for="obsParentSuggestion">改善建議</label>
+              <textarea
+                id="obsParentSuggestion"
+                rows="2"
+                placeholder="希望改善的功能、介面、流程等"
+              ></textarea>
+            </div>
+          </div>
+          <div class="btn-row" style="margin-bottom: 8px">
+            <button class="btn-action btn-teal" id="btnObsUpload">
+              ☁️ 上傳到伺服器
+            </button>
+            <button class="btn-action btn-green" id="btnObsSaveLocal">
+              💾 儲存到本機
+            </button>
+          </div>
+          <div class="btn-row">
+            <button class="btn-action btn-amber" id="btnObsExportCSV">
+              📄 匯出 CSV
+            </button>
+            <button class="btn-action btn-amber" id="btnObsExportJSON">
+              📋 匯出 JSON
+            </button>
+          </div>
+          <div id="obsMsg" class="obs-msg"></div>
+        </div>
+        <div class="obs-saved-section">
+          <h3>
+            📦 本機已儲存紀錄 <span class="badge" id="obsSavedCount">0 筆</span>
+          </h3>
+          <div class="data-list" id="obsSavedList">
+            <div class="empty">尚無儲存紀錄</div>
+          </div>
+          <div class="btn-row" style="margin-top: 8px">
+            <button class="btn-action btn-amber" id="btnObsExportAllCSV">
+              📄 匯出全部 CSV
+            </button>
+            <button class="btn-action btn-amber" id="btnObsExportAllJSON">
+              📋 匯出全部 JSON
+            </button>
+            <button class="btn-action btn-danger" id="btnObsClearAll">
+              🗑️ 清空本機紀錄
+            </button>
+          </div>
+        </div>
+        <div class="obs-saved-section">
+          <h3>
+            ☁️ 伺服器紀錄 <span class="badge" id="obsServerCount">— 筆</span>
+          </h3>
+          <div class="btn-row" style="margin-bottom: 8px">
+            <button class="btn-action btn-refresh" id="btnObsLoadServer">
+              🔄 載入伺服器紀錄
+            </button>
+          </div>
+          <div class="data-list" id="obsServerList">
+            <div class="empty">點擊上方按鈕載入</div>
+          </div>
+          <div class="btn-row" style="margin-top: 8px">
+            <button
+              class="btn-action btn-danger"
+              id="btnObsDeleteSelectedServer"
+              disabled
+            >
+              🗑️ 刪除勾選
+            </button>
+            <button
+              class="btn-action btn-danger"
+              id="btnObsDeleteAllServer"
+              disabled
+            >
+              💣 清空全部伺服器紀錄
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== 操作記錄 ===== -->
+      <div class="dev-section">
+        <h2>📋 操作記錄</h2>
+        <div class="log-area" id="logArea">
+          <span class="log-info">等待操作…</span>
+        </div>
+      </div>
+    </div>
+
+    <script defer src="../js/shared/navbar.js"></script>
+    <script src="../js/firebase-bundle.js"></script>
+    <script src="../js/shared/firestore-leaderboard.js"></script>
+    <script src="admin-controller.js"></script>
+    <script src="observation-controller.js"></script>
+  </body>
+</html>

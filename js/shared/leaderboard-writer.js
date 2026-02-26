@@ -33,7 +33,7 @@ var LeaderboardWriter = (function () {
       var raw = localStorage.getItem(STORAGE_KEY);
       return raw ? JSON.parse(raw) : [];
     } catch (e) {
-      console.warn("⚠️ LeaderboardWriter: 讀取失敗", e);
+      Logger.warn("⚠️ LeaderboardWriter: 讀取失敗", e);
       return [];
     }
   }
@@ -46,7 +46,7 @@ var LeaderboardWriter = (function () {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     } catch (e) {
-      console.warn("⚠️ LeaderboardWriter: 儲存失敗", e);
+      Logger.warn("⚠️ LeaderboardWriter: 儲存失敗", e);
     }
   }
 
@@ -135,6 +135,21 @@ var LeaderboardWriter = (function () {
     var accuracy = result.accuracy || 0;
     var totalTrials = result.totalTrials || 0;
 
+    // 組裝最新一場的詳細資料
+    var latestGame = {
+      score: score,
+      accuracy: Math.round(accuracy * 10) / 10,
+      totalTrials: totalTrials,
+      avgRT: result.avgRT || 0,
+      totalStars: result.stars || 0,
+      totalCorrect: score,
+      fieldId: result.fieldId || "",
+      ruleId: result.ruleId || "",
+      hasWM: result.hasWM || false,
+      mode: result.mode || "adventure",
+      playedAt: new Date().toISOString(),
+    };
+
     if (existing) {
       // 更新既有記錄
       existing.name = player.name; // 名字可能改過
@@ -156,6 +171,8 @@ var LeaderboardWriter = (function () {
       }
 
       existing.lastPlayed = new Date().toISOString();
+      // 保存最新一場詳細資料（用於世界排行榜上傳）
+      existing.latestGame = latestGame;
       data[existingIndex] = existing;
     } else {
       // 新增記錄
@@ -167,11 +184,12 @@ var LeaderboardWriter = (function () {
         gamesPlayed: 1,
         accuracy: Math.round(accuracy * 10) / 10,
         lastPlayed: new Date().toISOString(),
+        latestGame: latestGame,
       });
     }
 
     _save(data);
-    console.log(
+    Logger.debug(
       "📊 排行榜已更新：" +
         player.name +
         " | 最高分: " +
@@ -194,6 +212,11 @@ var LeaderboardWriter = (function () {
     var avgRT = 0;
     var stars = 0;
 
+    var fieldId = "";
+    var ruleId = "";
+    var hasWM = false;
+    var gameMode = resultData.mode || "adventure";
+
     if (resultData.mode === "adventure") {
       // 探險模式：取 comboResult 中的 ruleResult
       var cr = resultData.comboResult;
@@ -209,6 +232,12 @@ var LeaderboardWriter = (function () {
         stars = cr.starsResult.totalStars || 0;
       } else if (cr) {
         stars = cr.totalStars || 0;
+      }
+      // 取 field/rule/WM 資訊
+      if (cr && cr.pointDef) {
+        fieldId = cr.pointDef.field || "";
+        ruleId = cr.pointDef.rule || "";
+        hasWM = cr.pointDef.hasWM || false;
       }
     } else {
       // 自由選擇模式：合併所有 combo 結果
@@ -231,6 +260,13 @@ var LeaderboardWriter = (function () {
       score = totalCorrect;
       accuracy = totalTrials > 0 ? (totalCorrect / totalTrials) * 100 : 0;
       avgRT = rtCount > 0 ? Math.round(rtSum / rtCount) : 0;
+      gameMode = "free_select";
+      // 自由選擇可能混合多個 field/rule，取第一個
+      if (all.length > 0 && all[0].combo) {
+        fieldId = all[0].combo.fieldId || "";
+        ruleId = all[0].combo.ruleId || "";
+        hasWM = all[0].combo.enableWm || all[0].combo.hasWM || false;
+      }
     }
 
     recordGame({
@@ -239,6 +275,10 @@ var LeaderboardWriter = (function () {
       totalTrials: totalTrials,
       avgRT: avgRT,
       stars: stars,
+      fieldId: fieldId,
+      ruleId: ruleId,
+      hasWM: hasWM,
+      mode: gameMode,
     });
   }
 

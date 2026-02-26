@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:"
+    />
+    <title>量表評估 - 執行功能訓練遊戲</title>
+    <meta
+      name="description"
+      content="TC-CHEXI 繁體中文兒童執行功能量表，前後測評估。"
+    />
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="../favicon.svg" />
+    <link rel="manifest" href="../manifest.json" />
+    <meta name="theme-color" content="#302b63" />
+    <link rel="stylesheet" href="../css/themes/base.css" />
+    <link rel="stylesheet" href="../css/main.css" />
+    <link rel="stylesheet" href="../css/pages/assessment.css" />
+  </head>
+  <body>
+    <div class="container assessment-page">
+      <!-- 返回 -->
+      <a href="../teacher/index.html" class="back-link">← 返回教師家長專區</a>
+
+      <header>
+        <h1>📋 量表評估</h1>
+        <p class="subtitle">繁體中文兒童執行功能量表 (TC-CHEXI)</p>
+      </header>
+
+      <!-- 隱私聲明 -->
+      <div class="privacy-banner">
+        <span class="icon">🔒</span>
+        <span>本問卷資料僅儲存於您的裝置，不會上傳至任何伺服器。</span>
+      </div>
+
+      <!-- 量表來源 -->
+      <div class="source-reference">
+        <h3>📖 量表來源</h3>
+        <table class="source-table">
+          <tr>
+            <th>量表名稱</th>
+            <td>
+              繁體中文兒童執行功能量表 (TC-CHEXI)<br /><span class="source-en"
+                >Taiwanese Traditional-Chinese Childhood Executive Functioning
+                Inventory</span
+              >
+            </td>
+          </tr>
+          <tr>
+            <th>作者</th>
+            <td>蔡青霖、Thorell, L. B.、Siu, A. F. Y.、許育軒、林慧麗</td>
+          </tr>
+          <tr>
+            <th>年份</th>
+            <td>2020</td>
+          </tr>
+          <tr>
+            <th>期刊</th>
+            <td>測驗學刊，67(2)，119-143</td>
+          </tr>
+          <tr>
+            <th>DOI</th>
+            <td>
+              <a
+                href="https://doi.org/10.7108/PT.202006_67(2).0002"
+                target="_blank"
+                rel="noopener noreferrer"
+                >10.7108/PT.202006_67(2).0002</a
+              >
+            </td>
+          </tr>
+        </table>
+        <div class="source-apa">
+          <strong>APA 7 參考文獻格式：</strong><br />
+          蔡青霖、Thorell, L. B.、Siu, A. F.
+          Y.、許育軒、林慧麗（2020）。繁體中文兒童執行功能量表：編修、心理計量特質檢驗與常模建立。<em>測驗學刊</em>，<em>67</em>（2），119-143。<a
+            href="https://doi.org/10.7108/PT.202006_67(2).0002"
+            target="_blank"
+            rel="noopener noreferrer"
+            >https://doi.org/10.7108/PT.202006_67(2).0002</a
+          >
+        </div>
+      </div>
+
+      <!-- ===== 第一步：基本資料 ===== -->
+      <section class="info-section" id="infoSection">
+        <h2>填寫基本資料</h2>
+
+        <div class="form-group">
+          <label for="childCode"
+            >兒童代碼 <span style="color: var(--error-red)">*</span></label
+          >
+          <input
+            type="text"
+            id="childCode"
+            placeholder="例如：P001（由研究者分配）"
+            maxlength="20"
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="form-group">
+          <label
+            >填寫者身份 <span style="color: var(--error-red)">*</span></label
+          >
+          <div class="radio-group" id="fillerRole">
+            <label class="radio-option">
+              <input type="radio" name="fillerRole" value="parent" />
+              👨‍👩‍👧 家長
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="fillerRole" value="teacher" />
+              👩‍🏫 教師
+            </label>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="childAgeY"
+              >兒童年齡 <span style="color: var(--error-red)">*</span></label
+            >
+            <div class="form-row" style="gap: 8px">
+              <select id="childAgeY">
+                <option value="">歲</option>
+                <option value="3">3 歲</option>
+                <option value="4">4 歲</option>
+                <option value="5">5 歲</option>
+                <option value="6">6 歲</option>
+                <option value="7">7 歲</option>
+                <option value="8">8 歲</option>
+                <option value="9">9 歲</option>
+                <option value="10">10 歲</option>
+                <option value="11">11 歲</option>
+                <option value="12">12 歲</option>
+              </select>
+              <select id="childAgeM">
+                <option value="">月</option>
+                <option value="0">0 月</option>
+                <option value="1">1 月</option>
+                <option value="2">2 月</option>
+                <option value="3">3 月</option>
+                <option value="4">4 月</option>
+                <option value="5">5 月</option>
+                <option value="6">6 月</option>
+                <option value="7">7 月</option>
+                <option value="8">8 月</option>
+                <option value="9">9 月</option>
+                <option value="10">10 月</option>
+                <option value="11">11 月</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- 前/後測自動偵測指示 -->
+        <div class="test-type-indicator" id="testTypeIndicator">
+          <span class="icon"></span>
+          <span class="text"></span>
+        </div>
+
+        <div class="start-section">
+          <button class="btn-primary" id="btnStartScale" disabled>
+            開始填寫量表
+          </button>
+          <p
+            id="infoError"
+            style="
+              color: var(--error-red);
+              font-size: var(--font-size-xs);
+              margin-top: 8px;
+              display: none;
+            "
+          ></p>
+        </div>
+      </section>
+
+      <!-- ===== 第二步：量表題目 ===== -->
+      <section class="scale-section" id="scaleSection">
+        <div class="scale-header">
+          <h2>繁體中文兒童執行功能量表 (TC-CHEXI)</h2>
+          <p class="instructions" id="scaleInstructions"></p>
+        </div>
+
+        <!-- 表面效度提醒 -->
+        <div class="validity-warning">
+          <span class="vw-icon">⚠️</span>
+          <div class="vw-body">
+            <strong>表面效度提醒</strong>
+            <p>
+              本量表具有表面效度，題目內容可能與特定能力面向相關。填寫時請依據您對孩子<strong>日常實際行為的觀察</strong>據實作答，避免受到對孩子既有印象或期望的影響，以確保評量結果之客觀性。
+            </p>
+          </div>
+        </div>
+
+        <div class="scale-legend">
+          <span>① 完全不正確</span>
+          <span>② 不正確</span>
+          <span>③ 部分正確</span>
+          <span>④ 正確</span>
+          <span>⑤ 完全正確</span>
+        </div>
+
+        <!-- 進度條 -->
+        <div class="progress-bar-container">
+          <div class="progress-label">
+            <span id="progressText">已完成 0 / 0 題</span>
+            <span id="progressPercent">0%</span>
+          </div>
+          <div class="progress-bar">
+            <div
+              class="progress-fill"
+              id="progressFill"
+              style="width: 0%"
+            ></div>
+          </div>
+        </div>
+
+        <!-- 題目容器（由 JS 動態產生） -->
+        <div id="questionsContainer"></div>
+
+        <!-- 提交 -->
+        <div class="submit-section">
+          <button class="btn-primary" id="btnSubmit">📤 提交問卷</button>
+          <p class="submit-warning" id="submitWarning">
+            ⚠️ 還有未作答的題目，請完成所有題目後再提交。
+          </p>
+        </div>
+      </section>
+
+      <!-- ===== 第三步：結果摘要 ===== -->
+      <section class="result-summary" id="resultSummary">
+        <h2>✅ 問卷完成！</h2>
+        <p
+          id="resultMeta"
+          style="color: var(--text-light); margin-bottom: var(--spacing-md)"
+        ></p>
+
+        <div class="score-grid" id="scoreGrid"></div>
+
+        <button class="btn-secondary" id="btnNewAssessment">
+          📋 填寫另一份量表
+        </button>
+      </section>
+
+      <!-- ===== 第四步：前後測比較報告 ===== -->
+      <section class="comparison-report" id="comparisonReport">
+        <div class="comparison-report-inner" id="comparisonReportInner">
+          <h2>📊 訓練成效比較報告</h2>
+          <p class="comparison-meta" id="comparisonMeta"></p>
+
+          <!-- 整體摘要 -->
+          <div class="comparison-overall" id="comparisonOverall"></div>
+
+          <!-- 各次量表比較卡片 -->
+          <div class="comparison-grid" id="comparisonGrid"></div>
+
+          <!-- 總分比較 -->
+          <div class="comparison-total" id="comparisonTotal"></div>
+
+          <!-- 白話解讀 -->
+          <div
+            class="comparison-interpretation"
+            id="comparisonInterpretation"
+          ></div>
+        </div>
+
+        <!-- 比較報告操作按鈕 -->
+        <div class="comparison-actions">
+          <button class="btn-primary" id="btnExportComparisonPdf">
+            📄 匯出 PDF 報告
+          </button>
+          <button class="btn-secondary" id="btnNewAssessment2">
+            📋 填寫另一份量表
+          </button>
+        </div>
+      </section>
+
+      <!-- ===== 歷史紀錄 ===== -->
+      <section class="history-section" id="historySection">
+        <h2>📂 歷史紀錄</h2>
+        <div id="historyList"></div>
+
+        <div class="history-actions" id="historyActions" style="display: none">
+          <button class="btn-secondary" id="btnExportCsv">
+            📥 匯出全部 CSV
+          </button>
+          <button class="btn-secondary" id="btnExportJson">
+            💾 備份紀錄 (JSON)
+          </button>
+          <button class="btn-secondary" id="btnImportJson">📂 匯入備份</button>
+          <input
+            type="file"
+            id="importFileInput"
+            accept=".json"
+            style="display: none"
+          />
+          <!-- 
+          <button class="btn-secondary" id="btnShareEmail">
+            📧 寄送到信箱
+          </button>
+          -->
+          <button class="btn-danger" id="btnClearAll">🗑️ 清除全部紀錄</button>
+        </div>
+
+        <!-- E-mail 寄送 Modal -- 暫時停用
+        <div class="email-overlay" id="emailOverlay">
+          <div class="email-dialog">
+            <h3>📧 寄送量表紀錄到信箱</h3>
+            <p class="email-desc">
+              輸入您的 E-mail，系統將開啟郵件 App 並自動附帶檔案。
+            </p>
+            <div class="email-form-group">
+              <label for="emailInput">E-mail 地址</label>
+              <input
+                type="email"
+                id="emailInput"
+                placeholder="例如：teacher@school.edu.tw"
+                autocomplete="email"
+              />
+            </div>
+            <div class="email-format-group">
+              <label>附件格式</label>
+              <div class="email-format-options">
+                <label class="email-format-option selected">
+                  <input type="radio" name="emailFormat" value="csv" checked />
+                  CSV（Excel 可開啟）
+                </label>
+                <label class="email-format-option">
+                  <input type="radio" name="emailFormat" value="json" />
+                  JSON（完整備份）
+                </label>
+                <label class="email-format-option">
+                  <input type="radio" name="emailFormat" value="both" />
+                  兩者都要
+                </label>
+              </div>
+            </div>
+            <div class="dialog-actions">
+              <button class="btn-secondary" id="emailCancel">取消</button>
+              <button class="btn-primary" id="emailSend">📤 寄送</button>
+            </div>
+          </div>
+        </div>
+        --
+
+        <!-- 無紀錄時也顯示匯入按鈕 -->
+        <div
+          class="history-actions"
+          id="historyActionsEmpty"
+          style="display: none"
+        >
+          <button class="btn-secondary" id="btnImportJsonEmpty">
+            📂 匯入備份
+          </button>
+          <input
+            type="file"
+            id="importFileInputEmpty"
+            accept=".json"
+            style="display: none"
+          />
+        </div>
+      </section>
+
+      <!-- 確認對話框 -->
+      <div class="confirm-overlay" id="confirmOverlay">
+        <div class="confirm-dialog">
+          <h3 id="confirmTitle">確認</h3>
+          <p id="confirmMessage">確定要執行此操作嗎？</p>
+          <div class="dialog-actions">
+            <button class="btn-secondary" id="confirmCancel">取消</button>
+            <button class="btn-danger" id="confirmOk">確定</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 原始數據 Modal -->
+      <div class="rawdata-overlay" id="rawDataOverlay">
+        <div class="rawdata-dialog">
+          <div class="rawdata-header">
+            <h3 id="rawDataTitle">原始數據</h3>
+            <button class="rawdata-close" id="rawDataClose">✕</button>
+          </div>
+          <div class="rawdata-content" id="rawDataContent"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PDF 匯出函式庫（延遲載入） -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"
+      defer
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"
+      defer
+    ></script>
+    <script src="../js/assessment/assessment-controller.js"></script>
+  </body>
+</html>

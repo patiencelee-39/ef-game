@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:"
+    />
+    <title>訓練效果分析 - 執行功能訓練遊戲</title>
+    <meta
+      name="description"
+      content="整合遊戲 CSV 數據與 TC-CHEXI 量表評估結果，分析訓練成效趨勢。"
+    />
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="../favicon.svg" />
+    <link rel="manifest" href="../manifest.json" />
+    <meta name="theme-color" content="#302b63" />
+    <link rel="stylesheet" href="../css/themes/base.css" />
+    <link rel="stylesheet" href="../css/themes/theme-field-primary.css" />
+    <link rel="stylesheet" href="../css/themes/theme-rule-independent.css" />
+    <link rel="stylesheet" href="../css/main.css" />
+    <link rel="stylesheet" href="../css/pages/analysis.css" />
+
+    <!-- CDN -->
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"
+    ></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"
+    ></script>
+
+    <!-- 本地 JS -->
+    <script defer src="../js/utils/logger.js"></script>
+    <script defer src="../js/utils/constants.js"></script>
+    <script defer src="../js/teacher/analysis-controller.js"></script>
+  </head>
+  <body>
+    <div class="container analysis-page">
+      <!-- 返回 -->
+      <a href="index.html" class="back-link">← 返回教師家長專區</a>
+
+      <header>
+        <h1>📊 訓練效果分析</h1>
+        <p class="subtitle">上傳遊戲 CSV + 讀取量表評估，產生整合分析報告</p>
+      </header>
+
+      <!-- ==================== -->
+      <!-- Step 1: 上傳 CSV     -->
+      <!-- ==================== -->
+      <section class="analysis-section" id="uploadSection">
+        <h2>📁 步驟一：上傳遊戲 CSV</h2>
+        <p class="section-hint">
+          請選擇該名學生的所有遊戲 CSV 檔（可一次選擇多個檔案）。<br />
+          檔案格式：<code>EF訓練遊戲數據_代碼_日期_時間.csv</code>
+        </p>
+
+        <div class="upload-area" id="uploadArea">
+          <div class="upload-icon">📤</div>
+          <p>拖曳 CSV 檔案至此，或點擊選擇</p>
+          <input
+            type="file"
+            id="csvFileInput"
+            accept=".csv"
+            multiple
+            aria-label="選擇 CSV 檔案"
+          />
+        </div>
+
+        <div class="file-list" id="fileList" style="display: none">
+          <h3>📂 已選擇的檔案</h3>
+          <ul id="fileListUl"></ul>
+          <div class="file-list-actions">
+            <button class="btn-sm btn-danger" id="btnClearFiles">
+              🗑️ 清除
+            </button>
+            <button class="btn-sm btn-add" id="btnAddMore">➕ 追加檔案</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== -->
+      <!-- Step 2: 兒童代碼匹配  -->
+      <!-- ==================== -->
+      <section class="analysis-section" id="matchSection" style="display: none">
+        <h2>🔗 步驟二：匹配量表評估</h2>
+        <div class="match-info" id="matchInfo">
+          <!-- 動態產生 -->
+        </div>
+      </section>
+
+      <!-- ==================== -->
+      <!-- Step 3: 分析報告     -->
+      <!-- ==================== -->
+      <section
+        class="analysis-section"
+        id="reportSection"
+        style="display: none"
+      >
+        <h2>📈 分析報告</h2>
+
+        <!-- 基本資訊 -->
+        <div class="report-meta" id="reportMeta"></div>
+
+        <!-- ① 前測（TC-CHEXI） -->
+        <div class="report-block" id="preTestBlock" style="display: none">
+          <h3>📋 TC-CHEXI 前測</h3>
+          <div id="preTestSummary"></div>
+        </div>
+
+        <!-- ② 遊戲效能趨勢 -->
+        <div class="report-block" id="gameBlock">
+          <h3>🎮 遊戲訓練數據（全部場次）</h3>
+
+          <!-- 概覽卡片 -->
+          <div class="stats-row" id="gameStatsRow"></div>
+
+          <!-- 正確率趨勢 -->
+          <div class="chart-wrapper">
+            <h4>正確率趨勢</h4>
+            <canvas id="chartAccuracy"></canvas>
+          </div>
+
+          <!-- 平均 RT 趨勢 -->
+          <div class="chart-wrapper">
+            <h4>平均反應時間 (RT) 趨勢</h4>
+            <canvas id="chartRT"></canvas>
+          </div>
+
+          <!-- d' 趨勢 -->
+          <div class="chart-wrapper">
+            <h4>辨別力 (d') 趨勢</h4>
+            <canvas id="chartDPrime"></canvas>
+          </div>
+
+          <!-- Theta 趨勢（如有 IRT） -->
+          <div class="chart-wrapper" id="thetaBlock" style="display: none">
+            <h4>能力估計值 (θ) 趨勢</h4>
+            <canvas id="chartTheta"></canvas>
+          </div>
+
+          <!-- WM 趨勢 -->
+          <div class="chart-wrapper" id="wmBlock" style="display: none">
+            <h4>工作記憶正確率趨勢</h4>
+            <canvas id="chartWM"></canvas>
+          </div>
+        </div>
+
+        <!-- ③ 後測（TC-CHEXI） -->
+        <div class="report-block" id="postTestBlock" style="display: none">
+          <h3>📋 TC-CHEXI 後測</h3>
+          <div id="postTestSummary"></div>
+        </div>
+
+        <!-- ④ 前後測比較 + 圖表 -->
+        <div class="report-block" id="assessmentBlock" style="display: none">
+          <h3>📊 TC-CHEXI 前後測比較</h3>
+          <div class="assessment-summary" id="assessmentSummary"></div>
+          <div class="chart-wrapper">
+            <canvas id="chartAssessment"></canvas>
+          </div>
+        </div>
+
+        <!-- ⑤ 整合對照分析 -->
+        <div class="report-block" id="integrationBlock" style="display: none">
+          <h3>🔬 量表 × 遊戲整合對照</h3>
+          <p class="section-hint">
+            將 TC-CHEXI 分量表與對應遊戲指標並列比較，觀察訓練前後的變化趨勢。
+          </p>
+          <div id="integrationContent"></div>
+        </div>
+      </section>
+
+      <!-- Toast -->
+      <div
+        class="analysis-toast"
+        id="toast"
+        role="status"
+        aria-live="polite"
+      ></div>
+    </div>
+
+    <!-- 追加檔案用隱藏 input -->
+    <input
+      type="file"
+      id="csvFileInputAdditional"
+      accept=".csv"
+      multiple
+      style="display: none"
+    />
+  </body>
+</html>

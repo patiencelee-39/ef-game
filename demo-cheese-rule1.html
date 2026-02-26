@@ -1,0 +1,1016 @@
+<!--
+  ============================================================
+  📄 檔案名稱：demo-mouse-rule1-slow.html
+  📝 用途：小老鼠遊戲場 Rule1 的 Go/NoGo 示範動畫（慢版 B）
+  🎯 目標對象：4-6 歲學前幼兒（含聽損兒）
+  🎮 遊戲規則：
+     - 看到🧀起司 → 按按鈕（Go）
+     - 看到😺貓咪 → 不要按（NoGo）
+  
+  📐 對應遊戲檔案：index-0204v14.html 第一回合
+  
+  ⏱️ 版本：慢版 B（~22 秒循環），適合初次教學
+  🤚 手指版本：FingerTap.svg（Go 點擊用）
+  🖐️ 阻止手：HandStop.svg（NoGo 時推開 FingerTap）
+  🔄 搖手幅度：大幅度 ±45°
+  
+  🏫 中原大學特殊教育學系 | 執行功能訓練遊戲研究專案
+  ============================================================
+
+  【動畫設計說明】
+
+  ◆ Go 示範（起司）流程：
+    1. 起司瞬間出現（無動畫，與遊戲一致）
+    2. FingerTap 從右側大幅移入，指向按鈕 → 停留 → 退出（×3 次）
+    3. FingerTap 移入並點擊按鈕（按鈕下壓+發光）（×3 次）
+    4. 綠色勾勾 ✅ 彈出（×3 次）
+    5. 清場
+
+  ◆ NoGo 示範（貓咪）流程：
+    1. 貓咪瞬間出現（無動畫，與遊戲一致）
+    2. FingerTap 從右側移入準備按 →
+       HandStop 從左側衝入，推開 FingerTap，同時 ±45° 搖手（×3 次）
+    3. 綠色勾勾 ✅ 彈出（×3 次）
+    4. 清場
+-->
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>示範動畫 - 小老鼠場 Rule1（慢版）</title>
+
+    <style>
+      /* 
+      ============================================================
+      🎨 CSS 變數定義
+      - 集中管理所有顏色與尺寸，方便統一修改
+      - 與遊戲主程式 (index-0204v14.html) 保持一致
+      ============================================================
+    */
+      :root {
+        --bg-color: #2c3e50; /* 遊戲容器背景（與遊戲一致） */
+        --game-bg: #34495e; /* game-area 背景色 */
+        --text-color: #ecf0f1; /* 文字色 */
+        --primary-color: #3498db; /* 按鈕藍 */
+        --primary-dark: #2980b9; /* 按鈕深藍 */
+        --success-color: #2ecc71; /* 正確綠 */
+        --wall-color: #e0ccb8; /* 老鼠洞牆壁 */
+        --floor-color: #95a5a6; /* 老鼠洞地板 */
+        --baseboard-color: #bdc3c7; /* 踢腳板 */
+        --hole-color: #1a252f; /* 洞口深色 */
+      }
+
+      /* 
+      [新手教學] 全域重置
+      box-sizing: border-box 讓 padding 不會撐大元素
+    */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family:
+          "微軟正黑體", "Microsoft JhengHei", "PingFang TC", sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        overflow: hidden;
+      }
+
+      /* 
+      ============================================================
+      📦 遊戲容器
+      - 模擬 index-0204v14.html 的 .game-area 樣式
+      - 固定寬高比，確保動畫在不同裝置上一致
+      ============================================================
+    */
+      .demo-container {
+        background-color: var(--game-bg);
+        border-radius: 15px;
+        width: 100%;
+        max-width: 420px;
+        min-height: 580px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      /* 
+      ============================================================
+      🎭 刺激物容器（與遊戲一致）
+      - 300×400px 的固定區域
+      - 內含老鼠洞背景 + 刺激物
+      ============================================================
+    */
+      .stimulus-container {
+        position: relative;
+        width: 300px;
+        height: 400px;
+        margin: 10px auto 0;
+      }
+
+      /* 老鼠洞背景層 */
+      .background-layer {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+        top: 0;
+        left: 0;
+      }
+
+      /* 
+      刺激物（起司/貓咪）
+      - 120×120px，與遊戲一致
+      - bottom: 50px，固定在地板上方
+      - 使用 left:50% + translateX(-50%) 水平置中
+    */
+      .stimulus {
+        position: absolute;
+        z-index: 10;
+        width: 120px;
+        height: 120px;
+        bottom: 50px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        opacity: 0; /* 預設隱藏，由 JS 控制瞬間出現 */
+      }
+
+      .stimulus svg {
+        width: 100%;
+        height: 100%;
+        filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+      }
+
+      /* 
+      ============================================================
+      🔘 按鈕區（模擬遊戲按鈕，與遊戲 CSS 完全一致）
+      ============================================================
+    */
+      .controls-area {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        padding: 10px 0 15px;
+      }
+
+      .btn-key {
+        width: 200px;
+        height: 120px;
+        border: none;
+        border-radius: 15px;
+        font-size: 2.5em;
+        color: white;
+        cursor: default; /* 示範動畫中按鈕不可點 */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        transition:
+          transform 0.1s,
+          box-shadow 0.1s;
+        position: relative;
+      }
+
+      /* 按鈕被「按下」的狀態 */
+      .btn-key.pressed {
+        transform: translateY(4px);
+        box-shadow: none;
+      }
+
+      /* 按鈕發光效果 */
+      .btn-key.glow {
+        box-shadow:
+          0 0 20px rgba(52, 152, 219, 0.8),
+          0 0 40px rgba(46, 204, 113, 0.4);
+      }
+
+      .key-hint {
+        font-size: 1rem;
+        opacity: 0.8;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+
+      .btn-label {
+        font-size: 1.5rem;
+        font-weight: bold;
+      }
+
+      /* 
+      ============================================================
+      🤚 手的圖層
+      - 所有手的 SVG 都放在這個絕對定位的容器裡
+      - z-index: 50 確保顯示在最上層
+      ============================================================
+    */
+      .hand-layer {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 50;
+        pointer-events: none; /* 不擋住其他互動 */
+        overflow: visible;
+      }
+
+      /* 
+      通用手的樣式
+      - 預設在畫面右側外面（不可見）
+      - 使用 transform 控制位置和旋轉
+    */
+      .hand {
+        position: absolute;
+        width: 80px;
+        height: 80px;
+        opacity: 0;
+        /* 
+        [新手教學] will-change 提示
+        告訴瀏覽器這些屬性即將變化，預先分配 GPU 資源優化效能
+      */
+        will-change: transform, opacity;
+      }
+
+      /* FingerTap 手指 - 從右側進入 */
+      .hand-finger {
+        right: -100px; /* 畫面右側外 */
+        bottom: 300px; /* 從較高處進入，形成往按鈕方向的軌跡 */
+      }
+
+      /* HandStop 阻止手 - 從左側進入 */
+      .hand-stop {
+        left: -100px; /* 畫面左側外 */
+        bottom: 200px; /* 略高於按鈕 */
+      }
+
+      .hand svg {
+        width: 100%;
+        height: 100%;
+        filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.3));
+      }
+
+      /* 
+      ============================================================
+      ✅ 綠色勾勾回饋
+      - 顯示在刺激物正上方
+      - 使用 popIn 動畫彈出
+      ============================================================
+    */
+      .checkmark {
+        position: absolute;
+        z-index: 20;
+        font-size: 60px;
+        bottom: 175px; /* 刺激物上方 */
+        left: 50%;
+        transform: translateX(-50%) scale(0);
+        opacity: 0;
+        will-change: transform, opacity;
+      }
+
+      /* popIn 動畫：scale 0 → 1.3 → 1 */
+      @keyframes popIn {
+        0% {
+          transform: translateX(-50%) scale(0);
+          opacity: 0;
+        }
+        50% {
+          transform: translateX(-50%) scale(1.3);
+          opacity: 1;
+        }
+        100% {
+          transform: translateX(-50%) scale(1);
+          opacity: 1;
+        }
+      }
+
+      /* 淡出動畫 */
+      @keyframes fadeOut {
+        0% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0;
+        }
+      }
+
+      .checkmark.show {
+        animation: popIn 0.3s ease-out forwards;
+      }
+
+      .checkmark.hide {
+        animation: fadeOut 0.2s ease-out forwards;
+      }
+
+      /* 
+      ============================================================
+      🔄 搖手動畫（大幅度 ±45°）
+      - transform-origin 設在手腕位置（底部中央）
+      - 左右來回擺動 4 次
+      ============================================================
+    */
+      @keyframes shakeHand {
+        0% {
+          transform: translate(0, 0) rotate(0deg);
+        }
+        12.5% {
+          transform: translate(-5px, -10px) rotate(-45deg);
+        }
+        25% {
+          transform: translate(5px, -10px) rotate(45deg);
+        }
+        37.5% {
+          transform: translate(-5px, -10px) rotate(-45deg);
+        }
+        50% {
+          transform: translate(5px, -10px) rotate(45deg);
+        }
+        62.5% {
+          transform: translate(-5px, -10px) rotate(-45deg);
+        }
+        75% {
+          transform: translate(5px, -10px) rotate(45deg);
+        }
+        87.5% {
+          transform: translate(-5px, -10px) rotate(-45deg);
+        }
+        100% {
+          transform: translate(0, 0) rotate(0deg);
+        }
+      }
+
+      /* 
+      ============================================================
+      📊 底部進度指示器
+      ============================================================
+    */
+      .progress-bar {
+        width: 90%;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+        margin: 5px auto 10px;
+        overflow: hidden;
+      }
+
+      .progress-fill {
+        height: 100%;
+        width: 0%;
+        border-radius: 2px;
+        transition: width 0.3s linear;
+      }
+
+      .progress-fill.go {
+        background: var(--success-color);
+      }
+      .progress-fill.nogo {
+        background: #e74c3c;
+      }
+
+      .phase-label {
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.4);
+        margin-bottom: 8px;
+        min-height: 1.2em;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- 
+    ============================================================
+    🖼️ HTML 結構
+    模擬 index-0204v14.html 的遊戲畫面佈局
+    ============================================================
+  -->
+    <div class="demo-container" id="demoContainer">
+      <!-- 刺激物容器（老鼠洞場景 + 起司/貓咪） -->
+      <div class="stimulus-container">
+        <!-- 老鼠洞背景（與遊戲完全一致的 SVG） -->
+        <div class="background-layer" id="bgLayer"></div>
+
+        <!-- 起司刺激物 -->
+        <div class="stimulus" id="cheeseStimulus"></div>
+
+        <!-- 貓咪刺激物 -->
+        <div class="stimulus" id="catStimulus"></div>
+
+        <!-- 綠色勾勾 -->
+        <div class="checkmark" id="checkmark">✅</div>
+
+        <!-- 手的圖層 -->
+        <div class="hand-layer">
+          <!-- FingerTap 點擊手（從右側進出） -->
+          <div class="hand hand-finger" id="handFinger"></div>
+          <!-- HandStop 阻止手（從左側進出） -->
+          <div class="hand hand-stop" id="handStop"></div>
+        </div>
+      </div>
+
+      <!-- 按鈕區（模擬遊戲按鈕） -->
+      <div class="controls-area">
+        <div class="btn-key" id="actionBtn">
+          <span class="key-hint">按空白鍵(或點此)</span>
+          <span class="btn-label">蒐集起司</span>
+        </div>
+      </div>
+
+      <!-- 進度指示 -->
+      <div class="phase-label" id="phaseLabel"></div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </div>
+
+    <script>
+      /*
+      ============================================================
+      📜 JavaScript 動畫控制器
+      
+      [新手教學] 整體架構說明：
+      這段程式碼使用「時間軸排程」的方式控制動畫：
+      1. 定義每個動作的開始時間和持續時間
+      2. 使用 setTimeout 在指定時間觸發動作
+      3. 每次循環前清除所有計時器，確保乾淨重置
+      
+      時間軸結構（慢版 B，約 22 秒）：
+      ┌─ Go 示範（起司）───────────────────────────┐
+      │ 0ms      起司瞬間出現                        │
+      │ 400ms    手移入指向按鈕 ×3（每次 2100ms）     │
+      │ 6700ms   手點擊按鈕 ×3（每次 1200ms）        │
+      │ 10300ms  ✅ 勾勾 ×3（每次 1000ms）           │
+      │ 13300ms  清場                                │
+      └────────────────────────────────────────────┘
+      ┌─ NoGo 示範（貓咪）─────────────────────────┐
+      │ 14100ms  貓咪瞬間出現                        │
+      │ 14600ms  手移入→HandStop推開 ×3（每次1500ms） │
+      │ 19100ms  ✅ 勾勾 ×3（每次 1000ms）           │
+      │ 22100ms  清場                                │
+      │ 23000ms  ↩ 循環回 0ms                       │
+      └────────────────────────────────────────────┘
+      ============================================================
+    */
+
+      // ===== SVG 素材定義（直接嵌入，無外部載入） =====
+
+      /*
+      [新手教學] 為什麼要把 SVG 放在 JavaScript 裡？
+      因為我們需要在不同時機動態插入/移除這些圖形，
+      放在 JS 常數裡可以隨時用 element.innerHTML = SVG 來顯示。
+    */
+
+      /** 老鼠洞背景（與遊戲程式碼完全一致） */
+      const SVG_MOUSE_HOLE = `<svg viewBox="0 0 300 400" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="300" height="350" fill="#E0CCB8"/>
+      <rect x="0" y="335" width="300" height="15" fill="#bdc3c7"/>
+      <rect x="0" y="350" width="300" height="50" fill="#95a5a6"/>
+      <path d="M 110 350 L 110 300 A 40 40 0 0 1 190 300 L 190 350 Z" fill="#1a252f"/>
+    </svg>`;
+
+      /** 起司 SVG（完整 path data，與遊戲一致） */
+      const SVG_CHEESE = `<svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+      <path d="M48.18 68.45L6.7 69.95s-2.63-2.63-2.25-3.57S39.18 38.6 40.49 38.79s4.32 3.38 6.76 2.25c2.44-1.13 0-7.7.75-8.63c.75-.94 27.59-15.39 29.28-16.14c1.69-.75 3.19-2.44 6.57-1.69s11.83 2.25 21.02 8.45s18.77 13.33 18.02 17.27c-.75 3.94-74.71 28.15-74.71 28.15z" fill="#ffe265"/>
+      <path d="M19.46 115.57c9.2-1.13 94.98-19.52 98.55-20.08c3.57-.56 5.82-3.94 5.82-7.7s-.94-47.49-.94-47.49s-4.13 1.31-9.01 2.44C109 43.86 69.01 53.62 53.25 57.19S12.33 67.33 9.51 67.33s-5.07-.94-5.07-.94s.75 39.04.94 41.86c.19 2.82 1.5 6.19 4.69 7.13s5.27.69 9.39.19z" fill="#feb502"/>
+      <path d="M74.97 25.56c0 2.4 2.44 3.99 6.48 3.87c4.41-.13 5.63-2.75 5.49-4.43c-.14-1.69-2.17-3.17-6.19-3.1c-3.73.07-5.78 1.55-5.78 3.66z" fill="#ff8b0d"/>
+      <path d="M29.92 55.48c-6.5 2.19-5.77 7.88-3.87 9.15c1.9 1.27 4.43 1.2 7.39.14s4.84-2.27 5.14-4.25c.28-1.88-2.18-7.23-8.66-5.04z" fill="#ed6b31"/>
+      <path d="M88.98 39.22c-4.36.2-9.18 3.33-10.98 6.34c-1.9 3.17-2.04 6.9 2.32 9.22c4.36 2.32 19.78-3.59 19.01-9.01c-.77-5.43-5.77-6.76-10.35-6.55z" fill="#ed6b31"/>
+      <path d="M73.85 83.07s6.19-4.58 6.19-7.81c0-3.24-2.67-10.89-14.01-11.47c-10.63-.55-17.18 13.94-10.21 21.4c6.97 7.46 11.19 4.08 13.8 3.38c2.61-.71 4.23-5.5 4.23-5.5z" fill="#ed6b31"/>
+      <path d="M43.23 96.09s6.15-3.85 1.43-8.07c-3.32-2.97-7.76-1.63-10.02.68c-2.89 2.96-2.11 7.67.56 9.78c2.68 2.12 8.03-2.39 8.03-2.39z" fill="#ed6b31"/>
+      <path d="M22.39 78.78s-.7-2.21-3.21-3.1c-2.82-1-7.03 2.51-5.23 6.26c1.62 3.38 5.21 2.39 5.21 2.39l3.23-5.55z" fill="#ed6b31"/>
+      <path d="M112.42 82.01c.61-.66 4.6-3.54 4.6-5.73c0-2.18-6.01-8.92-13.68-3.85s-3.66 12.74-1.55 14.01c2.11 1.27 7.96-1.54 10.63-4.43z" fill="#ed6b31"/>
+      <path d="M30.86 58.93c-4.27 1.48-5.88 4.5-4.81 5.7c1.13 1.27 3.59 2.11 7.88.56c3.32-1.2 5-3.21 4.72-5c-.2-1.3-3.92-2.6-7.79-1.26z" fill="#ff8b0d"/>
+      <path d="M16.62 78.63c-1.87 2.34-.35 5 1.41 5.63c1.76.63 4.86-1.27 4.65-4.43c-.22-3.17-4.37-3.31-6.06-1.2z" fill="#ff8b0d"/>
+      <path d="M38.37 91.38c-4.02 3.26-4.13 6.45-2.58 7.53c1.08.76 5.06 2.34 8.7-.35c2.7-1.99 2.75-6.17 1.9-8.17c-.71-1.7-4.64-1.76-8.02.99z" fill="#ff8b0d"/>
+      <path d="M62.77 73.61c-5.38 5.23-6.66 13.72-1.38 15.72c4.65 1.76 11.33.7 15.27-4.15c4.14-5.1 4.58-10.73 1.92-14.05c-3.18-3.99-11.65-1.55-15.81 2.48z" fill="#ff8b0d"/>
+      <path d="M87.22 44.43c-7.04 2.39-11.19 7.46-7.6 10c3.59 2.53 7.32 2.16 11.4.77c4.63-1.57 8.17-5.21 8.31-8.66c.11-2.83-5.91-4.22-12.11-2.11z" fill="#ff8b0d"/>
+      <path d="M106.02 76.8c-4.79 3.9-6.19 7.81-4.22 9.64s6.69 2.67 11.05-.35c4.53-3.14 4.86-6.7 4.36-9.57c-.56-3.23-6.27-3.73-11.19.28z" fill="#ff8b0d"/>
+    </svg>`;
+
+      /** 貓咪 SVG（完整 path data，與遊戲一致） */
+      const SVG_CAT = `<svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+      <path fill="#292F33" d="M10.478 22.439s.702 2.281-.337 7.993c-.186 1.025-.46 2.072-.599 2.93c-1.757 0-1.851 2.002-1.478 2.002h2.094c1.337 0 2.971-3.334 3.854-7.961s-3.534-4.964-3.534-4.964zm13.042 3.702s2.272 1.22 2.188 4.081c-.033 1.131-.249 2.091-.355 3.024c-1.832 0-1.839 1.985-1.305 1.985h1.856c.923 0 3.001-3.158 3.379-7.281c.379-4.122-5.763-1.809-5.763-1.809z"/>
+      <path fill="#292F33" d="M36 8.447C36 3.525 31.859 1 27 1a1 1 0 1 0 0 2c1.804 0 6.717.934 6.717 5.447c0 2.881-1.567 5.462-3.77 5.982c-.164-.073-.345-.104-.509-.192c-7.239-3.917-13.457.902-15.226-.29c-1.752-1.182-.539-3.255-2.824-5.243c-.33-1.841-1.073-4.477-1.794-4.477c-.549 0-1.265 1.825-1.74 3.656c-.591-1.381-1.363-2.756-1.86-2.756c-.64 0-1.278 2.273-1.594 4.235c-1.68 1.147-2.906 2.809-2.906 4.765c0 2.7 4.05 3.357 5.4 3.411c1.35.054 3.023 3.562 3.585 5.072c1.242 4.367 2.051 8.699 2.698 11.183c-1.649 0-1.804 2.111-1.348 2.111c.713 0 1.953-.003 2.225 0c1.381.014 2.026-4.706 2.026-8.849c0-.212-.011-.627-.011-.627s1.93.505 6.038-.208c2.444-.424 5.03.849 5.746 3.163c.527 1.704 1.399 3.305 1.868 4.484c-1.589 0-1.545 2.037-1.084 2.037c.787 0 1.801.014 2.183 0c1.468-.055.643-7.574 1.03-10.097s1.267-5.578-.229-8.797C34.857 15.236 36 11.505 36 8.447z"/>
+      <circle fill="#C3C914" cx="5.994" cy="11.768" r=".9"/>
+      <path fill="#66757F" d="M2.984 12.86c-.677.423-.677 1.777-1.015 1.777S.954 13.841.954 12.86c-.001-.981 2.862-.52 2.03 0zm3.594 1.483c-.041.026-.09.036-.142.026c-.018-.004-1.548-.241-2.545.146c-.129.05-.341-.023-.413-.191s.023-.365.152-.415c1.44-.569 2.857-.234 2.934-.218c.139.029.195.19.188.372c-.004.114-.104.235-.174.28zm-.472 2.339a.186.186 0 0 1-.141-.031c-.015-.01-1.331-.83-2.402-.853c-.138-.003-.305-.154-.305-.341c0-.186.165-.335.304-.333c1.552.024 2.724.891 2.789.937c.117.082.104.255.027.424c-.049.107-.189.182-.272.197z"/>
+      <path d="M7.854 7.881s.372-.039.859.033c.217-.46.585-.887.585-.887s.281.668.386 1.179c.025.12.218.117.322.189c0 0 .038-3.463-.863-3.836c.001-.002-.755 1.124-1.289 3.322zM4.399 9.36s.384-.267.883-.574c.217-.624.568-1.333.568-1.333s.307.602.345.81c.21-.114.21-.106.403-.19c0 0-.114-2.286-1.099-2.527c0 0-.732 1.372-1.1 3.814z" fill="#7F676D"/>
+      <path fill="#66757F" d="M18.45 23.644c-2.649.57-2.38 2.782-2.38 2.782s1.93.505 6.038-.208a5.542 5.542 0 0 1 3.107.377c-1.607-3.047-4.315-3.479-6.765-2.951z"/>
+      <path fill="#292F33" d="M5.976 10.982s.333.347.319.778c-.014.43-.25.833-.25.833s-.292-.347-.319-.826c-.027-.48.25-.785.25-.785z"/>
+    </svg>`;
+
+      /**
+       * FingerTap 手指 SVG（只取 state-idle 靜態圖形，移除內建動畫）
+       * [新手教學] 我們只需要手指的靜態外觀，動畫由 JS 控制
+       */
+      const SVG_FINGER_TAP = `<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+      <path style="fill:#FDC794;" d="M427.677,326.621V220.69c0-16.772-14.124-35.31-30.897-35.31s-30.897,17.655-30.897,35.31V52.966c0-16.772-14.124-35.31-30.897-35.31c-16.772,0-30.897,18.538-30.897,35.31v185.379V35.31c0-16.772-14.124-35.31-30.897-35.31c-16.772,0-30.897,17.655-30.897,35.31v35.31c0-16.772-14.124-35.31-30.897-35.31s-30.897,17.655-30.897,35.31v211.862c0-24.717-21.186-74.152-44.138-97.103l0,0c-19.421-19.421-74.152-6.179-44.138,35.31c21.186,29.131,35.31,90.924,35.31,123.586c0,78.566,61.793,105.931,61.793,105.931v60.91h211.862v-60.91l0,0C429.442,411.366,427.677,414.014,427.677,326.621"/>
+      <g>
+        <path style="fill:#F9A671;" d="M304.091,440.497h-26.483c-5.297,0-8.828-3.531-8.828-8.828s3.531-8.828,8.828-8.828h26.483c5.297,0,8.828,3.531,8.828,8.828S309.387,440.497,304.091,440.497z"/>
+        <path style="fill:#F9A671;" d="M312.918,475.807H268.78c-5.297,0-8.828-3.531-8.828-8.828s3.531-8.828,8.828-8.828h44.138c5.297,0,8.828,3.531,8.828,8.828S318.215,475.807,312.918,475.807z"/>
+        <path style="fill:#F9A671;" d="M242.297,184.497c-5.297,0-8.828-3.531-8.828-8.828V60.91c0-5.297,3.531-8.828,8.828-8.828s8.828,3.531,8.828,8.828v114.759C251.125,180.966,247.594,184.497,242.297,184.497z"/>
+        <path style="fill:#F9A671;" d="M304.091,184.497c-5.297,0-8.828-3.531-8.828-8.828V43.255c0-5.297,3.531-8.828,8.828-8.828c5.297,0,8.828,3.531,8.828,8.828v132.414C312.918,180.966,309.387,184.497,304.091,184.497z"/>
+        <path style="fill:#F9A671;" d="M365.884,263.945c-5.297,0-8.828-3.531-8.828-8.828v-44.138c0-5.297,3.531-8.828,8.828-8.828c5.297,0,8.828,3.531,8.828,8.828v44.138C374.711,260.414,371.18,263.945,365.884,263.945z"/>
+      </g>
+    </svg>`;
+
+      /**
+       * HandStop 阻止手 SVG（張開手掌，表示「停！」）
+       */
+      const SVG_HAND_STOP = `<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+      <g transform="translate(-1)">
+        <path style="fill:#FDC794;" d="M402.635,450.207c28.248-37.959,26.483-36.193,26.483-123.586V145.655c0-16.772-14.124-30.897-30.897-30.897s-30.897,14.124-30.897,30.897V256V48.552c0-16.772-14.124-30.897-30.897-30.897c-16.772,0-30.897,14.124-30.897,30.897v189.793V30.897C305.532,14.124,291.408,0,274.635,0s-30.897,14.124-30.897,30.897v198.621V66.207c0-16.772-14.124-30.897-30.897-30.897s-30.897,14.124-30.897,30.897v216.276c0-24.717-21.186-74.152-44.138-97.103l0,0c-19.421-19.421-74.152-6.179-44.138,35.31c21.186,29.131,35.31,90.924,35.31,123.586c0,78.566,61.793,105.931,61.793,105.931v35.31c0,15.007,11.476,26.483,26.483,26.483h158.897c15.007,0,26.483-11.476,26.483-26.483V450.207z"/>
+        <g>
+          <path style="fill:#F9A671;" d="M216.373,459.034h-26.483c-5.297,0-8.828-3.531-8.828-8.828c0-5.297,3.531-8.828,8.828-8.828h26.483c5.297,0,8.828,3.531,8.828,8.828C225.201,455.503,221.67,459.034,216.373,459.034z"/>
+          <path style="fill:#F9A671;" d="M401.753,459.034H384.98c-5.297,0-8.828-3.531-8.828-8.828c0-5.297,3.531-8.828,8.828-8.828h16.772c5.297,0,8.828,3.531,8.828,8.828C410.58,455.503,407.049,459.034,401.753,459.034z"/>
+          <path style="fill:#F9A671;" d="M243.739,238.345c-5.297,0-8.828-3.531-8.828-8.828V61.793c0-5.297,3.531-8.828,8.828-8.828s8.828,3.531,8.828,8.828v167.724C252.566,234.814,249.035,238.345,243.739,238.345z"/>
+          <path style="fill:#F9A671;" d="M305.532,238.345c-5.297,0-8.828-3.531-8.828-8.828V44.138c0-5.297,3.531-8.828,8.828-8.828c5.297,0,8.828,3.531,8.828,8.828v185.379C314.36,234.814,310.828,238.345,305.532,238.345z"/>
+          <path style="fill:#F9A671;" d="M367.325,264.828c-5.297,0-8.828-3.531-8.828-8.828V123.586c0-5.297,3.531-8.828,8.828-8.828s8.828,3.531,8.828,8.828V256C376.153,261.297,372.622,264.828,367.325,264.828z"/>
+        </g>
+      </g>
+    </svg>`;
+
+      // ===== DOM 元素快取 =====
+      const DOM = {
+        bgLayer: document.getElementById("bgLayer"),
+        cheese: document.getElementById("cheeseStimulus"),
+        cat: document.getElementById("catStimulus"),
+        checkmark: document.getElementById("checkmark"),
+        handFinger: document.getElementById("handFinger"),
+        handStop: document.getElementById("handStop"),
+        btn: document.getElementById("actionBtn"),
+        phaseLabel: document.getElementById("phaseLabel"),
+        progressFill: document.getElementById("progressFill"),
+      };
+
+      // ===== 計時器管理 =====
+
+      /**
+       * [新手教學] 計時器陣列
+       * 每次使用 setTimeout 時，把 ID 存入這個陣列。
+       * 循環重置時，用 clearAllTimers() 一次清除全部，
+       * 避免上一輪的動作「殘留」到下一輪。
+       */
+      let timers = [];
+
+      /** 安全的 setTimeout 包裝，自動記錄計時器 ID */
+      function schedule(fn, delay) {
+        const id = setTimeout(fn, delay);
+        timers.push(id);
+        return id;
+      }
+
+      /** 清除所有已排程的計時器 */
+      function clearAllTimers() {
+        timers.forEach((id) => clearTimeout(id));
+        timers = [];
+      }
+
+      // ===== 動畫工具函數 =====
+
+      /**
+       * 移動手指到指定位置
+       * @param {HTMLElement} hand - 手的 DOM 元素
+       * @param {string} position - CSS 位置值（用 transform 控制）
+       * @param {number} duration - 過渡時間（ms）
+       * @param {string} easing - 緩動函數
+       */
+      function moveHand(
+        hand,
+        position,
+        duration,
+        easing = "cubic-bezier(0.4, 0, 0.2, 1)",
+      ) {
+        hand.style.transition = `all ${duration}ms ${easing}`;
+        Object.assign(hand.style, position);
+      }
+
+      /**
+       * 重置手的位置到畫面外
+       * @param {HTMLElement} hand - 手的 DOM 元素
+       * @param {string} side - 'right' 或 'left'，決定隱藏在哪一側
+       */
+      function resetHand(hand, side) {
+        hand.style.transition = "none";
+        hand.style.opacity = "0";
+        hand.style.bottom = ""; /* 重置高度，確保每次都從 CSS 定義的高處進入 */
+        if (side === "right") {
+          hand.style.right = "-100px";
+          hand.style.left = "auto";
+        } else {
+          hand.style.left = "-100px";
+          hand.style.right = "auto";
+        }
+        hand.style.transform = "rotate(0deg)";
+      }
+
+      /** 顯示綠色勾勾（popIn 彈出） */
+      function showCheckmark() {
+        DOM.checkmark.className = "checkmark show";
+      }
+
+      /** 隱藏綠色勾勾（淡出） */
+      function hideCheckmark() {
+        DOM.checkmark.className = "checkmark hide";
+      }
+
+      /** 重置勾勾到初始狀態 */
+      function resetCheckmark() {
+        DOM.checkmark.className = "checkmark";
+        DOM.checkmark.style.opacity = "0";
+        DOM.checkmark.style.transform = "translateX(-50%) scale(0)";
+      }
+
+      /** 按鈕按下效果 */
+      function pressButton() {
+        DOM.btn.classList.add("pressed", "glow");
+      }
+
+      /** 按鈕恢復 */
+      function releaseButton() {
+        DOM.btn.classList.remove("pressed", "glow");
+      }
+
+      /**
+       * 更新進度條
+       * @param {number} percent - 0~100
+       * @param {string} type - 'go' 或 'nogo'
+       */
+      function updateProgress(percent, type) {
+        DOM.progressFill.className = `progress-fill ${type}`;
+        DOM.progressFill.style.width = `${percent}%`;
+      }
+
+      /**
+       * 完全重置所有視覺狀態
+       * [新手教學] 每次循環開始前呼叫，確保畫面乾淨
+       */
+      function resetAll() {
+        // 隱藏刺激物
+        DOM.cheese.style.opacity = "0";
+        DOM.cat.style.opacity = "0";
+
+        // 重置手
+        resetHand(DOM.handFinger, "right");
+        resetHand(DOM.handStop, "left");
+
+        // 重置勾勾
+        resetCheckmark();
+
+        // 重置按鈕
+        releaseButton();
+
+        // 重置進度條
+        updateProgress(0, "go");
+
+        // 清除階段標籤
+        DOM.phaseLabel.textContent = "";
+      }
+
+      // ===== 主要動畫流程 =====
+
+      /**
+       * 總循環時長（ms）
+       * 慢版 B 約 23 秒
+       */
+      const TOTAL_CYCLE = 23000;
+
+      /**
+       * =============================================
+       * 🧀 Go 示範（起司）
+       * =============================================
+       * 時間軸：0ms ~ 14100ms
+       */
+      function playGo() {
+        DOM.phaseLabel.textContent = "── 示範 1/2：看到起司要按！──";
+        updateProgress(0, "go");
+
+        // ─── 階段 1：起司瞬間出現（0ms）───
+        DOM.cheese.innerHTML = SVG_CHEESE;
+        DOM.cheese.style.opacity = "1"; // 無動畫，直接出現
+
+        // ─── 階段 2：手指移入移出 ×3（400ms 開始）───
+        // 每次循環：移入 800ms → 停留 700ms → 退出 600ms = 2100ms
+        for (let i = 0; i < 3; i++) {
+          const baseTime = 400 + i * 2100;
+
+          // 手指出現 + 從右側移入
+          schedule(() => {
+            resetHand(DOM.handFinger, "right");
+            DOM.handFinger.innerHTML = SVG_FINGER_TAP;
+
+            // 先讓元素就位（下一幀才開始動畫）
+            requestAnimationFrame(() => {
+              DOM.handFinger.style.opacity = "1";
+              moveHand(
+                DOM.handFinger,
+                {
+                  right: "110px" /* 移到按鈕上方 */,
+                  bottom:
+                    "-30px" /* 往按鈕方向移入 (負值代表移出老鼠洞範圍，進入按鈕區) */,
+                  bottom: "-80px" /* 移入按鈕正中間 */,
+                },
+                800,
+              );
+            });
+          }, baseTime);
+
+          // 停留 700ms 後退出
+          schedule(() => {
+            moveHand(
+              DOM.handFinger,
+              {
+                right: "-100px",
+              },
+              600,
+            );
+          }, baseTime + 1500);
+
+          // 淡出
+          schedule(() => {
+            DOM.handFinger.style.opacity = "0";
+          }, baseTime + 2000);
+
+          // 更新進度
+          schedule(() => {
+            updateProgress(((baseTime + 2100) / 14100) * 50, "go");
+          }, baseTime + 2100);
+        }
+
+        // ─── 階段 3：手指點擊按鈕 ×3（6700ms 開始）───
+        // 每次循環：移入 500ms → 準備 200ms → 點擊 300ms → 回彈 → 退出 = 1200ms
+        for (let i = 0; i < 3; i++) {
+          const baseTime = 6700 + i * 1200;
+
+          // 手指移入到按鈕正上方
+          schedule(() => {
+            resetHand(DOM.handFinger, "right");
+            DOM.handFinger.innerHTML = SVG_FINGER_TAP;
+            requestAnimationFrame(() => {
+              DOM.handFinger.style.opacity = "1";
+              moveHand(
+                DOM.handFinger,
+                {
+                  right: "110px",
+                  bottom: "-80px" /* 準備按下的位置（按鈕中間） */,
+                },
+                400,
+              );
+            });
+          }, baseTime);
+
+          // 按下：手指下壓 + 按鈕下壓 + 發光
+          schedule(() => {
+            DOM.handFinger.style.transition = "all 150ms ease-in";
+            DOM.handFinger.style.bottom = "-95px"; /* 下壓至深處 */
+            pressButton();
+          }, baseTime + 500);
+
+          // 回彈
+          schedule(() => {
+            DOM.handFinger.style.transition = "all 150ms ease-out";
+            DOM.handFinger.style.bottom = "-80px";
+            releaseButton();
+          }, baseTime + 750);
+
+          // 手指退出
+          schedule(() => {
+            moveHand(DOM.handFinger, { right: "-100px" }, 300);
+          }, baseTime + 900);
+
+          schedule(() => {
+            DOM.handFinger.style.opacity = "0";
+          }, baseTime + 1150);
+        }
+
+        // ─── 階段 4：綠色勾勾 ×3（10300ms 開始）───
+        // 每次：popIn 300ms → 停留 500ms → fadeOut 200ms = 1000ms
+        for (let i = 0; i < 3; i++) {
+          const baseTime = 10300 + i * 1000;
+
+          schedule(() => showCheckmark(), baseTime);
+          schedule(() => hideCheckmark(), baseTime + 800);
+          schedule(() => resetCheckmark(), baseTime + 1000);
+        }
+
+        // ─── 階段 5：清場（13300ms）───
+        schedule(() => {
+          DOM.cheese.style.transition = "opacity 0.3s";
+          DOM.cheese.style.opacity = "0";
+          updateProgress(50, "go");
+        }, 13300);
+
+        // 過渡空白
+        schedule(() => {
+          DOM.cheese.style.transition = "none";
+          DOM.cheese.innerHTML = "";
+          resetHand(DOM.handFinger, "right");
+          resetCheckmark();
+        }, 13800);
+      }
+
+      /**
+       * =============================================
+       * 😺 NoGo 示範（貓咪）
+       * =============================================
+       * 時間軸：14100ms ~ 23000ms
+       *
+       * 【關鍵設計】HandStop 推開 FingerTap 的機制：
+       * 1. FingerTap 從右側移入，準備要按按鈕
+       * 2. 在 FingerTap 還沒碰到按鈕時，HandStop 從左側衝入
+       * 3. HandStop 推著 FingerTap 往右退出
+       * 4. HandStop 同時做 ±45° 搖手動畫
+       * 5. HandStop 退出
+       */
+      function playNoGo() {
+        DOM.phaseLabel.textContent = "── 示範 2/2：看到貓咪不要按！──";
+
+        // ─── 階段 1：貓咪瞬間出現（14100ms）───
+        schedule(() => {
+          DOM.cat.innerHTML = SVG_CAT;
+          DOM.cat.style.opacity = "1"; // 無動畫，直接出現
+        }, 14100);
+
+        // ─── 階段 2：FingerTap移入 → HandStop推開 ×3（14600ms 開始）───
+        // 每次循環約 1500ms
+        for (let i = 0; i < 3; i++) {
+          const baseTime = 14600 + i * 1500;
+
+          // Step A: FingerTap 從右側移入（看起來要去按按鈕）
+          schedule(() => {
+            resetHand(DOM.handFinger, "right");
+            DOM.handFinger.innerHTML = SVG_FINGER_TAP;
+            requestAnimationFrame(() => {
+              DOM.handFinger.style.opacity = "1";
+              moveHand(
+                DOM.handFinger,
+                {
+                  right: "130px" /* 移向按鈕但還沒碰到 */,
+                  bottom: "-80px" /* 往按鈕中間 */,
+                },
+                500,
+                "cubic-bezier(0.6, 0, 0.4, 1)",
+              );
+            });
+          }, baseTime);
+
+          // Step B: HandStop 從左側衝入！同時開始搖手
+          schedule(() => {
+            resetHand(DOM.handStop, "left");
+            DOM.handStop.innerHTML = SVG_HAND_STOP;
+            DOM.handStop.style.transformOrigin =
+              "center bottom"; /* 搖手的旋轉中心在手腕 */
+
+            requestAnimationFrame(() => {
+              DOM.handStop.style.opacity = "1";
+              /* HandStop 衝到畫面中央，擋住按鈕 */
+              moveHand(
+                DOM.handStop,
+                {
+                  left: "120px",
+                  bottom: "-70px" /* 攔截位置降低以配合手指 */,
+                },
+                300,
+                "cubic-bezier(0.2, 0, 0, 1)",
+              );
+
+              /* 同時啟動搖手動畫（±45°，大幅度） */
+              DOM.handStop.style.animation = "shakeHand 0.8s ease-in-out 1";
+            });
+
+            /* 同時：FingerTap 被推往右側退出 */
+            moveHand(
+              DOM.handFinger,
+              {
+                right: "-100px",
+                bottom: "-80px",
+              },
+              400,
+              "cubic-bezier(0, 0, 0.6, 1)",
+            );
+          }, baseTime + 450);
+
+          // Step C: FingerTap 完全消失
+          schedule(() => {
+            DOM.handFinger.style.opacity = "0";
+          }, baseTime + 800);
+
+          // Step D: HandStop 搖完手後退出（往左退回）
+          schedule(() => {
+            DOM.handStop.style.animation = "none";
+            moveHand(
+              DOM.handStop,
+              {
+                left: "-100px",
+              },
+              400,
+            );
+          }, baseTime + 1100);
+
+          // Step E: HandStop 完全消失
+          schedule(() => {
+            DOM.handStop.style.opacity = "0";
+            resetHand(DOM.handStop, "left");
+          }, baseTime + 1450);
+
+          // 更新進度
+          schedule(() => {
+            updateProgress(
+              50 + ((baseTime - 14100 + 1500) / 8900) * 50,
+              "nogo",
+            );
+          }, baseTime + 1500);
+        }
+
+        // ─── 階段 3：綠色勾勾 ×3（19100ms 開始）───
+        for (let i = 0; i < 3; i++) {
+          const baseTime = 19100 + i * 1000;
+
+          schedule(() => showCheckmark(), baseTime);
+          schedule(() => hideCheckmark(), baseTime + 800);
+          schedule(() => resetCheckmark(), baseTime + 1000);
+        }
+
+        // ─── 階段 4：清場（22100ms）───
+        schedule(() => {
+          DOM.cat.style.transition = "opacity 0.3s";
+          DOM.cat.style.opacity = "0";
+          updateProgress(100, "nogo");
+        }, 22100);
+
+        schedule(() => {
+          DOM.cat.style.transition = "none";
+          DOM.cat.innerHTML = "";
+          resetHand(DOM.handFinger, "right");
+          resetHand(DOM.handStop, "left");
+          resetCheckmark();
+        }, 22600);
+      }
+
+      /**
+       * =============================================
+       * 🔄 主循環控制器
+       * =============================================
+       * 負責：
+       * 1. 清除上一輪的所有計時器
+       * 2. 重置所有視覺狀態
+       * 3. 啟動 Go + NoGo 示範
+       * 4. 在結束時排程下一次循環
+       */
+      function startCycle() {
+        clearAllTimers();
+        resetAll();
+
+        // 啟動 Go 示範
+        playGo();
+
+        // 啟動 NoGo 示範（已內含延遲，會在 Go 結束後接續）
+        playNoGo();
+
+        // 排程下一次循環
+        schedule(() => startCycle(), TOTAL_CYCLE);
+      }
+
+      // ===== 初始化 =====
+
+      /**
+       * [新手教學] 頁面載入完成後執行
+       * 1. 載入老鼠洞背景
+       * 2. 初始化手的 SVG
+       * 3. 開始動畫循環
+       */
+      function init() {
+        // 載入老鼠洞背景
+        DOM.bgLayer.innerHTML = SVG_MOUSE_HOLE;
+
+        // 預載手指 SVG
+        DOM.handFinger.innerHTML = SVG_FINGER_TAP;
+        DOM.handStop.innerHTML = SVG_HAND_STOP;
+
+        // 開始第一次循環
+        startCycle();
+      }
+
+      // 等 DOM 就緒後初始化
+      document.addEventListener("DOMContentLoaded", init);
+    </script>
+  </body>
+</html>

@@ -2,13 +2,10 @@
 <html lang="zh-TW">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app"
     />
     <title>探險地圖 — 執行功能訓練遊戲</title>
     <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
@@ -16,6 +13,8 @@
     <link rel="manifest" href="../manifest.json" />
     <meta name="theme-color" content="#302b63" />
     <link rel="stylesheet" href="../css/themes/base.css" />
+    <link rel="stylesheet" href="../css/themes/theme-field-primary.css" />
+    <link rel="stylesheet" href="../css/themes/theme-rule-independent.css" />
     <link rel="stylesheet" href="../css/main.css" />
     <link
       rel="preload"
@@ -27,6 +26,7 @@
       ><link rel="stylesheet" href="../css/components/landscape-hint.css"
     /></noscript>
     <link rel="stylesheet" href="../css/pages/adventure-map.css" />
+    <link rel="stylesheet" href="../css/components/story-dialogue.css" />
     <!-- style block extracted → css/pages/adventure-map.css -->
     <link
       rel="preload"
@@ -38,8 +38,13 @@
       ><link rel="stylesheet" href="../css/components/navbar.css"
     /></noscript>
     <!-- === JS 依賴（載入順序重要）=== -->
+    <script defer src="../js/utils/logger.js"></script>
+    <script defer src="../js/shared/game-modal.js"></script>
+    <script defer src="../js/firebase-bundle.js"></script>
+    <script defer src="../js/shared/firestore-leaderboard.js"></script>
     <script defer src="../js/game-config.js"></script>
     <script defer src="../js/adventure-maps-config.js"></script>
+    <script defer src="../js/story-config.js"></script>
     <script defer src="../js/utils/storage.js"></script>
     <script defer src="../js/utils/score-calculator.js"></script>
     <script defer src="../js/utils/level-calculator.js"></script>
@@ -51,60 +56,23 @@
     <script defer src="../js/shared/focus-trap.js"></script>
     <script defer src="../js/shared/navbar.js"></script>
     <script defer src="../js/shared/landscape-hint.js"></script>
+    <script defer src="../js/shared/story-dialogue-controller.js"></script>
     <script defer src="../js/singleplayer/adventure-map-controller.js"></script>
   </head>
   <body>
+    <a href="#main-content" class="skip-link">跳到主要內容</a>
     <!-- === 頂部狀態列 === -->
     <header class="adventure-header">
       <div class="header-left">
-        <button
-          class="btn-back"
-          onclick="ModeController.goToHome()"
-          aria-label="返回首頁"
-        >
-          ←
-        </button>
         <span class="header-title" id="header-title">🐭 小老鼠冒險</span>
       </div>
       <div class="header-right">
-        <button
-          class="btn-pet"
-          onclick="window.location.href = 'pet.html'"
-          aria-label="我的小雞"
-          title="🐔 我的小雞"
-        >
-          🐔
-        </button>
-        <button
-          class="btn-shop"
-          onclick="window.location.href = 'avatar-shop.html'"
-          aria-label="換裝商店"
-          title="🛍️ 換裝商店"
-        >
-          🛍️
-        </button>
-        <button
-          class="btn-sticker-book"
-          onclick="window.location.href = 'sticker-book.html'"
-          aria-label="貼紙圖鑑"
-          title="📖 貼紙圖鑑"
-        >
-          📖
-        </button>
         <div class="level-display" id="level-display">
           <span class="level-icon">🥚</span>
           <span class="level-name">蛋寶寶</span>
-          <span
-            class="level-label"
-            style="
-              font-size: 0.65rem;
-              color: rgba(255, 255, 255, 0.7);
-              margin-left: 4px;
-            "
-            >小雞等級</span
-          >
         </div>
         <div class="stars-display">⭐ <span id="total-stars">0</span></div>
+        <div class="badges-display">🏅 <span id="total-badges">0</span></div>
       </div>
     </header>
 
@@ -159,6 +127,8 @@
           <p class="point-info-details" id="popup-details">
             🐭 小老鼠 × 規則一
           </p>
+          <!-- 故事系統：開場對話容器 -->
+          <div id="popup-story-opening" style="display: none"></div>
           <p class="point-info-wm" id="popup-wm" style="display: none">
             🧠 含工作記憶測驗
           </p>
@@ -168,6 +138,13 @@
           </div>
           <div class="point-info-actions">
             <button class="btn-cancel" onclick="closePointInfo()">取消</button>
+            <a
+              class="btn-cancel"
+              id="popup-rule-link"
+              style="text-decoration: none; text-align: center"
+              target="_blank"
+              >📖 規則</a
+            >
             <button
               class="btn-play"
               id="popup-play-btn"
@@ -230,6 +207,36 @@
           <div style="display: flex; flex-direction: column; gap: 14px">
             <div>
               <label
+                for="idChildCode"
+                style="
+                  display: block;
+                  color: rgba(255, 255, 255, 0.7);
+                  font-size: 0.8rem;
+                  font-weight: 600;
+                  margin-bottom: 4px;
+                "
+                >🔑 兒童代碼（研究用，選填）</label
+              >
+              <input
+                id="idChildCode"
+                type="text"
+                placeholder="例如：P001（由研究者分配）"
+                maxlength="20"
+                style="
+                  width: 100%;
+                  padding: 10px 14px;
+                  border-radius: 10px;
+                  border: 1px solid rgba(255, 255, 255, 0.15);
+                  background: rgba(255, 255, 255, 0.06);
+                  color: #fff;
+                  font-size: 1rem;
+                  outline: none;
+                  box-sizing: border-box;
+                "
+              />
+            </div>
+            <div>
+              <label
                 for="idNickname"
                 style="
                   display: block;
@@ -268,12 +275,12 @@
                   font-weight: 600;
                   margin-bottom: 4px;
                 "
-                >🏫 班級</label
+                >🏫 看板代碼或班級名稱</label
               >
               <input
                 id="idClass"
                 type="text"
-                placeholder="例如：大班 或 中A班"
+                placeholder="例如：AB3K7X 或 大班"
                 maxlength="20"
                 style="
                   width: 100%;
@@ -287,6 +294,15 @@
                   box-sizing: border-box;
                 "
               />
+              <div
+                id="idClassStatus"
+                style="
+                  margin-top: 6px;
+                  font-size: 0.78rem;
+                  min-height: 1.2em;
+                  transition: color 0.2s;
+                "
+              ></div>
             </div>
             <button
               id="idSubmit"

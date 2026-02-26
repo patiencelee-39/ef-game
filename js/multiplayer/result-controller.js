@@ -24,8 +24,11 @@ function loadSpectatorResults() {
   var params = new URLSearchParams(window.location.search);
   var roomCode = params.get("room");
   if (!roomCode) {
-    alert("找不到房間資訊");
-    window.location.href = "../index.html";
+    GameModal.alert("找不到房間", "找不到房間資訊", { icon: "❌" }).then(
+      function () {
+        window.location.href = "../index.html";
+      },
+    );
     return;
   }
 
@@ -178,8 +181,11 @@ function loadResults() {
   // 從 localStorage 獲取結果
   const savedResult = localStorage.getItem("gameResult");
   if (!savedResult) {
-    alert("未找到遊戲結果");
-    window.location.href = "../index.html";
+    GameModal.alert("無結果", "未找到遊戲結果", { icon: "❌" }).then(
+      function () {
+        window.location.href = "../index.html";
+      },
+    );
     return;
   }
 
@@ -238,6 +244,9 @@ function displayResults() {
   // 場地分析
   displayStageBreakdown();
 
+  // SDT 信號偵測理論
+  displaySDT();
+
   // 慶祝動畫
   if (resultData.accuracy >= 90) {
     document.getElementById("celebration").textContent = "🏆";
@@ -249,6 +258,101 @@ function displayResults() {
 
   // 計算排名（如果是多人模式）
   calculateRank();
+}
+
+function displaySDT() {
+  var section = document.getElementById("sdtSection");
+  var container = document.getElementById("sdtContent");
+  if (!section || !container) return;
+
+  // 確認 CsvReport 可用
+  if (typeof CsvReport === "undefined" || !CsvReport.calculateSDT) return;
+
+  var answers = resultData.answers || [];
+  if (answers.length === 0) return;
+
+  var sdt = CsvReport.calculateSDT(answers);
+  if (!sdt || sdt.dPrime == null) return;
+
+  // d' 解讀
+  var dClass = "";
+  var dNote = "";
+  if (sdt.dPrime >= 2.0) {
+    dClass = "stat-value--good";
+    dNote = "優秀的辨別力！";
+  } else if (sdt.dPrime >= 1.0) {
+    dClass = "";
+    dNote = "不錯的辨別力";
+  } else {
+    dClass = "stat-value--bad";
+    dNote = "還需加強辨別力";
+  }
+
+  // c 解讀
+  var cNote = "";
+  if (sdt.criterion > 0.3) {
+    cNote = "偏保守（傾向不按）";
+  } else if (sdt.criterion < -0.3) {
+    cNote = "偏冒險（傾向按）";
+  } else {
+    cNote = "策略平衡";
+  }
+
+  var html = '<div class="sdt-card" style="padding:16px;">';
+
+  // 核心指標 grid
+  html += '<div class="stat-grid">';
+  html += _sdtStatItem(sdt.dPrime.toFixed(2), "d\u2032 敏感度", dClass);
+  html += _sdtStatItem(sdt.criterion.toFixed(2), "c 反應偏向", "");
+  html += _sdtStatItem(sdt.beta.toFixed(2), "\u03B2 決策權重", "");
+  html += _sdtStatItem(
+    Math.round(sdt.hitRate * 100) + "%",
+    "Hit Rate 命中率",
+    sdt.hitRate >= 0.8 ? "stat-value--good" : "",
+  );
+  html += "</div>";
+
+  // 計數 pills
+  html += '<div class="sdt-detail-row">';
+  html +=
+    '<span class="sdt-count sdt-hit">Hit ' +
+    sdt.hits +
+    "</span>" +
+    '<span class="sdt-count sdt-miss">Miss ' +
+    sdt.misses +
+    "</span>" +
+    '<span class="sdt-count sdt-fa">FA ' +
+    sdt.fa +
+    "</span>" +
+    '<span class="sdt-count sdt-cr">CR ' +
+    sdt.cr +
+    "</span>";
+  html += "</div>";
+
+  // 解讀
+  html += '<div class="sdt-notes">';
+  html += "<div>" + dNote + "</div>";
+  html += "<div>" + cNote + "</div>";
+  html += "</div>";
+
+  html += "</div>";
+
+  container.innerHTML = html;
+  section.style.display = "";
+}
+
+function _sdtStatItem(value, label, extraClass) {
+  return (
+    '<div class="stat-item" style="text-align:center;">' +
+    '<div class="stat-value ' +
+    (extraClass || "") +
+    '" style="font-size:1.5rem;font-weight:700;">' +
+    value +
+    "</div>" +
+    '<div class="stat-label" style="font-size:0.75rem;color:#aaa;margin-top:2px;">' +
+    label +
+    "</div></div>"
+  );
 }
 
 function displayBadges() {
@@ -370,7 +474,9 @@ async function calculateRank() {
     try {
       var room = JSON.parse(roomData);
       roomCode = room.code || room.roomCode;
-    } catch (e) {}
+    } catch (e) {
+      Logger.warn("[MP-Result] roomData parse failed:", e);
+    }
   }
   if (!roomCode) {
     document.getElementById("rankInfo").textContent = "單人模式";
@@ -379,6 +485,9 @@ async function calculateRank() {
 
   var rankEl = document.getElementById("rankInfo");
   rankEl.textContent = "等待其他玩家完成…";
+
+  // 接力模式：顯示團隊排名
+  _loadRelayTeamRanking(roomCode);
 
   var scoresRef = firebase.database().ref("rooms/" + roomCode + "/scores");
 
@@ -551,37 +660,391 @@ function _fmtFrac(p) {
   return p.totalCorrect + "/" + p.totalTrials;
 }
 
-function shareResult() {
-  const shareText = `我在執行功能遊戲中獲得了 ${resultData.score} 分！準確率 ${resultData.accuracy.toFixed(1)}%！快來挑戰看看！`;
+// =========================================
+// 接力賽團隊排名
+// =========================================
 
-  if (navigator.share) {
-    navigator
-      .share({
-        title: "執行功能遊戲 - 我的成績",
-        text: shareText,
-      })
-      .catch(() => {
-        // 分享失敗，改用複製
-        copyToClipboard(shareText);
+function _loadRelayTeamRanking(roomCode) {
+  var section = document.getElementById("relayResultSection");
+  var container = document.getElementById("relayTeamRanking");
+  if (!section || !container) return;
+
+  var roomRef = firebase.database().ref("rooms/" + roomCode);
+  roomRef.once("value").then(function (snapshot) {
+    var roomData = snapshot.val();
+    if (
+      !roomData ||
+      (roomData.gameMode !== "relay" && roomData.gameMode !== "team")
+    )
+      return;
+
+    var teams = roomData.teams || {};
+    var scores = roomData.scores || {};
+    var myUid = firebase.auth().currentUser
+      ? firebase.auth().currentUser.uid
+      : null;
+
+    // 組裝隊伍排名資料
+    var teamList = [];
+
+    for (var teamId in teams) {
+      if (!teams.hasOwnProperty(teamId)) continue;
+      var team = teams[teamId];
+      var members = team.members || {};
+      var order = team.order || Object.keys(members);
+      // 使用 Firebase 中存儲的隊名/顏色/emoji，自帶 fallback
+      var preset = {
+        name: team.name || teamId,
+        emoji: team.emoji || "⚪",
+        color: team.color || "#999",
+      };
+
+      var totalScore = 0;
+      var memberDetails = [];
+      var maxScore = 0;
+      var mvpUid = null;
+
+      order.forEach(function (uid) {
+        var ps = scores[uid] || {};
+        var memberScore = ps.totalScore || 0;
+        totalScore += memberScore;
+        memberDetails.push({
+          uid: uid,
+          nickname:
+            ps.nickname ||
+            (members[uid] && members[uid].nickname) ||
+            uid.slice(0, 6),
+          score: memberScore,
+          accuracy: ps.accuracy || 0,
+          isMe: uid === myUid,
+        });
+        if (memberScore > maxScore) {
+          maxScore = memberScore;
+          mvpUid = uid;
+        }
       });
-  } else {
-    copyToClipboard(shareText);
-  }
-}
 
-function copyToClipboard(text) {
-  navigator.clipboard.writeText(text).then(() => {
-    alert("成績已複製到剪貼簿！");
+      teamList.push({
+        teamId: teamId,
+        name: preset.name,
+        emoji: preset.emoji,
+        color: preset.color,
+        totalScore: totalScore,
+        members: memberDetails,
+        mvpUid: mvpUid,
+      });
+    }
+
+    // 按總分排名
+    teamList.sort(function (a, b) {
+      return b.totalScore - a.totalScore;
+    });
+
+    if (teamList.length === 0) return;
+
+    section.style.display = "";
+    var html = "";
+
+    teamList.forEach(function (team, rank) {
+      var medals = ["🥇", "🥈", "🥉"];
+      var medal = rank < 3 ? medals[rank] : "#" + (rank + 1);
+
+      html +=
+        '<div class="team-rank-card" style="border-left:4px solid ' +
+        team.color +
+        '">' +
+        '<div class="team-rank-header">' +
+        '<span class="team-rank-medal">' +
+        medal +
+        "</span>" +
+        '<span class="team-rank-name">' +
+        team.emoji +
+        " " +
+        team.name +
+        "</span>" +
+        '<span class="team-rank-score">' +
+        team.totalScore +
+        " 分</span>" +
+        "</div>" +
+        '<div class="team-rank-members">';
+
+      var maxMemberScore = Math.max.apply(
+        null,
+        team.members.map(function (m) {
+          return m.score;
+        }),
+      );
+
+      team.members.forEach(function (m) {
+        var pct =
+          maxMemberScore > 0 ? Math.round((m.score / maxMemberScore) * 100) : 0;
+        var isMvp = m.uid === team.mvpUid;
+        html +=
+          '<div class="member-contribution' +
+          (m.isMe ? " is-me" : "") +
+          '">' +
+          '<span class="member-name">' +
+          _escHtml(m.nickname) +
+          (isMvp ? ' <span class="mvp-badge">MVP</span>' : "") +
+          "</span>" +
+          '<div class="contribution-bar-track">' +
+          '<div class="contribution-bar-fill" style="width:' +
+          pct +
+          "%;background:" +
+          team.color +
+          '"></div>' +
+          "</div>" +
+          '<span class="member-score">' +
+          m.score +
+          "</span>" +
+          "</div>";
+      });
+
+      html += "</div></div>";
+    });
+
+    container.innerHTML = html;
   });
 }
+
+
 
 function playAgain() {
   // 清除遊戲記錄
   localStorage.removeItem("gameResult");
 
+  // 嘗試清理 Firebase 房間（遊戲已結束，房間不再需要）
+  try {
+    var params = new URLSearchParams(window.location.search);
+    var roomCode = params.get("room");
+    if (roomCode && typeof firebase !== "undefined") {
+      var user = firebase.auth().currentUser;
+      if (user) {
+        var roomRef = firebase.database().ref("rooms/" + roomCode);
+        roomRef.child("hostId").once("value").then(function (snap) {
+          if (snap.val() === user.uid) {
+            // 房主：直接刪除房間
+            roomRef.remove().then(function () {
+              console.log("🗑️ 遊戲結束，房間已清理:", roomCode);
+            });
+          }
+        }).catch(function () { /* 忽略錯誤，不影響導航 */ });
+      }
+    }
+  } catch (e) { /* 靜默失敗 */ }
+
   // 返回首頁
   window.location.href = "../index.html";
 }
+
+/**
+ * 匯出多人模式 CSV 報告
+ */
+function exportMultiplayerCsv() {
+  var trials = (resultData && (resultData.trialDetails || resultData.answers)) || [];
+  if (trials.length === 0) {
+    GameModal.alert("⚠️ 無資料", "此次遊戲沒有可匯出的試驗資料。", {
+      icon: "⚠️",
+    });
+    return;
+  }
+  if (
+    typeof CsvReport !== "undefined" &&
+    CsvReport.exportCsv &&
+    CsvReport.convertTrialsToCsvData
+  ) {
+    var nick = resultData.nickname || resultData.playerName || "player";
+    var csvRows = CsvReport.convertTrialsToCsvData(trials, nick);
+    if (csvRows && csvRows.length > 0) {
+      var parsedData = CsvReport.parseRawData(csvRows);
+      var safeNick = nick.replace(/[^a-zA-Z0-9\u4e00-\u9fff]/g, "_");
+      CsvReport.exportCsv(parsedData, "EFGame_MP_" + safeNick + ".csv");
+    } else {
+      GameModal.alert("⚠️ 無資料", "試驗資料轉換失敗，無法匯出。", {
+        icon: "⚠️",
+      });
+    }
+  } else {
+    GameModal.alert("⚠️ 模組未載入", "CSV 報告模組未載入。", { icon: "⚠️" });
+  }
+}
+
+// === 分析報告 toggle + PDF + 截圖 ===
+
+var _reportVisible = false;
+var _reportParsed = null;
+
+/**
+ * 確保報告已渲染，回傳 parsedData
+ */
+function _ensureReportRendered() {
+  // 相容 trialDetails 和 answers 兩種欄位名
+  var trials = (resultData && (resultData.trialDetails || resultData.answers)) || [];
+  if (trials.length === 0) {
+    GameModal.alert("⚠️ 無資料", "此次遊戲沒有可匯出的試驗資料。", {
+      icon: "⚠️",
+    });
+    return null;
+  }
+  if (typeof CsvReport === "undefined" || !CsvReport.renderReport) {
+    GameModal.alert("⚠️ 模組未載入", "分析報告模組未載入。", { icon: "⚠️" });
+    return null;
+  }
+  if (!_reportParsed) {
+    var nick = resultData.nickname || resultData.playerName || "player";
+    var csvRows = CsvReport.convertTrialsToCsvData(trials, nick);
+    if (!csvRows || csvRows.length === 0) {
+      GameModal.alert("⚠️ 無資料", "試驗資料轉換失敗。", { icon: "⚠️" });
+      return null;
+    }
+    _reportParsed = CsvReport.parseRawData(csvRows);
+    CsvReport.renderReport(
+      document.getElementById("reportContent"),
+      _reportParsed,
+      { mode: "multiplayer" },
+    );
+  }
+  return _reportParsed;
+}
+
+/**
+ * 展開 / 收合分析報告
+ */
+function toggleMultiplayerReport() {
+  var container = document.getElementById("reportContainer");
+  var btn = document.getElementById("btnToggleReport");
+  if (_reportVisible) {
+    container.style.display = "none";
+    if (btn) btn.textContent = "📊 展開分析報告";
+    _reportVisible = false;
+    return;
+  }
+  var parsed = _ensureReportRendered();
+  if (!parsed) return;
+  container.style.display = "block";
+  if (btn) btn.textContent = "📊 收合分析報告";
+  _reportVisible = true;
+  container.scrollIntoView({ behavior: "smooth" });
+}
+
+/**
+ * 匯出 PDF
+ */
+function exportMultiplayerPdf() {
+  var trials = (resultData && (resultData.trialDetails || resultData.answers)) || [];
+  if (trials.length === 0) {
+    GameModal.alert("⚠️ 無資料", "此次遊戲沒有可匯出的試驗資料。", {
+      icon: "⚠️",
+    });
+    return;
+  }
+
+  var container = document.getElementById("reportContainer");
+  var wasHidden = container.style.display === "none";
+  // Chart.js 需要可見 DOM 才能正確繪製 canvas
+  container.style.display = "block";
+
+  var needsFirstRender = !_reportParsed;
+  var parsed = _ensureReportRendered();
+  if (!parsed) {
+    if (wasHidden) container.style.display = "none";
+    return;
+  }
+
+  var btn = document.getElementById("btnExportPdf");
+  if (btn) {
+    btn.textContent = "⏳ 產生中…";
+    btn.disabled = true;
+  }
+
+  // 首次渲染需等 Chart.js 完成繪圖
+  var delay = needsFirstRender ? 1200 : 300;
+  setTimeout(function () {
+    var content = document.getElementById("reportContent");
+    CsvReport.exportPdf(content, parsed)
+      .then(function () {
+        if (btn) {
+          btn.textContent = "📄 匯出 PDF";
+          btn.disabled = false;
+        }
+        if (wasHidden && !_reportVisible) container.style.display = "none";
+      })
+      .catch(function () {
+        if (btn) {
+          btn.textContent = "📄 匯出 PDF";
+          btn.disabled = false;
+        }
+        if (wasHidden && !_reportVisible) container.style.display = "none";
+      });
+  }, delay);
+}
+
+/**
+ * 匯出長截圖
+ */
+function exportMultiplayerScreenshot() {
+  var trials = (resultData && (resultData.trialDetails || resultData.answers)) || [];
+  if (trials.length === 0) {
+    GameModal.alert("⚠️ 無資料", "此次遊戲沒有可匯出的試驗資料。", {
+      icon: "⚠️",
+    });
+    return;
+  }
+
+  var container = document.getElementById("reportContainer");
+  var wasHidden = container.style.display === "none";
+  container.style.display = "block";
+
+  var needsFirstRender = !_reportParsed;
+  var parsed = _ensureReportRendered();
+  if (!parsed) {
+    if (wasHidden) container.style.display = "none";
+    return;
+  }
+
+  var btn = document.getElementById("btnExportScreenshot");
+  if (btn) {
+    btn.textContent = "⏳ 擷取中…";
+    btn.disabled = true;
+  }
+
+  var delay = needsFirstRender ? 1200 : 300;
+  setTimeout(function () {
+    var content = document.getElementById("reportContent");
+    CsvReport.exportScreenshot(content)
+      .then(function () {
+        if (btn) {
+          btn.textContent = "📸 匯出長截圖";
+          btn.disabled = false;
+        }
+        if (wasHidden && !_reportVisible) container.style.display = "none";
+      })
+      .catch(function () {
+        if (btn) {
+          btn.textContent = "📸 匯出長截圖";
+          btn.disabled = false;
+        }
+        if (wasHidden && !_reportVisible) container.style.display = "none";
+      });
+  }, delay);
+}
+
+// 綁定報告區域內的匯出按鈕
+(function _bindReportBtns() {
+  function bind() {
+    var csvBtn = document.getElementById("btnExportCsvFromReport");
+    var pdfBtn = document.getElementById("btnExportPdf");
+    var ssBtn = document.getElementById("btnExportScreenshot");
+    if (csvBtn) csvBtn.addEventListener("click", exportMultiplayerCsv);
+    if (pdfBtn) pdfBtn.addEventListener("click", exportMultiplayerPdf);
+    if (ssBtn) ssBtn.addEventListener("click", exportMultiplayerScreenshot);
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bind);
+  } else {
+    bind();
+  }
+})();
 
 // === 上傳至排行榜（委託 ResultUpload 共用模組）===
 (function () {
@@ -594,7 +1057,7 @@ function playAgain() {
     statusMsg: document.getElementById("uploadStatusMsg"),
     getEntry: function () {
       var d = resultData || {};
-      return {
+      var entry = {
         nickname: d.playerName || d.nickname || "玩家",
         score: d.score || 0,
         accuracy: d.accuracy || 0,
@@ -603,6 +1066,42 @@ function playAgain() {
         level: "",
         mode: "multiplayer",
       };
+      // 附加 SDT
+      if (typeof CsvReport !== "undefined" && CsvReport.calculateSDT) {
+        var sdt = CsvReport.calculateSDT(d.answers || []);
+        if (sdt && sdt.dPrime != null) {
+          entry.dPrime = Math.round(sdt.dPrime * 100) / 100;
+          entry.criterion = Math.round(sdt.criterion * 100) / 100;
+          entry.beta = Math.round(sdt.beta * 100) / 100;
+        }
+      }
+      // v4.7 自適應難度欄位
+      entry.engineName =
+        typeof DifficultyProvider !== "undefined"
+          ? DifficultyProvider.getEngineName()
+          : "";
+      entry.finalLevel = (function () {
+        var en = entry.engineName;
+        if (en === "IRTSimpleEngine" && typeof IRTSimpleEngine !== "undefined")
+          return IRTSimpleEngine.getCurrentLevel();
+        if (typeof SimpleAdaptiveEngine !== "undefined")
+          return SimpleAdaptiveEngine.getCurrentLevel();
+        return "";
+      })();
+      entry.finalTheta = (function () {
+        var en = entry.engineName;
+        if (
+          en === "IRTSimpleEngine" &&
+          typeof IRTSimpleEngine !== "undefined"
+        ) {
+          var s = IRTSimpleEngine.getIRTState();
+          return s && s.theta != null
+            ? Math.round(s.theta * 1000) / 1000
+            : null;
+        }
+        return null;
+      })();
+      return entry;
     },
   });
 
@@ -622,6 +1121,10 @@ function playAgain() {
               return sum + (a.rt || a.reactionTime || 0);
             }, 0) / validRTs.length
           : d.avgRT || 0;
+      // 從答題紀錄提取 fieldId / ruleId
+      var firstAns = (d.answers || [])[0] || {};
+      var detectedFieldId = d.fieldId || firstAns.fieldId || firstAns.stageId || "";
+      var detectedRuleId = d.ruleId || firstAns.ruleId || "";
       return [
         {
           nickname: d.playerName || d.nickname || "玩家",
@@ -630,10 +1133,47 @@ function playAgain() {
           bestAvgRT: Math.round(avgRT),
           totalCorrect: d.correctAnswers || 0,
           totalTrials: d.totalQuestions || 0,
+          fieldId: detectedFieldId,
+          ruleId: detectedRuleId,
           mode: "multiplayer",
           totalStars: 0,
           level: "",
           gamesPlayed: 1,
+          // v4.7 自適應難度欄位
+          engineName:
+            typeof DifficultyProvider !== "undefined"
+              ? DifficultyProvider.getEngineName()
+              : "",
+          finalLevel: (function () {
+            var en =
+              typeof DifficultyProvider !== "undefined"
+                ? DifficultyProvider.getEngineName()
+                : "";
+            if (
+              en === "IRTSimpleEngine" &&
+              typeof IRTSimpleEngine !== "undefined"
+            )
+              return IRTSimpleEngine.getCurrentLevel();
+            if (typeof SimpleAdaptiveEngine !== "undefined")
+              return SimpleAdaptiveEngine.getCurrentLevel();
+            return "";
+          })(),
+          finalTheta: (function () {
+            var en =
+              typeof DifficultyProvider !== "undefined"
+                ? DifficultyProvider.getEngineName()
+                : "";
+            if (
+              en === "IRTSimpleEngine" &&
+              typeof IRTSimpleEngine !== "undefined"
+            ) {
+              var s = IRTSimpleEngine.getIRTState();
+              return s && s.theta != null
+                ? Math.round(s.theta * 1000) / 1000
+                : null;
+            }
+            return null;
+          })(),
         },
       ];
     },

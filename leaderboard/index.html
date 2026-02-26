@@ -13,6 +13,8 @@
     <link rel="manifest" href="../manifest.json" />
     <meta name="theme-color" content="#302b63" />
     <link rel="stylesheet" href="../css/themes/base.css" />
+    <link rel="stylesheet" href="../css/themes/theme-field-primary.css" />
+    <link rel="stylesheet" href="../css/themes/theme-rule-independent.css" />
     <link rel="stylesheet" href="../css/main.css" />
     <link
       rel="preload"
@@ -33,11 +35,13 @@
     <noscript
       ><link rel="stylesheet" href="../css/components/navbar.css"
     /></noscript>
+    <script defer src="../js/utils/logger.js"></script>
     <script defer src="../js/shared/navbar.js"></script>
     <script defer src="../js/shared/landscape-hint.js"></script>
   </head>
 
   <body>
+    <a href="#main-content" class="skip-link">跳到主要內容</a>
     <main class="chooser-page" id="main-content">
       <!-- === 頂部標題 === -->
       <div class="page-header">
@@ -131,9 +135,6 @@
           </tbody>
         </table>
       </div>
-
-      <!-- === 返回按鈕 === -->
-      <a class="back-btn" href="../index.html">🏠 回首頁</a>
     </main>
   </body>
 </html>

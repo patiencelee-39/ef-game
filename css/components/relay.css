@@ -1,0 +1,799 @@
+/* =========================================
+   🏁 接力賽模式樣式
+   ========================================= */
+
+/* --- 遊戲模式選擇器 --- */
+.game-mode-selector {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.game-mode-btn {
+  flex: 1;
+  padding: 14px 10px;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-light);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.25s ease;
+  min-height: 48px;
+}
+.game-mode-btn .mode-icon {
+  display: block;
+  font-size: 1.6rem;
+  margin-bottom: 4px;
+}
+.game-mode-btn.active {
+  border-color: var(--primary-blue);
+  background: rgba(102, 126, 234, 0.15);
+  color: #fff;
+  box-shadow: 0 0 12px rgba(102, 126, 234, 0.2);
+}
+.game-mode-btn:not(.active):hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* 隊伍數選擇 */
+.relay-options {
+  display: none;
+  margin-top: 12px;
+  padding: 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.relay-options.visible {
+  display: block;
+  animation: fadeSlideIn 0.3s ease;
+}
+.relay-options label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  margin-bottom: 6px;
+  display: block;
+}
+.team-count-row {
+  display: flex;
+  gap: 8px;
+}
+.team-count-btn {
+  flex: 1;
+  padding: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  background: none;
+  color: var(--text-light);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  min-height: 44px;
+  transition: all 0.2s;
+}
+.team-count-btn.active {
+  border-color: var(--primary-blue);
+  background: rgba(102, 126, 234, 0.2);
+  color: #fff;
+}
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================================
+   🏁 等待室 — 隊伍分組面板
+   ========================================= */
+
+.relay-team-panel {
+  display: none;
+  margin-top: 16px;
+}
+.relay-team-panel.visible {
+  display: block;
+}
+
+.relay-team-panel .panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.relay-team-panel .panel-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+}
+.btn-auto-assign {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 36px;
+  transition: transform 0.15s;
+}
+.btn-auto-assign:active {
+  transform: scale(0.95);
+}
+
+/* 隊伍卡片 */
+.team-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.team-card {
+  border-radius: 14px;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  transition: border-color 0.2s;
+}
+.team-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  font-weight: 700;
+  font-size: var(--font-size-sm);
+}
+.team-card-header .team-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.team-card-header .team-score-badge {
+  font-size: var(--font-size-xs);
+  padding: 3px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* 隊伍成員列表 */
+.team-member-list {
+  padding: 0 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 40px;
+}
+.team-member {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  font-size: var(--font-size-sm);
+  transition: background 0.15s;
+}
+.team-member:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+.team-member .member-baton {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.team-member .member-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.team-member .member-captain {
+  font-size: 0.75rem;
+  color: #f1c40f;
+}
+.team-member .member-move-btn {
+  padding: 2px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  background: none;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.7rem;
+  cursor: pointer;
+  min-height: 28px;
+  min-width: 28px;
+  transition: all 0.15s;
+}
+.team-member .member-move-btn:hover {
+  border-color: var(--primary-blue);
+  color: var(--primary-blue);
+}
+
+/* 棒次排序控制 */
+.baton-order-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+.baton-order-controls .btn-shuffle {
+  padding: 5px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  background: none;
+  color: var(--text-light);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  min-height: 32px;
+  transition: all 0.15s;
+}
+.baton-order-controls .btn-shuffle:hover {
+  border-color: var(--primary-blue);
+  color: #fff;
+}
+
+/* =========================================
+   🏁 遊戲中 — 接力狀態列
+   ========================================= */
+
+.relay-status-bar {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: 8px 16px;
+  background: linear-gradient(
+    135deg,
+    rgba(15, 12, 41, 0.95),
+    rgba(48, 43, 99, 0.95)
+  );
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: var(--font-size-xs);
+  color: var(--text-light);
+}
+.relay-status-bar.visible {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.relay-status-bar .baton-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+.relay-status-bar .baton-progress {
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.6);
+}
+.relay-status-bar .team-scores {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+}
+.relay-status-bar .team-score-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.75rem;
+}
+
+/* 棒次等待覆蓋 */
+.relay-wait-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(15, 12, 41, 0.92);
+  backdrop-filter: blur(6px);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+}
+.relay-wait-overlay.visible {
+  display: flex;
+}
+.relay-wait-overlay .wait-icon {
+  font-size: 4rem;
+  margin-bottom: 16px;
+  animation: relay-pulse 2s ease-in-out infinite;
+}
+.relay-wait-overlay .wait-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 8px;
+}
+.relay-wait-overlay .wait-subtitle {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 24px;
+}
+.relay-wait-overlay .team-progress-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 340px;
+}
+.relay-wait-overlay .progress-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.relay-wait-overlay .progress-card .pc-emoji {
+  font-size: 1.4rem;
+}
+.relay-wait-overlay .progress-card .pc-info {
+  flex: 1;
+  text-align: left;
+}
+.relay-wait-overlay .progress-card .pc-name {
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+}
+.relay-wait-overlay .progress-card .pc-baton {
+  font-size: var(--font-size-xs);
+  color: rgba(255, 255, 255, 0.5);
+}
+.relay-wait-overlay .progress-card .pc-score {
+  font-weight: 700;
+  font-size: var(--font-size-sm);
+}
+
+@keyframes relay-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.7;
+  }
+}
+
+/* =========================================
+   🏁 結果頁 — 團隊排名
+   ========================================= */
+
+.relay-result-section {
+  display: none;
+  margin-top: 16px;
+}
+.relay-result-section.visible {
+  display: block;
+}
+.relay-result-section .section-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #fff;
+}
+
+/* 團隊排名卡片 */
+.team-rank-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  margin-bottom: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  transition: border-color 0.2s;
+}
+.team-rank-card.rank-1 {
+  border-color: #f1c40f;
+  background: rgba(241, 196, 15, 0.08);
+}
+.team-rank-card.rank-2 {
+  border-color: #bdc3c7;
+  background: rgba(189, 195, 199, 0.06);
+}
+.team-rank-card .rank-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.team-rank-card.rank-1 .rank-badge {
+  background: linear-gradient(135deg, #f1c40f, #f39c12);
+  color: #fff;
+}
+.team-rank-card.rank-2 .rank-badge {
+  background: linear-gradient(135deg, #bdc3c7, #95a5a6);
+  color: #fff;
+}
+.team-rank-card .rank-info {
+  flex: 1;
+}
+.team-rank-card .rank-team-name {
+  font-weight: 700;
+  font-size: 1rem;
+}
+.team-rank-card .rank-team-stats {
+  font-size: var(--font-size-xs);
+  color: rgba(255, 255, 255, 0.55);
+  margin-top: 2px;
+}
+.team-rank-card .rank-score {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+/* 個人貢獻 */
+.member-contribution {
+  margin-top: 8px;
+}
+.member-contribution .contrib-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-light);
+}
+.member-contribution .contrib-bar-bg {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.member-contribution .contrib-bar {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+.member-contribution .contrib-score {
+  font-weight: 600;
+  min-width: 40px;
+  text-align: right;
+}
+
+/* MVP 徽章 */
+.mvp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f1c40f, #e67e22);
+  color: #fff;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  margin-left: 6px;
+  animation: mvp-glow 2s ease-in-out infinite;
+}
+@keyframes mvp-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 6px rgba(241, 196, 15, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(241, 196, 15, 0.7);
+  }
+}
+
+/* =========================================
+   ⚔️ 隊伍對抗模式 — 建房選項
+   ========================================= */
+.team-options {
+  display: none;
+  margin-top: 12px;
+  padding: 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.team-options.visible {
+  display: block;
+  animation: fadeSlideIn 0.3s ease;
+}
+.team-options label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  margin-bottom: 6px;
+  display: block;
+}
+
+/* 隊伍數量滑桿 */
+.team-count-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.team-count-slider {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.15);
+  outline: none;
+}
+.team-count-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--primary-blue);
+  border: 2px solid #fff;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+.team-count-slider::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--primary-blue);
+  border: 2px solid #fff;
+  cursor: pointer;
+}
+.team-count-value {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: #fff;
+  min-width: 40px;
+  text-align: center;
+}
+
+/* 分隊方式按鈕 */
+.team-assign-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.team-assign-btn {
+  flex: 1;
+  padding: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  background: none;
+  color: var(--text-light);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 44px;
+  transition: all 0.2s;
+}
+.team-assign-btn.active {
+  border-color: var(--primary-blue);
+  background: rgba(102, 126, 234, 0.2);
+  color: #fff;
+}
+.team-assign-btn:not(.active):hover {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+.team-assign-hint {
+  display: block;
+  margin-top: 4px;
+  font-size: var(--font-size-xs);
+  color: rgba(255, 255, 255, 0.45);
+}
+
+/* =========================================
+   ⚔️ 隊伍對抗模式 — 等待室面板
+   ========================================= */
+.team-battle-panel {
+  margin-top: 16px;
+}
+
+/* 操作列（自動分隊按鈕） */
+.team-battle-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+/* 「你在 X 隊」標籤 */
+.my-team-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: #fff;
+  animation: fadeSlideIn 0.3s ease;
+}
+
+/* 隊伍卡片網格 */
+.team-battle-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 單一隊伍卡片 */
+.team-battle-card {
+  border-radius: 14px;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  transition: border-color 0.2s;
+}
+
+/* 隊伍卡片標頭 */
+.team-battle-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  font-weight: 700;
+  font-size: var(--font-size-sm);
+  color: #fff;
+}
+.team-battle-header > span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 隊伍人數 */
+.team-battle-count {
+  font-size: var(--font-size-xs);
+  padding: 3px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* 改名按鈕 */
+.team-rename-btn {
+  padding: 2px 6px;
+  border: none;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 0.8rem;
+  cursor: pointer;
+  min-height: 28px;
+  min-width: 28px;
+  transition: background 0.15s;
+  margin-left: 4px;
+}
+.team-rename-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* 成員列表 */
+.team-battle-members {
+  padding: 8px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 36px;
+}
+.team-battle-member {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  font-size: var(--font-size-sm);
+  transition: background 0.15s;
+}
+.team-battle-member:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+.team-battle-member.is-me {
+  background: rgba(102, 126, 234, 0.12);
+  border: 1px solid rgba(102, 126, 234, 0.25);
+}
+
+.team-member-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 隊長/自己 標記 */
+.team-captain-badge {
+  font-size: 0.75rem;
+  color: #f1c40f;
+  font-weight: 600;
+}
+.team-me-badge {
+  font-size: 0.75rem;
+  color: var(--primary-blue);
+  font-weight: 600;
+}
+
+/* 空隊提示 */
+.team-empty-hint {
+  color: rgba(255, 255, 255, 0.35);
+  font-size: var(--font-size-xs);
+  text-align: center;
+  padding: 8px 0;
+}
+
+/* === selfSelect 模式：加入/已加入 === */
+.team-join-row {
+  text-align: center;
+  padding: 8px 6px 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  margin-top: 4px;
+}
+.team-join-btn {
+  background: var(--primary-blue, #667eea);
+  color: #fff;
+  border: none;
+  padding: 6px 18px;
+  border-radius: 8px;
+  font-size: var(--font-size-sm, 0.875rem);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+.team-join-btn:hover {
+  background: #5a6fd6;
+  transform: translateY(-1px);
+}
+.team-join-btn:active {
+  transform: scale(0.97);
+}
+.team-joined-badge {
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--success-green, #2ecc71);
+  font-weight: 600;
+}
+
+/* === 設為隊長按鈕 === */
+.set-captain-btn {
+  background: none;
+  border: 1px solid rgba(241, 196, 15, 0.35);
+  border-radius: 6px;
+  padding: 2px 6px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.15s, background 0.15s;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.set-captain-btn:hover {
+  opacity: 1;
+  background: rgba(241, 196, 15, 0.15);
+}

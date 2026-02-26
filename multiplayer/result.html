@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://*.firebasedatabase.app https://*.firebaseio.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://*.firebasedatabase.app https://*.firebaseio.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self'; connect-src 'self' https://cdn.jsdelivr.net https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app"
     />
     <title>遊戲結果 - 執行功能遊戲</title>
     <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
@@ -14,6 +14,8 @@
     <link rel="manifest" href="../manifest.json" />
     <meta name="theme-color" content="#302b63" />
     <link rel="stylesheet" href="../css/themes/base.css" />
+    <link rel="stylesheet" href="../css/themes/theme-field-primary.css" />
+    <link rel="stylesheet" href="../css/themes/theme-rule-independent.css" />
     <link rel="stylesheet" href="../css/main.css" />
     <link
       rel="preload"
@@ -26,6 +28,16 @@
     /></noscript>
     <link rel="stylesheet" href="../css/pages/result.css" />
     <link rel="stylesheet" href="../css/pages/result-multiplayer.css" />
+    <link rel="stylesheet" href="../css/components/relay.css" />
+    <link
+      rel="preload"
+      href="../css/components/csv-report.css"
+      as="style"
+      onload="this.rel = 'stylesheet'"
+    />
+    <noscript
+      ><link rel="stylesheet" href="../css/components/csv-report.css"
+    /></noscript>
     <link
       rel="preload"
       href="../css/components/navbar.css"
@@ -37,6 +49,8 @@
     /></noscript>
     <!-- Firebase Bundle -->
     <script defer src="../js/firebase-bundle.js"></script>
+    <script defer src="../js/utils/logger.js"></script>
+    <script defer src="../js/shared/game-modal.js"></script>
     <!-- 功能模組 -->
     <script defer src="../js/shared/leaderboard-writer.js"></script>
     <script defer src="../js/shared/firestore-leaderboard.js"></script>
@@ -44,11 +58,44 @@
     <script defer src="../js/shared/audio-player.js"></script>
     <script defer src="../js/shared/navbar.js"></script>
     <script defer src="../js/shared/landscape-hint.js"></script>
+    <script defer src="../js/utils/constants.js"></script>
+    <!-- ==================== 分析報告依賴 ==================== -->
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"
+      integrity="sha384-9nhczxUqK87bcKHh20fSQcTGD4qq5GhayNYSYWqwBkINBhOfQLg/P5HG5lF1urn4"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"
+      integrity="sha384-D/t0ZMqQW31H3az8ktEiNb39wyKnS82iFY52QPACM+IjKW3jDUhyIgh2PApRqJZs"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"
+      integrity="sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"
+      integrity="sha384-Yv5O+t3uE3hunW8uyrbpPW3iw6/5/Y7HitWJBLgqfMoA36NogMmy+8wWZMpn3HWc"
+      crossorigin="anonymous"
+    ></script>
+    <script defer src="../js/shared/csv-report.js"></script>
     <script defer src="../js/shared/result-upload.js"></script>
     <script defer src="../js/shared/combo-selector.js"></script>
   </head>
   <body>
-    <main class="container" id="main-content">
+    <a href="#main-content" class="skip-link">跳到主要內容</a>
+    <main class="container" id="main-content" aria-live="polite">
       <div class="header">
         <div class="celebration" id="celebration">🎉</div>
         <h1>遊戲完成！</h1>
@@ -106,16 +153,42 @@
         </div>
       </div>
 
+      <!-- SDT 信號偵測理論分析 -->
+      <div id="sdtSection" class="analysis-section" style="display: none">
+        <div class="section-title">🎯 信號偵測理論 (SDT)</div>
+        <div id="sdtContent"></div>
+      </div>
+
       <!-- 多人排名比較（動態生成） -->
       <div id="mpRankingSection" class="analysis-section" style="display: none">
         <div class="section-title">🏆 多人排名比較</div>
         <div id="mpRankingContent"></div>
       </div>
 
+      <!-- 接力賽團隊排名（僅接力模式顯示） -->
+      <div
+        id="relayResultSection"
+        class="relay-result-section"
+        style="display: none"
+      >
+        <div class="section-title">🏁 團隊接力排名</div>
+        <div id="relayTeamRanking" class="relay-team-ranking"></div>
+      </div>
+
+      <!-- 分析報告區域 -->
+      <div id="reportContainer" style="display: none; padding: 16px; background: var(--bg-dark, #1a1a2e);">
+        <div id="reportContent"></div>
+        <div style="text-align:center;margin-top:16px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+          <button class="btn btn-primary" id="btnExportCsvFromReport" style="font-size:0.85rem;">💾 匯出 CSV</button>
+          <button class="btn btn-primary" id="btnExportPdf" style="font-size:0.85rem;">📄 匯出 PDF</button>
+          <button class="btn btn-primary" id="btnExportScreenshot" style="font-size:0.85rem;">📸 匯出長截圖</button>
+        </div>
+      </div>
+
       <!-- 操作按鈕 -->
       <div class="actions">
-        <button class="btn btn-success" onclick="shareResult()">
-          📤 分享結果
+        <button class="btn btn-primary" id="btnToggleReport" onclick="toggleMultiplayerReport()">
+          📊 展開分析報告
         </button>
         <button class="btn btn-primary" onclick="playAgain()">
           🔄 再玩一次

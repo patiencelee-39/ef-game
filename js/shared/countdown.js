@@ -256,7 +256,7 @@ var Countdown = {
     }
 
     if (_isRunning) {
-      console.warn("⏳ Countdown: 倒數進行中，忽略重複啟動");
+      Logger.warn("⏳ Countdown: 倒數進行中，忽略重複啟動");
       return Promise.resolve();
     }
 
@@ -302,7 +302,7 @@ var Countdown = {
             try {
               onTick(remaining);
             } catch (e) {
-              console.error("Countdown onTick error:", e);
+              Logger.error("Countdown onTick error:", e);
             }
           }
 
@@ -334,7 +334,7 @@ var Countdown = {
               try {
                 onComplete();
               } catch (e) {
-                console.error("Countdown onComplete error:", e);
+                Logger.error("Countdown onComplete error:", e);
               }
             }
 
