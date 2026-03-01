@@ -51,12 +51,17 @@ function initializeLobby() {
   // 監聽房間變化
   roomRef = firebase.database().ref(`rooms/${currentRoom.code}`);
 
-  // 設置斷線自動標記離線
+  // 設置斷線自動標記離線 & 重新標記上線
+  // （從 room-create / room-join 導航到此頁時，舊頁面的 onDisconnect
+  //   可能已觸發並把 online 設為 false，必須在此重新寫入 true）
   if (currentPlayerId) {
-    roomRef
-      .child("players/" + currentPlayerId + "/online")
-      .onDisconnect()
-      .set(false);
+    var onlineRef = roomRef.child("players/" + currentPlayerId + "/online");
+    onlineRef.onDisconnect().set(false);
+
+    // 非觀戰者：確保 online 欄位為 true（修正頁面導航造成的 stale disconnect）
+    if (!player.isSpectator) {
+      onlineRef.set(true);
+    }
   }
 
   roomRef.on("value", (snapshot) => {

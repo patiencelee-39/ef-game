@@ -187,7 +187,7 @@
       }
       .mode-divider::before,
       .mode-divider::after {
-        content: '──';
+        content: "──";
         margin: 0 10px;
         color: #555;
       }
@@ -208,7 +208,7 @@
         gap: 8px;
       }
       .scenario summary::before {
-        content: '▶';
+        content: "▶";
         font-size: 0.65rem;
         transition: transform 0.2s;
         color: #888;
@@ -527,7 +527,16 @@
 
       <!-- ===== 遊戲模式排列組合測試 ===== -->
       <div class="mode-divider">🎯 遊戲模式排列組合測試</div>
-      <p style="text-align: center; color: #888; font-size: 0.8rem; margin: -12px 0 20px">每種遊戲模式都是獨立排列組合，展開逐一測試，避免遺漏</p>
+      <p
+        style="
+          text-align: center;
+          color: #888;
+          font-size: 0.8rem;
+          margin: -12px 0 20px;
+        "
+      >
+        每種遊戲模式都是獨立排列組合，展開逐一測試，避免遺漏
+      </p>
 
       <!-- ===== A. 個人競賽 ===== -->
       <div class="cl-section">
@@ -536,17 +545,59 @@
         <details class="scenario">
           <summary>A-1. 個人競賽 ＋ 房主參與遊戲</summary>
           <div class="scenario-body">
-            <div class="cl-item"><input type="checkbox" id="ma1_1" /><label for="ma1_1">建立房間 → 房主選「參與遊戲」→ 個人競賽</label></div>
-            <div class="cl-item"><input type="checkbox" id="ma1_2" /><label for="ma1_2">玩家加入房間</label></div>
-            <div class="cl-item"><input type="checkbox" id="ma1_3" /><label for="ma1_3">所有玩家按「準備好了」</label></div>
-            <div class="cl-item"><input type="checkbox" id="ma1_4" /><label for="ma1_4">房主按「開始遊戲」→ 成功進入遊戲畫面</label></div>
-            <div class="cl-item"><input type="checkbox" id="ma1_5" /><label for="ma1_5">遊戲進行中即時排行榜正常顯示</label></div>
-            <div class="cl-item"><input type="checkbox" id="ma1_6" /><label for="ma1_6">第一位玩家完成 → 顯示等待其他玩家（無白屏/OOM）</label></div>
-            <div class="cl-item"><input type="checkbox" id="ma1_7" /><label for="ma1_7">全部完成 → 自動跳轉結果頁</label></div>
-            <div class="cl-item"><input type="checkbox" id="ma1_8" /><label for="ma1_8">結果頁排名與分數正確</label></div>
+            <div class="cl-item">
+              <input type="checkbox" id="ma1_1" /><label for="ma1_1"
+                >建立房間 → 房主選「參與遊戲」→ 個人競賽</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="ma1_2" /><label for="ma1_2"
+                >玩家加入房間</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="ma1_3" /><label for="ma1_3"
+                >所有玩家按「準備好了」</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="ma1_4" /><label for="ma1_4"
+                >房主按「開始遊戲」→ 成功進入遊戲畫面</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="ma1_5" /><label for="ma1_5"
+                >遊戲進行中即時排行榜正常顯示</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="ma1_6" /><label for="ma1_6"
+                >第一位玩家完成 → 顯示等待其他玩家（無白屏/OOM）</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="ma1_7" /><label for="ma1_7"
+                >全部完成 → 自動跳轉結果頁</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="ma1_8" /><label for="ma1_8"
+                >結果頁排名與分數正確</label
+              >
+            </div>
             <div class="scenario-result">
-              <input type="text" class="scenario-input" id="res_a1" placeholder="結果：✓ / ✗ / —" />
-              <input type="text" class="scenario-input" id="note_a1" placeholder="備註" />
+              <input
+                type="text"
+                class="scenario-input"
+                id="res_a1"
+                placeholder="結果：✓ / ✗ / —"
+              />
+              <input
+                type="text"
+                class="scenario-input"
+                id="note_a1"
+                placeholder="備註"
+              />
             </div>
           </div>
         </details>
@@ -554,15 +605,49 @@
         <details class="scenario">
           <summary>A-2. 個人競賽 ＋ 房主觀戰</summary>
           <div class="scenario-body">
-            <div class="cl-item"><input type="checkbox" id="ma2_1" /><label for="ma2_1">建立房間 → 房主選「觀戰」→ 個人競賽</label></div>
-            <div class="cl-item"><input type="checkbox" id="ma2_2" /><label for="ma2_2">玩家加入房間</label></div>
-            <div class="cl-item"><input type="checkbox" id="ma2_3" /><label for="ma2_3">房主按「開始遊戲」→ 無 PERMISSION_DENIED</label></div>
-            <div class="cl-item"><input type="checkbox" id="ma2_4" /><label for="ma2_4">房主進入觀戰儀表板，可看到玩家即時狀態</label></div>
-            <div class="cl-item"><input type="checkbox" id="ma2_5" /><label for="ma2_5">玩家正常進行遊戲</label></div>
-            <div class="cl-item"><input type="checkbox" id="ma2_6" /><label for="ma2_6">全部完成 → 觀戰者與玩家皆跳轉結果頁</label></div>
+            <div class="cl-item">
+              <input type="checkbox" id="ma2_1" /><label for="ma2_1"
+                >建立房間 → 房主選「觀戰」→ 個人競賽</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="ma2_2" /><label for="ma2_2"
+                >玩家加入房間</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="ma2_3" /><label for="ma2_3"
+                >房主按「開始遊戲」→ 無 PERMISSION_DENIED</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="ma2_4" /><label for="ma2_4"
+                >房主進入觀戰儀表板，可看到玩家即時狀態</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="ma2_5" /><label for="ma2_5"
+                >玩家正常進行遊戲</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="ma2_6" /><label for="ma2_6"
+                >全部完成 → 觀戰者與玩家皆跳轉結果頁</label
+              >
+            </div>
             <div class="scenario-result">
-              <input type="text" class="scenario-input" id="res_a2" placeholder="結果：✓ / ✗ / —" />
-              <input type="text" class="scenario-input" id="note_a2" placeholder="備註" />
+              <input
+                type="text"
+                class="scenario-input"
+                id="res_a2"
+                placeholder="結果：✓ / ✗ / —"
+              />
+              <input
+                type="text"
+                class="scenario-input"
+                id="note_a2"
+                placeholder="備註"
+              />
             </div>
           </div>
         </details>
@@ -571,18 +656,47 @@
       <!-- ===== B. 隊伍對抗 ===== -->
       <div class="cl-section">
         <h2>⚔️ B. 隊伍對抗（共 12 項）</h2>
-        <div class="cl-note-block">排列組合：分隊方式(3) × 隊長選擇(2) × 房主角色(2) = 12<br />隊伍數量：預設測 2 隊，若時間允許可額外測 3、4 隊</div>
+        <div class="cl-note-block">
+          排列組合：分隊方式(3) × 隊長選擇(2) × 房主角色(2) = 12<br />隊伍數量：預設測
+          2 隊，若時間允許可額外測 3、4 隊
+        </div>
 
         <details class="scenario">
           <summary>B-1. 隨機分隊 ＋ 隊長房主指派 ＋ 房主參與</summary>
           <div class="scenario-body">
-            <div class="cl-item"><input type="checkbox" id="mb1_1" /><label for="mb1_1">建立房間設定正確</label></div>
-            <div class="cl-item"><input type="checkbox" id="mb1_2" /><label for="mb1_2">開始遊戲 → 自動隨機分隊</label></div>
-            <div class="cl-item"><input type="checkbox" id="mb1_3" /><label for="mb1_3">隊長由房主指派正確</label></div>
-            <div class="cl-item"><input type="checkbox" id="mb1_4" /><label for="mb1_4">遊戲進行與完成正常</label></div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb1_1" /><label for="mb1_1"
+                >建立房間設定正確</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb1_2" /><label for="mb1_2"
+                >開始遊戲 → 自動隨機分隊</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb1_3" /><label for="mb1_3"
+                >隊長由房主指派正確</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb1_4" /><label for="mb1_4"
+                >遊戲進行與完成正常</label
+              >
+            </div>
             <div class="scenario-result">
-              <input type="text" class="scenario-input" id="res_b1" placeholder="結果：✓ / ✗ / —" />
-              <input type="text" class="scenario-input" id="note_b1" placeholder="備註" />
+              <input
+                type="text"
+                class="scenario-input"
+                id="res_b1"
+                placeholder="結果：✓ / ✗ / —"
+              />
+              <input
+                type="text"
+                class="scenario-input"
+                id="note_b1"
+                placeholder="備註"
+              />
             </div>
           </div>
         </details>
@@ -590,13 +704,39 @@
         <details class="scenario">
           <summary>B-2. 隨機分隊 ＋ 隊長房主指派 ＋ 房主觀戰</summary>
           <div class="scenario-body">
-            <div class="cl-item"><input type="checkbox" id="mb2_1" /><label for="mb2_1">建立房間設定正確</label></div>
-            <div class="cl-item"><input type="checkbox" id="mb2_2" /><label for="mb2_2">開始遊戲 → 無 PERMISSION_DENIED</label></div>
-            <div class="cl-item"><input type="checkbox" id="mb2_3" /><label for="mb2_3">自動隨機分隊正確</label></div>
-            <div class="cl-item"><input type="checkbox" id="mb2_4" /><label for="mb2_4">遊戲進行與完成正常</label></div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb2_1" /><label for="mb2_1"
+                >建立房間設定正確</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb2_2" /><label for="mb2_2"
+                >開始遊戲 → 無 PERMISSION_DENIED</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb2_3" /><label for="mb2_3"
+                >自動隨機分隊正確</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb2_4" /><label for="mb2_4"
+                >遊戲進行與完成正常</label
+              >
+            </div>
             <div class="scenario-result">
-              <input type="text" class="scenario-input" id="res_b2" placeholder="結果：✓ / ✗ / —" />
-              <input type="text" class="scenario-input" id="note_b2" placeholder="備註" />
+              <input
+                type="text"
+                class="scenario-input"
+                id="res_b2"
+                placeholder="結果：✓ / ✗ / —"
+              />
+              <input
+                type="text"
+                class="scenario-input"
+                id="note_b2"
+                placeholder="備註"
+              />
             </div>
           </div>
         </details>
@@ -604,12 +744,34 @@
         <details class="scenario">
           <summary>B-3. 隨機分隊 ＋ 隊長隨機產生 ＋ 房主參與</summary>
           <div class="scenario-body">
-            <div class="cl-item"><input type="checkbox" id="mb3_1" /><label for="mb3_1">建立房間設定正確</label></div>
-            <div class="cl-item"><input type="checkbox" id="mb3_2" /><label for="mb3_2">開始遊戲 → 自動隨機分隊 + 隨機指派隊長</label></div>
-            <div class="cl-item"><input type="checkbox" id="mb3_3" /><label for="mb3_3">遊戲進行與完成正常</label></div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb3_1" /><label for="mb3_1"
+                >建立房間設定正確</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb3_2" /><label for="mb3_2"
+                >開始遊戲 → 自動隨機分隊 + 隨機指派隊長</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb3_3" /><label for="mb3_3"
+                >遊戲進行與完成正常</label
+              >
+            </div>
             <div class="scenario-result">
-              <input type="text" class="scenario-input" id="res_b3" placeholder="結果：✓ / ✗ / —" />
-              <input type="text" class="scenario-input" id="note_b3" placeholder="備註" />
+              <input
+                type="text"
+                class="scenario-input"
+                id="res_b3"
+                placeholder="結果：✓ / ✗ / —"
+              />
+              <input
+                type="text"
+                class="scenario-input"
+                id="note_b3"
+                placeholder="備註"
+              />
             </div>
           </div>
         </details>
@@ -617,12 +779,34 @@
         <details class="scenario">
           <summary>B-4. 隨機分隊 ＋ 隊長隨機產生 ＋ 房主觀戰</summary>
           <div class="scenario-body">
-            <div class="cl-item"><input type="checkbox" id="mb4_1" /><label for="mb4_1">建立房間設定正確</label></div>
-            <div class="cl-item"><input type="checkbox" id="mb4_2" /><label for="mb4_2">開始遊戲 → 無 PERMISSION_DENIED</label></div>
-            <div class="cl-item"><input type="checkbox" id="mb4_3" /><label for="mb4_3">遊戲進行與完成正常</label></div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb4_1" /><label for="mb4_1"
+                >建立房間設定正確</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb4_2" /><label for="mb4_2"
+                >開始遊戲 → 無 PERMISSION_DENIED</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb4_3" /><label for="mb4_3"
+                >遊戲進行與完成正常</label
+              >
+            </div>
             <div class="scenario-result">
-              <input type="text" class="scenario-input" id="res_b4" placeholder="結果：✓ / ✗ / —" />
-              <input type="text" class="scenario-input" id="note_b4" placeholder="備註" />
+              <input
+                type="text"
+                class="scenario-input"
+                id="res_b4"
+                placeholder="結果：✓ / ✗ / —"
+              />
+              <input
+                type="text"
+                class="scenario-input"
+                id="note_b4"
+                placeholder="備註"
+              />
             </div>
           </div>
         </details>
@@ -630,13 +814,39 @@
         <details class="scenario">
           <summary>B-5. 房主指派分隊 ＋ 隊長房主指派 ＋ 房主參與</summary>
           <div class="scenario-body">
-            <div class="cl-item"><input type="checkbox" id="mb5_1" /><label for="mb5_1">建立房間設定正確</label></div>
-            <div class="cl-item"><input type="checkbox" id="mb5_2" /><label for="mb5_2">大廳中房主可拖曳/指派玩家到各隊</label></div>
-            <div class="cl-item"><input type="checkbox" id="mb5_3" /><label for="mb5_3">隊長由房主指定正確</label></div>
-            <div class="cl-item"><input type="checkbox" id="mb5_4" /><label for="mb5_4">遊戲進行與完成正常</label></div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb5_1" /><label for="mb5_1"
+                >建立房間設定正確</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb5_2" /><label for="mb5_2"
+                >大廳中房主可拖曳/指派玩家到各隊</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb5_3" /><label for="mb5_3"
+                >隊長由房主指定正確</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb5_4" /><label for="mb5_4"
+                >遊戲進行與完成正常</label
+              >
+            </div>
             <div class="scenario-result">
-              <input type="text" class="scenario-input" id="res_b5" placeholder="結果：✓ / ✗ / —" />
-              <input type="text" class="scenario-input" id="note_b5" placeholder="備註" />
+              <input
+                type="text"
+                class="scenario-input"
+                id="res_b5"
+                placeholder="結果：✓ / ✗ / —"
+              />
+              <input
+                type="text"
+                class="scenario-input"
+                id="note_b5"
+                placeholder="備註"
+              />
             </div>
           </div>
         </details>
@@ -644,12 +854,34 @@
         <details class="scenario">
           <summary>B-6. 房主指派分隊 ＋ 隊長房主指派 ＋ 房主觀戰</summary>
           <div class="scenario-body">
-            <div class="cl-item"><input type="checkbox" id="mb6_1" /><label for="mb6_1">建立房間設定正確</label></div>
-            <div class="cl-item"><input type="checkbox" id="mb6_2" /><label for="mb6_2">開始遊戲 → 無 PERMISSION_DENIED</label></div>
-            <div class="cl-item"><input type="checkbox" id="mb6_3" /><label for="mb6_3">遊戲進行與完成正常</label></div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb6_1" /><label for="mb6_1"
+                >建立房間設定正確</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb6_2" /><label for="mb6_2"
+                >開始遊戲 → 無 PERMISSION_DENIED</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb6_3" /><label for="mb6_3"
+                >遊戲進行與完成正常</label
+              >
+            </div>
             <div class="scenario-result">
-              <input type="text" class="scenario-input" id="res_b6" placeholder="結果：✓ / ✗ / —" />
-              <input type="text" class="scenario-input" id="note_b6" placeholder="備註" />
+              <input
+                type="text"
+                class="scenario-input"
+                id="res_b6"
+                placeholder="結果：✓ / ✗ / —"
+              />
+              <input
+                type="text"
+                class="scenario-input"
+                id="note_b6"
+                placeholder="備註"
+              />
             </div>
           </div>
         </details>
@@ -657,12 +889,34 @@
         <details class="scenario">
           <summary>B-7. 房主指派分隊 ＋ 隊長隨機產生 ＋ 房主參與</summary>
           <div class="scenario-body">
-            <div class="cl-item"><input type="checkbox" id="mb7_1" /><label for="mb7_1">建立房間設定正確</label></div>
-            <div class="cl-item"><input type="checkbox" id="mb7_2" /><label for="mb7_2">房主指派分隊 + 開始時隨機指派隊長</label></div>
-            <div class="cl-item"><input type="checkbox" id="mb7_3" /><label for="mb7_3">遊戲進行與完成正常</label></div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb7_1" /><label for="mb7_1"
+                >建立房間設定正確</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb7_2" /><label for="mb7_2"
+                >房主指派分隊 + 開始時隨機指派隊長</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb7_3" /><label for="mb7_3"
+                >遊戲進行與完成正常</label
+              >
+            </div>
             <div class="scenario-result">
-              <input type="text" class="scenario-input" id="res_b7" placeholder="結果：✓ / ✗ / —" />
-              <input type="text" class="scenario-input" id="note_b7" placeholder="備註" />
+              <input
+                type="text"
+                class="scenario-input"
+                id="res_b7"
+                placeholder="結果：✓ / ✗ / —"
+              />
+              <input
+                type="text"
+                class="scenario-input"
+                id="note_b7"
+                placeholder="備註"
+              />
             </div>
           </div>
         </details>
@@ -670,12 +924,34 @@
         <details class="scenario">
           <summary>B-8. 房主指派分隊 ＋ 隊長隨機產生 ＋ 房主觀戰</summary>
           <div class="scenario-body">
-            <div class="cl-item"><input type="checkbox" id="mb8_1" /><label for="mb8_1">建立房間設定正確</label></div>
-            <div class="cl-item"><input type="checkbox" id="mb8_2" /><label for="mb8_2">開始遊戲 → 無 PERMISSION_DENIED</label></div>
-            <div class="cl-item"><input type="checkbox" id="mb8_3" /><label for="mb8_3">遊戲進行與完成正常</label></div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb8_1" /><label for="mb8_1"
+                >建立房間設定正確</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb8_2" /><label for="mb8_2"
+                >開始遊戲 → 無 PERMISSION_DENIED</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb8_3" /><label for="mb8_3"
+                >遊戲進行與完成正常</label
+              >
+            </div>
             <div class="scenario-result">
-              <input type="text" class="scenario-input" id="res_b8" placeholder="結果：✓ / ✗ / —" />
-              <input type="text" class="scenario-input" id="note_b8" placeholder="備註" />
+              <input
+                type="text"
+                class="scenario-input"
+                id="res_b8"
+                placeholder="結果：✓ / ✗ / —"
+              />
+              <input
+                type="text"
+                class="scenario-input"
+                id="note_b8"
+                placeholder="備註"
+              />
             </div>
           </div>
         </details>
@@ -683,14 +959,44 @@
         <details class="scenario">
           <summary>B-9. 玩家自選隊伍 ＋ 隊長房主指派 ＋ 房主參與</summary>
           <div class="scenario-body">
-            <div class="cl-item"><input type="checkbox" id="mb9_1" /><label for="mb9_1">建立房間設定正確</label></div>
-            <div class="cl-item"><input type="checkbox" id="mb9_2" /><label for="mb9_2">大廳中玩家可自行選擇隊伍</label></div>
-            <div class="cl-item"><input type="checkbox" id="mb9_3" /><label for="mb9_3">未選隊的玩家 → 房主按開始會提示「尚有 N 位玩家未選隊」</label></div>
-            <div class="cl-item"><input type="checkbox" id="mb9_4" /><label for="mb9_4">全部選完 → 開始遊戲正常</label></div>
-            <div class="cl-item"><input type="checkbox" id="mb9_5" /><label for="mb9_5">遊戲進行與完成正常</label></div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb9_1" /><label for="mb9_1"
+                >建立房間設定正確</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb9_2" /><label for="mb9_2"
+                >大廳中玩家可自行選擇隊伍</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb9_3" /><label for="mb9_3"
+                >未選隊的玩家 → 房主按開始會提示「尚有 N 位玩家未選隊」</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb9_4" /><label for="mb9_4"
+                >全部選完 → 開始遊戲正常</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb9_5" /><label for="mb9_5"
+                >遊戲進行與完成正常</label
+              >
+            </div>
             <div class="scenario-result">
-              <input type="text" class="scenario-input" id="res_b9" placeholder="結果：✓ / ✗ / —" />
-              <input type="text" class="scenario-input" id="note_b9" placeholder="備註" />
+              <input
+                type="text"
+                class="scenario-input"
+                id="res_b9"
+                placeholder="結果：✓ / ✗ / —"
+              />
+              <input
+                type="text"
+                class="scenario-input"
+                id="note_b9"
+                placeholder="備註"
+              />
             </div>
           </div>
         </details>
@@ -698,12 +1004,34 @@
         <details class="scenario">
           <summary>B-10. 玩家自選隊伍 ＋ 隊長房主指派 ＋ 房主觀戰</summary>
           <div class="scenario-body">
-            <div class="cl-item"><input type="checkbox" id="mb10_1" /><label for="mb10_1">建立房間設定正確</label></div>
-            <div class="cl-item"><input type="checkbox" id="mb10_2" /><label for="mb10_2">開始遊戲 → 無 PERMISSION_DENIED</label></div>
-            <div class="cl-item"><input type="checkbox" id="mb10_3" /><label for="mb10_3">遊戲進行與完成正常</label></div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb10_1" /><label for="mb10_1"
+                >建立房間設定正確</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb10_2" /><label for="mb10_2"
+                >開始遊戲 → 無 PERMISSION_DENIED</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb10_3" /><label for="mb10_3"
+                >遊戲進行與完成正常</label
+              >
+            </div>
             <div class="scenario-result">
-              <input type="text" class="scenario-input" id="res_b10" placeholder="結果：✓ / ✗ / —" />
-              <input type="text" class="scenario-input" id="note_b10" placeholder="備註" />
+              <input
+                type="text"
+                class="scenario-input"
+                id="res_b10"
+                placeholder="結果：✓ / ✗ / —"
+              />
+              <input
+                type="text"
+                class="scenario-input"
+                id="note_b10"
+                placeholder="備註"
+              />
             </div>
           </div>
         </details>
@@ -711,12 +1039,34 @@
         <details class="scenario">
           <summary>B-11. 玩家自選隊伍 ＋ 隊長隨機產生 ＋ 房主參與</summary>
           <div class="scenario-body">
-            <div class="cl-item"><input type="checkbox" id="mb11_1" /><label for="mb11_1">建立房間設定正確</label></div>
-            <div class="cl-item"><input type="checkbox" id="mb11_2" /><label for="mb11_2">玩家自選隊伍 + 開始時隨機指派隊長</label></div>
-            <div class="cl-item"><input type="checkbox" id="mb11_3" /><label for="mb11_3">遊戲進行與完成正常</label></div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb11_1" /><label for="mb11_1"
+                >建立房間設定正確</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb11_2" /><label for="mb11_2"
+                >玩家自選隊伍 + 開始時隨機指派隊長</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb11_3" /><label for="mb11_3"
+                >遊戲進行與完成正常</label
+              >
+            </div>
             <div class="scenario-result">
-              <input type="text" class="scenario-input" id="res_b11" placeholder="結果：✓ / ✗ / —" />
-              <input type="text" class="scenario-input" id="note_b11" placeholder="備註" />
+              <input
+                type="text"
+                class="scenario-input"
+                id="res_b11"
+                placeholder="結果：✓ / ✗ / —"
+              />
+              <input
+                type="text"
+                class="scenario-input"
+                id="note_b11"
+                placeholder="備註"
+              />
             </div>
           </div>
         </details>
@@ -724,12 +1074,34 @@
         <details class="scenario">
           <summary>B-12. 玩家自選隊伍 ＋ 隊長隨機產生 ＋ 房主觀戰</summary>
           <div class="scenario-body">
-            <div class="cl-item"><input type="checkbox" id="mb12_1" /><label for="mb12_1">建立房間設定正確</label></div>
-            <div class="cl-item"><input type="checkbox" id="mb12_2" /><label for="mb12_2">開始遊戲 → 無 PERMISSION_DENIED</label></div>
-            <div class="cl-item"><input type="checkbox" id="mb12_3" /><label for="mb12_3">遊戲進行與完成正常</label></div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb12_1" /><label for="mb12_1"
+                >建立房間設定正確</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb12_2" /><label for="mb12_2"
+                >開始遊戲 → 無 PERMISSION_DENIED</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mb12_3" /><label for="mb12_3"
+                >遊戲進行與完成正常</label
+              >
+            </div>
             <div class="scenario-result">
-              <input type="text" class="scenario-input" id="res_b12" placeholder="結果：✓ / ✗ / —" />
-              <input type="text" class="scenario-input" id="note_b12" placeholder="備註" />
+              <input
+                type="text"
+                class="scenario-input"
+                id="res_b12"
+                placeholder="結果：✓ / ✗ / —"
+              />
+              <input
+                type="text"
+                class="scenario-input"
+                id="note_b12"
+                placeholder="備註"
+              />
             </div>
           </div>
         </details>
@@ -738,19 +1110,51 @@
       <!-- ===== C. 接力賽 ===== -->
       <div class="cl-section">
         <h2>🔄 C. 接力賽（共 8 項）</h2>
-        <div class="cl-note-block">排列組合：隊伍數量(2/3) × 隊長選擇(2) × 房主角色(2) = 8<br />接力賽分隊方式由房主指派（無隨機/自選）</div>
+        <div class="cl-note-block">
+          排列組合：隊伍數量(2/3) × 隊長選擇(2) × 房主角色(2) = 8<br />接力賽分隊方式由房主指派（無隨機/自選）
+        </div>
 
         <details class="scenario">
           <summary>C-1. 2隊 ＋ 隊長房主指派 ＋ 房主參與</summary>
           <div class="scenario-body">
-            <div class="cl-item"><input type="checkbox" id="mc1_1" /><label for="mc1_1">建立房間設定正確</label></div>
-            <div class="cl-item"><input type="checkbox" id="mc1_2" /><label for="mc1_2">房主指派分隊與棒次</label></div>
-            <div class="cl-item"><input type="checkbox" id="mc1_3" /><label for="mc1_3">遊戲開始 → 第一棒玩家先進行</label></div>
-            <div class="cl-item"><input type="checkbox" id="mc1_4" /><label for="mc1_4">第一棒完成 → 第二棒自動接力</label></div>
-            <div class="cl-item"><input type="checkbox" id="mc1_5" /><label for="mc1_5">全隊完成 → 結果正確</label></div>
+            <div class="cl-item">
+              <input type="checkbox" id="mc1_1" /><label for="mc1_1"
+                >建立房間設定正確</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mc1_2" /><label for="mc1_2"
+                >房主指派分隊與棒次</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mc1_3" /><label for="mc1_3"
+                >遊戲開始 → 第一棒玩家先進行</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mc1_4" /><label for="mc1_4"
+                >第一棒完成 → 第二棒自動接力</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mc1_5" /><label for="mc1_5"
+                >全隊完成 → 結果正確</label
+              >
+            </div>
             <div class="scenario-result">
-              <input type="text" class="scenario-input" id="res_c1" placeholder="結果：✓ / ✗ / —" />
-              <input type="text" class="scenario-input" id="note_c1" placeholder="備註" />
+              <input
+                type="text"
+                class="scenario-input"
+                id="res_c1"
+                placeholder="結果：✓ / ✗ / —"
+              />
+              <input
+                type="text"
+                class="scenario-input"
+                id="note_c1"
+                placeholder="備註"
+              />
             </div>
           </div>
         </details>
@@ -758,12 +1162,34 @@
         <details class="scenario">
           <summary>C-2. 2隊 ＋ 隊長房主指派 ＋ 房主觀戰</summary>
           <div class="scenario-body">
-            <div class="cl-item"><input type="checkbox" id="mc2_1" /><label for="mc2_1">建立房間設定正確</label></div>
-            <div class="cl-item"><input type="checkbox" id="mc2_2" /><label for="mc2_2">開始遊戲 → 無 PERMISSION_DENIED</label></div>
-            <div class="cl-item"><input type="checkbox" id="mc2_3" /><label for="mc2_3">接力流程正常</label></div>
+            <div class="cl-item">
+              <input type="checkbox" id="mc2_1" /><label for="mc2_1"
+                >建立房間設定正確</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mc2_2" /><label for="mc2_2"
+                >開始遊戲 → 無 PERMISSION_DENIED</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mc2_3" /><label for="mc2_3"
+                >接力流程正常</label
+              >
+            </div>
             <div class="scenario-result">
-              <input type="text" class="scenario-input" id="res_c2" placeholder="結果：✓ / ✗ / —" />
-              <input type="text" class="scenario-input" id="note_c2" placeholder="備註" />
+              <input
+                type="text"
+                class="scenario-input"
+                id="res_c2"
+                placeholder="結果：✓ / ✗ / —"
+              />
+              <input
+                type="text"
+                class="scenario-input"
+                id="note_c2"
+                placeholder="備註"
+              />
             </div>
           </div>
         </details>
@@ -771,12 +1197,34 @@
         <details class="scenario">
           <summary>C-3. 2隊 ＋ 隊長隨機產生 ＋ 房主參與</summary>
           <div class="scenario-body">
-            <div class="cl-item"><input type="checkbox" id="mc3_1" /><label for="mc3_1">建立房間設定正確</label></div>
-            <div class="cl-item"><input type="checkbox" id="mc3_2" /><label for="mc3_2">開始時隨機指派隊長</label></div>
-            <div class="cl-item"><input type="checkbox" id="mc3_3" /><label for="mc3_3">接力流程正常</label></div>
+            <div class="cl-item">
+              <input type="checkbox" id="mc3_1" /><label for="mc3_1"
+                >建立房間設定正確</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mc3_2" /><label for="mc3_2"
+                >開始時隨機指派隊長</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mc3_3" /><label for="mc3_3"
+                >接力流程正常</label
+              >
+            </div>
             <div class="scenario-result">
-              <input type="text" class="scenario-input" id="res_c3" placeholder="結果：✓ / ✗ / —" />
-              <input type="text" class="scenario-input" id="note_c3" placeholder="備註" />
+              <input
+                type="text"
+                class="scenario-input"
+                id="res_c3"
+                placeholder="結果：✓ / ✗ / —"
+              />
+              <input
+                type="text"
+                class="scenario-input"
+                id="note_c3"
+                placeholder="備註"
+              />
             </div>
           </div>
         </details>
@@ -784,12 +1232,34 @@
         <details class="scenario">
           <summary>C-4. 2隊 ＋ 隊長隨機產生 ＋ 房主觀戰</summary>
           <div class="scenario-body">
-            <div class="cl-item"><input type="checkbox" id="mc4_1" /><label for="mc4_1">建立房間設定正確</label></div>
-            <div class="cl-item"><input type="checkbox" id="mc4_2" /><label for="mc4_2">開始遊戲 → 無 PERMISSION_DENIED</label></div>
-            <div class="cl-item"><input type="checkbox" id="mc4_3" /><label for="mc4_3">接力流程正常</label></div>
+            <div class="cl-item">
+              <input type="checkbox" id="mc4_1" /><label for="mc4_1"
+                >建立房間設定正確</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mc4_2" /><label for="mc4_2"
+                >開始遊戲 → 無 PERMISSION_DENIED</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mc4_3" /><label for="mc4_3"
+                >接力流程正常</label
+              >
+            </div>
             <div class="scenario-result">
-              <input type="text" class="scenario-input" id="res_c4" placeholder="結果：✓ / ✗ / —" />
-              <input type="text" class="scenario-input" id="note_c4" placeholder="備註" />
+              <input
+                type="text"
+                class="scenario-input"
+                id="res_c4"
+                placeholder="結果：✓ / ✗ / —"
+              />
+              <input
+                type="text"
+                class="scenario-input"
+                id="note_c4"
+                placeholder="備註"
+              />
             </div>
           </div>
         </details>
@@ -797,12 +1267,34 @@
         <details class="scenario">
           <summary>C-5. 3隊 ＋ 隊長房主指派 ＋ 房主參與</summary>
           <div class="scenario-body">
-            <div class="cl-item"><input type="checkbox" id="mc5_1" /><label for="mc5_1">建立房間設定正確</label></div>
-            <div class="cl-item"><input type="checkbox" id="mc5_2" /><label for="mc5_2">3 隊分配與棒次正確</label></div>
-            <div class="cl-item"><input type="checkbox" id="mc5_3" /><label for="mc5_3">接力流程正常</label></div>
+            <div class="cl-item">
+              <input type="checkbox" id="mc5_1" /><label for="mc5_1"
+                >建立房間設定正確</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mc5_2" /><label for="mc5_2"
+                >3 隊分配與棒次正確</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mc5_3" /><label for="mc5_3"
+                >接力流程正常</label
+              >
+            </div>
             <div class="scenario-result">
-              <input type="text" class="scenario-input" id="res_c5" placeholder="結果：✓ / ✗ / —" />
-              <input type="text" class="scenario-input" id="note_c5" placeholder="備註" />
+              <input
+                type="text"
+                class="scenario-input"
+                id="res_c5"
+                placeholder="結果：✓ / ✗ / —"
+              />
+              <input
+                type="text"
+                class="scenario-input"
+                id="note_c5"
+                placeholder="備註"
+              />
             </div>
           </div>
         </details>
@@ -810,12 +1302,34 @@
         <details class="scenario">
           <summary>C-6. 3隊 ＋ 隊長房主指派 ＋ 房主觀戰</summary>
           <div class="scenario-body">
-            <div class="cl-item"><input type="checkbox" id="mc6_1" /><label for="mc6_1">建立房間設定正確</label></div>
-            <div class="cl-item"><input type="checkbox" id="mc6_2" /><label for="mc6_2">開始遊戲 → 無 PERMISSION_DENIED</label></div>
-            <div class="cl-item"><input type="checkbox" id="mc6_3" /><label for="mc6_3">接力流程正常</label></div>
+            <div class="cl-item">
+              <input type="checkbox" id="mc6_1" /><label for="mc6_1"
+                >建立房間設定正確</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mc6_2" /><label for="mc6_2"
+                >開始遊戲 → 無 PERMISSION_DENIED</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mc6_3" /><label for="mc6_3"
+                >接力流程正常</label
+              >
+            </div>
             <div class="scenario-result">
-              <input type="text" class="scenario-input" id="res_c6" placeholder="結果：✓ / ✗ / —" />
-              <input type="text" class="scenario-input" id="note_c6" placeholder="備註" />
+              <input
+                type="text"
+                class="scenario-input"
+                id="res_c6"
+                placeholder="結果：✓ / ✗ / —"
+              />
+              <input
+                type="text"
+                class="scenario-input"
+                id="note_c6"
+                placeholder="備註"
+              />
             </div>
           </div>
         </details>
@@ -823,12 +1337,34 @@
         <details class="scenario">
           <summary>C-7. 3隊 ＋ 隊長隨機產生 ＋ 房主參與</summary>
           <div class="scenario-body">
-            <div class="cl-item"><input type="checkbox" id="mc7_1" /><label for="mc7_1">建立房間設定正確</label></div>
-            <div class="cl-item"><input type="checkbox" id="mc7_2" /><label for="mc7_2">開始時隨機指派隊長</label></div>
-            <div class="cl-item"><input type="checkbox" id="mc7_3" /><label for="mc7_3">接力流程正常</label></div>
+            <div class="cl-item">
+              <input type="checkbox" id="mc7_1" /><label for="mc7_1"
+                >建立房間設定正確</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mc7_2" /><label for="mc7_2"
+                >開始時隨機指派隊長</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mc7_3" /><label for="mc7_3"
+                >接力流程正常</label
+              >
+            </div>
             <div class="scenario-result">
-              <input type="text" class="scenario-input" id="res_c7" placeholder="結果：✓ / ✗ / —" />
-              <input type="text" class="scenario-input" id="note_c7" placeholder="備註" />
+              <input
+                type="text"
+                class="scenario-input"
+                id="res_c7"
+                placeholder="結果：✓ / ✗ / —"
+              />
+              <input
+                type="text"
+                class="scenario-input"
+                id="note_c7"
+                placeholder="備註"
+              />
             </div>
           </div>
         </details>
@@ -836,12 +1372,34 @@
         <details class="scenario">
           <summary>C-8. 3隊 ＋ 隊長隨機產生 ＋ 房主觀戰</summary>
           <div class="scenario-body">
-            <div class="cl-item"><input type="checkbox" id="mc8_1" /><label for="mc8_1">建立房間設定正確</label></div>
-            <div class="cl-item"><input type="checkbox" id="mc8_2" /><label for="mc8_2">開始遊戲 → 無 PERMISSION_DENIED</label></div>
-            <div class="cl-item"><input type="checkbox" id="mc8_3" /><label for="mc8_3">接力流程正常</label></div>
+            <div class="cl-item">
+              <input type="checkbox" id="mc8_1" /><label for="mc8_1"
+                >建立房間設定正確</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mc8_2" /><label for="mc8_2"
+                >開始遊戲 → 無 PERMISSION_DENIED</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="mc8_3" /><label for="mc8_3"
+                >接力流程正常</label
+              >
+            </div>
             <div class="scenario-result">
-              <input type="text" class="scenario-input" id="res_c8" placeholder="結果：✓ / ✗ / —" />
-              <input type="text" class="scenario-input" id="note_c8" placeholder="備註" />
+              <input
+                type="text"
+                class="scenario-input"
+                id="res_c8"
+                placeholder="結果：✓ / ✗ / —"
+              />
+              <input
+                type="text"
+                class="scenario-input"
+                id="note_c8"
+                placeholder="備註"
+              />
             </div>
           </div>
         </details>
@@ -854,13 +1412,39 @@
         <details class="scenario">
           <summary>D-1. 房間管理</summary>
           <div class="scenario-body">
-            <div class="cl-item"><input type="checkbox" id="md1_1" /><label for="md1_1">自訂房間代碼正常</label></div>
-            <div class="cl-item"><input type="checkbox" id="md1_2" /><label for="md1_2">自動產生房間代碼正常</label></div>
-            <div class="cl-item"><input type="checkbox" id="md1_3" /><label for="md1_3">設密碼 → 加入時需輸入密碼</label></div>
-            <div class="cl-item"><input type="checkbox" id="md1_4" /><label for="md1_4">不設密碼 → 直接加入</label></div>
+            <div class="cl-item">
+              <input type="checkbox" id="md1_1" /><label for="md1_1"
+                >自訂房間代碼正常</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="md1_2" /><label for="md1_2"
+                >自動產生房間代碼正常</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="md1_3" /><label for="md1_3"
+                >設密碼 → 加入時需輸入密碼</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="md1_4" /><label for="md1_4"
+                >不設密碼 → 直接加入</label
+              >
+            </div>
             <div class="scenario-result">
-              <input type="text" class="scenario-input" id="res_d1" placeholder="結果：✓ / ✗ / —" />
-              <input type="text" class="scenario-input" id="note_d1" placeholder="備註" />
+              <input
+                type="text"
+                class="scenario-input"
+                id="res_d1"
+                placeholder="結果：✓ / ✗ / —"
+              />
+              <input
+                type="text"
+                class="scenario-input"
+                id="note_d1"
+                placeholder="備註"
+              />
             </div>
           </div>
         </details>
@@ -868,12 +1452,34 @@
         <details class="scenario">
           <summary>D-2. 玩家連線</summary>
           <div class="scenario-body">
-            <div class="cl-item"><input type="checkbox" id="md2_1" /><label for="md2_1">玩家加入 → 大廳即時顯示</label></div>
-            <div class="cl-item"><input type="checkbox" id="md2_2" /><label for="md2_2">玩家離開/斷線 → 標記離線</label></div>
-            <div class="cl-item"><input type="checkbox" id="md2_3" /><label for="md2_3">房主離開 → 房主轉移機制</label></div>
+            <div class="cl-item">
+              <input type="checkbox" id="md2_1" /><label for="md2_1"
+                >玩家加入 → 大廳即時顯示</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="md2_2" /><label for="md2_2"
+                >玩家離開/斷線 → 標記離線</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="md2_3" /><label for="md2_3"
+                >房主離開 → 房主轉移機制</label
+              >
+            </div>
             <div class="scenario-result">
-              <input type="text" class="scenario-input" id="res_d2" placeholder="結果：✓ / ✗ / —" />
-              <input type="text" class="scenario-input" id="note_d2" placeholder="備註" />
+              <input
+                type="text"
+                class="scenario-input"
+                id="res_d2"
+                placeholder="結果：✓ / ✗ / —"
+              />
+              <input
+                type="text"
+                class="scenario-input"
+                id="note_d2"
+                placeholder="備註"
+              />
             </div>
           </div>
         </details>
@@ -881,13 +1487,39 @@
         <details class="scenario">
           <summary>D-3. 遊戲流程</summary>
           <div class="scenario-body">
-            <div class="cl-item"><input type="checkbox" id="md3_1" /><label for="md3_1">同步倒數 3-2-1 正常</label></div>
-            <div class="cl-item"><input type="checkbox" id="md3_2" /><label for="md3_2">遊戲中進度百分比正確更新</label></div>
-            <div class="cl-item"><input type="checkbox" id="md3_3" /><label for="md3_3">即時排行榜分數正確</label></div>
-            <div class="cl-item"><input type="checkbox" id="md3_4" /><label for="md3_4">場地完成通知（其他玩家完成時顯示提示）</label></div>
+            <div class="cl-item">
+              <input type="checkbox" id="md3_1" /><label for="md3_1"
+                >同步倒數 3-2-1 正常</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="md3_2" /><label for="md3_2"
+                >遊戲中進度百分比正確更新</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="md3_3" /><label for="md3_3"
+                >即時排行榜分數正確</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="md3_4" /><label for="md3_4"
+                >場地完成通知（其他玩家完成時顯示提示）</label
+              >
+            </div>
             <div class="scenario-result">
-              <input type="text" class="scenario-input" id="res_d3" placeholder="結果：✓ / ✗ / —" />
-              <input type="text" class="scenario-input" id="note_d3" placeholder="備註" />
+              <input
+                type="text"
+                class="scenario-input"
+                id="res_d3"
+                placeholder="結果：✓ / ✗ / —"
+              />
+              <input
+                type="text"
+                class="scenario-input"
+                id="note_d3"
+                placeholder="備註"
+              />
             </div>
           </div>
         </details>
@@ -895,12 +1527,34 @@
         <details class="scenario">
           <summary>D-4. 結果頁</summary>
           <div class="scenario-body">
-            <div class="cl-item"><input type="checkbox" id="md4_1" /><label for="md4_1">排名正確</label></div>
-            <div class="cl-item"><input type="checkbox" id="md4_2" /><label for="md4_2">分數/正確率/反應時間正確</label></div>
-            <div class="cl-item"><input type="checkbox" id="md4_3" /><label for="md4_3">匯出功能（CSV/PDF/截圖）正常</label></div>
+            <div class="cl-item">
+              <input type="checkbox" id="md4_1" /><label for="md4_1"
+                >排名正確</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="md4_2" /><label for="md4_2"
+                >分數/正確率/反應時間正確</label
+              >
+            </div>
+            <div class="cl-item">
+              <input type="checkbox" id="md4_3" /><label for="md4_3"
+                >匯出功能（CSV/PDF/截圖）正常</label
+              >
+            </div>
             <div class="scenario-result">
-              <input type="text" class="scenario-input" id="res_d4" placeholder="結果：✓ / ✗ / —" />
-              <input type="text" class="scenario-input" id="note_d4" placeholder="備註" />
+              <input
+                type="text"
+                class="scenario-input"
+                id="res_d4"
+                placeholder="結果：✓ / ✗ / —"
+              />
+              <input
+                type="text"
+                class="scenario-input"
+                id="note_d4"
+                placeholder="備註"
+              />
             </div>
           </div>
         </details>
@@ -909,39 +1563,149 @@
       <!-- ===== 測試進度總覽 ===== -->
       <div class="cl-section">
         <h2>📊 測試進度總覽</h2>
-        <p style="font-size: 0.78rem; color: #888; margin: 0 0 12px">快速瀏覽所有模式組合的測試狀態</p>
+        <p style="font-size: 0.78rem; color: #888; margin: 0 0 12px">
+          快速瀏覽所有模式組合的測試狀態
+        </p>
         <div style="overflow-x: auto">
           <table class="summary-table">
             <thead>
-              <tr><th>編號</th><th>模式</th><th class="result-cell">結果</th></tr>
+              <tr>
+                <th>編號</th>
+                <th>模式</th>
+                <th class="result-cell">結果</th>
+              </tr>
             </thead>
             <tbody>
-              <tr><td>A-1</td><td>個人競賽 ＋ 房主參與</td><td class="result-cell" id="tbl_a1">—</td></tr>
-              <tr><td>A-2</td><td>個人競賽 ＋ 房主觀戰</td><td class="result-cell" id="tbl_a2">—</td></tr>
-              <tr><td>B-1</td><td>隊伍對抗 ＋ 隨機分隊 ＋ 隊長房主指派 ＋ 房主參與</td><td class="result-cell" id="tbl_b1">—</td></tr>
-              <tr><td>B-2</td><td>隊伍對抗 ＋ 隨機分隊 ＋ 隊長房主指派 ＋ 房主觀戰</td><td class="result-cell" id="tbl_b2">—</td></tr>
-              <tr><td>B-3</td><td>隊伍對抗 ＋ 隨機分隊 ＋ 隊長隨機 ＋ 房主參與</td><td class="result-cell" id="tbl_b3">—</td></tr>
-              <tr><td>B-4</td><td>隊伍對抗 ＋ 隨機分隊 ＋ 隊長隨機 ＋ 房主觀戰</td><td class="result-cell" id="tbl_b4">—</td></tr>
-              <tr><td>B-5</td><td>隊伍對抗 ＋ 房主指派 ＋ 隊長房主指派 ＋ 房主參與</td><td class="result-cell" id="tbl_b5">—</td></tr>
-              <tr><td>B-6</td><td>隊伍對抗 ＋ 房主指派 ＋ 隊長房主指派 ＋ 房主觀戰</td><td class="result-cell" id="tbl_b6">—</td></tr>
-              <tr><td>B-7</td><td>隊伍對抗 ＋ 房主指派 ＋ 隊長隨機 ＋ 房主參與</td><td class="result-cell" id="tbl_b7">—</td></tr>
-              <tr><td>B-8</td><td>隊伍對抗 ＋ 房主指派 ＋ 隊長隨機 ＋ 房主觀戰</td><td class="result-cell" id="tbl_b8">—</td></tr>
-              <tr><td>B-9</td><td>隊伍對抗 ＋ 玩家自選 ＋ 隊長房主指派 ＋ 房主參與</td><td class="result-cell" id="tbl_b9">—</td></tr>
-              <tr><td>B-10</td><td>隊伍對抗 ＋ 玩家自選 ＋ 隊長房主指派 ＋ 房主觀戰</td><td class="result-cell" id="tbl_b10">—</td></tr>
-              <tr><td>B-11</td><td>隊伍對抗 ＋ 玩家自選 ＋ 隊長隨機 ＋ 房主參與</td><td class="result-cell" id="tbl_b11">—</td></tr>
-              <tr><td>B-12</td><td>隊伍對抗 ＋ 玩家自選 ＋ 隊長隨機 ＋ 房主觀戰</td><td class="result-cell" id="tbl_b12">—</td></tr>
-              <tr><td>C-1</td><td>接力賽 ＋ 2隊 ＋ 隊長房主指派 ＋ 房主參與</td><td class="result-cell" id="tbl_c1">—</td></tr>
-              <tr><td>C-2</td><td>接力賽 ＋ 2隊 ＋ 隊長房主指派 ＋ 房主觀戰</td><td class="result-cell" id="tbl_c2">—</td></tr>
-              <tr><td>C-3</td><td>接力賽 ＋ 2隊 ＋ 隊長隨機 ＋ 房主參與</td><td class="result-cell" id="tbl_c3">—</td></tr>
-              <tr><td>C-4</td><td>接力賽 ＋ 2隊 ＋ 隊長隨機 ＋ 房主觀戰</td><td class="result-cell" id="tbl_c4">—</td></tr>
-              <tr><td>C-5</td><td>接力賽 ＋ 3隊 ＋ 隊長房主指派 ＋ 房主參與</td><td class="result-cell" id="tbl_c5">—</td></tr>
-              <tr><td>C-6</td><td>接力賽 ＋ 3隊 ＋ 隊長房主指派 ＋ 房主觀戰</td><td class="result-cell" id="tbl_c6">—</td></tr>
-              <tr><td>C-7</td><td>接力賽 ＋ 3隊 ＋ 隊長隨機 ＋ 房主參與</td><td class="result-cell" id="tbl_c7">—</td></tr>
-              <tr><td>C-8</td><td>接力賽 ＋ 3隊 ＋ 隊長隨機 ＋ 房主觀戰</td><td class="result-cell" id="tbl_c8">—</td></tr>
-              <tr><td>D-1</td><td>房間管理</td><td class="result-cell" id="tbl_d1">—</td></tr>
-              <tr><td>D-2</td><td>玩家連線</td><td class="result-cell" id="tbl_d2">—</td></tr>
-              <tr><td>D-3</td><td>遊戲流程</td><td class="result-cell" id="tbl_d3">—</td></tr>
-              <tr><td>D-4</td><td>結果頁</td><td class="result-cell" id="tbl_d4">—</td></tr>
+              <tr>
+                <td>A-1</td>
+                <td>個人競賽 ＋ 房主參與</td>
+                <td class="result-cell" id="tbl_a1">—</td>
+              </tr>
+              <tr>
+                <td>A-2</td>
+                <td>個人競賽 ＋ 房主觀戰</td>
+                <td class="result-cell" id="tbl_a2">—</td>
+              </tr>
+              <tr>
+                <td>B-1</td>
+                <td>隊伍對抗 ＋ 隨機分隊 ＋ 隊長房主指派 ＋ 房主參與</td>
+                <td class="result-cell" id="tbl_b1">—</td>
+              </tr>
+              <tr>
+                <td>B-2</td>
+                <td>隊伍對抗 ＋ 隨機分隊 ＋ 隊長房主指派 ＋ 房主觀戰</td>
+                <td class="result-cell" id="tbl_b2">—</td>
+              </tr>
+              <tr>
+                <td>B-3</td>
+                <td>隊伍對抗 ＋ 隨機分隊 ＋ 隊長隨機 ＋ 房主參與</td>
+                <td class="result-cell" id="tbl_b3">—</td>
+              </tr>
+              <tr>
+                <td>B-4</td>
+                <td>隊伍對抗 ＋ 隨機分隊 ＋ 隊長隨機 ＋ 房主觀戰</td>
+                <td class="result-cell" id="tbl_b4">—</td>
+              </tr>
+              <tr>
+                <td>B-5</td>
+                <td>隊伍對抗 ＋ 房主指派 ＋ 隊長房主指派 ＋ 房主參與</td>
+                <td class="result-cell" id="tbl_b5">—</td>
+              </tr>
+              <tr>
+                <td>B-6</td>
+                <td>隊伍對抗 ＋ 房主指派 ＋ 隊長房主指派 ＋ 房主觀戰</td>
+                <td class="result-cell" id="tbl_b6">—</td>
+              </tr>
+              <tr>
+                <td>B-7</td>
+                <td>隊伍對抗 ＋ 房主指派 ＋ 隊長隨機 ＋ 房主參與</td>
+                <td class="result-cell" id="tbl_b7">—</td>
+              </tr>
+              <tr>
+                <td>B-8</td>
+                <td>隊伍對抗 ＋ 房主指派 ＋ 隊長隨機 ＋ 房主觀戰</td>
+                <td class="result-cell" id="tbl_b8">—</td>
+              </tr>
+              <tr>
+                <td>B-9</td>
+                <td>隊伍對抗 ＋ 玩家自選 ＋ 隊長房主指派 ＋ 房主參與</td>
+                <td class="result-cell" id="tbl_b9">—</td>
+              </tr>
+              <tr>
+                <td>B-10</td>
+                <td>隊伍對抗 ＋ 玩家自選 ＋ 隊長房主指派 ＋ 房主觀戰</td>
+                <td class="result-cell" id="tbl_b10">—</td>
+              </tr>
+              <tr>
+                <td>B-11</td>
+                <td>隊伍對抗 ＋ 玩家自選 ＋ 隊長隨機 ＋ 房主參與</td>
+                <td class="result-cell" id="tbl_b11">—</td>
+              </tr>
+              <tr>
+                <td>B-12</td>
+                <td>隊伍對抗 ＋ 玩家自選 ＋ 隊長隨機 ＋ 房主觀戰</td>
+                <td class="result-cell" id="tbl_b12">—</td>
+              </tr>
+              <tr>
+                <td>C-1</td>
+                <td>接力賽 ＋ 2隊 ＋ 隊長房主指派 ＋ 房主參與</td>
+                <td class="result-cell" id="tbl_c1">—</td>
+              </tr>
+              <tr>
+                <td>C-2</td>
+                <td>接力賽 ＋ 2隊 ＋ 隊長房主指派 ＋ 房主觀戰</td>
+                <td class="result-cell" id="tbl_c2">—</td>
+              </tr>
+              <tr>
+                <td>C-3</td>
+                <td>接力賽 ＋ 2隊 ＋ 隊長隨機 ＋ 房主參與</td>
+                <td class="result-cell" id="tbl_c3">—</td>
+              </tr>
+              <tr>
+                <td>C-4</td>
+                <td>接力賽 ＋ 2隊 ＋ 隊長隨機 ＋ 房主觀戰</td>
+                <td class="result-cell" id="tbl_c4">—</td>
+              </tr>
+              <tr>
+                <td>C-5</td>
+                <td>接力賽 ＋ 3隊 ＋ 隊長房主指派 ＋ 房主參與</td>
+                <td class="result-cell" id="tbl_c5">—</td>
+              </tr>
+              <tr>
+                <td>C-6</td>
+                <td>接力賽 ＋ 3隊 ＋ 隊長房主指派 ＋ 房主觀戰</td>
+                <td class="result-cell" id="tbl_c6">—</td>
+              </tr>
+              <tr>
+                <td>C-7</td>
+                <td>接力賽 ＋ 3隊 ＋ 隊長隨機 ＋ 房主參與</td>
+                <td class="result-cell" id="tbl_c7">—</td>
+              </tr>
+              <tr>
+                <td>C-8</td>
+                <td>接力賽 ＋ 3隊 ＋ 隊長隨機 ＋ 房主觀戰</td>
+                <td class="result-cell" id="tbl_c8">—</td>
+              </tr>
+              <tr>
+                <td>D-1</td>
+                <td>房間管理</td>
+                <td class="result-cell" id="tbl_d1">—</td>
+              </tr>
+              <tr>
+                <td>D-2</td>
+                <td>玩家連線</td>
+                <td class="result-cell" id="tbl_d2">—</td>
+              </tr>
+              <tr>
+                <td>D-3</td>
+                <td>遊戲流程</td>
+                <td class="result-cell" id="tbl_d3">—</td>
+              </tr>
+              <tr>
+                <td>D-4</td>
+                <td>結果頁</td>
+                <td class="result-cell" id="tbl_d4">—</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -1007,15 +1771,19 @@
               }
             });
             // 還原情境輸入框 & 總覽表
-            document.querySelectorAll(".scenario-input").forEach(function (inp) {
-              if (saved["_inp_" + inp.id]) {
-                inp.value = saved["_inp_" + inp.id];
-                if (inp.id.indexOf("res_") === 0) {
-                  var cell = document.getElementById(inp.id.replace("res_", "tbl_"));
-                  if (cell) cell.textContent = inp.value.trim() || "—";
+            document
+              .querySelectorAll(".scenario-input")
+              .forEach(function (inp) {
+                if (saved["_inp_" + inp.id]) {
+                  inp.value = saved["_inp_" + inp.id];
+                  if (inp.id.indexOf("res_") === 0) {
+                    var cell = document.getElementById(
+                      inp.id.replace("res_", "tbl_"),
+                    );
+                    if (cell) cell.textContent = inp.value.trim() || "—";
+                  }
                 }
-              }
-            });
+              });
             var notes = localStorage.getItem(STORAGE_KEY + "-notes");
             if (notes) document.getElementById("clNotes").value = notes;
           } catch (_) {}
@@ -1062,18 +1830,24 @@
           });
 
         // 情境結果 → 同步總覽表
-        document.querySelectorAll('.scenario-input[id^="res_"]').forEach(function (inp) {
-          inp.addEventListener("input", function () {
-            var cell = document.getElementById(this.id.replace("res_", "tbl_"));
-            if (cell) cell.textContent = this.value.trim() || "—";
-            saveState();
+        document
+          .querySelectorAll('.scenario-input[id^="res_"]')
+          .forEach(function (inp) {
+            inp.addEventListener("input", function () {
+              var cell = document.getElementById(
+                this.id.replace("res_", "tbl_"),
+              );
+              if (cell) cell.textContent = this.value.trim() || "—";
+              saveState();
+            });
           });
-        });
-        document.querySelectorAll('.scenario-input[id^="note_"]').forEach(function (inp) {
-          inp.addEventListener("input", function () {
-            saveState();
+        document
+          .querySelectorAll('.scenario-input[id^="note_"]')
+          .forEach(function (inp) {
+            inp.addEventListener("input", function () {
+              saveState();
+            });
           });
-        });
 
         // 匯出
         window.exportChecklist = function () {
@@ -1129,9 +1903,12 @@
               var cells = row.querySelectorAll("td");
               if (cells.length >= 3) {
                 lines.push(
-                  "  " + cells[0].textContent +
-                  " | " + cells[1].textContent +
-                  " | " + cells[2].textContent,
+                  "  " +
+                    cells[0].textContent +
+                    " | " +
+                    cells[1].textContent +
+                    " | " +
+                    cells[2].textContent,
                 );
               }
             });
@@ -1165,9 +1942,11 @@
           document.querySelectorAll(".scenario-input").forEach(function (inp) {
             inp.value = "";
           });
-          document.querySelectorAll(".summary-table .result-cell").forEach(function (cell) {
-            cell.textContent = "—";
-          });
+          document
+            .querySelectorAll(".summary-table .result-cell")
+            .forEach(function (cell) {
+              cell.textContent = "—";
+            });
           document.querySelectorAll(".scenario[open]").forEach(function (d) {
             d.removeAttribute("open");
           });
