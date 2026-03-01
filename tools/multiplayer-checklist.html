@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
+    />
+    <title>✅ 多人競賽測試 Check List - EF Game</title>
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../css/themes/base.css" />
+    <link rel="stylesheet" href="../css/main.css" />
+    <link rel="preload" href="../css/components/navbar.css" as="style" onload="this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="../css/components/navbar.css" /></noscript>
+    <style>
+      body {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        min-height: 100vh;
+        color: #e0e0e0;
+        font-family: var(--font-family-main, "Noto Sans TC", sans-serif);
+      }
+      .dev-page {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 24px 16px 60px;
+      }
+      .dev-page h1 {
+        text-align: center;
+        margin-bottom: 4px;
+        font-size: 1.5rem;
+      }
+      .dev-subtitle {
+        text-align: center;
+        color: #aaa;
+        font-size: 0.85rem;
+        margin-bottom: 24px;
+      }
+      .btn-back {
+        display: inline-block;
+        color: #aaa;
+        text-decoration: none;
+        font-size: 0.85rem;
+        margin-bottom: 16px;
+      }
+      .btn-back:hover { color: #fff; }
+
+      /* Check List 樣式 */
+      .cl-section {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+      .cl-section h2 {
+        font-size: 1.05rem;
+        margin: 0 0 14px;
+        color: #4db6ac;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .cl-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 8px 10px;
+        border-radius: 8px;
+        margin-bottom: 4px;
+        font-size: 0.85rem;
+        line-height: 1.5;
+        transition: background 0.15s;
+      }
+      .cl-item:hover {
+        background: rgba(255, 255, 255, 0.03);
+      }
+      .cl-item input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        margin-top: 2px;
+        cursor: pointer;
+        flex-shrink: 0;
+        accent-color: #4db6ac;
+      }
+      .cl-item label {
+        cursor: pointer;
+        flex: 1;
+      }
+      .cl-item.checked label {
+        text-decoration: line-through;
+        color: #666;
+      }
+      .cl-note {
+        font-size: 0.78rem;
+        color: #888;
+        margin-left: 28px;
+        margin-top: -2px;
+        margin-bottom: 6px;
+      }
+      .cl-divider {
+        border: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        margin: 10px 0;
+      }
+      .cl-progress {
+        text-align: center;
+        font-size: 0.82rem;
+        color: #aaa;
+        margin-bottom: 20px;
+        padding: 10px;
+        background: rgba(77, 182, 172, 0.08);
+        border-radius: 10px;
+      }
+      .cl-progress .count {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #4db6ac;
+      }
+      .cl-bar {
+        height: 6px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 3px;
+        margin-top: 8px;
+        overflow: hidden;
+      }
+      .cl-bar-fill {
+        height: 100%;
+        background: #4db6ac;
+        border-radius: 3px;
+        transition: width 0.3s;
+        width: 0%;
+      }
+      .btn-row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 16px;
+      }
+      .btn-action {
+        flex: 1;
+        min-width: 120px;
+        padding: 10px 16px;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        font-size: 0.85rem;
+        transition: all 0.2s;
+      }
+      .btn-amber {
+        background: rgba(255, 180, 50, 0.15);
+        border: 1px solid rgba(255, 180, 50, 0.3);
+        color: #ffb432;
+      }
+      .btn-amber:hover { background: rgba(255, 180, 50, 0.3); }
+      .btn-danger {
+        background: rgba(255, 80, 80, 0.15);
+        border: 1px solid rgba(255, 80, 80, 0.3);
+        color: #ff6b6b;
+      }
+      .btn-danger:hover { background: rgba(255, 80, 80, 0.3); }
+    </style>
+  </head>
+  <body>
+    <div class="dev-page">
+      <a class="btn-back" href="admin.html">← 返回開發者工具</a>
+      <h1>✅ 多人競賽測試 Check List</h1>
+      <p class="dev-subtitle">多人模式完整測試流程，逐項確認</p>
+
+      <!-- 進度條 -->
+      <div class="cl-progress">
+        <span class="count" id="clDone">0</span> / <span id="clTotal">0</span> 項完成
+        <div class="cl-bar"><div class="cl-bar-fill" id="clBar"></div></div>
+      </div>
+
+      <!-- ===== 1. 事前環境 ===== -->
+      <div class="cl-section">
+        <h2>🔧 1. 事前環境確認</h2>
+        <div class="cl-item"><input type="checkbox" id="c1" /><label for="c1">至少準備 2 台設備（手機／平板／電腦皆可混用）</label></div>
+        <div class="cl-item"><input type="checkbox" id="c2" /><label for="c2">所有設備皆已連上同一個穩定的 Wi-Fi 網路</label></div>
+        <div class="cl-item"><input type="checkbox" id="c3" /><label for="c3">開啟遊戲網站，確認首頁載入正常</label></div>
+        <div class="cl-item"><input type="checkbox" id="c4" /><label for="c4">確認 Firebase 連線正常（無紅色錯誤訊息）</label></div>
+        <div class="cl-item"><input type="checkbox" id="c5" /><label for="c5">瀏覽器設為全螢幕模式（避免誤觸網址列）</label></div>
+        <div class="cl-item"><input type="checkbox" id="c6" /><label for="c6">音量調至適中（遊戲有音效和語音提示）</label></div>
+      </div>
+
+      <!-- ===== 2. 建立房間 ===== -->
+      <div class="cl-section">
+        <h2>🏠 2. 建立房間</h2>
+        <div class="cl-item"><input type="checkbox" id="c7" /><label for="c7">主持人（設備 A）進入「多人競賽 → 建立房間」</label></div>
+        <div class="cl-item"><input type="checkbox" id="c8" /><label for="c8">輸入暱稱後，系統產生 4 位數房間代碼</label></div>
+        <div class="cl-item"><input type="checkbox" id="c9" /><label for="c9">確認房間代碼顯示清晰，可口頭告訴其他玩家</label></div>
+        <div class="cl-item"><input type="checkbox" id="c10" /><label for="c10">主持人進入等候室，畫面顯示自己的暱稱</label></div>
+      </div>
+
+      <!-- ===== 3. 加入房間 ===== -->
+      <div class="cl-section">
+        <h2>🚪 3. 加入房間</h2>
+        <div class="cl-item"><input type="checkbox" id="c11" /><label for="c11">參加者（設備 B）進入「多人競賽 → 加入房間」</label></div>
+        <div class="cl-item"><input type="checkbox" id="c12" /><label for="c12">輸入房間代碼 + 暱稱，按「加入」成功進入等候室</label></div>
+        <div class="cl-item"><input type="checkbox" id="c13" /><label for="c13">主持人畫面即時顯示新參加者（不需刷新）</label></div>
+        <div class="cl-item"><input type="checkbox" id="c14" /><label for="c14">參加者畫面也能看到所有已加入的玩家清單</label></div>
+        <div class="cl-item"><input type="checkbox" id="c15" /><label for="c15">輸入錯誤代碼時，畫面有明確錯誤提示</label></div>
+      </div>
+
+      <!-- ===== 4. 遊戲設定與開始 ===== -->
+      <div class="cl-section">
+        <h2>⚙️ 4. 遊戲設定與開始</h2>
+        <div class="cl-item"><input type="checkbox" id="c16" /><label for="c16">主持人可選擇遊戲關卡（規則類型）</label></div>
+        <div class="cl-item"><input type="checkbox" id="c17" /><label for="c17">主持人按下「開始遊戲」按鈕</label></div>
+        <div class="cl-item"><input type="checkbox" id="c18" /><label for="c18">所有設備同時進入倒數計時畫面</label></div>
+        <div class="cl-item"><input type="checkbox" id="c19" /><label for="c19">倒數結束後，遊戲同步開始</label></div>
+      </div>
+
+      <!-- ===== 5. 遊戲進行中 ===== -->
+      <div class="cl-section">
+        <h2>🎮 5. 遊戲進行中</h2>
+        <div class="cl-item"><input type="checkbox" id="c20" /><label for="c20">各設備顯示的刺激（圖片）是否清楚可辨</label></div>
+        <div class="cl-item"><input type="checkbox" id="c21" /><label for="c21">觸控／鍵盤按鍵回應正常，無延遲或無反應</label></div>
+        <div class="cl-item"><input type="checkbox" id="c22" /><label for="c22">答對／答錯有對應的視覺＋音效回饋</label></div>
+        <div class="cl-item"><input type="checkbox" id="c23" /><label for="c23">即時排名或對手進度有顯示（如有）</label></div>
+        <div class="cl-item"><input type="checkbox" id="c24" /><label for="c24">工作記憶（WM）關卡的記憶序列正確呈現</label></div>
+        <div class="cl-item"><input type="checkbox" id="c25" /><label for="c25">遊戲不會卡住或白屏</label></div>
+      </div>
+
+      <!-- ===== 6. 結果與排行 ===== -->
+      <div class="cl-section">
+        <h2>🏆 6. 結果與排行</h2>
+        <div class="cl-item"><input type="checkbox" id="c26" /><label for="c26">遊戲結束後，各設備顯示結果畫面</label></div>
+        <div class="cl-item"><input type="checkbox" id="c27" /><label for="c27">結果頁顯示：正確率、反應時間、得分</label></div>
+        <div class="cl-item"><input type="checkbox" id="c28" /><label for="c28">所有玩家的排名清單正確顯示</label></div>
+        <div class="cl-item"><input type="checkbox" id="c29" /><label for="c29">如有世界排行榜，分數有正確上傳</label></div>
+        <div class="cl-item"><input type="checkbox" id="c30" /><label for="c30">結果頁可正確返回首頁或再玩一次</label></div>
+      </div>
+
+      <!-- ===== 7. 異常測試 ===== -->
+      <div class="cl-section">
+        <h2>⚠️ 7. 異常狀況測試</h2>
+        <div class="cl-item"><input type="checkbox" id="c31" /><label for="c31">遊戲中一台設備網路中斷 → 另一台不會卡住</label></div>
+        <div class="cl-item"><input type="checkbox" id="c32" /><label for="c32">房間內一人離開瀏覽器 → 遊戲仍能繼續或有提示</label></div>
+        <div class="cl-item"><input type="checkbox" id="c33" /><label for="c33">重新整理頁面後，能回到適當狀態（非白屏）</label></div>
+        <div class="cl-item"><input type="checkbox" id="c34" /><label for="c34">房間代碼過期或已開始的房間不可再加入</label></div>
+        <div class="cl-item"><input type="checkbox" id="c35" /><label for="c35">兩台設備使用相同暱稱時能正確區分</label></div>
+      </div>
+
+      <!-- ===== 8. 清理 ===== -->
+      <div class="cl-section">
+        <h2>🧹 8. 測試後清理</h2>
+        <div class="cl-item"><input type="checkbox" id="c36" /><label for="c36">回到「開發者工具」清除測試用房間資料</label></div>
+        <div class="cl-item"><input type="checkbox" id="c37" /><label for="c37">確認世界排行榜不保留測試用假資料</label></div>
+        <div class="cl-item"><input type="checkbox" id="c38" /><label for="c38">記錄本次測試發現的問題（如有）</label></div>
+      </div>
+
+      <!-- 備註區 -->
+      <div class="cl-section">
+        <h2>📝 測試備註</h2>
+        <textarea
+          id="clNotes"
+          rows="4"
+          style="
+            width: 100%; box-sizing: border-box; padding: 10px 12px;
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 8px; color: #e0e0e0; font-size: 0.85rem;
+            font-family: inherit; outline: none; resize: vertical;
+          "
+          placeholder="記錄本次測試的任何問題、觀察或改善建議…"
+        ></textarea>
+      </div>
+
+      <!-- 操作按鈕 -->
+      <div class="btn-row">
+        <button class="btn-action btn-amber" onclick="exportChecklist()">📄 匯出測試結果</button>
+        <button class="btn-action btn-danger" onclick="resetChecklist()">🔄 重置全部</button>
+      </div>
+    </div>
+
+    <script defer src="../js/shared/navbar.js"></script>
+    <script>
+    (function () {
+      "use strict";
+
+      var STORAGE_KEY = "mp-checklist-state";
+      var boxes = document.querySelectorAll('.cl-item input[type="checkbox"]');
+      var totalEl = document.getElementById("clTotal");
+      var doneEl = document.getElementById("clDone");
+      var barEl = document.getElementById("clBar");
+
+      totalEl.textContent = boxes.length;
+
+      // 載入已存狀態
+      function loadState() {
+        try {
+          var saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+          boxes.forEach(function (cb) {
+            if (saved[cb.id]) {
+              cb.checked = true;
+              cb.closest(".cl-item").classList.add("checked");
+            }
+          });
+          var notes = localStorage.getItem(STORAGE_KEY + "-notes");
+          if (notes) document.getElementById("clNotes").value = notes;
+        } catch (_) {}
+        updateProgress();
+      }
+
+      function saveState() {
+        var state = {};
+        boxes.forEach(function (cb) { state[cb.id] = cb.checked; });
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        localStorage.setItem(STORAGE_KEY + "-notes", document.getElementById("clNotes").value);
+      }
+
+      function updateProgress() {
+        var done = 0;
+        boxes.forEach(function (cb) { if (cb.checked) done++; });
+        doneEl.textContent = done;
+        barEl.style.width = (boxes.length ? (done / boxes.length * 100) : 0) + "%";
+      }
+
+      boxes.forEach(function (cb) {
+        cb.addEventListener("change", function () {
+          this.closest(".cl-item").classList.toggle("checked", this.checked);
+          updateProgress();
+          saveState();
+        });
+      });
+
+      document.getElementById("clNotes").addEventListener("input", function () {
+        saveState();
+      });
+
+      // 匯出
+      window.exportChecklist = function () {
+        var lines = ["多人競賽測試 Check List", "匯出時間：" + new Date().toLocaleString("zh-TW"), ""];
+        document.querySelectorAll(".cl-section").forEach(function (sec) {
+          var h2 = sec.querySelector("h2");
+          if (h2) lines.push(h2.textContent);
+          sec.querySelectorAll(".cl-item").forEach(function (item) {
+            var cb = item.querySelector('input[type="checkbox"]');
+            var lbl = item.querySelector("label");
+            lines.push((cb && cb.checked ? "  ✅ " : "  ⬜ ") + (lbl ? lbl.textContent : ""));
+          });
+          lines.push("");
+        });
+        var notes = document.getElementById("clNotes").value.trim();
+        if (notes) {
+          lines.push("📝 測試備註");
+          lines.push(notes);
+        }
+        var blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "多人競賽測試結果_" + new Date().toISOString().slice(0, 10) + ".txt";
+        a.click();
+        URL.revokeObjectURL(a.href);
+      };
+
+      // 重置
+      window.resetChecklist = function () {
+        if (!confirm("確定要重置所有勾選嗎？")) return;
+        boxes.forEach(function (cb) {
+          cb.checked = false;
+          cb.closest(".cl-item").classList.remove("checked");
+        });
+        document.getElementById("clNotes").value = "";
+        updateProgress();
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(STORAGE_KEY + "-notes");
+      };
+
+      loadState();
+    })();
+    </script>
+  </body>
+</html>
