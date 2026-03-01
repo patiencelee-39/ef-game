@@ -109,7 +109,11 @@ body {
 }
 
 .player-card.host.is-me {
-  background: linear-gradient(135deg, rgba(253, 203, 110, 0.15), rgba(108, 192, 255, 0.15));
+  background: linear-gradient(
+    135deg,
+    rgba(253, 203, 110, 0.15),
+    rgba(108, 192, 255, 0.15)
+  );
   border-color: rgba(253, 203, 110, 0.3);
   box-shadow: 0 0 8px rgba(108, 192, 255, 0.2);
 }

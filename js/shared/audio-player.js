@@ -181,9 +181,13 @@ function _playMp3(path) {
     }, LOAD_TIMEOUT_MS);
 
     // 播放結束後釋放
-    audio.addEventListener("ended", function () {
-      _releaseAudio();
-    }, { once: true });
+    audio.addEventListener(
+      "ended",
+      function () {
+        _releaseAudio();
+      },
+      { once: true },
+    );
 
     audio.addEventListener(
       "canplaythrough",
@@ -372,8 +376,16 @@ function _playBufferSource(audioBuffer, rate, isVoice) {
 
     /** 清理 AudioNode 連接，防止記憶體洩漏 */
     function _disconnectNodes() {
-      try { source.disconnect(); } catch (e) { /* 已斷開 */ }
-      try { gainNode.disconnect(); } catch (e) { /* 已斷開 */ }
+      try {
+        source.disconnect();
+      } catch (e) {
+        /* 已斷開 */
+      }
+      try {
+        gainNode.disconnect();
+      } catch (e) {
+        /* 已斷開 */
+      }
     }
 
     // 逾時保護：依實際音訊長度 / 播放速率 + 3 秒緩衝
@@ -443,8 +455,16 @@ function _playTone(freq, type, duration) {
 
   // 播放結束後斷開 AudioNode，避免記憶體洩漏
   osc.onended = function () {
-    try { osc.disconnect(); } catch (e) { /* ignore */ }
-    try { gain.disconnect(); } catch (e) { /* ignore */ }
+    try {
+      osc.disconnect();
+    } catch (e) {
+      /* ignore */
+    }
+    try {
+      gain.disconnect();
+    } catch (e) {
+      /* ignore */
+    }
   };
 }
 

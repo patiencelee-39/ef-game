@@ -81,6 +81,15 @@
           }
         },
 
+        // --- 場地完成通知（各自只能寫自己的，獨立於 players 避免快照風暴）---
+        "notifications": {
+          ".read": "auth != null",
+          "$uid": {
+            ".read": "auth != null",
+            ".write": "auth != null && ($uid === auth.uid || data.parent().parent().child('hostId').val() === auth.uid)"
+          }
+        },
+
         // --- 玩家成績（各自只能寫自己的）---
         "scores": {
           "$uid": {

@@ -195,7 +195,8 @@ var GameSync = (function () {
       if (!_notifiedCompletions[dedupeKey]) {
         _notifiedCompletions[dedupeKey] = true;
         // 從 _playerSnapshots 取暱稱
-        var nickname = (_playerSnapshots[uid] && _playerSnapshots[uid].nickname) || "玩家";
+        var nickname =
+          (_playerSnapshots[uid] && _playerSnapshots[uid].nickname) || "玩家";
         _callbacks.onStageComplete(uid, nickname, data.justCompleted);
       }
     });
@@ -207,7 +208,8 @@ var GameSync = (function () {
       var dedupeKey = uid + "_" + data.justCompleted;
       if (!_notifiedCompletions[dedupeKey]) {
         _notifiedCompletions[dedupeKey] = true;
-        var nickname = (_playerSnapshots[uid] && _playerSnapshots[uid].nickname) || "玩家";
+        var nickname =
+          (_playerSnapshots[uid] && _playerSnapshots[uid].nickname) || "玩家";
         _callbacks.onStageComplete(uid, nickname, data.justCompleted);
       }
     });
@@ -482,7 +484,10 @@ var GameSync = (function () {
   function _cleanup() {
     if (_playersRef) _playersRef.off();
     if (_scoresRef) _scoresRef.off();
-    if (_notificationsRef) { _notificationsRef.off(); _notificationsRef = null; }
+    if (_notificationsRef) {
+      _notificationsRef.off();
+      _notificationsRef = null;
+    }
     if (_roomRef) {
       _roomRef.child("status").off();
       _roomRef.child("countdownStartAt").off();
