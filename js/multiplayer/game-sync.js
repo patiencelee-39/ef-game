@@ -134,17 +134,20 @@ var GameSync = (function () {
 
   function _schedulePlayersCallback() {
     if (_playersUpdateTimer) return; // 已排程
-    _playersUpdateTimer = setTimeout(function () {
-      _playersUpdateTimer = null;
-      // 重算 expectedPlayerCount
-      _expectedPlayerCount = 0;
-      for (var uid in _playerSnapshots) {
-        if (_playerSnapshots.hasOwnProperty(uid)) _expectedPlayerCount++;
-      }
-      if (_callbacks.onPlayersUpdate) {
-        _callbacks.onPlayersUpdate(_playerSnapshots);
-      }
-    }, _initialLoadDone ? PLAYERS_UPDATE_DEBOUNCE_MS : 100);
+    _playersUpdateTimer = setTimeout(
+      function () {
+        _playersUpdateTimer = null;
+        // 重算 expectedPlayerCount
+        _expectedPlayerCount = 0;
+        for (var uid in _playerSnapshots) {
+          if (_playerSnapshots.hasOwnProperty(uid)) _expectedPlayerCount++;
+        }
+        if (_callbacks.onPlayersUpdate) {
+          _callbacks.onPlayersUpdate(_playerSnapshots);
+        }
+      },
+      _initialLoadDone ? PLAYERS_UPDATE_DEBOUNCE_MS : 100,
+    );
   }
 
   function _processPlayerData(uid, p) {

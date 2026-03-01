@@ -23,16 +23,16 @@ var MemoryMonitor = (function () {
   "use strict";
 
   var _timer = null;
-  var _samples = [];        // 最近 N 筆 heap 快照
-  var _checkpoints = [];    // 手動埋樁紀錄
+  var _samples = []; // 最近 N 筆 heap 快照
+  var _checkpoints = []; // 手動埋樁紀錄
   var _startTime = 0;
   var _isRunning = false;
   var _debugOverlay = null;
 
   var SAMPLE_INTERVAL_MS = 5000; // 每 5 秒採樣
-  var MAX_SAMPLES = 60;          // 最多保留 60 筆（5 分鐘）
-  var WARN_GROWTH_MB = 20;       // 連續增長超過 20MB 發警告
-  var CRITICAL_MB = 150;         // 超過 150MB 發出嚴重警告
+  var MAX_SAMPLES = 60; // 最多保留 60 筆（5 分鐘）
+  var WARN_GROWTH_MB = 20; // 連續增長超過 20MB 發警告
+  var CRITICAL_MB = 150; // 超過 150MB 發出嚴重警告
 
   /**
    * 取得目前記憶體資訊（MB）
@@ -41,9 +41,12 @@ var MemoryMonitor = (function () {
   function _getMemoryInfo() {
     if (!performance || !performance.memory) return null;
     return {
-      used: Math.round(performance.memory.usedJSHeapSize / 1048576 * 100) / 100,
-      total: Math.round(performance.memory.totalJSHeapSize / 1048576 * 100) / 100,
-      limit: Math.round(performance.memory.jsHeapSizeLimit / 1048576 * 100) / 100,
+      used:
+        Math.round((performance.memory.usedJSHeapSize / 1048576) * 100) / 100,
+      total:
+        Math.round((performance.memory.totalJSHeapSize / 1048576) * 100) / 100,
+      limit:
+        Math.round((performance.memory.jsHeapSizeLimit / 1048576) * 100) / 100,
     };
   }
 
@@ -80,8 +83,12 @@ var MemoryMonitor = (function () {
       if (growing && growth > WARN_GROWTH_MB) {
         console.warn(
           "⚠️ [MemoryMonitor] 記憶體持續增長！" +
-          " 30 秒內增加 " + growth.toFixed(1) + "MB" +
-          " (目前 " + mem.used.toFixed(1) + "MB)"
+            " 30 秒內增加 " +
+            growth.toFixed(1) +
+            "MB" +
+            " (目前 " +
+            mem.used.toFixed(1) +
+            "MB)",
         );
       }
     }
@@ -90,8 +97,11 @@ var MemoryMonitor = (function () {
     if (mem.used > CRITICAL_MB) {
       console.error(
         "🔴 [MemoryMonitor] 記憶體使用量危險！" +
-        mem.used.toFixed(1) + "MB / " + mem.limit.toFixed(0) + "MB" +
-        " — 可能即將 OOM"
+          mem.used.toFixed(1) +
+          "MB / " +
+          mem.limit.toFixed(0) +
+          "MB" +
+          " — 可能即將 OOM",
       );
       _saveToLocalStorage("crisis");
     }
@@ -100,8 +110,12 @@ var MemoryMonitor = (function () {
     if (_debugOverlay) {
       _debugOverlay.textContent =
         "🧠 " + mem.used.toFixed(0) + "MB / " + mem.limit.toFixed(0) + "MB";
-      _debugOverlay.style.color = mem.used > CRITICAL_MB ? "#ff4444" :
-                                   mem.used > 80 ? "#ffaa00" : "#44ff44";
+      _debugOverlay.style.color =
+        mem.used > CRITICAL_MB
+          ? "#ff4444"
+          : mem.used > 80
+            ? "#ffaa00"
+            : "#44ff44";
     }
   }
 
@@ -119,8 +133,10 @@ var MemoryMonitor = (function () {
     };
     _checkpoints.push(entry);
     console.log(
-      "📌 [MemoryMonitor] " + label +
-      " — " + (mem ? mem.used.toFixed(1) + "MB" : "N/A")
+      "📌 [MemoryMonitor] " +
+        label +
+        " — " +
+        (mem ? mem.used.toFixed(1) + "MB" : "N/A"),
     );
   }
 
@@ -184,7 +200,11 @@ var MemoryMonitor = (function () {
         _saveToLocalStorage("beforeunload");
       });
 
-      console.log("🧠 [MemoryMonitor] 監控已啟動（每 " + (SAMPLE_INTERVAL_MS / 1000) + " 秒採樣）");
+      console.log(
+        "🧠 [MemoryMonitor] 監控已啟動（每 " +
+          SAMPLE_INTERVAL_MS / 1000 +
+          " 秒採樣）",
+      );
     },
 
     /**
@@ -242,7 +262,9 @@ var MemoryMonitor = (function () {
     },
 
     /** 是否正在運行 */
-    isRunning: function () { return _isRunning; },
+    isRunning: function () {
+      return _isRunning;
+    },
   };
 })();
 

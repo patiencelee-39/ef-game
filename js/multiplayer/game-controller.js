@@ -86,9 +86,10 @@ var GameController = (function () {
     };
   }
 
-  function beginCombo() {
+  function beginCombo(skipIntro) {
     // 📊 埋樁：每個 combo 開始時記錄記憶體
-    if (typeof MemoryMonitor !== "undefined") MemoryMonitor.checkpoint("combo_" + (_comboIndex + 1) + "_start");
+    if (typeof MemoryMonitor !== "undefined")
+      MemoryMonitor.checkpoint("combo_" + (_comboIndex + 1) + "_start");
 
     var combo = _combos[_comboIndex];
     _trialIndex = 0;
@@ -120,7 +121,19 @@ var GameController = (function () {
     }
 
     dom.trialTotal.textContent = _questions.length;
-    showRuleIntro(combo);
+
+    // 從過場來 → 規則已顯示，跳過 showRuleIntro 直接開始
+    if (skipIntro) {
+      if (
+        typeof AudioPlayer !== "undefined" &&
+        AudioPlayer.resumeAudioContext
+      ) {
+        AudioPlayer.resumeAudioContext();
+      }
+      beginTrials();
+    } else {
+      showRuleIntro(combo);
+    }
   }
 
   /** stimulus key → SVG HTML（委派 TrialRenderer） */
@@ -194,7 +207,8 @@ var GameController = (function () {
 
     showScreen(dom.ruleIntroScreen);
 
-    dom.btnRuleStart.onclick = function () {
+    // 抽出共用啟動函式，讓 click 和 keydown 都能直接呼叫
+    function _startFromRuleIntro() {
       if (
         typeof AudioPlayer !== "undefined" &&
         AudioPlayer.resumeAudioContext
@@ -202,7 +216,10 @@ var GameController = (function () {
         AudioPlayer.resumeAudioContext();
       }
       beginTrials();
-    };
+    }
+    dom.btnRuleStart.onclick = _startFromRuleIntro;
+    // 暫存供 keydown handler 直接呼叫（避免 .click() 觸發不穩定）
+    dom._ruleIntroStart = _startFromRuleIntro;
   }
 
   function beginTrials() {
@@ -511,7 +528,8 @@ var GameController = (function () {
 
   function showComboTransition(nextCombo) {
     // 📊 埋樁：combo 過渡（前一個 combo 剛完成）
-    if (typeof MemoryMonitor !== "undefined") MemoryMonitor.checkpoint("combo_" + _comboIndex + "_done");
+    if (typeof MemoryMonitor !== "undefined")
+      MemoryMonitor.checkpoint("combo_" + _comboIndex + "_done");
 
     var ctr = dom.comboTransition;
     ctr.classList.remove("hidden");
@@ -527,18 +545,14 @@ var GameController = (function () {
     xhr.open("GET", "../shared/combo-transition.html", true);
     xhr.onload = function () {
       if (xhr.status >= 200 && xhr.status < 300) {
-        // P15: 使用 DOMParser 安全解析，避免直接 innerHTML 注入
+        // P15: 使用 DOMParser 安全解析
         var parser = new DOMParser();
         var doc = parser.parseFromString(xhr.responseText, "text/html");
-        var template = doc.querySelector(".combo-transition");
         ctr.innerHTML = "";
-        if (template) {
-          ctr.appendChild(document.importNode(template, true));
-        } else {
-          var body = doc.body;
-          while (body && body.firstChild) {
-            ctr.appendChild(document.importNode(body.firstChild, true));
-          }
+        // 匯入所有 body 子節點（含 .combo-transition div + <style> 標籤）
+        var body = doc.body;
+        while (body && body.firstChild) {
+          ctr.appendChild(document.importNode(body.firstChild, true));
         }
         // 快取 innerHTML 供後續重用
         _transitionTemplateHTML = ctr.innerHTML;
@@ -565,6 +579,32 @@ var GameController = (function () {
     var prev = ctr.querySelector(".prev-combo-name");
     if (prev) prev.textContent = prevCombo.displayName || "";
 
+    // ── 上一組合成績摘要 ──
+    var headerEl = ctr.querySelector(".combo-transition-header");
+    if (headerEl && _comboScores.length > 0) {
+      var lastScore = _comboScores[_comboScores.length - 1];
+      var acc =
+        lastScore.totalCount > 0
+          ? Math.round(
+              (lastScore.correctCount / lastScore.totalCount) * 100,
+            )
+          : 0;
+      var avgRT =
+        lastScore.avgRT > 0 ? Math.round(lastScore.avgRT) + "ms" : "--";
+
+      var scoreDiv = document.createElement("div");
+      scoreDiv.className = "combo-prev-score";
+      scoreDiv.innerHTML =
+        '<span class="prev-score-item">🎯 正確率 <b>' +
+        acc +
+        "%</b></span>" +
+        '<span class="prev-score-divider">|</span>' +
+        '<span class="prev-score-item">⚡ 反應 <b>' +
+        avgRT +
+        "</b></span>";
+      headerEl.appendChild(scoreDiv);
+    }
+
     // 下一組合資訊
     var nIcon = ctr.querySelector(".next-field-icon");
     var nName = ctr.querySelector(".next-field-name");
@@ -590,12 +630,32 @@ var GameController = (function () {
       if (ngA) ngA.textContent = "不要按！";
     }
 
+    // ── 規則反轉提示（同場地不同規則時） ──
+    if (_comboIndex > 0) {
+      var pField = prevCombo.fieldId;
+      var pRule = prevCombo.ruleId;
+      if (
+        pField === nextCombo.fieldId &&
+        pRule !== nextCombo.ruleId &&
+        nextCombo.ruleId !== "mixed"
+      ) {
+        var reverseNotice = document.createElement("div");
+        reverseNotice.className = "combo-reverse-notice";
+        reverseNotice.innerHTML =
+          "⚠️ 注意！同樣的圖片，<br>但 Go / NoGo <u>規則相反了</u>！";
+        var rulesBlock = ctr.querySelector(".combo-transition-rules");
+        if (rulesBlock) {
+          rulesBlock.appendChild(reverseNotice);
+        }
+      }
+    }
+
     // WM 提示
     var wmN = ctr.querySelector(".combo-wm-notice");
     if (wmN)
       wmN.style.display = nextCombo.enableWm || nextCombo.hasWM ? "" : "none";
 
-    // 開始按鈕
+    // 開始按鈕 → 直接進入倒數（省略重複的規則說明頁）
     var startBtn = ctr.querySelector(".combo-start-btn");
     if (startBtn) {
       startBtn.addEventListener(
@@ -603,7 +663,7 @@ var GameController = (function () {
         function () {
           ctr.classList.add("hidden");
           ctr.innerHTML = "";
-          beginCombo();
+          beginCombo(true); // skipIntro: 過場已顯示規則
         },
         { once: true },
       );
@@ -700,7 +760,8 @@ var GameController = (function () {
 
   function finishGame() {
     // 📊 埋樁：遊戲結束
-    if (typeof MemoryMonitor !== "undefined") MemoryMonitor.checkpoint("game_finish");
+    if (typeof MemoryMonitor !== "undefined")
+      MemoryMonitor.checkpoint("game_finish");
 
     var accuracy = _totalTrials > 0 ? (_totalCorrect / _totalTrials) * 100 : 0;
 
@@ -844,7 +905,8 @@ var GameController = (function () {
     cacheDom();
 
     // 📊 埋樁：遊戲初始化
-    if (typeof MemoryMonitor !== "undefined") MemoryMonitor.checkpoint("game_init");
+    if (typeof MemoryMonitor !== "undefined")
+      MemoryMonitor.checkpoint("game_init");
 
     if (!MultiplayerBridge.parseRoomInfo()) return;
     MultiplayerBridge.initRoom();
@@ -984,11 +1046,15 @@ var GameController = (function () {
     document.addEventListener("keydown", function (e) {
       if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")
         return;
-      if (e.code === "Space") {
+      if (e.code === "Space" || e.key === " ") {
         e.preventDefault();
         // 1. 規則說明頁 → 開始
         if (dom.ruleIntroScreen.classList.contains("active")) {
-          dom.btnRuleStart.click();
+          if (dom._ruleIntroStart) {
+            dom._ruleIntroStart();
+          } else {
+            dom.btnRuleStart.click();
+          }
           return;
         }
         // 2. 暫停中 → 繼續
@@ -1019,7 +1085,12 @@ var GameController = (function () {
         // 5. 遊戲進行中 → 按鍵回應
         if (_isPlaying && !_responded) onPress();
       }
-      if (e.code === "Escape" && _isPlaying && !_isPaused) pause();
+      if (
+        (e.code === "Escape" || e.key === "Escape") &&
+        _isPlaying &&
+        !_isPaused
+      )
+        pause();
     });
 
     dom.btnPause.addEventListener("click", function () {

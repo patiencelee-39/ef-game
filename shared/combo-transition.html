@@ -10,7 +10,7 @@
        多人模式與自由選擇模式共用。
 
   過場內容（§2.8）：
-    1. 🎊 上一組合完成提示
+    1. 🎊 上一組合完成提示 + 成績摘要
     2. 即將進入的組合名稱
     3. ⚠️ 規則說明（Go / No-Go 對應）
     4. [🔊 聽規則說明] 按鈕
@@ -24,6 +24,7 @@
     <p class="combo-complete-msg" aria-live="polite">
       🎊 <span class="prev-combo-name">組合1</span> 全部完成！
     </p>
+    <!-- 成績摘要由 JS 動態插入 .combo-prev-score -->
   </div>
 
   <!-- === 即將進入 === -->
@@ -41,13 +42,13 @@
   <div class="combo-transition-rules">
     <p class="combo-rule-warning">⚠️ 注意！規則改變了：</p>
     <div class="combo-rule-detail">
-      <div class="combo-rule-row">
+      <div class="combo-rule-row combo-rule-row--go">
         <span class="rule-stimulus-icon go-stimulus-icon">🧀</span>
         <span class="rule-stimulus-label go-stimulus-label">起司</span>
         <span class="rule-arrow">→</span>
         <span class="rule-action go-action">不要按</span>
       </div>
-      <div class="combo-rule-row">
+      <div class="combo-rule-row combo-rule-row--nogo">
         <span class="rule-stimulus-icon nogo-stimulus-icon">😺</span>
         <span class="rule-stimulus-label nogo-stimulus-label">貓咪</span>
         <span class="rule-arrow">→</span>
@@ -58,6 +59,7 @@
     <div class="combo-wm-notice" style="display: none">
       <p>🧠 本組合含工作記憶測驗</p>
     </div>
+    <!-- 規則反轉提示由 JS 動態插入 .combo-reverse-notice -->
   </div>
 
   <!-- === 操作按鈕 === -->
@@ -67,10 +69,7 @@
     </button>
     <button class="combo-start-btn btn btn-primary" type="button">
       ▶️ 開始
-      <span
-        style="display: block; font-size: 0.7rem; opacity: 0.6; margin-top: 4px"
-        >（或按空白鍵）</span
-      >
+      <span class="key-hint-sub">（或按空白鍵）</span>
     </button>
   </div>
 </div>
@@ -81,13 +80,16 @@
   ============================================
 -->
 <style>
+  /* === 容器佈局由外部 game.css 控制 === */
+
   .combo-transition {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 24px;
-    padding: 40px 24px;
+    gap: 16px;
+    padding: 24px 20px 32px;
     max-width: 520px;
+    width: 100%;
     margin: 0 auto;
     text-align: center;
     animation: combo-fade-in 0.5s ease-out;
@@ -110,78 +112,153 @@
   }
 
   .combo-complete-msg {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     font-weight: 700;
     color: var(--success-green, #2ecc71);
-    padding: 12px 20px;
+    padding: 10px 16px;
     border-radius: 8px;
     background: rgba(46, 204, 113, 0.15);
     border: 2px solid rgba(46, 204, 113, 0.3);
+    margin: 0;
+  }
+
+  /* --- 上一組合成績摘要 --- */
+  .combo-prev-score {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 8px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.06);
+    font-size: 0.95rem;
+    color: var(--text-light, #ccc);
+    animation: combo-score-pop 0.6s ease-out 0.3s both;
+  }
+  .prev-score-item b {
+    color: var(--text-white, #fff);
+    font-size: 1.05em;
+  }
+  .prev-score-divider {
+    color: rgba(255, 255, 255, 0.2);
+  }
+
+  @keyframes combo-score-pop {
+    0% {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    60% {
+      transform: scale(1.05);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
   }
 
   /* --- 即將進入 --- */
   .combo-transition-next {
     width: 100%;
+    animation: combo-slide-up 0.5s ease-out 0.15s both;
+  }
+
+  @keyframes combo-slide-up {
+    0% {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   .combo-next-label {
-    font-size: 1rem;
+    font-size: 0.95rem;
     color: var(--text-light, #aaa);
-    margin-bottom: 8px;
+    margin-bottom: 6px;
   }
 
   .combo-next-name {
-    font-size: 1.8rem;
+    font-size: 1.6rem;
     font-weight: 900;
     color: var(--text-white, #fff);
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
+    margin: 0;
   }
 
   .next-field-icon {
-    font-size: 2rem;
+    font-size: 1.8rem;
   }
 
   /* --- 規則說明 --- */
   .combo-transition-rules {
     width: 100%;
-    padding: 20px;
+    padding: 16px;
     border-radius: 12px;
     background: rgba(255, 255, 255, 0.06);
     border: 1px solid rgba(255, 255, 255, 0.1);
+    animation: combo-slide-up 0.5s ease-out 0.3s both;
   }
 
   .combo-rule-warning {
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 700;
     color: #f39c12;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
   }
 
   .combo-rule-detail {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
   }
 
   .combo-rule-row {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 12px;
-    font-size: 1.2rem;
+    gap: 10px;
+    font-size: 1.1rem;
     color: var(--text-white, #fff);
+    padding: 6px 12px;
+    border-radius: 8px;
+    animation: combo-rule-enter 0.4s ease-out both;
+  }
+
+  .combo-rule-row--go {
+    background: rgba(46, 204, 113, 0.08);
+    animation-delay: 0.4s;
+  }
+
+  .combo-rule-row--nogo {
+    background: rgba(231, 76, 60, 0.08);
+    animation-delay: 0.55s;
+  }
+
+  @keyframes combo-rule-enter {
+    0% {
+      opacity: 0;
+      transform: translateX(-16px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(0);
+    }
   }
 
   .rule-stimulus-icon {
-    font-size: 2rem;
+    font-size: 1.6rem;
   }
 
   .rule-stimulus-label {
     font-weight: 600;
-    min-width: 60px;
+    min-width: 48px;
   }
 
   .rule-arrow {
@@ -199,60 +276,145 @@
     font-weight: 700;
   }
 
+  /* --- 規則反轉提示 --- */
+  .combo-reverse-notice {
+    text-align: center;
+    padding: 10px 16px;
+    margin-top: 12px;
+    background: rgba(255, 107, 107, 0.15);
+    border: 1px solid rgba(255, 107, 107, 0.4);
+    border-radius: 10px;
+    font-size: 0.95rem;
+    color: #ff6b6b;
+    font-weight: 600;
+    animation: combo-reverse-pulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes combo-reverse-pulse {
+    0%,
+    100% {
+      transform: scale(1);
+      box-shadow: 0 0 0 rgba(255, 107, 107, 0);
+    }
+    50% {
+      transform: scale(1.03);
+      box-shadow: 0 0 16px rgba(255, 107, 107, 0.3);
+    }
+  }
+
   /* WM 提示 */
   .combo-wm-notice {
-    margin-top: 12px;
-    padding: 8px 16px;
+    margin-top: 10px;
+    padding: 8px 14px;
     border-radius: 6px;
     background: rgba(52, 152, 219, 0.15);
     border: 1px solid rgba(52, 152, 219, 0.3);
     color: #3498db;
     font-weight: 600;
+    font-size: 0.95rem;
   }
 
   /* --- 操作按鈕 --- */
   .combo-transition-actions {
     display: flex;
-    gap: 16px;
+    gap: 12px;
     flex-wrap: wrap;
     justify-content: center;
+    width: 100%;
+    animation: combo-slide-up 0.5s ease-out 0.5s both;
   }
 
   .combo-listen-btn {
-    padding: 10px 24px;
-    font-size: 1rem;
+    padding: 10px 20px;
+    font-size: 0.95rem;
     border-radius: 8px;
   }
 
   .combo-start-btn {
-    padding: 14px 48px;
-    font-size: 1.2rem;
+    padding: 12px 36px;
+    font-size: 1.15rem;
     font-weight: 700;
     border-radius: 8px;
-    min-width: 180px;
+    min-width: 160px;
+    position: relative;
+  }
+
+  .key-hint-sub {
+    display: block;
+    font-size: 0.65rem;
+    opacity: 0.5;
+    font-weight: 400;
+    margin-top: 3px;
   }
 
   /* === 響應式 === */
   @media (max-width: 480px) {
     .combo-transition {
-      padding: 24px 16px;
-      gap: 16px;
+      padding: 16px 14px 24px;
+      gap: 12px;
+    }
+
+    .combo-complete-msg {
+      font-size: 1.05rem;
+      padding: 8px 12px;
     }
 
     .combo-next-name {
-      font-size: 1.4rem;
+      font-size: 1.3rem;
     }
 
     .combo-rule-row {
-      font-size: 1rem;
+      font-size: 0.95rem;
+      gap: 8px;
     }
 
     .rule-stimulus-icon {
-      font-size: 1.5rem;
+      font-size: 1.3rem;
     }
 
     .combo-start-btn {
       width: 100%;
+      padding: 12px 24px;
+    }
+
+    .combo-listen-btn {
+      width: 100%;
+    }
+  }
+
+  /* 極小螢幕（SE 等） */
+  @media (max-height: 600px) {
+    .combo-transition {
+      padding: 12px 12px 20px;
+      gap: 10px;
+    }
+
+    .combo-complete-msg {
+      font-size: 0.95rem;
+      padding: 6px 10px;
+    }
+
+    .combo-next-name {
+      font-size: 1.2rem;
+    }
+
+    .combo-transition-rules {
+      padding: 12px;
+    }
+
+    .combo-rule-warning {
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+    }
+
+    .combo-rule-row {
+      font-size: 0.9rem;
+      padding: 4px 8px;
+    }
+
+    .combo-start-btn {
+      padding: 10px 24px;
+      font-size: 1rem;
     }
   }
 </style>

@@ -658,9 +658,11 @@
   z-index: 800;
   background: var(--bg-dark);
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  padding-bottom: env(safe-area-inset-bottom, 16px);
 }
 
 /* --- Demo/Practice 刺激物舞台（複製原始 ID 樣式） --- */

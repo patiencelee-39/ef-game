@@ -162,8 +162,16 @@ function _playBeep(step) {
     osc.start();
     osc.stop(ctx.currentTime + tone.duration);
     osc.onended = function () {
-      try { osc.disconnect(); } catch (e) { /* ignore */ }
-      try { gain.disconnect(); } catch (e) { /* ignore */ }
+      try {
+        osc.disconnect();
+      } catch (e) {
+        /* ignore */
+      }
+      try {
+        gain.disconnect();
+      } catch (e) {
+        /* ignore */
+      }
     };
   } catch (e) {
     // 靜默失敗
@@ -196,8 +204,16 @@ function _playGoSound() {
     osc.start();
     osc.stop(ctx.currentTime + 0.2);
     osc.onended = function () {
-      try { osc.disconnect(); } catch (e) { /* ignore */ }
-      try { gain.disconnect(); } catch (e) { /* ignore */ }
+      try {
+        osc.disconnect();
+      } catch (e) {
+        /* ignore */
+      }
+      try {
+        gain.disconnect();
+      } catch (e) {
+        /* ignore */
+      }
     };
   } catch (e) {
     // 靜默失敗

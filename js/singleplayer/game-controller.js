@@ -1338,18 +1338,14 @@ var GameController = (function () {
     xhr.open("GET", "../shared/combo-transition.html", true);
     xhr.onload = function () {
       if (xhr.status >= 200 && xhr.status < 300) {
-        // P15: DOMParser 安全解析，避免直接 innerHTML 注入
+        // P15: DOMParser 安全解析
         var parser = new DOMParser();
         var doc = parser.parseFromString(xhr.responseText, "text/html");
-        var tpl = doc.querySelector(".combo-transition");
         ctr.innerHTML = "";
-        if (tpl) {
-          ctr.appendChild(document.importNode(tpl, true));
-        } else {
-          var body = doc.body;
-          while (body && body.firstChild) {
-            ctr.appendChild(document.importNode(body.firstChild, true));
-          }
+        // 匯入所有 body 子節點（含 .combo-transition div + <style> 標籤）
+        var body = doc.body;
+        while (body && body.firstChild) {
+          ctr.appendChild(document.importNode(body.firstChild, true));
         }
         _fillTransition(ctr, nextCombo);
       } else {

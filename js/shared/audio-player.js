@@ -106,7 +106,7 @@ var _voiceRate = 1.0;
  */
 var _bufferCache = {};
 var _bufferCacheKeys = []; // 保持插入順序供 LRU 淘汰
-var MAX_BUFFER_CACHE = 8;  // 最多快取 8 個 AudioBuffer（避免 OOM）
+var MAX_BUFFER_CACHE = 8; // 最多快取 8 個 AudioBuffer（避免 OOM）
 
 /** @type {boolean} 是否已初始化 */
 var _initialized = false;
