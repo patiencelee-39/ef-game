@@ -101,15 +101,18 @@ var MemoryMonitor = (function () {
           "MB / " +
           mem.limit.toFixed(0) +
           "MB" +
-          " — 可能即將 OOM",
+          " — 可能即將 OOM"
       );
       _saveToLocalStorage("crisis");
     }
 
     // 更新 debug overlay
     if (_debugOverlay) {
+      var used = mem.used.toFixed(1);
+      var limit = mem.limit.toFixed(1);
+      var usage = ((mem.used / mem.limit) * 100).toFixed(0);
       _debugOverlay.textContent =
-        "🧠 " + mem.used.toFixed(0) + "MB / " + mem.limit.toFixed(0) + "MB";
+        "🧠 " + used + "MB / " + limit + "MB (" + usage + "%)";
       _debugOverlay.style.color =
         mem.used > CRITICAL_MB
           ? "#ff4444"
@@ -154,8 +157,20 @@ var MemoryMonitor = (function () {
         finalMemory: _getMemoryInfo(),
       };
       localStorage.setItem("memoryMonitor_lastRun", JSON.stringify(data));
+      console.log(
+        "💾 [MemoryMonitor] 已保存到 localStorage (原因: " + reason + ")"
+      );
     } catch (e) {
-      // localStorage 可能也爆了
+      console.error("[MemoryMonitor] localStorage 保存失敗:", e.message);
+      // localStorage 可能也爆了，嘗試 sessionStorage 備份
+      try {
+        sessionStorage.setItem(
+          "memoryMonitor_backup",
+          JSON.stringify(data)
+        );
+      } catch (e2) {
+        /* ignore */
+      }
     }
   }
 
@@ -231,16 +246,24 @@ var MemoryMonitor = (function () {
     checkpoint: checkpoint,
 
     /**
-     * 取得上次執行的記錄（從 localStorage）
+     * 取得上次執行的記錄（從 localStorage 或 sessionStorage 備份）
      * @returns {Object|null}
      */
     getLastRun: function () {
       try {
         var raw = localStorage.getItem("memoryMonitor_lastRun");
-        return raw ? JSON.parse(raw) : null;
+        if (raw) return JSON.parse(raw);
       } catch (e) {
-        return null;
+        console.warn("[MemoryMonitor] localStorage 讀取失敗，嘗試 sessionStorage");
       }
+      // 嘗試 sessionStorage 備份
+      try {
+        var backup = sessionStorage.getItem("memoryMonitor_backup");
+        if (backup) return JSON.parse(backup);
+      } catch (e2) {
+        console.warn("[MemoryMonitor] sessionStorage 備份也讀取失敗");
+      }
+      return null;
     },
 
     /**
@@ -249,17 +272,80 @@ var MemoryMonitor = (function () {
     printLastRun: function () {
       var data = this.getLastRun();
       if (!data) {
-        console.log("🧠 [MemoryMonitor] 無上次執行紀錄");
+        console.log(
+          "🧠 [MemoryMonitor] 無上次執行紀錄 — 未找到 localStorage/sessionStorage 中的 memoryMonitor_lastRun"
+        );
         return;
       }
-      console.group("🧠 [MemoryMonitor] 上次執行報告");
-      console.log("原因:", data.reason);
-      console.log("時間:", data.timestamp);
-      console.log("最終記憶體:", data.finalMemory);
-      console.table(data.checkpoints);
-      console.table(data.samples);
-      console.groupEnd();
-    },
+
+      console.log(
+        "\n" +
+          "═══════════════════════════════════════════════════════\n" +
+          "🧠 [MemoryMonitor] 上次執行報告\n" +
+          "═══════════════════════════════════════════════════════"
+      );
+      console.log("📍 保存原因:  ", data.reason);
+      console.log("📅 保存時間:  ", data.timestamp);
+      console.log(
+        "💾 最終記憶體: ",
+        data.finalMemory
+          ? data.finalMemory.used.toFixed(1) +
+              "MB / " +
+              data.finalMemory.limit.toFixed(0) +
+              "MB (" +
+              Math.round((data.finalMemory.used / data.finalMemory.limit) * 100) +
+              "%)"
+          : "N/A"
+      );
+
+      console.log("\n📌 埋樁檢查點 (checkpoints):");
+      if (data.checkpoints && data.checkpoints.length > 0) {
+        if (typeof console.table === "function") {
+          console.table(data.checkpoints);
+        } else {
+          data.checkpoints.forEach(function (cp) {
+            console.log(
+              "   " +
+                cp.label +
+                " @ " +
+                cp.t +
+                "ms: " +
+                cp.used.toFixed(1) +
+                "MB / " +
+                cp.total.toFixed(1) +
+                "MB"
+            );
+          });
+        }
+      }
+
+      console.log("\n📊 記憶體採樣 (最後10筆, 每5秒一次):");
+      if (data.samples && data.samples.length > 0) {
+        if (typeof console.table === "function") {
+          console.table(data.samples);
+        } else {
+          data.samples.forEach(function (s) {
+            console.log(
+              "   T" +
+                s.t +
+                "ms: used=" +
+                s.used.toFixed(1) +
+                "MB, total=" +
+                s.total.toFixed(1) +
+                "MB"
+            );
+          });
+        }
+      }
+
+      console.log(
+        "\n💡 解讀提示:\n" +
+          "  • 若 checkpoints 逐步升高 → 該區間有記憶體洩漏\n" +
+          "  • 若最後採樣低於崩潰時的記憶體 → OOM 在採樣間隔發生\n" +
+          "  • 若原因是 'crisis' → 已達 150MB 危險值\n" +
+          "═══════════════════════════════════════════════════════\n"
+      );
+    }
 
     /** 是否正在運行 */
     isRunning: function () {

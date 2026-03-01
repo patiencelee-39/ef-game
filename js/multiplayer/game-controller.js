@@ -223,6 +223,12 @@ var GameController = (function () {
   }
 
   function beginTrials() {
+    // 📊 埋樁：開始試驗
+    if (typeof MemoryMonitor !== "undefined")
+      MemoryMonitor.checkpoint(
+        "combo_" + (_comboIndex + 1) + "_trials_begin"
+      );
+
     var combo = _combos[_comboIndex];
     dom.roundLabel.textContent =
       GAME_CONFIG.FIELDS[combo.fieldId].icon +
@@ -426,6 +432,12 @@ var GameController = (function () {
   }
 
   function endCombo() {
+    // 📊 埋樁：combo 試驗結束
+    if (typeof MemoryMonitor !== "undefined")
+      MemoryMonitor.checkpoint(
+        "combo_" + (_comboIndex + 1) + "_trials_end"
+      );
+
     _isPlaying = false;
     dom.btnSpace.disabled = true;
     TrialRenderer.clear(_stimEls());
@@ -507,6 +519,12 @@ var GameController = (function () {
       _comboScores.push(comboScore);
     }
 
+    // 📊 埋樁：combo 結算完成（計分後）
+    if (typeof MemoryMonitor !== "undefined")
+      MemoryMonitor.checkpoint(
+        "combo_" + (_comboIndex + 1) + "_calculated"
+      );
+
     // 廣播場地完成通知（其他玩家會看到）
     if (_displaySettings.showCompletionNotification !== false) {
       MultiplayerBridge.broadcastStageComplete(completedCombo.displayName);
@@ -585,9 +603,7 @@ var GameController = (function () {
       var lastScore = _comboScores[_comboScores.length - 1];
       var acc =
         lastScore.totalCount > 0
-          ? Math.round(
-              (lastScore.correctCount / lastScore.totalCount) * 100,
-            )
+          ? Math.round((lastScore.correctCount / lastScore.totalCount) * 100)
           : 0;
       var avgRT =
         lastScore.avgRT > 0 ? Math.round(lastScore.avgRT) + "ms" : "--";
