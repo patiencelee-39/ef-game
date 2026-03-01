@@ -103,8 +103,11 @@ var GameSync = (function () {
       });
     }
 
-    // 監聽所有玩家即時狀態
+    // 監聯所有玩家即時狀態
     _startPlayersListener();
+
+    // 監聽 notifications 節點（場地完成通知，獨立於 players 避免快照風暴）
+    _startNotificationsListener();
 
     // 監聽 scores 節點（偵測全員完成）
     _startScoresListener();
@@ -121,57 +124,91 @@ var GameSync = (function () {
   }
 
   // =========================================
-  // 玩家狀態監聽
+  // 玩家狀態監聽（防抖 500ms，避免 4 人同時完成時快照風暴 OOM）
   // =========================================
+
+  var _playersDebounceTimer = null;
+  var PLAYERS_DEBOUNCE_MS = 500;
 
   function _startPlayersListener() {
     _playersRef.on("value", function (snapshot) {
       var players = snapshot.val();
       if (!players) return;
 
-      // 計算預期玩家數（只算 non-spectator）
-      _expectedPlayerCount = 0;
-      _playerSnapshots = {};
+      // 防抖：500ms 內的多次觸發只處理最後一次
+      if (_playersDebounceTimer) clearTimeout(_playersDebounceTimer);
+      _playersDebounceTimer = setTimeout(function () {
+        _playersDebounceTimer = null;
+        _processPlayersSnapshot(players);
+      }, PLAYERS_DEBOUNCE_MS);
+    });
+  }
 
-      for (var uid in players) {
-        if (!players.hasOwnProperty(uid)) continue;
-        var p = players[uid];
-        // 過濾幽靈條目（沒有 nickname 且沒有 joinedAt 的不是真正玩家）
-        if (!p.nickname && !p.joinedAt) continue;
-        // 過濾觀戰者（房主觀戰模式）
-        if (p.role === "spectator") continue;
-        _playerSnapshots[uid] = {
-          nickname: p.nickname || "玩家",
-          online: p.online !== false,
-          currentProgress: p.currentProgress || 0,
-          currentScore: p.currentScore || 0,
-          currentCombo: p.currentCombo || "",
-          lastUpdate: p.lastUpdate || 0,
-          isHost: p.isHost || false,
-        };
-        _expectedPlayerCount++;
+  function _processPlayersSnapshot(players) {
+    // 計算預期玩家數（只算 non-spectator）
+    _expectedPlayerCount = 0;
+    _playerSnapshots = {};
 
-        // 偵測場地完成通知（去重：同一 uid+stageName 只通知一次）
-        if (p.justCompleted && _callbacks.onStageComplete) {
-          var dedupeKey = uid + "_" + p.justCompleted;
-          if (!_notifiedCompletions[dedupeKey]) {
-            _notifiedCompletions[dedupeKey] = true;
-            _callbacks.onStageComplete(
-              uid,
-              p.nickname || "玩家",
-              p.justCompleted,
-            );
-          }
-        }
+    for (var uid in players) {
+      if (!players.hasOwnProperty(uid)) continue;
+      var p = players[uid];
+      // 過濾幽靈條目（沒有 nickname 且沒有 joinedAt 的不是真正玩家）
+      if (!p.nickname && !p.joinedAt) continue;
+      // 過濾觀戰者（房主觀戰模式）
+      if (p.role === "spectator") continue;
+      _playerSnapshots[uid] = {
+        nickname: p.nickname || "玩家",
+        online: p.online !== false,
+        currentProgress: p.currentProgress || 0,
+        currentScore: p.currentScore || 0,
+        currentCombo: p.currentCombo || "",
+        lastUpdate: p.lastUpdate || 0,
+        isHost: p.isHost || false,
+      };
+      _expectedPlayerCount++;
 
-        // 偵測斷線
-        if (p.online === false && _callbacks.onPlayerDisconnect) {
-          _callbacks.onPlayerDisconnect(uid, _playerSnapshots[uid]);
-        }
+      // 偵測斷線
+      if (p.online === false && _callbacks.onPlayerDisconnect) {
+        _callbacks.onPlayerDisconnect(uid, _playerSnapshots[uid]);
       }
+    }
 
-      if (_callbacks.onPlayersUpdate) {
-        _callbacks.onPlayersUpdate(_playerSnapshots);
+    if (_callbacks.onPlayersUpdate) {
+      _callbacks.onPlayersUpdate(_playerSnapshots);
+    }
+  }
+
+  // =========================================
+  // 場地完成通知監聽（獨立 notifications 節點，不觸發 players 全量快照）
+  // =========================================
+
+  var _notificationsRef = null;
+
+  function _startNotificationsListener() {
+    _notificationsRef = _roomRef.child("notifications");
+    _notificationsRef.on("child_added", function (snap) {
+      var uid = snap.key;
+      var data = snap.val();
+      if (!data || !data.justCompleted || uid === _playerId) return;
+      if (!_callbacks.onStageComplete) return;
+      var dedupeKey = uid + "_" + data.justCompleted;
+      if (!_notifiedCompletions[dedupeKey]) {
+        _notifiedCompletions[dedupeKey] = true;
+        // 從 _playerSnapshots 取暱稱
+        var nickname = (_playerSnapshots[uid] && _playerSnapshots[uid].nickname) || "玩家";
+        _callbacks.onStageComplete(uid, nickname, data.justCompleted);
+      }
+    });
+    _notificationsRef.on("child_changed", function (snap) {
+      var uid = snap.key;
+      var data = snap.val();
+      if (!data || !data.justCompleted || uid === _playerId) return;
+      if (!_callbacks.onStageComplete) return;
+      var dedupeKey = uid + "_" + data.justCompleted;
+      if (!_notifiedCompletions[dedupeKey]) {
+        _notifiedCompletions[dedupeKey] = true;
+        var nickname = (_playerSnapshots[uid] && _playerSnapshots[uid].nickname) || "玩家";
+        _callbacks.onStageComplete(uid, nickname, data.justCompleted);
       }
     });
   }
@@ -261,17 +298,17 @@ var GameSync = (function () {
 
   /**
    * 廣播場地完成通知
+   * 改用獨立 notifications 節點，避免寫入 players/ 觸發全量快照
    * @param {string} stageName — 場地名稱
    */
   function broadcastStageComplete(stageName) {
     if (!_roomRef || !_playerId) return;
-    _roomRef.child("players/" + _playerId).update({
-      justCompleted: stageName,
-    });
+    var notifRef = _roomRef.child("notifications/" + _playerId);
+    notifRef.set({ justCompleted: stageName, ts: Date.now() });
     // 3 秒後清除
     setTimeout(function () {
       if (_roomRef) {
-        _roomRef.child("players/" + _playerId + "/justCompleted").set(null);
+        notifRef.set(null);
       }
     }, 3000);
   }
@@ -295,15 +332,16 @@ var GameSync = (function () {
     });
   }
 
-  /** 將本地暫存的答題紀錄批次寫入 Firebase */
+  /** 將本地暫存的答題紀錄批次寫入 Firebase（使用子路徑避免 root sync tree 膨脹） */
   function _flushAnswers() {
     if (!_roomRef || !_playerId || _localAnswers.length === 0) return;
+    var answersRef = _roomRef.child("answers/" + _playerId);
     var updates = {};
     for (var i = 0; i < _localAnswers.length; i++) {
-      var key = _roomRef.child("answers/" + _playerId).push().key;
-      updates["answers/" + _playerId + "/" + key] = _localAnswers[i];
+      var key = answersRef.push().key;
+      updates[key] = _localAnswers[i];
     }
-    _roomRef.update(updates);
+    answersRef.update(updates);
     _localAnswers = [];
   }
 
@@ -444,6 +482,7 @@ var GameSync = (function () {
   function _cleanup() {
     if (_playersRef) _playersRef.off();
     if (_scoresRef) _scoresRef.off();
+    if (_notificationsRef) { _notificationsRef.off(); _notificationsRef = null; }
     if (_roomRef) {
       _roomRef.child("status").off();
       _roomRef.child("countdownStartAt").off();
@@ -455,6 +494,10 @@ var GameSync = (function () {
     if (_broadcastTimer) {
       clearTimeout(_broadcastTimer);
       _broadcastTimer = null;
+    }
+    if (_playersDebounceTimer) {
+      clearTimeout(_playersDebounceTimer);
+      _playersDebounceTimer = null;
     }
   }
 

@@ -818,8 +818,6 @@ function _loadRelayTeamRanking(roomCode) {
   });
 }
 
-
-
 function playAgain() {
   // 清除遊戲記錄
   localStorage.removeItem("gameResult");
@@ -832,17 +830,25 @@ function playAgain() {
       var user = firebase.auth().currentUser;
       if (user) {
         var roomRef = firebase.database().ref("rooms/" + roomCode);
-        roomRef.child("hostId").once("value").then(function (snap) {
-          if (snap.val() === user.uid) {
-            // 房主：直接刪除房間
-            roomRef.remove().then(function () {
-              console.log("🗑️ 遊戲結束，房間已清理:", roomCode);
-            });
-          }
-        }).catch(function () { /* 忽略錯誤，不影響導航 */ });
+        roomRef
+          .child("hostId")
+          .once("value")
+          .then(function (snap) {
+            if (snap.val() === user.uid) {
+              // 房主：直接刪除房間
+              roomRef.remove().then(function () {
+                console.log("🗑️ 遊戲結束，房間已清理:", roomCode);
+              });
+            }
+          })
+          .catch(function () {
+            /* 忽略錯誤，不影響導航 */
+          });
       }
     }
-  } catch (e) { /* 靜默失敗 */ }
+  } catch (e) {
+    /* 靜默失敗 */
+  }
 
   // 返回首頁
   window.location.href = "../index.html";
@@ -852,7 +858,8 @@ function playAgain() {
  * 匯出多人模式 CSV 報告
  */
 function exportMultiplayerCsv() {
-  var trials = (resultData && (resultData.trialDetails || resultData.answers)) || [];
+  var trials =
+    (resultData && (resultData.trialDetails || resultData.answers)) || [];
   if (trials.length === 0) {
     GameModal.alert("⚠️ 無資料", "此次遊戲沒有可匯出的試驗資料。", {
       icon: "⚠️",
@@ -890,7 +897,8 @@ var _reportParsed = null;
  */
 function _ensureReportRendered() {
   // 相容 trialDetails 和 answers 兩種欄位名
-  var trials = (resultData && (resultData.trialDetails || resultData.answers)) || [];
+  var trials =
+    (resultData && (resultData.trialDetails || resultData.answers)) || [];
   if (trials.length === 0) {
     GameModal.alert("⚠️ 無資料", "此次遊戲沒有可匯出的試驗資料。", {
       icon: "⚠️",
@@ -942,7 +950,8 @@ function toggleMultiplayerReport() {
  * 匯出 PDF
  */
 function exportMultiplayerPdf() {
-  var trials = (resultData && (resultData.trialDetails || resultData.answers)) || [];
+  var trials =
+    (resultData && (resultData.trialDetails || resultData.answers)) || [];
   if (trials.length === 0) {
     GameModal.alert("⚠️ 無資料", "此次遊戲沒有可匯出的試驗資料。", {
       icon: "⚠️",
@@ -994,7 +1003,8 @@ function exportMultiplayerPdf() {
  * 匯出長截圖
  */
 function exportMultiplayerScreenshot() {
-  var trials = (resultData && (resultData.trialDetails || resultData.answers)) || [];
+  var trials =
+    (resultData && (resultData.trialDetails || resultData.answers)) || [];
   if (trials.length === 0) {
     GameModal.alert("⚠️ 無資料", "此次遊戲沒有可匯出的試驗資料。", {
       icon: "⚠️",
@@ -1134,7 +1144,8 @@ function exportMultiplayerScreenshot() {
           : d.avgRT || 0;
       // 從答題紀錄提取 fieldId / ruleId
       var firstAns = (d.answers || [])[0] || {};
-      var detectedFieldId = d.fieldId || firstAns.fieldId || firstAns.stageId || "";
+      var detectedFieldId =
+        d.fieldId || firstAns.fieldId || firstAns.stageId || "";
       var detectedRuleId = d.ruleId || firstAns.ruleId || "";
       return [
         {

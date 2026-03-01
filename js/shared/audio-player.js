@@ -167,12 +167,23 @@ function _playMp3(path) {
     var audio = new Audio(path);
     audio.volume = _volume;
 
+    /** 釋放 HTMLAudioElement 記憶體 */
+    function _releaseAudio() {
+      audio.pause();
+      audio.removeAttribute("src");
+      audio.load(); // 觸發瀏覽器釋放已下載的資料
+    }
+
     // 逾時保護
     var timeout = setTimeout(function () {
-      audio.pause();
-      audio.src = "";
+      _releaseAudio();
       reject(new Error("Audio load timeout: " + path));
     }, LOAD_TIMEOUT_MS);
+
+    // 播放結束後釋放
+    audio.addEventListener("ended", function () {
+      _releaseAudio();
+    }, { once: true });
 
     audio.addEventListener(
       "canplaythrough",
@@ -187,6 +198,7 @@ function _playMp3(path) {
       "error",
       function () {
         clearTimeout(timeout);
+        _releaseAudio();
         reject(new Error("Audio load error: " + path));
       },
       { once: true },
@@ -209,15 +221,22 @@ function _playMp3UntilEnd(path) {
     var audio = new Audio(path);
     audio.volume = _volume;
 
-    var timeout = setTimeout(function () {
+    /** 釋放 HTMLAudioElement 記憶體 */
+    function _releaseAudio() {
       audio.pause();
-      audio.src = "";
+      audio.removeAttribute("src");
+      audio.load();
+    }
+
+    var timeout = setTimeout(function () {
+      _releaseAudio();
       reject(new Error("Audio load timeout: " + path));
     }, LOAD_TIMEOUT_MS);
 
     audio.addEventListener(
       "ended",
       function () {
+        _releaseAudio();
         resolve();
       },
       { once: true },
@@ -236,6 +255,7 @@ function _playMp3UntilEnd(path) {
       "error",
       function () {
         clearTimeout(timeout);
+        _releaseAudio();
         reject(new Error("Audio load error: " + path));
       },
       { once: true },
@@ -350,6 +370,12 @@ function _playBufferSource(audioBuffer, rate, isVoice) {
     source.connect(gainNode);
     gainNode.connect(ctx.destination);
 
+    /** 清理 AudioNode 連接，防止記憶體洩漏 */
+    function _disconnectNodes() {
+      try { source.disconnect(); } catch (e) { /* 已斷開 */ }
+      try { gainNode.disconnect(); } catch (e) { /* 已斷開 */ }
+    }
+
     // 逾時保護：依實際音訊長度 / 播放速率 + 3 秒緩衝
     var estimatedMs = Math.ceil((audioBuffer.duration / rate) * 1000) + 3000;
     var timeout = setTimeout(function () {
@@ -358,6 +384,7 @@ function _playBufferSource(audioBuffer, rate, isVoice) {
       } catch (e) {
         /* 已停止 */
       }
+      _disconnectNodes();
       // 清除語音追蹤
       if (isVoice) {
         _currentVoiceSource = null;
@@ -369,6 +396,7 @@ function _playBufferSource(audioBuffer, rate, isVoice) {
 
     source.onended = function () {
       clearTimeout(timeout);
+      _disconnectNodes();
       // 清除語音追蹤
       if (isVoice) {
         _currentVoiceSource = null;
@@ -412,6 +440,12 @@ function _playTone(freq, type, duration) {
   gain.gain.setValueAtTime(0.3 * _volume, ctx.currentTime);
   gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
   osc.stop(ctx.currentTime + duration);
+
+  // 播放結束後斷開 AudioNode，避免記憶體洩漏
+  osc.onended = function () {
+    try { osc.disconnect(); } catch (e) { /* ignore */ }
+    try { gain.disconnect(); } catch (e) { /* ignore */ }
+  };
 }
 
 /**

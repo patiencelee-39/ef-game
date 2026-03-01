@@ -123,7 +123,7 @@ var MultiplayerBridge = (function () {
       });
     }
 
-    // 頁面離開時清理觀戰者監聽
+    // 頁面離開時清理觀戰者監聽 + 釋放音訊記憶體
     window.addEventListener("beforeunload", function () {
       if (_lbRenderTimer) {
         clearTimeout(_lbRenderTimer);
@@ -131,6 +131,10 @@ var MultiplayerBridge = (function () {
       }
       if (_roomRef && _playerRole === "spectator") {
         _roomRef.child("players").off();
+      }
+      // 釋放 AudioBuffer 快取，減少記憶體壓力
+      if (window.AudioPlayer && AudioPlayer.clearBufferCache) {
+        AudioPlayer.clearBufferCache();
       }
     });
   }

@@ -140,7 +140,8 @@ function updateLobby(roomData) {
 
   playersList.forEach((player, index) => {
     const card = document.createElement("div");
-    card.className = `player-card ${player.isHost ? "host" : ""}`;
+    const isMe = player.id === currentPlayerId;
+    card.className = `player-card ${player.isHost ? "host" : ""} ${isMe ? "is-me" : ""}`;
 
     const avatarEmojis = ["🐱", "🐶", "🐼", "🦊", "🐨", "🐯", "🦁", "🐮"];
     const emoji = avatarEmojis[index % avatarEmojis.length];
@@ -148,7 +149,7 @@ function updateLobby(roomData) {
     card.innerHTML = `
             <div class="player-avatar">${emoji}</div>
             <div class="player-info">
-              <div class="player-name">${player.nickname || player.name || "未命名玩家"}</div>
+              <div class="player-name">${player.nickname || player.name || "未命名玩家"}${isMe ? " (你)" : ""}</div>
               <div class="player-role">${player.isHost ? "👑 房主" : "玩家"}</div>
             </div>
             <div class="player-status ${player.ready ? "ready" : ""}">${
