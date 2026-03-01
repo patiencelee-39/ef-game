@@ -1,4 +1,13 @@
 let resultData = null;
+var _activeScoresRefs = []; // 追蹤所有 scores 監聽以便離開時清理
+
+// 離開時取消所有 Firebase 監聽（避免記憶體洩漏）
+window.addEventListener("beforeunload", function () {
+  _activeScoresRefs.forEach(function (ref) {
+    ref.off();
+  });
+  _activeScoresRefs = [];
+});
 
 // 初始化
 window.addEventListener("DOMContentLoaded", () => {
@@ -74,6 +83,7 @@ function loadSpectatorResults() {
   // 從 Firebase 讀取 scores
   firebase.auth().onAuthStateChanged(function () {
     var scoresRef = firebase.database().ref("rooms/" + roomCode + "/scores");
+    _activeScoresRefs.push(scoresRef);
     scoresRef.on("value", function (snapshot) {
       var scores = snapshot.val();
       var rankEl = document.getElementById("spectatorRanking");
@@ -490,6 +500,7 @@ async function calculateRank() {
   _loadRelayTeamRanking(roomCode);
 
   var scoresRef = firebase.database().ref("rooms/" + roomCode + "/scores");
+  _activeScoresRefs.push(scoresRef);
 
   // 即時監聽
   scoresRef.on("value", function (snapshot) {

@@ -223,6 +223,9 @@ button:disabled {
   text-decoration: none;
   color: inherit;
   display: block;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
   transition:
     transform var(--transition-normal),
     box-shadow var(--transition-normal),

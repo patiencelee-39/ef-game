@@ -13,6 +13,11 @@ var MultiplayerBridge = (function () {
   var _waitingForOthers = false;
   var _lbCollapsed = false;
 
+  // 排行榜渲染節流
+  var _lbRenderTimer = null;
+  var _lbPendingMap = null;
+  var LB_RENDER_THROTTLE_MS = 1000;
+
   function parseRoomInfo() {
     var params = new URLSearchParams(window.location.search);
     _roomCode = params.get("room");
@@ -86,11 +91,14 @@ var MultiplayerBridge = (function () {
       },
     });
 
-    // 觀戰模式仍需全房間監聽
+    // 觀戰模式：只監聽 players 子節點（避免 answers 資料膨脹造成 OOM）
     if (_playerRole === "spectator") {
-      _roomRef.on("value", function (snapshot) {
-        _roomData = snapshot.val();
-        if (!_roomData) return;
+      _roomRef.child("players").on("value", function (snapshot) {
+        var playersVal = snapshot.val();
+        if (!playersVal) return;
+        // 建立輕量 roomData 供 dashboard 使用
+        _roomData = _roomData || {};
+        _roomData.players = playersVal;
         updateSpectatorDashboard();
       });
     }
@@ -114,11 +122,30 @@ var MultiplayerBridge = (function () {
         GameSync.goToResult();
       });
     }
+
+    // 頁面離開時清理觀戰者監聽
+    window.addEventListener("beforeunload", function () {
+      if (_lbRenderTimer) {
+        clearTimeout(_lbRenderTimer);
+        _lbRenderTimer = null;
+      }
+      if (_roomRef && _playerRole === "spectator") {
+        _roomRef.child("players").off();
+      }
+    });
   }
 
-  /** 即時排行榜渲染 */
+  /** 即時排行榜渲染（節流，最多 1 秒更新一次 DOM） */
   function _updateLiveLeaderboard(playersMap) {
     if (_playerRole === "spectator") return;
+    _lbPendingMap = playersMap;
+    if (!_lbRenderTimer) {
+      _lbRenderTimer = setTimeout(_renderLeaderboardNow, LB_RENDER_THROTTLE_MS);
+    }
+  }
+
+  function _renderLeaderboardNow() {
+    _lbRenderTimer = null;
 
     var lb = document.getElementById("liveLeaderboard");
     var body = document.getElementById("liveLeaderboardBody");
@@ -263,9 +290,12 @@ var MultiplayerBridge = (function () {
   }
 
   function _escHtml(s) {
-    var div = document.createElement("div");
-    div.textContent = s || "";
-    return div.innerHTML;
+    if (!s) return "";
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
   }
 
   return {

@@ -45,7 +45,8 @@ function initializeLobby() {
   document.getElementById("roomCode").textContent = currentRoom.code;
 
   // 設定最大玩家數（優先使用房間建立時設定的值）
-  const maxPlayers = currentRoom.maxPlayers || window.GameConstants?.MAX_PLAYERS_PER_ROOM || 8;
+  const maxPlayers =
+    currentRoom.maxPlayers || window.GameConstants?.MAX_PLAYERS_PER_ROOM || 8;
   document.getElementById("maxPlayers").textContent = maxPlayers;
 
   // 監聽房間變化
@@ -505,10 +506,22 @@ function _updateTeamBattlePanel(roomData, playersList) {
     }
   }
 
-  _renderTeamBattleCards(teamsData, playersList, teamCount, teamAssignment, roomData.captainSelection || "hostAssign");
+  _renderTeamBattleCards(
+    teamsData,
+    playersList,
+    teamCount,
+    teamAssignment,
+    roomData.captainSelection || "hostAssign",
+  );
 }
 
-function _renderTeamBattleCards(teamsData, playersList, teamCount, teamAssignment, captainSelection) {
+function _renderTeamBattleCards(
+  teamsData,
+  playersList,
+  teamCount,
+  teamAssignment,
+  captainSelection,
+) {
   var grid = document.getElementById("teamBattleGrid");
   if (!grid) return;
 
@@ -655,7 +668,12 @@ function _renderTeamBattleCards(teamsData, playersList, teamCount, teamAssignmen
 
       RelayManager.joinTeam(teamId, nickname)
         .then(function () {
-          showToast("✅ 已加入" + (btn.closest(".team-battle-card").querySelector(".team-name-text")?.textContent || teamId), "success");
+          showToast(
+            "✅ 已加入" +
+              (btn.closest(".team-battle-card").querySelector(".team-name-text")
+                ?.textContent || teamId),
+            "success",
+          );
         })
         .catch(function (err) {
           showToast("❌ 加入失敗：" + err.message, "error");

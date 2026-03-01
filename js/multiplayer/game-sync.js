@@ -209,11 +209,16 @@ var GameSync = (function () {
   }
 
   // =========================================
-  // 進度廣播（每次答題後呼叫）
+  // 進度廣播（每次答題後呼叫，節流 2 秒避免 OOM）
   // =========================================
 
+  var _broadcastTimer = null;
+  var _pendingBroadcast = null;
+  var BROADCAST_THROTTLE_MS = 2000;
+
   /**
-   * 廣播自己的進度
+   * 廣播自己的進度（節流：最多每 2 秒寫入 Firebase 一次）
+   * progress === 100 時立即發送（最後一筆不可遺漏）
    * @param {Object} state
    * @param {number} state.progress  — 0~100
    * @param {number} state.score     — 累計分數
@@ -221,10 +226,34 @@ var GameSync = (function () {
    */
   function broadcastProgress(state) {
     if (!_roomRef || !_playerId) return;
+    _pendingBroadcast = state;
+
+    // progress === 100 → 立即發送
+    if (state.progress >= 100) {
+      _flushBroadcast();
+      return;
+    }
+
+    if (!_broadcastTimer) {
+      _broadcastTimer = setTimeout(function () {
+        _broadcastTimer = null;
+        _flushBroadcast();
+      }, BROADCAST_THROTTLE_MS);
+    }
+  }
+
+  function _flushBroadcast() {
+    if (!_pendingBroadcast || !_roomRef || !_playerId) return;
+    var s = _pendingBroadcast;
+    _pendingBroadcast = null;
+    if (_broadcastTimer) {
+      clearTimeout(_broadcastTimer);
+      _broadcastTimer = null;
+    }
     _roomRef.child("players/" + _playerId).update({
-      currentProgress: state.progress || 0,
-      currentScore: state.score || 0,
-      currentCombo: state.comboName || "",
+      currentProgress: s.progress || 0,
+      currentScore: s.score || 0,
+      currentCombo: s.comboName || "",
       online: true,
       lastUpdate: Date.now(),
     });
@@ -248,12 +277,14 @@ var GameSync = (function () {
   }
 
   // =========================================
-  // 記錄答題
+  // 記錄答題（本地暫存，遊戲結束批次上傳避免 OOM）
   // =========================================
 
+  var _localAnswers = [];
+
   function recordAnswer(trialRecord) {
-    if (!_roomRef || !_playerId) return;
-    _roomRef.child("answers/" + _playerId).push({
+    if (!_playerId) return;
+    _localAnswers.push({
       stimulus: trialRecord.stimulus || "",
       isCorrect: trialRecord.isCorrect || false,
       rt: trialRecord.rt || null,
@@ -264,12 +295,28 @@ var GameSync = (function () {
     });
   }
 
+  /** 將本地暫存的答題紀錄批次寫入 Firebase */
+  function _flushAnswers() {
+    if (!_roomRef || !_playerId || _localAnswers.length === 0) return;
+    var updates = {};
+    for (var i = 0; i < _localAnswers.length; i++) {
+      var key = _roomRef.child("answers/" + _playerId).push().key;
+      updates["answers/" + _playerId + "/" + key] = _localAnswers[i];
+    }
+    _roomRef.update(updates);
+    _localAnswers = [];
+  }
+
   // =========================================
   // 記錄最終成績
   // =========================================
 
   function recordFinalScore(resultObj) {
     if (!_roomRef || !_playerId) return;
+
+    // 遊戲結束：批次上傳所有暫存答題紀錄
+    _flushBroadcast();
+    _flushAnswers();
 
     var scoreData = {
       totalScore: resultObj.totalScore || 0,
@@ -405,12 +452,18 @@ var GameSync = (function () {
       clearInterval(_countdownTimer);
       _countdownTimer = null;
     }
+    if (_broadcastTimer) {
+      clearTimeout(_broadcastTimer);
+      _broadcastTimer = null;
+    }
   }
 
   function destroy() {
     _cleanup();
     _playerSnapshots = {};
     _finishedDetected = false;
+    _localAnswers = [];
+    _pendingBroadcast = null;
     Logger.debug("🔌 [GameSync] 已斷開");
   }
 
