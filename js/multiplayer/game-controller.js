@@ -87,6 +87,9 @@ var GameController = (function () {
   }
 
   function beginCombo() {
+    // 📊 埋樁：每個 combo 開始時記錄記憶體
+    if (typeof MemoryMonitor !== "undefined") MemoryMonitor.checkpoint("combo_" + (_comboIndex + 1) + "_start");
+
     var combo = _combos[_comboIndex];
     _trialIndex = 0;
     _trialResults = [];
@@ -501,12 +504,24 @@ var GameController = (function () {
   }
 
   // =========================================
-  // Combo 過場
+  // Combo 過場（模板快取，避免每次建立完整 Document）
   // =========================================
 
+  var _transitionTemplateHTML = null;
+
   function showComboTransition(nextCombo) {
+    // 📊 埋樁：combo 過渡（前一個 combo 剛完成）
+    if (typeof MemoryMonitor !== "undefined") MemoryMonitor.checkpoint("combo_" + _comboIndex + "_done");
+
     var ctr = dom.comboTransition;
     ctr.classList.remove("hidden");
+
+    // 已快取 → 直接使用
+    if (_transitionTemplateHTML) {
+      ctr.innerHTML = _transitionTemplateHTML;
+      _fillTransition(ctr, nextCombo);
+      return;
+    }
 
     var xhr = new XMLHttpRequest();
     xhr.open("GET", "../shared/combo-transition.html", true);
@@ -520,12 +535,13 @@ var GameController = (function () {
         if (template) {
           ctr.appendChild(document.importNode(template, true));
         } else {
-          // fallback：若結構不含 .combo-transition 則取整個 body 內容
           var body = doc.body;
           while (body && body.firstChild) {
             ctr.appendChild(document.importNode(body.firstChild, true));
           }
         }
+        // 快取 innerHTML 供後續重用
+        _transitionTemplateHTML = ctr.innerHTML;
         _fillTransition(ctr, nextCombo);
       } else {
         ctr.classList.add("hidden");
@@ -683,6 +699,9 @@ var GameController = (function () {
   }
 
   function finishGame() {
+    // 📊 埋樁：遊戲結束
+    if (typeof MemoryMonitor !== "undefined") MemoryMonitor.checkpoint("game_finish");
+
     var accuracy = _totalTrials > 0 ? (_totalCorrect / _totalTrials) * 100 : 0;
 
     // 計算平均反應時間（使用跨 combo 累積結果）
@@ -823,6 +842,9 @@ var GameController = (function () {
 
   function init() {
     cacheDom();
+
+    // 📊 埋樁：遊戲初始化
+    if (typeof MemoryMonitor !== "undefined") MemoryMonitor.checkpoint("game_init");
 
     if (!MultiplayerBridge.parseRoomInfo()) return;
     MultiplayerBridge.initRoom();
@@ -1062,6 +1084,10 @@ var GameController = (function () {
   }
 
   document.addEventListener("DOMContentLoaded", function () {
+    // 🧠 啟動記憶體監控埋樁（debug 用，可在 console 呼叫 MemoryMonitor.printLastRun() 查看）
+    if (typeof MemoryMonitor !== "undefined") {
+      MemoryMonitor.start({ showOverlay: true });
+    }
     // 🔊 初始化音訊
     if (typeof AudioPlayer !== "undefined" && AudioPlayer.init) {
       AudioPlayer.init();

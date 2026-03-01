@@ -123,8 +123,10 @@ var MultiplayerBridge = (function () {
       });
     }
 
-    // 頁面離開時清理觀戰者監聽 + 釋放音訊記憶體
+    // 頁面離開時全面清理，避免 Firebase 監聽器和音訊記憶體殘留
     window.addEventListener("beforeunload", function () {
+      // 清理所有 Firebase 監聽器
+      GameSync.destroy();
       if (_lbRenderTimer) {
         clearTimeout(_lbRenderTimer);
         _lbRenderTimer = null;

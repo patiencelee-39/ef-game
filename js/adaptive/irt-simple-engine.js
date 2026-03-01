@@ -412,11 +412,14 @@ var IRTSimpleEngine = (function () {
     onTrialComplete: function (trialResult) {
       _trialCount++;
 
-      // 記錄作答
+      // 記錄作答（滑動視窗：只保留最近 30 筆，避免 EAP 計算量無限增長）
       _responses.push({
         level: _level,
         isCorrect: trialResult.isCorrect,
       });
+      if (_responses.length > 30) {
+        _responses = _responses.slice(-30);
+      }
 
       // EAP 重新估計 θ
       var estimate = _estimateTheta();

@@ -124,58 +124,68 @@ var GameSync = (function () {
   }
 
   // =========================================
-  // 玩家狀態監聽（防抖 500ms，避免 4 人同時完成時快照風暴 OOM）
+  // 玩家狀態監聽（改用 child 級事件，避免 N² 全量快照風暴）
   // =========================================
 
-  var _playersDebounceTimer = null;
-  var PLAYERS_DEBOUNCE_MS = 500;
+  /** 防抖 — 累積 child 級更新後一次性回呼 UI */
+  var _playersUpdateTimer = null;
+  var PLAYERS_UPDATE_DEBOUNCE_MS = 600;
+  var _initialLoadDone = false;
 
-  function _startPlayersListener() {
-    _playersRef.on("value", function (snapshot) {
-      var players = snapshot.val();
-      if (!players) return;
-
-      // 防抖：500ms 內的多次觸發只處理最後一次
-      if (_playersDebounceTimer) clearTimeout(_playersDebounceTimer);
-      _playersDebounceTimer = setTimeout(function () {
-        _playersDebounceTimer = null;
-        _processPlayersSnapshot(players);
-      }, PLAYERS_DEBOUNCE_MS);
-    });
+  function _schedulePlayersCallback() {
+    if (_playersUpdateTimer) return; // 已排程
+    _playersUpdateTimer = setTimeout(function () {
+      _playersUpdateTimer = null;
+      // 重算 expectedPlayerCount
+      _expectedPlayerCount = 0;
+      for (var uid in _playerSnapshots) {
+        if (_playerSnapshots.hasOwnProperty(uid)) _expectedPlayerCount++;
+      }
+      if (_callbacks.onPlayersUpdate) {
+        _callbacks.onPlayersUpdate(_playerSnapshots);
+      }
+    }, _initialLoadDone ? PLAYERS_UPDATE_DEBOUNCE_MS : 100);
   }
 
-  function _processPlayersSnapshot(players) {
-    // 計算預期玩家數（只算 non-spectator）
-    _expectedPlayerCount = 0;
-    _playerSnapshots = {};
-
-    for (var uid in players) {
-      if (!players.hasOwnProperty(uid)) continue;
-      var p = players[uid];
-      // 過濾幽靈條目（沒有 nickname 且沒有 joinedAt 的不是真正玩家）
-      if (!p.nickname && !p.joinedAt) continue;
-      // 過濾觀戰者（房主觀戰模式）
-      if (p.role === "spectator") continue;
-      _playerSnapshots[uid] = {
-        nickname: p.nickname || "玩家",
-        online: p.online !== false,
-        currentProgress: p.currentProgress || 0,
-        currentScore: p.currentScore || 0,
-        currentCombo: p.currentCombo || "",
-        lastUpdate: p.lastUpdate || 0,
-        isHost: p.isHost || false,
-      };
-      _expectedPlayerCount++;
-
-      // 偵測斷線
-      if (p.online === false && _callbacks.onPlayerDisconnect) {
-        _callbacks.onPlayerDisconnect(uid, _playerSnapshots[uid]);
-      }
+  function _processPlayerData(uid, p) {
+    if (!p) return;
+    // 過濾幽靈條目
+    if (!p.nickname && !p.joinedAt) return;
+    // 過濾觀戰者
+    if (p.role === "spectator") return;
+    _playerSnapshots[uid] = {
+      nickname: p.nickname || "玩家",
+      online: p.online !== false,
+      currentProgress: p.currentProgress || 0,
+      currentScore: p.currentScore || 0,
+      currentCombo: p.currentCombo || "",
+      lastUpdate: p.lastUpdate || 0,
+      isHost: p.isHost || false,
+    };
+    // 偵測斷線
+    if (p.online === false && _callbacks.onPlayerDisconnect) {
+      _callbacks.onPlayerDisconnect(uid, _playerSnapshots[uid]);
     }
+  }
 
-    if (_callbacks.onPlayersUpdate) {
-      _callbacks.onPlayersUpdate(_playerSnapshots);
-    }
+  function _startPlayersListener() {
+    // 使用 child 級事件，每次只下載單一玩家資料，大幅減少記憶體分配
+    _playersRef.on("child_added", function (snap) {
+      _processPlayerData(snap.key, snap.val());
+      _schedulePlayersCallback();
+    });
+    _playersRef.on("child_changed", function (snap) {
+      _processPlayerData(snap.key, snap.val());
+      _schedulePlayersCallback();
+    });
+    _playersRef.on("child_removed", function (snap) {
+      delete _playerSnapshots[snap.key];
+      _schedulePlayersCallback();
+    });
+    // 標記初始載入完成（稍後提高防抖時間）
+    _playersRef.once("value", function () {
+      _initialLoadDone = true;
+    });
   }
 
   // =========================================
@@ -387,7 +397,6 @@ var GameSync = (function () {
           totalQuestions: scoreData.totalTrials,
           totalTime: resultObj.totalTime || 0,
           answers: resultObj.answers || [],
-          trialDetails: resultObj.answers || [],
           comboScores: resultObj.comboScores || [],
           playerId: _playerId,
           nickname: scoreData.nickname,
@@ -500,9 +509,9 @@ var GameSync = (function () {
       clearTimeout(_broadcastTimer);
       _broadcastTimer = null;
     }
-    if (_playersDebounceTimer) {
-      clearTimeout(_playersDebounceTimer);
-      _playersDebounceTimer = null;
+    if (_playersUpdateTimer) {
+      clearTimeout(_playersUpdateTimer);
+      _playersUpdateTimer = null;
     }
   }
 

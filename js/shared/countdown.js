@@ -117,6 +117,19 @@ function _applyColor(overlay, numberEl, step) {
   numberEl.style.color = colorDef.text;
 }
 
+/** Fallback AudioContext（重用單一實例，避免記憶體洩漏） */
+var _fallbackAudioCtx = null;
+function _getFallbackCtx() {
+  if (!_fallbackAudioCtx) {
+    var AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (AudioCtx) _fallbackAudioCtx = new AudioCtx();
+  }
+  if (_fallbackAudioCtx && _fallbackAudioCtx.state === "suspended") {
+    _fallbackAudioCtx.resume();
+  }
+  return _fallbackAudioCtx;
+}
+
 /**
  * 播放倒數嗶聲（優先使用 AudioPlayer，fallback 合成音）
  * @param {number} step - 3, 2, 1
@@ -131,11 +144,10 @@ function _playBeep(step) {
     return;
   }
 
-  // Fallback：直接使用 Web Audio API
+  // Fallback：重用單一 AudioContext，避免每次建立新的
   try {
-    var AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if (!AudioCtx) return;
-    var ctx = new AudioCtx();
+    var ctx = _getFallbackCtx();
+    if (!ctx) return;
     var osc = ctx.createOscillator();
     var gain = ctx.createGain();
     osc.type = tone.type;
@@ -149,6 +161,10 @@ function _playBeep(step) {
     );
     osc.start();
     osc.stop(ctx.currentTime + tone.duration);
+    osc.onended = function () {
+      try { osc.disconnect(); } catch (e) { /* ignore */ }
+      try { gain.disconnect(); } catch (e) { /* ignore */ }
+    };
   } catch (e) {
     // 靜默失敗
   }
@@ -165,11 +181,10 @@ function _playGoSound() {
     return;
   }
 
-  // Fallback
+  // Fallback：重用單一 AudioContext
   try {
-    var AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if (!AudioCtx) return;
-    var ctx = new AudioCtx();
+    var ctx = _getFallbackCtx();
+    if (!ctx) return;
     var osc = ctx.createOscillator();
     var gain = ctx.createGain();
     osc.type = "sine";
@@ -180,6 +195,10 @@ function _playGoSound() {
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
     osc.start();
     osc.stop(ctx.currentTime + 0.2);
+    osc.onended = function () {
+      try { osc.disconnect(); } catch (e) { /* ignore */ }
+      try { gain.disconnect(); } catch (e) { /* ignore */ }
+    };
   } catch (e) {
     // 靜默失敗
   }

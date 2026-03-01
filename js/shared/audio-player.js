@@ -101,10 +101,12 @@ var _voiceRate = 1.0;
 /**
  * AudioBuffer 快取 — 避免相同檔案重複 fetch + decode
  * key = 檔案路徑, value = AudioBuffer
- * 頁面切換時可呼叫 clearBufferCache() 手動釋放
+ * LRU 淘汰策略：最多保留 MAX_BUFFER_CACHE 筆
  * @type {Object.<string, AudioBuffer>}
  */
 var _bufferCache = {};
+var _bufferCacheKeys = []; // 保持插入順序供 LRU 淘汰
+var MAX_BUFFER_CACHE = 8;  // 最多快取 8 個 AudioBuffer（避免 OOM）
 
 /** @type {boolean} 是否已初始化 */
 var _initialized = false;
@@ -308,8 +310,13 @@ function _playMp3WithRate(path, rate, isVoice) {
       return ctx.decodeAudioData(arrayBuf);
     })
     .then(function (audioBuffer) {
-      // 存入快取
+      // LRU 淘汰：超過上限時移除最舊的
+      if (_bufferCacheKeys.length >= MAX_BUFFER_CACHE) {
+        var oldest = _bufferCacheKeys.shift();
+        delete _bufferCache[oldest];
+      }
       _bufferCache[path] = audioBuffer;
+      _bufferCacheKeys.push(path);
       return _playBufferSource(audioBuffer, playbackRate, isVoice);
     });
 }
@@ -1013,6 +1020,7 @@ var AudioPlayer = {
   clearBufferCache: function () {
     var count = Object.keys(_bufferCache).length;
     _bufferCache = {};
+    _bufferCacheKeys = [];
     if (count > 0) {
       Logger.debug("🧹 AudioBuffer 快取已清除（" + count + " 筆）");
     }
@@ -1035,10 +1043,17 @@ var AudioPlayer = {
     var promises = paths.map(function (path) {
       return new Promise(function (resolve) {
         var audio = new Audio();
+        /** 釋放 HTMLAudioElement 記憶體 */
+        function _release() {
+          audio.pause();
+          audio.removeAttribute("src");
+          audio.load();
+        }
         audio.addEventListener(
           "canplaythrough",
           function () {
             loaded++;
+            _release();
             resolve();
           },
           { once: true },
@@ -1047,6 +1062,7 @@ var AudioPlayer = {
           "error",
           function () {
             failed++;
+            _release();
             resolve(); // 不 reject，繼續載入其他
           },
           { once: true },
