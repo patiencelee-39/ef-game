@@ -161,10 +161,7 @@ var MemoryMonitor = (function () {
         localStorage.setItem("memoryMonitor_lastRun", JSON.stringify(data));
       } catch (e) {
         try {
-          sessionStorage.setItem(
-            "memoryMonitor_backup",
-            JSON.stringify(data),
-          );
+          sessionStorage.setItem("memoryMonitor_backup", JSON.stringify(data));
         } catch (e2) {
           /* ignore */
         }

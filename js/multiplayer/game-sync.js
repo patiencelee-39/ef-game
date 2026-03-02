@@ -57,6 +57,11 @@ var GameSync = (function () {
   /** 倒數同步 */
   var _countdownTimer = null;
 
+  /** 監聽模式：'active' = 全部監聽 | 'minimal' = 只保留 status + scores */
+  var _listeningMode = "active";
+  var _playersListenersActive = false;
+  var _notificationsListenersActive = false;
+
   // =========================================
   // 初始化
   // =========================================
@@ -172,6 +177,8 @@ var GameSync = (function () {
   }
 
   function _startPlayersListener() {
+    if (_playersListenersActive) return; // 防止重複綁定
+    _playersListenersActive = true;
     // 使用 child 級事件，每次只下載單一玩家資料，大幅減少記憶體分配
     _playersRef.on("child_added", function (snap) {
       _processPlayerData(snap.key, snap.val());
@@ -185,10 +192,20 @@ var GameSync = (function () {
       delete _playerSnapshots[snap.key];
       _schedulePlayersCallback();
     });
-    // 標記初始載入完成（使用延遲替代 .once("value") 避免全量下載 players 子樹）
+    // 標記初始載入完成
     setTimeout(function () {
       _initialLoadDone = true;
     }, 2000);
+  }
+
+  function _stopPlayersListener() {
+    if (!_playersListenersActive) return;
+    _playersListenersActive = false;
+    if (_playersRef) _playersRef.off();
+    if (_playersUpdateTimer) {
+      clearTimeout(_playersUpdateTimer);
+      _playersUpdateTimer = null;
+    }
   }
 
   // =========================================
@@ -198,7 +215,11 @@ var GameSync = (function () {
   var _notificationsRef = null;
 
   function _startNotificationsListener() {
-    _notificationsRef = _roomRef.child("notifications");
+    if (_notificationsListenersActive) return; // 防止重複綁定
+    _notificationsListenersActive = true;
+    if (!_notificationsRef) {
+      _notificationsRef = _roomRef.child("notifications");
+    }
     _notificationsRef.on("child_added", function (snap) {
       var uid = snap.key;
       var data = snap.val();
@@ -226,6 +247,43 @@ var GameSync = (function () {
         _callbacks.onStageComplete(uid, nickname, data.justCompleted);
       }
     });
+  }
+
+  function _stopNotificationsListener() {
+    if (!_notificationsListenersActive) return;
+    _notificationsListenersActive = false;
+    if (_notificationsRef) _notificationsRef.off();
+  }
+
+  // =========================================
+  // 監聽模式切換（試驗中暫停非必要監聽，大幅減少 Firebase SDK 原生記憶體壓力）
+  // =========================================
+
+  /**
+   * 切換監聽模式
+   * @param {'active'|'minimal'} mode
+   *   - 'active': 監聽 players + notifications + scores + status（過場/等待時使用）
+   *   - 'minimal': 只保留 scores + status（試驗進行中使用，減少 90%+ Firebase 流量）
+   */
+  function setListeningMode(mode) {
+    if (mode === _listeningMode) return;
+    _listeningMode = mode;
+
+    if (mode === "minimal") {
+      _stopPlayersListener();
+      _stopNotificationsListener();
+      // 清除待發送的進度廣播
+      if (_broadcastTimer) {
+        clearTimeout(_broadcastTimer);
+        _broadcastTimer = null;
+      }
+      _pendingBroadcast = null;
+      Logger.debug("⏸️ [GameSync] 切換到最小監聽模式（試驗中）");
+    } else {
+      _startPlayersListener();
+      _startNotificationsListener();
+      Logger.debug("▶️ [GameSync] 切換到完整監聽模式");
+    }
   }
 
   // =========================================
@@ -284,6 +342,14 @@ var GameSync = (function () {
    */
   function broadcastProgress(state) {
     if (!_roomRef || !_playerId) return;
+
+    // 🔧 OOM核心修復：最小模式下跳過所有中間進度廣播
+    // 12人×每題廣播 = 每秒數次 child_changed，是 OOM 的根本原因
+    if (_listeningMode === "minimal") {
+      // 只在 combo 完成（progress=100）時才發送
+      if (state.progress < 100) return;
+    }
+
     _pendingBroadcast = state;
 
     // progress === 100 → 加隨機延遲發送（避免 12 人同時完成 burst）
@@ -501,12 +567,9 @@ var GameSync = (function () {
   // =========================================
 
   function _cleanup() {
-    if (_playersRef) _playersRef.off();
+    _stopPlayersListener();
+    _stopNotificationsListener();
     if (_scoresRef) _scoresRef.off();
-    if (_notificationsRef) {
-      _notificationsRef.off();
-      _notificationsRef = null;
-    }
     if (_roomRef) {
       _roomRef.child("status").off();
       // countdownStartAt 已改用 .once()，不需 .off()
@@ -532,6 +595,9 @@ var GameSync = (function () {
     _localAnswers = [];
     _pendingBroadcast = null;
     _recordedScores = {};
+    _listeningMode = "active";
+    _playersListenersActive = false;
+    _notificationsListenersActive = false;
     Logger.debug("🔌 [GameSync] 已斷開");
   }
 
@@ -571,6 +637,7 @@ var GameSync = (function () {
     getRoomCode: function () {
       return _roomCode;
     },
+    setListeningMode: setListeningMode,
     goToResult: goToResult,
     destroy: destroy,
   };
