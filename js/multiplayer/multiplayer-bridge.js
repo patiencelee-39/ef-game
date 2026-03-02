@@ -16,7 +16,7 @@ var MultiplayerBridge = (function () {
   // 排行榜渲染節流
   var _lbRenderTimer = null;
   var _lbPendingMap = null;
-  var LB_RENDER_THROTTLE_MS = 1000;
+  var LB_RENDER_THROTTLE_MS = 2000; // 🔧 OOM Fix: 放寬到 2 秒降低 DOM 重建頻率
 
   function parseRoomInfo() {
     var params = new URLSearchParams(window.location.search);
@@ -91,15 +91,22 @@ var MultiplayerBridge = (function () {
       },
     });
 
-    // 觀戰模式：只監聽 players 子節點（避免 answers 資料膨脹造成 OOM）
+    // 觀戰模式：只監聯 players 子節點（🔧 OOM Fix: 加 2 秒節流避免狂刷 DOM）
     if (_playerRole === "spectator") {
+      var _spectatorThrottleTimer = null;
+      var _pendingSpectatorPlayers = null;
       _roomRef.child("players").on("value", function (snapshot) {
-        var playersVal = snapshot.val();
-        if (!playersVal) return;
-        // 建立輕量 roomData 供 dashboard 使用
-        _roomData = _roomData || {};
-        _roomData.players = playersVal;
-        updateSpectatorDashboard();
+        _pendingSpectatorPlayers = snapshot.val();
+        if (!_spectatorThrottleTimer) {
+          _spectatorThrottleTimer = setTimeout(function () {
+            _spectatorThrottleTimer = null;
+            if (_pendingSpectatorPlayers) {
+              _roomData = _roomData || {};
+              _roomData.players = _pendingSpectatorPlayers;
+              updateSpectatorDashboard();
+            }
+          }, 2000);
+        }
       });
     }
 

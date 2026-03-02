@@ -126,6 +126,7 @@ var MemoryMonitor = (function () {
    * 埋樁：在關鍵節點記錄記憶體快照
    * @param {string} label - 節點名稱（如 "combo1_start", "combo2_done"）
    */
+  var _checkpointCount = 0;
   function checkpoint(label) {
     var mem = _getMemoryInfo();
     var entry = {
@@ -135,29 +136,38 @@ var MemoryMonitor = (function () {
       total: mem ? mem.total : -1,
     };
     _checkpoints.push(entry);
+    _checkpointCount++;
     console.log(
       "📌 [MemoryMonitor] " +
         label +
         " — " +
         (mem ? mem.used.toFixed(1) + "MB" : "N/A"),
     );
-    
-    // 🔥 立即保存 checkpoint 到 localStorage（防止崩潰前數據遺失）
-    try {
-      var data = {
-        reason: "checkpoint",
-        timestamp: new Date().toISOString(),
-        samples: _samples.slice(-10),
-        checkpoints: _checkpoints,
-        finalMemory: mem,
-      };
-      localStorage.setItem("memoryMonitor_lastRun", JSON.stringify(data));
-    } catch (e) {
-      // localStorage 滿了或受限，嘗試 sessionStorage
+
+    // 每 3 個 checkpoint 或關鍵節點才保存到 localStorage（降低 I/O 開銷）
+    var isKeypoint =
+      label.indexOf("_done") !== -1 ||
+      label.indexOf("_start") !== -1 ||
+      label.indexOf("finish") !== -1;
+    if (isKeypoint || _checkpointCount % 3 === 0) {
       try {
-        sessionStorage.setItem("memoryMonitor_backup", JSON.stringify(data));
-      } catch (e2) {
-        /* ignore */
+        var data = {
+          reason: "checkpoint",
+          timestamp: new Date().toISOString(),
+          samples: _samples.slice(-10),
+          checkpoints: _checkpoints,
+          finalMemory: mem,
+        };
+        localStorage.setItem("memoryMonitor_lastRun", JSON.stringify(data));
+      } catch (e) {
+        try {
+          sessionStorage.setItem(
+            "memoryMonitor_backup",
+            JSON.stringify(data),
+          );
+        } catch (e2) {
+          /* ignore */
+        }
       }
     }
   }

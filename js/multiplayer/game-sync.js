@@ -185,10 +185,10 @@ var GameSync = (function () {
       delete _playerSnapshots[snap.key];
       _schedulePlayersCallback();
     });
-    // 標記初始載入完成（稍後提高防抖時間）
-    _playersRef.once("value", function () {
+    // 標記初始載入完成（使用延遲替代 .once("value") 避免全量下載 players 子樹）
+    setTimeout(function () {
       _initialLoadDone = true;
-    });
+    }, 2000);
   }
 
   // =========================================
@@ -232,32 +232,38 @@ var GameSync = (function () {
   // 分數完成監聽
   // =========================================
 
+  /** 已完成的分數快照（使用 child 級監聽避免全量下載） */
+  var _recordedScores = {};
+
   function _startScoresListener() {
-    _scoresRef.on("value", function (snapshot) {
-      var scores = snapshot.val();
-      if (!scores || _finishedDetected) return;
-
-      var finishedCount = Object.keys(scores).length;
-
-      // 全員完成？
-      if (finishedCount >= _expectedPlayerCount && _expectedPlayerCount > 0) {
-        _finishedDetected = true;
-        Logger.debug(
-          "🏁 [GameSync] 全員完成！(" +
-            finishedCount +
-            "/" +
-            _expectedPlayerCount +
-            ")",
-        );
-
-        // 更新房間狀態
-        _roomRef.update({ status: "finished", finishedAt: Date.now() });
-
-        if (_callbacks.onAllFinished) {
-          _callbacks.onAllFinished(scores);
-        }
-      }
+    // 🔧 OOM Fix: 改用 child_added/child_changed 避免 12 人每次全量下載 scores
+    _scoresRef.on("child_added", function (snap) {
+      _recordedScores[snap.key] = snap.val();
+      _checkAllFinished();
     });
+    _scoresRef.on("child_changed", function (snap) {
+      _recordedScores[snap.key] = snap.val();
+      _checkAllFinished();
+    });
+  }
+
+  function _checkAllFinished() {
+    if (_finishedDetected) return;
+    var finishedCount = Object.keys(_recordedScores).length;
+    if (finishedCount >= _expectedPlayerCount && _expectedPlayerCount > 0) {
+      _finishedDetected = true;
+      Logger.debug(
+        "🏁 [GameSync] 全員完成！(" +
+          finishedCount +
+          "/" +
+          _expectedPlayerCount +
+          ")",
+      );
+      _roomRef.update({ status: "finished", finishedAt: Date.now() });
+      if (_callbacks.onAllFinished) {
+        _callbacks.onAllFinished(_recordedScores);
+      }
+    }
   }
 
   // =========================================
@@ -266,7 +272,7 @@ var GameSync = (function () {
 
   var _broadcastTimer = null;
   var _pendingBroadcast = null;
-  var BROADCAST_THROTTLE_MS = 2000;
+  var BROADCAST_THROTTLE_MS = 4000; // 🔧 OOM Fix: 12 人場景放寬到 4 秒
 
   /**
    * 廣播自己的進度（節流：最多每 2 秒寫入 Firebase 一次）
@@ -280,9 +286,9 @@ var GameSync = (function () {
     if (!_roomRef || !_playerId) return;
     _pendingBroadcast = state;
 
-    // progress === 100 → 立即發送
+    // progress === 100 → 加隨機延遲發送（避免 12 人同時完成 burst）
     if (state.progress >= 100) {
-      _flushBroadcast();
+      setTimeout(_flushBroadcast, Math.floor(Math.random() * 800));
       return;
     }
 
@@ -436,7 +442,8 @@ var GameSync = (function () {
    * @param {Function} onDone   — () → 倒數結束
    */
   function listenCountdown(onTick, onDone) {
-    _roomRef.child("countdownStartAt").on("value", function (snap) {
+    // 🔧 OOM Fix: 改用 .once() — 倒數只需觸發一次
+    _roomRef.child("countdownStartAt").once("value", function (snap) {
       var startAt = snap.val();
       if (!startAt) return;
 
@@ -502,7 +509,7 @@ var GameSync = (function () {
     }
     if (_roomRef) {
       _roomRef.child("status").off();
-      _roomRef.child("countdownStartAt").off();
+      // countdownStartAt 已改用 .once()，不需 .off()
     }
     if (_countdownTimer) {
       clearInterval(_countdownTimer);
@@ -524,6 +531,7 @@ var GameSync = (function () {
     _finishedDetected = false;
     _localAnswers = [];
     _pendingBroadcast = null;
+    _recordedScores = {};
     Logger.debug("🔌 [GameSync] 已斷開");
   }
 
