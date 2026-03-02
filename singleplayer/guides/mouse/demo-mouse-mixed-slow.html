@@ -108,13 +108,14 @@
         filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
       }
 
-      /* 人物指示器（右上角） */
+      /* 人物指示器（水平置中、靠上） */
       .person-indicator {
         position: absolute;
         width: 120px;
         height: 120px;
-        top: 10px;
-        right: 10px;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
         z-index: 15;
         opacity: 0;
         transition: opacity 0.4s;
