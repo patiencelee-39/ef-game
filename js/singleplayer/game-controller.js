@@ -807,6 +807,10 @@ var GameController = (function () {
     _practiceResponded = true;
     dom.btnDemoSpace.disabled = true;
 
+    // ★ 清除練習的 SVG（防止 gradient ID 與正式遊戲衝突）
+    TrialRenderer.clear(_demoStimulusElements());
+    _resetDemoVisuals();
+
     // 直接呼叫練習完成回調
     if (_practiceOnComplete) {
       _practiceOnComplete();
@@ -855,6 +859,9 @@ var GameController = (function () {
 
   /** 正式試驗（過場結束後實際啟動） */
   function _beginTrialsAfterTransition(combo) {
+    // ★ 安全清除：確保練習的 SVG 已移除（防止 gradient ID 衝突）
+    TrialRenderer.clear(_demoStimulusElements());
+
     // UI 更新
     dom.trialTotal.textContent = _questions.length;
     dom.roundLabel.textContent =

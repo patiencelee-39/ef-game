@@ -17,12 +17,25 @@ var TrialRenderer = (function () {
   "use strict";
 
   /**
-   * 取得 SVG HTML 字串
+   * 內部計數器：用於產生唯一 gradient ID，避免同一頁面多個 SVG 實例的 ID 衝突
+   * @type {number}
+   */
+  var _svgUid = 0;
+
+  /**
+   * 取得 SVG HTML 字串（含唯一 gradient ID）
    * @param {string} key - SVG_ASSETS 中的 key（如 'mouseHole', 'cheese', 'person'）
    * @returns {string} SVG HTML 或空字串
    */
   function svg(key) {
-    return (typeof SVG_ASSETS !== "undefined" && SVG_ASSETS[key]) || "";
+    var s = (typeof SVG_ASSETS !== "undefined" && SVG_ASSETS[key]) || "";
+    if (s) {
+      // 為每次注入產生唯一前綴，防止多個實例的 gradient/filter ID 衝突
+      _svgUid++;
+      s = s.replace(/IconifyId17ecdb2904d178eab/g,
+        "IconifyId" + _svgUid + "_");
+    }
+    return s;
   }
 
   /**

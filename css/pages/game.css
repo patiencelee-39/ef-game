@@ -491,7 +491,7 @@
 /* --- 練習跳過按鈕 --- */
 .practice-skip-btn {
   position: absolute;
-  top: 10px;
+  top: 48px;
   right: 10px;
   z-index: 50;
   background: rgba(255, 255, 255, 0.25);
