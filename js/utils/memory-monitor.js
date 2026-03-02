@@ -144,27 +144,21 @@ var MemoryMonitor = (function () {
         (mem ? mem.used.toFixed(1) + "MB" : "N/A"),
     );
 
-    // 每 3 個 checkpoint 或關鍵節點才保存到 localStorage（降低 I/O 開銷）
-    var isKeypoint =
-      label.indexOf("_done") !== -1 ||
-      label.indexOf("_start") !== -1 ||
-      label.indexOf("finish") !== -1;
-    if (isKeypoint || _checkpointCount % 3 === 0) {
+    // 🔧 OOM Fix: 每個 checkpoint 都保存，確保崩潰前最後狀態被記錄
+    try {
+      var data = {
+        reason: "checkpoint",
+        timestamp: new Date().toISOString(),
+        samples: _samples.slice(-10),
+        checkpoints: _checkpoints,
+        finalMemory: mem,
+      };
+      localStorage.setItem("memoryMonitor_lastRun", JSON.stringify(data));
+    } catch (e) {
       try {
-        var data = {
-          reason: "checkpoint",
-          timestamp: new Date().toISOString(),
-          samples: _samples.slice(-10),
-          checkpoints: _checkpoints,
-          finalMemory: mem,
-        };
-        localStorage.setItem("memoryMonitor_lastRun", JSON.stringify(data));
-      } catch (e) {
-        try {
-          sessionStorage.setItem("memoryMonitor_backup", JSON.stringify(data));
-        } catch (e2) {
-          /* ignore */
-        }
+        sessionStorage.setItem("memoryMonitor_backup", JSON.stringify(data));
+      } catch (e2) {
+        /* ignore */
       }
     }
   }
@@ -383,4 +377,33 @@ var MemoryMonitor = (function () {
 
 if (typeof window !== "undefined") {
   window.MemoryMonitor = MemoryMonitor;
+
+  // 🔧 全域快捷函式：在任何頁面的 console 都可呼叫（不依賴 MemoryMonitor 物件）
+  window.printLastMemoryRun = function () {
+    try {
+      var raw =
+        localStorage.getItem("memoryMonitor_lastRun") ||
+        sessionStorage.getItem("memoryMonitor_backup");
+      if (!raw) {
+        console.log("無 MemoryMonitor 紀錄");
+        return null;
+      }
+      var data = JSON.parse(raw);
+      console.log("\n=== MemoryMonitor 上次紀錄 ===");
+      console.log("原因:", data.reason, "| 時間:", data.timestamp);
+      if (data.finalMemory)
+        console.log(
+          "最終記憶體:",
+          data.finalMemory.used.toFixed(1) + "MB",
+        );
+      console.log("Checkpoints:");
+      console.table(data.checkpoints);
+      console.log("最後 10 筆採樣:");
+      console.table(data.samples);
+      return data;
+    } catch (e) {
+      console.error("讀取失敗:", e);
+      return null;
+    }
+  };
 }

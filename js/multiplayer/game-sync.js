@@ -390,6 +390,8 @@ var GameSync = (function () {
    */
   function broadcastStageComplete(stageName) {
     if (!_roomRef || !_playerId) return;
+    // 🔧 OOM Fix: minimal 模式下跳過通知寫入，減少 Firebase SDK 記憶體分配
+    if (_listeningMode === "minimal") return;
     var notifRef = _roomRef.child("notifications/" + _playerId);
     notifRef.set({ justCompleted: stageName, ts: Date.now() });
     // 3 秒後清除

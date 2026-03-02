@@ -34,11 +34,14 @@ import {
   child,
   onValue,
   onChildAdded,
+  onChildChanged,
+  onChildRemoved,
   off,
   onDisconnect as rtdbOnDisconnect,
   serverTimestamp as rtdbServerTimestamp,
   query as rtdbQuery,
   orderByChild,
+  endAt,
 } from "firebase/database";
 
 // ── Firestore ──
@@ -81,7 +84,13 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const database = getDatabase(app);
-const firestore = getFirestore(app);
+// 🔧 OOM Fix: Firestore 延遲初始化 — 只在實際呼叫 firebase.firestore() 時才建立
+// 避免遊戲頁面載入時啟動 gRPC 連線 + IndexedDB，節省 20-50MB 原生記憶體
+let firestore = null;
+function getFirestoreInstance() {
+  if (!firestore) firestore = getFirestore(app);
+  return firestore;
+}
 
 // ════════════════════════════════════════
 // Compat Shim — 讓現有程式碼不用改
@@ -105,6 +114,16 @@ function wrapRef(dbRef) {
       }
       if (eventType === "child_added") {
         return onChildAdded(dbRef, (snapshot) =>
+          callback(wrapSnapshot(snapshot)),
+        );
+      }
+      if (eventType === "child_changed") {
+        return onChildChanged(dbRef, (snapshot) =>
+          callback(wrapSnapshot(snapshot)),
+        );
+      }
+      if (eventType === "child_removed") {
+        return onChildRemoved(dbRef, (snapshot) =>
           callback(wrapSnapshot(snapshot)),
         );
       }
@@ -156,6 +175,16 @@ function wrapRef(dbRef) {
     },
     ref(path) {
       return wrapRef(ref(database, path));
+    },
+
+    // 查詢支援
+    orderByChild(childKey) {
+      const q = rtdbQuery(dbRef, orderByChild(childKey));
+      return wrapRef(q);
+    },
+    endAt(value) {
+      const q = rtdbQuery(dbRef, endAt(value));
+      return wrapRef(q);
     },
 
     // 原始 ref（供內部使用）
@@ -311,10 +340,10 @@ function wrapCollectionRef(collRef, existingConstraints) {
 
 const firestoreCompat = {
   collection(name) {
-    return wrapCollectionRef(collection(firestore, name));
+    return wrapCollectionRef(collection(getFirestoreInstance(), name));
   },
   batch() {
-    const batch = writeBatch(firestore);
+    const batch = writeBatch(getFirestoreInstance());
     return {
       delete(docRef) {
         // 接受原始 ref 或包裝過的
