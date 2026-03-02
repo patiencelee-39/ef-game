@@ -101,7 +101,7 @@ var MemoryMonitor = (function () {
           "MB / " +
           mem.limit.toFixed(0) +
           "MB" +
-          " — 可能即將 OOM"
+          " — 可能即將 OOM",
       );
       _saveToLocalStorage("crisis");
     }
@@ -141,6 +141,25 @@ var MemoryMonitor = (function () {
         " — " +
         (mem ? mem.used.toFixed(1) + "MB" : "N/A"),
     );
+    
+    // 🔥 立即保存 checkpoint 到 localStorage（防止崩潰前數據遺失）
+    try {
+      var data = {
+        reason: "checkpoint",
+        timestamp: new Date().toISOString(),
+        samples: _samples.slice(-10),
+        checkpoints: _checkpoints,
+        finalMemory: mem,
+      };
+      localStorage.setItem("memoryMonitor_lastRun", JSON.stringify(data));
+    } catch (e) {
+      // localStorage 滿了或受限，嘗試 sessionStorage
+      try {
+        sessionStorage.setItem("memoryMonitor_backup", JSON.stringify(data));
+      } catch (e2) {
+        /* ignore */
+      }
+    }
   }
 
   /**
@@ -158,16 +177,13 @@ var MemoryMonitor = (function () {
       };
       localStorage.setItem("memoryMonitor_lastRun", JSON.stringify(data));
       console.log(
-        "💾 [MemoryMonitor] 已保存到 localStorage (原因: " + reason + ")"
+        "💾 [MemoryMonitor] 已保存到 localStorage (原因: " + reason + ")",
       );
     } catch (e) {
       console.error("[MemoryMonitor] localStorage 保存失敗:", e.message);
       // localStorage 可能也爆了，嘗試 sessionStorage 備份
       try {
-        sessionStorage.setItem(
-          "memoryMonitor_backup",
-          JSON.stringify(data)
-        );
+        sessionStorage.setItem("memoryMonitor_backup", JSON.stringify(data));
       } catch (e2) {
         /* ignore */
       }
@@ -254,7 +270,9 @@ var MemoryMonitor = (function () {
         var raw = localStorage.getItem("memoryMonitor_lastRun");
         if (raw) return JSON.parse(raw);
       } catch (e) {
-        console.warn("[MemoryMonitor] localStorage 讀取失敗，嘗試 sessionStorage");
+        console.warn(
+          "[MemoryMonitor] localStorage 讀取失敗，嘗試 sessionStorage",
+        );
       }
       // 嘗試 sessionStorage 備份
       try {
@@ -273,7 +291,7 @@ var MemoryMonitor = (function () {
       var data = this.getLastRun();
       if (!data) {
         console.log(
-          "🧠 [MemoryMonitor] 無上次執行紀錄 — 未找到 localStorage/sessionStorage 中的 memoryMonitor_lastRun"
+          "🧠 [MemoryMonitor] 無上次執行紀錄 — 未找到 localStorage/sessionStorage 中的 memoryMonitor_lastRun",
         );
         return;
       }
@@ -282,7 +300,7 @@ var MemoryMonitor = (function () {
         "\n" +
           "═══════════════════════════════════════════════════════\n" +
           "🧠 [MemoryMonitor] 上次執行報告\n" +
-          "═══════════════════════════════════════════════════════"
+          "═══════════════════════════════════════════════════════",
       );
       console.log("📍 保存原因:  ", data.reason);
       console.log("📅 保存時間:  ", data.timestamp);
@@ -293,9 +311,11 @@ var MemoryMonitor = (function () {
               "MB / " +
               data.finalMemory.limit.toFixed(0) +
               "MB (" +
-              Math.round((data.finalMemory.used / data.finalMemory.limit) * 100) +
+              Math.round(
+                (data.finalMemory.used / data.finalMemory.limit) * 100,
+              ) +
               "%)"
-          : "N/A"
+          : "N/A",
       );
 
       console.log("\n📌 埋樁檢查點 (checkpoints):");
@@ -313,7 +333,7 @@ var MemoryMonitor = (function () {
                 cp.used.toFixed(1) +
                 "MB / " +
                 cp.total.toFixed(1) +
-                "MB"
+                "MB",
             );
           });
         }
@@ -332,7 +352,7 @@ var MemoryMonitor = (function () {
                 s.used.toFixed(1) +
                 "MB, total=" +
                 s.total.toFixed(1) +
-                "MB"
+                "MB",
             );
           });
         }
@@ -343,9 +363,9 @@ var MemoryMonitor = (function () {
           "  • 若 checkpoints 逐步升高 → 該區間有記憶體洩漏\n" +
           "  • 若最後採樣低於崩潰時的記憶體 → OOM 在採樣間隔發生\n" +
           "  • 若原因是 'crisis' → 已達 150MB 危險值\n" +
-          "═══════════════════════════════════════════════════════\n"
+          "═══════════════════════════════════════════════════════\n",
       );
-    }
+    },
 
     /** 是否正在運行 */
     isRunning: function () {

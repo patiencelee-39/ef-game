@@ -225,9 +225,7 @@ var GameController = (function () {
   function beginTrials() {
     // 📊 埋樁：開始試驗
     if (typeof MemoryMonitor !== "undefined")
-      MemoryMonitor.checkpoint(
-        "combo_" + (_comboIndex + 1) + "_trials_begin"
-      );
+      MemoryMonitor.checkpoint("combo_" + (_comboIndex + 1) + "_trials_begin");
 
     var combo = _combos[_comboIndex];
     dom.roundLabel.textContent =
@@ -434,9 +432,7 @@ var GameController = (function () {
   function endCombo() {
     // 📊 埋樁：combo 試驗結束
     if (typeof MemoryMonitor !== "undefined")
-      MemoryMonitor.checkpoint(
-        "combo_" + (_comboIndex + 1) + "_trials_end"
-      );
+      MemoryMonitor.checkpoint("combo_" + (_comboIndex + 1) + "_trials_end");
 
     _isPlaying = false;
     dom.btnSpace.disabled = true;
@@ -521,9 +517,7 @@ var GameController = (function () {
 
     // 📊 埋樁：combo 結算完成（計分後）
     if (typeof MemoryMonitor !== "undefined")
-      MemoryMonitor.checkpoint(
-        "combo_" + (_comboIndex + 1) + "_calculated"
-      );
+      MemoryMonitor.checkpoint("combo_" + (_comboIndex + 1) + "_calculated");
 
     // 廣播場地完成通知（其他玩家會看到）
     if (_displaySettings.showCompletionNotification !== false) {
@@ -554,41 +548,91 @@ var GameController = (function () {
 
     // 已快取 → 直接使用
     if (_transitionTemplateHTML) {
+      if (typeof MemoryMonitor !== "undefined")
+        MemoryMonitor.checkpoint(
+          "combo_" + (_comboIndex + 1) + "_transition_cached"
+        );
       ctr.innerHTML = _transitionTemplateHTML;
+      if (typeof MemoryMonitor !== "undefined")
+        MemoryMonitor.checkpoint(
+          "combo_" + (_comboIndex + 1) + "_transition_filled"
+        );
       _fillTransition(ctr, nextCombo);
       return;
     }
 
+    if (typeof MemoryMonitor !== "undefined")
+      MemoryMonitor.checkpoint("combo_" + (_comboIndex + 1) + "_loading_xhr");
+
     var xhr = new XMLHttpRequest();
     xhr.open("GET", "../shared/combo-transition.html", true);
     xhr.onload = function () {
+      if (typeof MemoryMonitor !== "undefined")
+        MemoryMonitor.checkpoint(
+          "combo_" + (_comboIndex + 1) + "_xhr_response_ok"
+        );
+
       if (xhr.status >= 200 && xhr.status < 300) {
         // P15: 使用 DOMParser 安全解析
         var parser = new DOMParser();
         var doc = parser.parseFromString(xhr.responseText, "text/html");
+
+        if (typeof MemoryMonitor !== "undefined")
+          MemoryMonitor.checkpoint(
+            "combo_" + (_comboIndex + 1) + "_parsed_html"
+          );
+
         ctr.innerHTML = "";
         // 匯入所有 body 子節點（含 .combo-transition div + <style> 標籤）
         var body = doc.body;
         while (body && body.firstChild) {
           ctr.appendChild(document.importNode(body.firstChild, true));
         }
+
+        if (typeof MemoryMonitor !== "undefined")
+          MemoryMonitor.checkpoint(
+            "combo_" + (_comboIndex + 1) + "_dom_imported"
+          );
+
         // 快取 innerHTML 供後續重用
         _transitionTemplateHTML = ctr.innerHTML;
+
+        if (typeof MemoryMonitor !== "undefined")
+          MemoryMonitor.checkpoint(
+            "combo_" + (_comboIndex + 1) + "_template_cached"
+          );
+
         _fillTransition(ctr, nextCombo);
+
+        if (typeof MemoryMonitor !== "undefined")
+          MemoryMonitor.checkpoint(
+            "combo_" + (_comboIndex + 1) + "_transition_filled"
+          );
       } else {
+        if (typeof MemoryMonitor !== "undefined")
+          MemoryMonitor.checkpoint(
+            "combo_" + (_comboIndex + 1) + "_xhr_failed_" + xhr.status
+          );
         ctr.classList.add("hidden");
         beginCombo();
       }
     };
     xhr.onerror = function () {
+      if (typeof MemoryMonitor !== "undefined")
+        MemoryMonitor.checkpoint(
+          "combo_" + (_comboIndex + 1) + "_xhr_error"
+        );
       ctr.classList.add("hidden");
       beginCombo();
     };
     xhr.send();
-  }
+  } 
 
   /** 填充過場 DOM */
   function _fillTransition(ctr, nextCombo) {
+    if (typeof MemoryMonitor !== "undefined")
+      MemoryMonitor.checkpoint("combo_" + (_comboIndex + 1) + "_fill_start");
+
     var prevCombo = _comboIndex > 0 ? _combos[_comboIndex - 1] : _combos[0];
     var field = GAME_CONFIG.FIELDS[nextCombo.fieldId];
     var rule = field.rules[nextCombo.ruleId];
@@ -621,6 +665,11 @@ var GameController = (function () {
       headerEl.appendChild(scoreDiv);
     }
 
+    if (typeof MemoryMonitor !== "undefined")
+      MemoryMonitor.checkpoint(
+        "combo_" + (_comboIndex + 1) + "_score_appended"
+      );
+
     // 下一組合資訊
     var nIcon = ctr.querySelector(".next-field-icon");
     var nName = ctr.querySelector(".next-field-name");
@@ -628,6 +677,11 @@ var GameController = (function () {
     if (nIcon) nIcon.textContent = field.icon;
     if (nName) nName.textContent = field.name;
     if (nRule) nRule.textContent = rule.name || nextCombo.ruleId;
+
+    if (typeof MemoryMonitor !== "undefined")
+      MemoryMonitor.checkpoint(
+        "combo_" + (_comboIndex + 1) + "_field_filled"
+      );
 
     // Go / NoGo 規則展示（非混合）
     if (nextCombo.ruleId !== "mixed") {
@@ -645,6 +699,11 @@ var GameController = (function () {
       if (ngSL) ngSL.textContent = rule.noGo.stimulus;
       if (ngA) ngA.textContent = "不要按！";
     }
+
+    if (typeof MemoryMonitor !== "undefined")
+      MemoryMonitor.checkpoint(
+        "combo_" + (_comboIndex + 1) + "_rules_filled"
+      );
 
     // ── 規則反轉提示（同場地不同規則時） ──
     if (_comboIndex > 0) {
@@ -666,6 +725,11 @@ var GameController = (function () {
       }
     }
 
+    if (typeof MemoryMonitor !== "undefined")
+      MemoryMonitor.checkpoint(
+        "combo_" + (_comboIndex + 1) + "_reverse_notice_done"
+      );
+
     // WM 提示
     var wmN = ctr.querySelector(".combo-wm-notice");
     if (wmN)
@@ -677,6 +741,10 @@ var GameController = (function () {
       startBtn.addEventListener(
         "click",
         function () {
+          if (typeof MemoryMonitor !== "undefined")
+            MemoryMonitor.checkpoint(
+              "combo_" + (_comboIndex + 1) + "_start_clicked"
+            );
           ctr.classList.add("hidden");
           ctr.innerHTML = "";
           beginCombo(true); // skipIntro: 過場已顯示規則
@@ -684,6 +752,11 @@ var GameController = (function () {
         { once: true },
       );
     }
+
+    if (typeof MemoryMonitor !== "undefined")
+      MemoryMonitor.checkpoint(
+        "combo_" + (_comboIndex + 1) + "_listener_attached"
+      );
 
     // 聽規則按鈕
     var listenBtn = ctr.querySelector(".combo-listen-btn");
@@ -696,6 +769,11 @@ var GameController = (function () {
         }
       });
     }
+
+    if (typeof MemoryMonitor !== "undefined")
+      MemoryMonitor.checkpoint(
+        "combo_" + (_comboIndex + 1) + "_transition_complete"
+      );
   }
 
   // =========================================
