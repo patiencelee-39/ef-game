@@ -91,6 +91,12 @@ var MultiplayerBridge = (function () {
       },
     });
 
+    // 🔧 OOM 核心修復：初始化後立即切換到最小監聽模式
+    // 在遊戲全程中默認不監聽其他玩家的即時更新，大幅降低 Firebase SDK 原生記憶體壓力
+    if (_playerRole !== "spectator" && GameSync.setListeningMode) {
+      GameSync.setListeningMode("minimal");
+    }
+
     // 觀戰模式：只監聯 players 子節點（🔧 OOM Fix: 加 2 秒節流避免狂刷 DOM）
     if (_playerRole === "spectator") {
       var _spectatorThrottleTimer = null;

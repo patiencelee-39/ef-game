@@ -223,13 +223,6 @@ var GameController = (function () {
   }
 
   function beginTrials() {
-    // � OOM核心修復：試驗開始時切換到最小監聽模式
-    // 暫停 players + notifications 監聽，停止中間進度廣播
-    // 這能減少 90%+ 的 Firebase WebSocket 流量和 SDK 原生記憶體分配
-    if (typeof GameSync !== "undefined" && GameSync.setListeningMode) {
-      GameSync.setListeningMode("minimal");
-    }
-
     // �📊 埋樁：開始試驗
     if (typeof MemoryMonitor !== "undefined")
       MemoryMonitor.checkpoint("combo_" + (_comboIndex + 1) + "_trials_begin");
@@ -437,11 +430,6 @@ var GameController = (function () {
   }
 
   function endCombo() {
-    // � OOM核心修復：試驗結束時恢復完整監聽模式
-    if (typeof GameSync !== "undefined" && GameSync.setListeningMode) {
-      GameSync.setListeningMode("active");
-    }
-
     // �📊 埋樁：combo 試驗結束
     if (typeof MemoryMonitor !== "undefined")
       MemoryMonitor.checkpoint("combo_" + (_comboIndex + 1) + "_trials_end");
@@ -784,11 +772,6 @@ var GameController = (function () {
   }
 
   function finishGame() {
-    // � 確保恢復完整監聽模式（用於全員完成偵測）
-    if (typeof GameSync !== "undefined" && GameSync.setListeningMode) {
-      GameSync.setListeningMode("active");
-    }
-
     // �📊 埋樁：遊戲結束
     if (typeof MemoryMonitor !== "undefined")
       MemoryMonitor.checkpoint("game_finish");
