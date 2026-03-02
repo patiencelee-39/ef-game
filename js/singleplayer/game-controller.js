@@ -676,7 +676,9 @@ var GameController = (function () {
 
         if (q.isGo) {
           // Go 題：進入寬限期，按鈕保持可用
-          var graceMs = (GAME_CONFIG.TIMING && GAME_CONFIG.TIMING.RESPONSE_GRACE_MS) || 1000;
+          var graceMs =
+            (GAME_CONFIG.TIMING && GAME_CONFIG.TIMING.RESPONSE_GRACE_MS) ||
+            1000;
           _practiceGraceTimerId = setTimeout(function () {
             if (!_practiceResponded) {
               _handlePracticeResponse(false, q);

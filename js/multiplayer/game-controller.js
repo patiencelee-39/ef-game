@@ -329,7 +329,12 @@ var GameController = (function () {
 
       if (question.isGo) {
         // Go 題：進入寬限期，按鈕保持可用
-        var graceMs = (_tp && _tp.responseGraceMs) || (typeof GAME_CONFIG !== 'undefined' && GAME_CONFIG.TIMING && GAME_CONFIG.TIMING.RESPONSE_GRACE_MS) || 1000;
+        var graceMs =
+          (_tp && _tp.responseGraceMs) ||
+          (typeof GAME_CONFIG !== "undefined" &&
+            GAME_CONFIG.TIMING &&
+            GAME_CONFIG.TIMING.RESPONSE_GRACE_MS) ||
+          1000;
         _graceTimerId = setTimeout(function () {
           if (!_responded) {
             _responded = true;
