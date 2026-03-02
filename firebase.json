@@ -8,6 +8,7 @@
       "**/node_modules/**",
       "_archive/**",
       "docs/**",
+      "screenshots/**",
       "**/*.md",
       "**/*.pdf",
       "scripts/**",
@@ -21,6 +22,7 @@
       "firestore.indexes.json",
       "**/*.py",
       "**/*.sh",
+      "**/*.wav",
       "**/Icon\r"
     ],
     "headers": [
