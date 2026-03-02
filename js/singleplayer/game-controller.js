@@ -97,6 +97,7 @@ var GameController = (function () {
   var _isPaused = false; // 是否暫停
   var _responded = false; // 本題是否已回應
   var _stimTimerId = null; // 刺激物到期 timer
+  var _graceTimerId = null; // Go 寬限期 timer
   var _isiTimerId = null; // ISI delay timer
   var _stimShownAt = 0; // 刺激物顯示時間戳
 
@@ -560,6 +561,7 @@ var GameController = (function () {
   var _practiceCorrect = 0;
   var _practiceResponded = false;
   var _practiceTimerId = null;
+  var _practiceGraceTimerId = null;
   var _practiceStimShownAt = 0;
   var _practiceRetryCount = 0;
   var PRACTICE_TRIAL_COUNT = 3;
@@ -667,9 +669,22 @@ var GameController = (function () {
 
       // 刺激物到期（使用較長時間 3 秒）
       _practiceTimerId = setTimeout(function () {
-        if (!_practiceResponded) {
-          // 沒按 → NoGo 才正確
-          _handlePracticeResponse(!q.isGo, q);
+        if (_practiceResponded) return;
+
+        // 隱藏刺激物
+        TrialRenderer.clear(_demoStimulusElements());
+
+        if (q.isGo) {
+          // Go 題：進入寬限期，按鈕保持可用
+          var graceMs = (GAME_CONFIG.TIMING && GAME_CONFIG.TIMING.RESPONSE_GRACE_MS) || 1000;
+          _practiceGraceTimerId = setTimeout(function () {
+            if (!_practiceResponded) {
+              _handlePracticeResponse(false, q);
+            }
+          }, graceMs);
+        } else {
+          // NoGo 題：刺激物到期即判定
+          _handlePracticeResponse(true, q);
         }
       }, 3000);
     }, 600);
@@ -683,6 +698,7 @@ var GameController = (function () {
     if (_practiceResponded || dom.btnDemoSpace.disabled) return;
     _practiceResponded = true;
     clearTimeout(_practiceTimerId);
+    clearTimeout(_practiceGraceTimerId);
     dom.btnDemoSpace.disabled = true;
 
     var q = _practiceQuestions[_practiceIdx];
@@ -699,6 +715,7 @@ var GameController = (function () {
   function _handlePracticeResponse(isCorrect, question) {
     _practiceResponded = true;
     clearTimeout(_practiceTimerId);
+    clearTimeout(_practiceGraceTimerId);
     dom.btnDemoSpace.disabled = true;
 
     if (isCorrect) _practiceCorrect++;
@@ -782,7 +799,9 @@ var GameController = (function () {
   function _skipPractice() {
     // 清除練習中的計時器
     clearTimeout(_practiceTimerId);
+    clearTimeout(_practiceGraceTimerId);
     _practiceTimerId = null;
+    _practiceGraceTimerId = null;
     _practiceResponded = true;
     dom.btnDemoSpace.disabled = true;
 
@@ -935,9 +954,23 @@ var GameController = (function () {
       _stimShownAt = Date.now();
       _responded = false;
 
-      // 刺激物到期（未回應 → timeout）
+      // 刺激物到期 → 隱藏刺激物，但 Go 題給予寬限期
       _stimTimerId = setTimeout(function () {
-        if (!_responded && _isPlaying) {
+        if (_responded || !_isPlaying) return;
+
+        // 隱藏刺激物
+        TrialRenderer.clear(_stimEls());
+
+        if (question.isGo) {
+          // Go 題：進入寬限期，按鈕保持可用
+          var graceMs = _tp.responseGraceMs || 1000;
+          _graceTimerId = setTimeout(function () {
+            if (!_responded && _isPlaying) {
+              onTimeout(question);
+            }
+          }, graceMs);
+        } else {
+          // NoGo 題：刺激物到期即判定
           onTimeout(question);
         }
       }, _tp.stimulusDurationMs);
@@ -950,6 +983,7 @@ var GameController = (function () {
 
     _responded = true;
     clearTimeout(_stimTimerId);
+    clearTimeout(_graceTimerId);
     dom.btnSpace.disabled = true;
 
     var rt = Date.now() - _stimShownAt;
@@ -1455,6 +1489,7 @@ var GameController = (function () {
     if (!_isPlaying || _isPaused) return;
     _isPaused = true;
     clearTimeout(_stimTimerId);
+    clearTimeout(_graceTimerId);
     clearTimeout(_isiTimerId);
     dom.pauseOverlay.classList.add("active");
     FocusTrap.activate(dom.pauseOverlay);

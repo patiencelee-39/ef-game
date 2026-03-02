@@ -53,6 +53,7 @@ var GameController = (function () {
   var _isPaused = false;
   var _isiTimerId = null;
   var _stimTimerId = null;
+  var _graceTimerId = null;
   var _totalCorrect = 0;
   var _totalTrials = 0;
   var _allTrialResults = []; // 跨 combo 累積（修復原 finishGame 僅取最後 combo 的 bug）
@@ -321,12 +322,26 @@ var GameController = (function () {
     _stimOnTime = Date.now();
 
     _stimTimerId = setTimeout(function () {
-      if (!_responded) {
+      if (_responded) return;
+
+      // 隱藏刺激物
+      TrialRenderer.clear(_stimEls());
+
+      if (question.isGo) {
+        // Go 題：進入寬限期，按鈕保持可用
+        var graceMs = (_tp && _tp.responseGraceMs) || (typeof GAME_CONFIG !== 'undefined' && GAME_CONFIG.TIMING && GAME_CONFIG.TIMING.RESPONSE_GRACE_MS) || 1000;
+        _graceTimerId = setTimeout(function () {
+          if (!_responded) {
+            _responded = true;
+            recordTrial(question, "nopress", "Miss", false, null);
+            showFeedback("Miss");
+          }
+        }, graceMs);
+      } else {
+        // NoGo 題：刺激物到期即判定
         _responded = true;
-        var isCorrect = !question.isGo;
-        var result = question.isGo ? "Miss" : "CR";
-        recordTrial(question, "nopress", result, isCorrect, null);
-        showFeedback(result);
+        recordTrial(question, "nopress", "CR", true, null);
+        showFeedback("CR");
       }
     }, duration);
   }
@@ -335,6 +350,7 @@ var GameController = (function () {
     if (!_isPlaying || _isPaused || _responded || dom.btnSpace.disabled) return;
     _responded = true;
     clearTimeout(_stimTimerId);
+    clearTimeout(_graceTimerId);
 
     var question = _questions[_trialIndex];
     var rt = Date.now() - _stimOnTime;
@@ -902,6 +918,7 @@ var GameController = (function () {
     _isPaused = true;
     clearTimeout(_isiTimerId);
     clearTimeout(_stimTimerId);
+    clearTimeout(_graceTimerId);
     dom.pauseOverlay.classList.add("active");
     FocusTrap.activate(dom.pauseOverlay);
   }

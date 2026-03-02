@@ -62,6 +62,9 @@ var DifficultyProvider = (function () {
         /** 刺激物顯示時間（ms） */
         stimulusDurationMs: timing.STIMULUS_DURATION_MS || 2000,
 
+        /** 刺激物消失後的額外回應寬限期（ms） */
+        responseGraceMs: timing.RESPONSE_GRACE_MS || 1000,
+
         /** ISI 最小值（ms） */
         isiMinMs: timing.ISI_MIN_MS || 800,
 

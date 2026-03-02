@@ -237,9 +237,12 @@ var SimpleAdaptiveEngine = (function () {
      */
     getTrialParams: function (context) {
       var params = LEVEL_TIMING[_level] || LEVEL_TIMING[DEFAULT_LEVEL];
+      var cfg = typeof GAME_CONFIG !== "undefined" ? GAME_CONFIG : {};
+      var timing = cfg.TIMING || {};
       // 淺拷貝以防外部修改
       return {
         stimulusDurationMs: params.stimulusDurationMs,
+        responseGraceMs: timing.RESPONSE_GRACE_MS || 1000,
         isiMinMs: params.isiMinMs,
         isiMaxMs: params.isiMaxMs,
         feedbackDurationMs: params.feedbackDurationMs,

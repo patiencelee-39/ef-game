@@ -392,10 +392,7 @@ if (typeof window !== "undefined") {
       console.log("\n=== MemoryMonitor 上次紀錄 ===");
       console.log("原因:", data.reason, "| 時間:", data.timestamp);
       if (data.finalMemory)
-        console.log(
-          "最終記憶體:",
-          data.finalMemory.used.toFixed(1) + "MB",
-        );
+        console.log("最終記憶體:", data.finalMemory.used.toFixed(1) + "MB");
       console.log("Checkpoints:");
       console.table(data.checkpoints);
       console.log("最後 10 筆採樣:");

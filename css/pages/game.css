@@ -198,8 +198,8 @@
   position: absolute;
   top: 12px;
   right: 12px;
-  width: 60px;
-  height: 60px;
+  width: 80px;
+  height: 80px;
   z-index: 5;
   display: none;
 }
@@ -489,7 +489,7 @@
 /* --- 練習跳過按鈕 --- */
 .practice-skip-btn {
   position: absolute;
-  top: 52px;
+  top: 100px;
   right: 12px;
   z-index: 50;
   background: rgba(255, 255, 255, 0.25);
@@ -686,8 +686,8 @@
   position: absolute;
   top: 12px;
   right: 12px;
-  width: 60px;
-  height: 60px;
+  width: 80px;
+  height: 80px;
   z-index: 5;
   display: none;
 }

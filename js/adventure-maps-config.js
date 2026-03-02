@@ -21,7 +21,7 @@ const ADVENTURE_MAPS = [
         field: "mouse",
         rule: "rule1",
         hasWM: false,
-        questionsCount: 6,
+        questionsCount: 12,
         label: "① 規則一",
       },
       {
@@ -29,7 +29,7 @@ const ADVENTURE_MAPS = [
         field: "mouse",
         rule: "rule1",
         hasWM: true,
-        questionsCount: 6,
+        questionsCount: 12,
         label: "② 規則一 + 🧠WM",
       },
       {
@@ -37,7 +37,7 @@ const ADVENTURE_MAPS = [
         field: "mouse",
         rule: "rule2",
         hasWM: false,
-        questionsCount: 6,
+        questionsCount: 12,
         label: "③ 規則二",
       },
       {
@@ -45,7 +45,7 @@ const ADVENTURE_MAPS = [
         field: "mouse",
         rule: "rule2",
         hasWM: true,
-        questionsCount: 6,
+        questionsCount: 12,
         label: "④ 規則二 + 🧠WM",
       },
       {
@@ -77,7 +77,7 @@ const ADVENTURE_MAPS = [
         field: "fishing",
         rule: "rule1",
         hasWM: false,
-        questionsCount: 6,
+        questionsCount: 12,
         label: "⑦ 規則一",
       },
       {
@@ -85,7 +85,7 @@ const ADVENTURE_MAPS = [
         field: "fishing",
         rule: "rule1",
         hasWM: true,
-        questionsCount: 6,
+        questionsCount: 12,
         label: "⑧ 規則一 + 🧠WM",
       },
       {
@@ -93,7 +93,7 @@ const ADVENTURE_MAPS = [
         field: "fishing",
         rule: "rule2",
         hasWM: false,
-        questionsCount: 6,
+        questionsCount: 12,
         label: "⑨ 規則二",
       },
       {
@@ -101,7 +101,7 @@ const ADVENTURE_MAPS = [
         field: "fishing",
         rule: "rule2",
         hasWM: true,
-        questionsCount: 6,
+        questionsCount: 12,
         label: "⑩ 規則二 + 🧠WM",
       },
       {

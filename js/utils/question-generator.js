@@ -238,9 +238,8 @@ function generateQuestions(fieldId, ruleId, count) {
   }
 
   if (ruleId === "mixed") {
-    // 混合規則題數 ×2
-    var mixedCount = count * GAME_CONFIG.QUESTIONS.MIXED_MULTIPLIER;
-    return generateMixedQuestions(fieldId, mixedCount);
+    // 混合規則：直接使用傳入的 count（上游已處理乘數）
+    return generateMixedQuestions(fieldId, count);
   }
 
   return generateSimpleQuestions(fieldId, ruleId, count);
