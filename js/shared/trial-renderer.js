@@ -32,8 +32,7 @@ var TrialRenderer = (function () {
     if (s) {
       // 為每次注入產生唯一前綴，防止多個實例的 gradient/filter ID 衝突
       _svgUid++;
-      s = s.replace(/IconifyId17ecdb2904d178eab/g,
-        "IconifyId" + _svgUid + "_");
+      s = s.replace(/IconifyId17ecdb2904d178eab/g, "IconifyId" + _svgUid + "_");
     }
     return s;
   }
