@@ -27,5 +27,8 @@ test-*.js
 node_modules/
 _inline-audit-full-output.txt
 
+# Firebase 本地部署快取
+.firebase/
+
 # Vite 建置輸出
 dist/
