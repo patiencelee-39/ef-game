@@ -588,16 +588,24 @@ var GameController = (function () {
     xhr.onload = function () {
       console.log("🔧 [DEBUG] XHR onload, status=" + xhr.status);
       if (xhr.status >= 200 && xhr.status < 300) {
-        var parser = new DOMParser();
-        var doc = parser.parseFromString(xhr.responseText, "text/html");
-        ctr.innerHTML = "";
-        var body = doc.body;
-        while (body && body.firstChild) {
-          ctr.appendChild(document.importNode(body.firstChild, true));
+        try {
+          console.log("🔧 [DEBUG] 開始解析模板...");
+          var parser = new DOMParser();
+          var doc = parser.parseFromString(xhr.responseText, "text/html");
+          console.log("🔧 [DEBUG] DOMParser 完成, doc.body=", !!doc.body);
+          ctr.innerHTML = "";
+          var body = doc.body;
+          while (body && body.firstChild) {
+            ctr.appendChild(document.importNode(body.firstChild, true));
+          }
+          _transitionTemplateHTML = ctr.innerHTML;
+          console.log("🔧 [DEBUG] 模板載入成功，呼叫 _fillTransition");
+          _fillTransition(ctr, nextCombo);
+        } catch (err) {
+          console.error("🔧 [DEBUG] 模板處理或 _fillTransition 發生錯誤:", err);
+          ctr.classList.add("hidden");
+          beginCombo();
         }
-        _transitionTemplateHTML = ctr.innerHTML;
-        console.log("🔧 [DEBUG] 模板載入成功，呼叫 _fillTransition");
-        _fillTransition(ctr, nextCombo);
       } else {
         console.warn("🔧 [DEBUG] XHR 非 2xx 回應，跳過過渡直接 beginCombo");
         ctr.classList.add("hidden");
@@ -614,9 +622,13 @@ var GameController = (function () {
 
   /** 填充過場 DOM */
   function _fillTransition(ctr, nextCombo) {
+    console.log("🔧 [DEBUG] _fillTransition 進入");
     var prevCombo = _comboIndex > 0 ? _combos[_comboIndex - 1] : _combos[0];
+    console.log("🔧 [DEBUG] prevCombo=", prevCombo ? prevCombo.displayName : "null");
     var field = GAME_CONFIG.FIELDS[nextCombo.fieldId];
+    console.log("🔧 [DEBUG] field=", field ? field.name : "undefined", "nextCombo.fieldId=", nextCombo.fieldId);
     var rule = field.rules[nextCombo.ruleId];
+    console.log("🔧 [DEBUG] rule=", rule ? rule.name : "undefined", "nextCombo.ruleId=", nextCombo.ruleId);
 
     // 上一組合名稱
     var prev = ctr.querySelector(".prev-combo-name");
