@@ -764,6 +764,16 @@ var GameController = (function () {
       var computedStyle = window.getComputedStyle(ctr);
       console.log("🔧 [DEBUG] 最終樣式檢查 - display:", computedStyle.display, "visibility:", computedStyle.visibility, "opacity:", computedStyle.opacity, "height:", computedStyle.height);
       console.log("🔧 [DEBUG] ctr.getBoundingClientRect():", JSON.stringify(ctr.getBoundingClientRect()));
+      console.log("🔧 [DEBUG] ctr.innerHTML 長度:", ctr.innerHTML.length);
+      console.log("🔧 [DEBUG] ctr.children.length:", ctr.children.length);
+      var startBtn = ctr.querySelector(".combo-start-btn");
+      console.log("🔧 [DEBUG] startBtn 最終檢查:", !!startBtn);
+      if (startBtn) {
+        var btnStyle = window.getComputedStyle(startBtn);
+        var btnRect = startBtn.getBoundingClientRect();
+        console.log("🔧 [DEBUG] startBtn 樣式 - display:", btnStyle.display, "visibility:", btnStyle.visibility);
+        console.log("🔧 [DEBUG] startBtn 位置:", JSON.stringify(btnRect));
+      }
     }, 100);
   }
 
