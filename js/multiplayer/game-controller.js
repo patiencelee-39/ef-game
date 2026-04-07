@@ -88,11 +88,13 @@ var GameController = (function () {
   }
 
   function beginCombo(skipIntro) {
+    Logger.debug("🔧 [DEBUG] beginCombo 進入, skipIntro=" + skipIntro + ", _comboIndex=" + _comboIndex);
     // 📊 埋樁：每個 combo 開始時記錄記憶體
     if (typeof MemoryMonitor !== "undefined")
       MemoryMonitor.checkpoint("combo_" + (_comboIndex + 1) + "_start");
 
     var combo = _combos[_comboIndex];
+    Logger.debug("🔧 [DEBUG] 當前 combo=", combo ? combo.displayName : "undefined");
     _trialIndex = 0;
     _trialResults = [];
     _responded = false;
@@ -546,9 +548,12 @@ var GameController = (function () {
     }
 
     _comboIndex++;
+    Logger.debug("🔧 [DEBUG] _processComboEnd 完成, _comboIndex=" + _comboIndex + ", _combos.length=" + _combos.length);
     if (_comboIndex < _combos.length) {
+      Logger.debug("🔧 [DEBUG] 準備進入 showComboTransition, nextCombo=", _combos[_comboIndex]);
       showComboTransition(_combos[_comboIndex]);
     } else {
+      Logger.debug("🔧 [DEBUG] 所有 combo 完成，呼叫 finishGame");
       finishGame();
     }
   }
@@ -560,23 +565,28 @@ var GameController = (function () {
   var _transitionTemplateHTML = null;
 
   function showComboTransition(nextCombo) {
+    Logger.debug("🔧 [DEBUG] showComboTransition 進入, nextCombo=", nextCombo ? nextCombo.displayName : "null");
     // 📊 埋樁：combo 過渡
     if (typeof MemoryMonitor !== "undefined")
       MemoryMonitor.checkpoint("combo_" + _comboIndex + "_done");
 
     var ctr = dom.comboTransition;
+    Logger.debug("🔧 [DEBUG] dom.comboTransition 存在?", !!ctr);
     ctr.classList.remove("hidden");
 
     // 已快取 → 直接使用
     if (_transitionTemplateHTML) {
+      Logger.debug("🔧 [DEBUG] 使用快取模板");
       ctr.innerHTML = _transitionTemplateHTML;
       _fillTransition(ctr, nextCombo);
       return;
     }
+    Logger.debug("🔧 [DEBUG] 無快取，發起 XHR 載入模板");
 
     var xhr = new XMLHttpRequest();
     xhr.open("GET", "../shared/combo-transition.html", true);
     xhr.onload = function () {
+      Logger.debug("🔧 [DEBUG] XHR onload, status=" + xhr.status);
       if (xhr.status >= 200 && xhr.status < 300) {
         var parser = new DOMParser();
         var doc = parser.parseFromString(xhr.responseText, "text/html");
@@ -586,13 +596,16 @@ var GameController = (function () {
           ctr.appendChild(document.importNode(body.firstChild, true));
         }
         _transitionTemplateHTML = ctr.innerHTML;
+        Logger.debug("🔧 [DEBUG] 模板載入成功，呼叫 _fillTransition");
         _fillTransition(ctr, nextCombo);
       } else {
+        Logger.warn("🔧 [DEBUG] XHR 非 2xx 回應，跳過過渡直接 beginCombo");
         ctr.classList.add("hidden");
         beginCombo();
       }
     };
     xhr.onerror = function () {
+      Logger.error("🔧 [DEBUG] XHR onerror 發生！");
       ctr.classList.add("hidden");
       beginCombo();
     };
@@ -685,16 +698,21 @@ var GameController = (function () {
 
     // 開始按鈕 → 直接進入倒數（省略重複的規則說明頁）
     var startBtn = ctr.querySelector(".combo-start-btn");
+    Logger.debug("🔧 [DEBUG] _fillTransition: startBtn 找到?", !!startBtn);
     if (startBtn) {
+      Logger.debug("🔧 [DEBUG] 綁定 startBtn click 事件");
       startBtn.addEventListener(
         "click",
         function () {
+          Logger.debug("🔧 [DEBUG] startBtn 被點擊，準備 beginCombo(true)");
           ctr.classList.add("hidden");
           ctr.innerHTML = "";
           beginCombo(true); // skipIntro: 過場已顯示規則
         },
         { once: true },
       );
+    } else {
+      Logger.warn("🔧 [DEBUG] ⚠️ startBtn 未找到！過渡畫面可能無法繼續");
     }
 
     // 聽規則按鈕
@@ -793,7 +811,8 @@ var GameController = (function () {
   }
 
   function finishGame() {
-    // �📊 埋樁：遊戲結束
+    Logger.debug("🔧 [DEBUG] finishGame 被呼叫! _comboIndex=" + _comboIndex + ", _combos.length=" + _combos.length);
+    // 📊 埋樁：遊戲結束
     if (typeof MemoryMonitor !== "undefined")
       MemoryMonitor.checkpoint("game_finish");
 
