@@ -593,11 +593,22 @@ var GameController = (function () {
           var parser = new DOMParser();
           var doc = parser.parseFromString(xhr.responseText, "text/html");
           console.log("🔧 [DEBUG] DOMParser 完成, doc.body=", !!doc.body);
+          console.log("🔧 [DEBUG] 清空 ctr.innerHTML...");
           ctr.innerHTML = "";
           var body = doc.body;
+          var nodeCount = 0;
+          console.log("🔧 [DEBUG] 開始 while 迴圈, body.childNodes.length=", body ? body.childNodes.length : 0);
           while (body && body.firstChild) {
-            ctr.appendChild(document.importNode(body.firstChild, true));
+            nodeCount++;
+            if (nodeCount > 100) {
+              console.error("🔧 [DEBUG] while 迴圈超過 100 次，強制中斷！");
+              break;
+            }
+            var node = body.firstChild;
+            body.removeChild(node); // 明確移除節點避免無限迴圈
+            ctr.appendChild(document.importNode(node, true));
           }
+          console.log("🔧 [DEBUG] while 迴圈完成, 共處理", nodeCount, "個節點");
           _transitionTemplateHTML = ctr.innerHTML;
           console.log("🔧 [DEBUG] 模板載入成功，呼叫 _fillTransition");
           _fillTransition(ctr, nextCombo);
