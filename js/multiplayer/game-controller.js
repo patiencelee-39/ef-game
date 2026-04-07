@@ -572,7 +572,10 @@ var GameController = (function () {
 
     var ctr = dom.comboTransition;
     console.log("🔧 [DEBUG] dom.comboTransition 存在?", !!ctr);
+    console.log("🔧 [DEBUG] ctr.classList (移除前):", ctr ? ctr.className : "N/A");
     ctr.classList.remove("hidden");
+    console.log("🔧 [DEBUG] ctr.classList (移除後):", ctr ? ctr.className : "N/A");
+    console.log("🔧 [DEBUG] ctr.offsetHeight (可見性檢查):", ctr ? ctr.offsetHeight : 0);
 
     // 已快取 → 直接使用
     if (_transitionTemplateHTML) {
@@ -755,6 +758,13 @@ var GameController = (function () {
       MemoryMonitor.checkpoint(
         "combo_" + (_comboIndex + 1) + "_transition_ready",
       );
+
+    // 手機端診斷：檢查容器最終樣式
+    setTimeout(function () {
+      var computedStyle = window.getComputedStyle(ctr);
+      console.log("🔧 [DEBUG] 最終樣式檢查 - display:", computedStyle.display, "visibility:", computedStyle.visibility, "opacity:", computedStyle.opacity, "height:", computedStyle.height);
+      console.log("🔧 [DEBUG] ctr.getBoundingClientRect():", JSON.stringify(ctr.getBoundingClientRect()));
+    }, 100);
   }
 
   // =========================================
