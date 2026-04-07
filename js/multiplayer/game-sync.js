@@ -308,7 +308,6 @@ var GameSync = (function () {
   function _checkAllFinished() {
     if (_finishedDetected) return;
     var finishedCount = Object.keys(_recordedScores).length;
-    console.log("🔧 [DEBUG] _checkAllFinished: finishedCount=" + finishedCount + ", _expectedPlayerCount=" + _expectedPlayerCount);
     if (finishedCount >= _expectedPlayerCount && _expectedPlayerCount > 0) {
       _finishedDetected = true;
       Logger.debug(

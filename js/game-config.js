@@ -397,7 +397,7 @@ const GAME_CONFIG = {
   /* ── ⚠️ 以下為開發者專用設定，教師請勿修改 ───────────── */
   DEV: {
     DEBUG_MODE: false,
-    LOG_LEVEL: "debug",
+    LOG_LEVEL: "warn",
     /**
      * 自適應引擎選擇
      * "simple" = 簡易版（連對升級、連錯降級）

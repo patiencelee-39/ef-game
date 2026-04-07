@@ -88,13 +88,11 @@ var GameController = (function () {
   }
 
   function beginCombo(skipIntro) {
-    console.log("🔧 [DEBUG] beginCombo 進入, skipIntro=" + skipIntro + ", _comboIndex=" + _comboIndex);
     // 📊 埋樁：每個 combo 開始時記錄記憶體
     if (typeof MemoryMonitor !== "undefined")
       MemoryMonitor.checkpoint("combo_" + (_comboIndex + 1) + "_start");
 
     var combo = _combos[_comboIndex];
-    console.log("🔧 [DEBUG] 當前 combo=", combo ? combo.displayName : "undefined");
     _trialIndex = 0;
     _trialResults = [];
     _responded = false;
@@ -548,12 +546,9 @@ var GameController = (function () {
     }
 
     _comboIndex++;
-    console.log("🔧 [DEBUG] _processComboEnd 完成, _comboIndex=" + _comboIndex + ", _combos.length=" + _combos.length);
     if (_comboIndex < _combos.length) {
-      console.log("🔧 [DEBUG] 準備進入 showComboTransition, nextCombo=", _combos[_comboIndex]);
       showComboTransition(_combos[_comboIndex]);
     } else {
-      console.log("🔧 [DEBUG] 所有 combo 完成，呼叫 finishGame");
       finishGame();
     }
   }
@@ -565,69 +560,42 @@ var GameController = (function () {
   var _transitionTemplateHTML = null;
 
   function showComboTransition(nextCombo) {
-    console.log("🔧 [DEBUG] showComboTransition 進入, nextCombo=", nextCombo ? nextCombo.displayName : "null");
     // 📊 埋樁：combo 過渡
     if (typeof MemoryMonitor !== "undefined")
       MemoryMonitor.checkpoint("combo_" + _comboIndex + "_done");
 
     var ctr = dom.comboTransition;
-    console.log("🔧 [DEBUG] dom.comboTransition 存在?", !!ctr);
-    console.log("🔧 [DEBUG] ctr.classList (移除前):", ctr ? ctr.className : "N/A");
     ctr.classList.remove("hidden");
-    console.log("🔧 [DEBUG] ctr.classList (移除後):", ctr ? ctr.className : "N/A");
-    console.log("🔧 [DEBUG] ctr.offsetHeight (可見性檢查):", ctr ? ctr.offsetHeight : 0);
 
     // 已快取 → 直接使用
     if (_transitionTemplateHTML) {
-      console.log("🔧 [DEBUG] 使用快取模板");
       ctr.innerHTML = _transitionTemplateHTML;
       _fillTransition(ctr, nextCombo);
       return;
     }
-    console.log("🔧 [DEBUG] 無快取，發起 XHR 載入模板");
 
     var xhr = new XMLHttpRequest();
     xhr.open("GET", "../shared/combo-transition.html", true);
     xhr.onload = function () {
-      console.log("🔧 [DEBUG] XHR onload, status=" + xhr.status);
       if (xhr.status >= 200 && xhr.status < 300) {
-        try {
-          console.log("🔧 [DEBUG] 開始解析模板...");
-          var parser = new DOMParser();
-          var doc = parser.parseFromString(xhr.responseText, "text/html");
-          console.log("🔧 [DEBUG] DOMParser 完成, doc.body=", !!doc.body);
-          console.log("🔧 [DEBUG] 清空 ctr.innerHTML...");
-          ctr.innerHTML = "";
-          var body = doc.body;
-          var nodeCount = 0;
-          console.log("🔧 [DEBUG] 開始 while 迴圈, body.childNodes.length=", body ? body.childNodes.length : 0);
-          while (body && body.firstChild) {
-            nodeCount++;
-            if (nodeCount > 100) {
-              console.error("🔧 [DEBUG] while 迴圈超過 100 次，強制中斷！");
-              break;
-            }
-            var node = body.firstChild;
-            body.removeChild(node); // 明確移除節點避免無限迴圈
-            ctr.appendChild(document.importNode(node, true));
-          }
-          console.log("🔧 [DEBUG] while 迴圈完成, 共處理", nodeCount, "個節點");
-          _transitionTemplateHTML = ctr.innerHTML;
-          console.log("🔧 [DEBUG] 模板載入成功，呼叫 _fillTransition");
-          _fillTransition(ctr, nextCombo);
-        } catch (err) {
-          console.error("🔧 [DEBUG] 模板處理或 _fillTransition 發生錯誤:", err);
-          ctr.classList.add("hidden");
-          beginCombo();
+        var parser = new DOMParser();
+        var doc = parser.parseFromString(xhr.responseText, "text/html");
+        ctr.innerHTML = "";
+        var body = doc.body;
+        // 修復：明確移除節點避免手機端無限迴圈
+        while (body && body.firstChild) {
+          var node = body.firstChild;
+          body.removeChild(node);
+          ctr.appendChild(document.importNode(node, true));
         }
+        _transitionTemplateHTML = ctr.innerHTML;
+        _fillTransition(ctr, nextCombo);
       } else {
-        console.warn("🔧 [DEBUG] XHR 非 2xx 回應，跳過過渡直接 beginCombo");
         ctr.classList.add("hidden");
         beginCombo();
       }
     };
     xhr.onerror = function () {
-      console.error("🔧 [DEBUG] XHR onerror 發生！");
       ctr.classList.add("hidden");
       beginCombo();
     };
@@ -636,13 +604,9 @@ var GameController = (function () {
 
   /** 填充過場 DOM */
   function _fillTransition(ctr, nextCombo) {
-    console.log("🔧 [DEBUG] _fillTransition 進入");
     var prevCombo = _comboIndex > 0 ? _combos[_comboIndex - 1] : _combos[0];
-    console.log("🔧 [DEBUG] prevCombo=", prevCombo ? prevCombo.displayName : "null");
     var field = GAME_CONFIG.FIELDS[nextCombo.fieldId];
-    console.log("🔧 [DEBUG] field=", field ? field.name : "undefined", "nextCombo.fieldId=", nextCombo.fieldId);
     var rule = field.rules[nextCombo.ruleId];
-    console.log("🔧 [DEBUG] rule=", rule ? rule.name : "undefined", "nextCombo.ruleId=", nextCombo.ruleId);
 
     // 上一組合名稱
     var prev = ctr.querySelector(".prev-combo-name");
@@ -724,21 +688,16 @@ var GameController = (function () {
 
     // 開始按鈕 → 直接進入倒數（省略重複的規則說明頁）
     var startBtn = ctr.querySelector(".combo-start-btn");
-    console.log("🔧 [DEBUG] _fillTransition: startBtn 找到?", !!startBtn);
     if (startBtn) {
-      console.log("🔧 [DEBUG] 綁定 startBtn click 事件");
       startBtn.addEventListener(
         "click",
         function () {
-          console.log("🔧 [DEBUG] startBtn 被點擊，準備 beginCombo(true)");
           ctr.classList.add("hidden");
           ctr.innerHTML = "";
           beginCombo(true); // skipIntro: 過場已顯示規則
         },
         { once: true },
       );
-    } else {
-      console.warn("🔧 [DEBUG] ⚠️ startBtn 未找到！過渡畫面可能無法繼續");
     }
 
     // 聽規則按鈕
@@ -758,23 +717,6 @@ var GameController = (function () {
       MemoryMonitor.checkpoint(
         "combo_" + (_comboIndex + 1) + "_transition_ready",
       );
-
-    // 手機端診斷：檢查容器最終樣式
-    setTimeout(function () {
-      var computedStyle = window.getComputedStyle(ctr);
-      console.log("🔧 [DEBUG] 最終樣式檢查 - display:", computedStyle.display, "visibility:", computedStyle.visibility, "opacity:", computedStyle.opacity, "height:", computedStyle.height);
-      console.log("🔧 [DEBUG] ctr.getBoundingClientRect():", JSON.stringify(ctr.getBoundingClientRect()));
-      console.log("🔧 [DEBUG] ctr.innerHTML 長度:", ctr.innerHTML.length);
-      console.log("🔧 [DEBUG] ctr.children.length:", ctr.children.length);
-      var startBtn = ctr.querySelector(".combo-start-btn");
-      console.log("🔧 [DEBUG] startBtn 最終檢查:", !!startBtn);
-      if (startBtn) {
-        var btnStyle = window.getComputedStyle(startBtn);
-        var btnRect = startBtn.getBoundingClientRect();
-        console.log("🔧 [DEBUG] startBtn 樣式 - display:", btnStyle.display, "visibility:", btnStyle.visibility);
-        console.log("🔧 [DEBUG] startBtn 位置:", JSON.stringify(btnRect));
-      }
-    }, 100);
   }
 
   // =========================================
@@ -854,8 +796,7 @@ var GameController = (function () {
   }
 
   function finishGame() {
-    console.log("🔧 [DEBUG] finishGame 被呼叫! _comboIndex=" + _comboIndex + ", _combos.length=" + _combos.length);
-    // 📊 埋樁：遊戲結束
+    // �📊 埋樁：遊戲結束
     if (typeof MemoryMonitor !== "undefined")
       MemoryMonitor.checkpoint("game_finish");
 
