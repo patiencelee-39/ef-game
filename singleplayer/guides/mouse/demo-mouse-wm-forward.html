@@ -114,9 +114,9 @@
     .wm-question { text-align:center; line-height:1.5; font-size:0.9em; }
     .wm-question strong { color:var(--accent-yellow); }
     .wm-hint { font-size:0.75em; color:rgba(255,255,255,0.5); }
-    .wm-answer-bar { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; }
+    .wm-answer-bar { display:flex; gap:4px; flex-wrap:nowrap; justify-content:center; }
     .wm-answer-slot {
-      width:50px; height:60px; border:3px solid var(--primary-color); border-radius:10px;
+      width:45px; height:65px; border:3px solid var(--primary-color); border-radius:10px;
       background:rgba(255,255,255,0.08); display:flex; flex-direction:column;
       align-items:center; justify-content:center; position:relative;
     }
@@ -145,6 +145,9 @@
     .hand-finger { left:440px; top:420px; }
     .hand-stop { left:-100px; top:400px; }
     .hand svg { width:100%; height:100%; filter:drop-shadow(2px 4px 6px rgba(0,0,0,0.3)); }
+    .progress-bar { width:90%; height:4px; background:rgba(255,255,255,0.1); border-radius:2px; margin:5px auto 10px; overflow:hidden; }
+    .progress-fill { height:100%; width:0%; border-radius:2px; transition:width linear; }
+    .progress-fill { background:linear-gradient(90deg, var(--primary-color), var(--success-color)); }
     .phase-label { font-size:0.7rem; color:rgba(255,255,255,0.35); margin-bottom:5px; min-height:1em; }
   </style>
 </head>
@@ -198,6 +201,7 @@
       <button class="wm-btn-continue" id="wmContinueBtn">➡ 繼續</button>
     </div>
     <div class="phase-label" id="phaseLabel"></div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
     <div class="hand-layer">
       <div class="hand hand-finger" id="handFinger"></div>
       <div class="hand hand-stop" id="handStop"></div>
@@ -272,6 +276,7 @@
       btn:       document.getElementById('actionBtn'),
       controls:  document.getElementById('controlsArea'),
       phaseLabel:document.getElementById('phaseLabel'),
+      progressFill:document.getElementById('progressFill'),
       wmBar:     document.getElementById('wmAnswerBar'),
       wmConfirm: document.getElementById('wmConfirmBtn'),
       wmResult:  document.getElementById('wmResult'),
@@ -293,6 +298,17 @@
       h.style.transition=`left ${d}ms ${e}, top ${d}ms ${e}, opacity 0.15s`;
       h.style.left=l+'px'; h.style.top=t+'px';
     }
+    function startTimebar(durationMs){
+      DOM.progressFill.style.transition='none';
+      DOM.progressFill.style.width='0%';
+      requestAnimationFrame(()=>{
+        requestAnimationFrame(()=>{
+          DOM.progressFill.style.transition='width '+(durationMs/1000)+'s linear';
+          DOM.progressFill.style.width='100%';
+        });
+      });
+    }
+    function resetTimebar(){ DOM.progressFill.style.transition='none'; DOM.progressFill.style.width='0%'; }
     function rstHand(){ DOM.hand.style.transition='none'; DOM.hand.style.opacity='0'; DOM.hand.style.left='440px'; DOM.hand.style.top='420px'; }
     function rstStop(){ DOM.handStop.style.transition='none'; DOM.handStop.style.opacity='0'; DOM.handStop.style.left='-100px'; DOM.handStop.style.top='400px'; DOM.handStop.style.animation='none'; }
     function showChk(){ DOM.checkmark.className='checkmark show'; }
@@ -353,11 +369,12 @@
       DOM.wmResult.classList.remove('show');
       DOM.wmCont.style.display='none';
       DOM.controls.style.opacity='1';
+      resetTimebar();
     }
 
     // ===== 前段 =====
     function playFront(){
-      const bp=btnCenter(); const GAP=3000;
+      const bp=btnCenter(); const GAP=4000;
       SEQ.forEach((type,i)=>{
         const t=1000+i*GAP; const isGo=(type==='cheese');
         sc(()=>{ DOM.stim.innerHTML=SVGS[type]; DOM.stim.style.opacity='1'; fillSlot(i,type); }, t);
@@ -367,9 +384,9 @@
           sc(()=>{ DOM.hand.innerHTML=SVG_SPACE_DOWN; DOM.hand.style.transition='top 150ms ease-in'; DOM.hand.style.top=(bp.t+20)+'px'; pressB(); }, t+1500);
           sc(()=>{ DOM.hand.innerHTML=SVG_SPACE_UP; DOM.hand.style.transition='top 150ms ease-out'; DOM.hand.style.top=bp.t+'px'; relB(); }, t+1900);
           sc(()=>{ DOM.hand.style.transition='left 0.4s ease-in, opacity 0.3s'; DOM.hand.style.left='440px'; DOM.hand.style.opacity='0'; }, t+2100);
-          sc(()=>showChk(), t+2500);
-          sc(()=>hideChk(), t+2700);
-          sc(()=>{ rstChk(); rstHand(); DOM.stim.style.transition='opacity 0.3s'; DOM.stim.style.opacity='0'; }, t+2800);
+          sc(()=>showChk(), t+2300);
+          sc(()=>hideChk(), t+3300);
+          sc(()=>{ rstChk(); rstHand(); DOM.stim.style.transition='opacity 0.3s'; DOM.stim.style.opacity='0'; }, t+3500);
         } else {
           sc(()=>{ rstHand(); DOM.hand.innerHTML=SVG_SPACE_UP;
             requestAnimationFrame(()=>{ DOM.hand.style.opacity='1'; moveTo(DOM.hand,bp.l+80,bp.t,500,'cubic-bezier(0.6,0,0.4,1)'); }); }, t+400);
@@ -377,16 +394,19 @@
             requestAnimationFrame(()=>{ DOM.handStop.style.opacity='1'; moveTo(DOM.handStop,bp.l-10,bp.t-20,300,'cubic-bezier(0.2,0,0,1)'); DOM.handStop.style.animation='shakeHand 0.8s ease-in-out 1'; });
             DOM.hand.style.transition='left 0.4s cubic-bezier(0,0,0.6,1), opacity 0.3s'; DOM.hand.style.left='440px'; DOM.hand.style.opacity='0'; }, t+850);
           sc(()=>{ DOM.handStop.style.animation='none'; DOM.handStop.style.transition='left 0.4s ease-in, opacity 0.3s'; DOM.handStop.style.left='-100px'; DOM.handStop.style.opacity='0'; }, t+1500);
-          sc(()=>{ rstStop(); rstHand(); DOM.stim.style.transition='opacity 0.3s'; DOM.stim.style.opacity='0'; }, t+2500);
+          sc(()=>{ rstStop(); rstHand(); }, t+1900);
+          sc(()=>showChk(), t+2000);
+          sc(()=>hideChk(), t+3000);
+          sc(()=>{ rstChk(); DOM.stim.style.transition='opacity 0.3s'; DOM.stim.style.opacity='0'; }, t+3200);
         }
-        sc(()=>{ DOM.stim.style.transition='none'; DOM.stim.innerHTML=''; }, t+2900);
+        sc(()=>{ DOM.stim.style.transition='none'; DOM.stim.innerHTML=''; }, t+3800);
       });
     }
 
     // ===== 中段 =====
     function playMid(){
-      const S0=19500;
-      sc(()=>{ DOM.controls.style.transition='opacity 0.3s'; DOM.controls.style.opacity='0'; }, 19000);
+      const S0=25500;
+      sc(()=>{ DOM.controls.style.transition='opacity 0.3s'; DOM.controls.style.opacity='0'; }, 25000);
       for(let i=0;i<6;i++){
         sc(()=>{ DOM.rings[i].classList.add('on'); DOM.slots[i].classList.add('wiggle');
           setTimeout(()=>DOM.slots[i].classList.remove('wiggle'),600); }, S0+i*600);
@@ -401,7 +421,7 @@
 
     // ===== 後段 =====
     function playBack(){
-      const T0=25000;
+      const T0=31000;
       sc(()=>{ DOM.gameScene.style.transition='opacity 0.5s'; DOM.gameScene.style.opacity='0'; }, T0);
       sc(()=>{
         DOM.gameScene.style.display='none';
@@ -437,7 +457,8 @@
       sc(()=>startCycle(), cf+4500);
     }
 
-    function startCycle(){ clr(); resetAll(); DOM.phaseLabel.textContent='── 工作記憶示範 ──'; playFront(); playMid(); playBack(); }
+    function startCycle(){ clr(); resetAll(); startTimebar(42000);
+      DOM.phaseLabel.textContent='── 工作記憶示範 ──'; playFront(); playMid(); playBack(); }
     function init(){ DOM.bgLayer.innerHTML=SVG_BG; DOM.hand.innerHTML=SVG_SPACE_UP; DOM.handStop.innerHTML=SVG_HAND_STOP; startCycle(); }
     document.addEventListener('DOMContentLoaded', init);
   </script>

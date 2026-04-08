@@ -1,1292 +1,466 @@
 <!--
-  ============================================================
-  📄 demo-mouse-wm-slow.html
-  📝 工作記憶規則說明動畫 v1.3.1（老鼠場・順向版）
-  🎯 4-6 歲學前幼兒（含聽損兒）
-  📐 對應：index-0204v14.html（各回合結束後的工作記憶測試）
-  🏫 中原大學特殊教育學系
-  
-  【三段式結構】
-  ═══ 前段（0~19s）：Go/NoGo + 順序記錄 ═══
-    - 示範序列：🧀😺🧀😺🧀🧀（共 6 個）
-    - 每個刺激物約 3 秒處理時間
-    - 記錄區在老鼠洞內部上緣，同步累積小圖示
-  
-  ═══ 中段（19~24s）：順序引導 ═══
-    - 綠色光圈從左到右逐一亮起（累積不滅）
-    - 每格小圖輕微晃動
-    - 全亮後脈動 → 翻轉成藍色❓
-  
-  ═══ 後段（24.5~41.5s）：操作示範 ═══
-    - 切換到答題介面
-    - 手指示範循環點擊填答
-    - 點擊確認按鈕 → 顯示「答對了」
-  
-  【總循環時長】：約 41.5 秒
-  ============================================================
+  demo-mouse-wm-slow.html v2
+  工作記憶規則說明動畫（老鼠場・順向版）
+  前段手勢：SpaceTap（hand-up 移入 / hand-down 點擊）+ HandStop（NoGo）
+  後段手勢：FingerTap（state-idle 移動 / state-click 點擊）— 右下角定位
+  中段：加粗綠框(4px) + 強烈晃動(±12°) + 3D 翻轉效果
 -->
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-TW">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>示範動畫 - 工作記憶測試（老鼠場・順向）</title>
-    <style>
-      /* ============================================================
-         🎨 CSS 變數定義
-         教學註記：集中管理顏色、尺寸等，方便全域調整
-      ============================================================ */
-      :root {
-        --bg-color: #2c3e50;
-        --game-bg: #34495e;
-        --text-color: #ecf0f1;
-        --primary-color: #3498db;
-        --primary-dark: #2980b9;
-        --success-color: #2ecc71;
-        --danger-color: #e74c3c;
-        --warning-color: #e67e22;
-        --yellow-color: #f1c40f;
-        
-        /* 記錄區專用（洞內）*/
-        --slot-size: 60px;
-        --slot-gap: 8px;
-        --slot-radius: 8px;
-        
-        /* 答題區專用 */
-        --answer-size: 40px;
-        --answer-gap: 6px;
-      }
-      
-      /* ============================================================
-         🔧 基礎重置
-      ============================================================ */
-      *, *::before, *::after {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
-      body {
-        font-family: "微軟正黑體", "Microsoft JhengHei", "PingFang TC", sans-serif;
-        background-color: var(--bg-color);
-        color: var(--text-color);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 100vh;
-        overflow: hidden;
-      }
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>示範動畫 - 工作記憶（老鼠場・順向）</title>
+  <style>
+    :root {
+      --bg-color:#2c3e50; --game-bg:#34495e; --text-color:#ecf0f1;
+      --success-color:#2ecc71; --error-color:#e74c3c;
+      --primary-color:#3498db; --accent-yellow:#f39c12;
+      --forward-color:#2ecc71;
+    }
+    *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+    body {
+      font-family:'微軟正黑體','Microsoft JhengHei','PingFang TC',sans-serif;
+      background:var(--bg-color); color:var(--text-color);
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      min-height:100vh; overflow:hidden;
+    }
+    .demo-container {
+      background:var(--game-bg); border-radius:15px;
+      width:100%; max-width:420px; min-height:620px;
+      position:relative; overflow:hidden;
+      box-shadow:0 4px 6px rgba(0,0,0,0.3);
+      display:flex; flex-direction:column; align-items:center;
+    }
+    .game-scene { width:100%; display:flex; flex-direction:column; align-items:center; transition:opacity 0.5s; }
+    .stimulus-container { position:relative; width:300px; height:400px; margin:10px auto 0; }
+    .background-layer { position:absolute; width:100%; height:100%; z-index:1; top:0; left:0; }
+    .background-layer svg { width:100%; height:100%; }
+    .stimulus {
+      position:absolute; z-index:10; width:120px; height:120px;
+      bottom:50px; left:50%; transform:translateX(-50%);
+      display:flex; justify-content:center; align-items:center; opacity:0;
+    }
+    .stimulus svg { width:100%; height:100%; filter:drop-shadow(0 4px 6px rgba(0,0,0,0.3)); }
+    /* 記錄區 */
+    .record-bar {
+      position:absolute; top:52px; left:50%; transform:translateX(-50%);
+      z-index:12; display:flex; gap:6px;
+    }
+    .record-slot {
+      width:40px; height:40px; border-radius:6px;
+      border:1px dashed rgba(255,255,255,0.25);
+      display:flex; align-items:center; justify-content:center;
+      position:relative; perspective:600px;
+    }
+    .slot-inner {
+      width:100%; height:100%; position:relative;
+      transform-style:preserve-3d; transition:transform 0.6s ease-in-out;
+    }
+    .record-slot.flipped .slot-inner { transform:rotateY(180deg); }
+    .slot-front, .slot-back {
+      position:absolute; width:100%; height:100%; backface-visibility:hidden;
+      display:flex; align-items:center; justify-content:center; border-radius:6px;
+    }
+    .slot-front svg { width:90%; height:90%; opacity:0; transition:opacity 0.3s; }
+    .slot-front svg.show { opacity:0.75; }
+    .slot-back {
+      transform:rotateY(180deg);
+      background:rgba(52,152,219,0.4); border:2px solid var(--primary-color);
+      font-size:1.3em; font-weight:bold; color:var(--primary-color);
+    }
+    .guide-ring {
+      position:absolute; top:-4px; left:-4px; right:-4px; bottom:-4px;
+      border:4px solid var(--forward-color); border-radius:10px;
+      box-shadow:0 0 20px rgba(46,204,113,0.9), inset 0 0 10px rgba(46,204,113,0.4);
+      opacity:0; transition:opacity 0.25s; z-index:5;
+    }
+    .guide-ring.on { opacity:1; }
+    @keyframes wiggle { 0%,100%{transform:rotate(0)} 15%{transform:rotate(-12deg)} 30%{transform:rotate(14deg)} 45%{transform:rotate(-12deg)} 60%{transform:rotate(10deg)} 75%{transform:rotate(-8deg)} 90%{transform:rotate(6deg)} }
+    .record-slot.wiggle { animation:wiggle 0.6s ease-in-out; }
+    @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.2)} }
 
-      /* ============================================================
-         📦 主容器
-      ============================================================ */
-      .demo-container {
-        background-color: var(--game-bg);
-        border-radius: 15px;
-        width: 100%;
-        max-width: 420px;
-        min-height: 650px;
-        position: relative;
-        overflow: hidden;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      }
+    .controls-area { width:100%; display:flex; justify-content:center; padding:10px 0 15px; transition:opacity 0.3s; }
+    .btn-key {
+      width:200px; height:120px; border:none; border-radius:15px;
+      font-size:2.5em; color:white; cursor:default;
+      display:flex; flex-direction:column; justify-content:center; align-items:center;
+      box-shadow:0 4px 0 rgba(0,0,0,0.2);
+      background:linear-gradient(135deg,#3498db 0%,#2980b9 100%);
+      transition:transform 0.1s, box-shadow 0.1s;
+    }
+    .btn-key.pressed { transform:translateY(4px); box-shadow:none; }
+    .btn-key.glow { box-shadow:0 0 20px rgba(52,152,219,0.8), 0 0 40px rgba(46,204,113,0.4); }
+    .key-hint { font-size:1rem; opacity:0.8; margin-bottom:5px; font-weight:bold; }
+    .btn-label { font-size:1.5rem; font-weight:bold; }
+    .checkmark {
+      position:absolute; z-index:20; font-size:60px;
+      bottom:175px; left:50%; transform:translateX(-50%) scale(0); opacity:0;
+    }
+    @keyframes popIn { 0%{transform:translateX(-50%) scale(0);opacity:0} 50%{transform:translateX(-50%) scale(1.3);opacity:1} 100%{transform:translateX(-50%) scale(1);opacity:1} }
+    @keyframes fadeOut { 0%{opacity:1} 100%{opacity:0} }
+    .checkmark.show { animation:popIn 0.3s ease-out forwards; }
+    .checkmark.hide { animation:fadeOut 0.2s ease-out forwards; }
+    @keyframes shakeHand { 0%{transform:rotate(0)} 12.5%{transform:rotate(-45deg)} 25%{transform:rotate(45deg)} 37.5%{transform:rotate(-45deg)} 50%{transform:rotate(45deg)} 62.5%{transform:rotate(-45deg)} 75%{transform:rotate(45deg)} 87.5%{transform:rotate(-45deg)} 100%{transform:rotate(0)} }
 
-      /* ============================================================
-         🎮 刺激物容器（300×400，老鼠洞背景）
-      ============================================================ */
-      .game-area {
-        position: relative;
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        transition: opacity 0.5s;
-        padding-top: 10px;
-      }
-      .stimulus-container {
-        position: relative;
-        width: 300px;
-        height: 300px;
-        margin: 0 auto;
-      }
-      .background-layer {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        z-index: 1;
-        top: 0;
-        left: 0;
-      }
-      .background-layer svg {
-        width: 100%;
-        height: 100%;
-      }
-      
-      /* ============================================================
-         📊 記錄區（在老鼠洞內部上緣）
-         教學註記：6 格 60×60px，顯示刺激物出現順序的縮圖
-      ============================================================ */
-      .record-area {
-        position: absolute;
-        top: 15px;
-        left: 50%;
-        transform: translateX(-50%);
-        display: flex;
-        justify-content: center;
-        gap: var(--slot-gap);
-        z-index: 5;
-      }
-      .record-slot {
-        width: var(--slot-size);
-        height: var(--slot-size);
-        border-radius: var(--slot-radius);
-        border: 2px dashed rgba(255, 255, 255, 0.25);
-        background: rgba(0, 0, 0, 0.2);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        position: relative;
-        transition: border-color 0.3s, box-shadow 0.3s;
-        /* 翻轉用 */
-        transform-style: preserve-3d;
-        perspective: 200px;
-      }
-      .record-slot .slot-icon {
-        width: 50px;
-        height: 50px;
-        opacity: 0;
-        transition: opacity 0.3s;
-        position: absolute;
-        backface-visibility: hidden;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-      .record-slot .slot-icon svg {
-        width: 100%;
-        height: 100%;
-      }
-      .record-slot .slot-icon.show {
-        opacity: 0.8;
-      }
-      /* 綠色光圈（順向引導） */
-      .record-slot.glow-green {
-        border-color: var(--success-color);
-        border-style: solid;
-        box-shadow: 0 0 12px rgba(46, 204, 113, 0.6);
-      }
-      /* 晃動動畫 */
-      @keyframes wiggle {
-        0%, 100% { transform: rotate(0deg); }
-        25% { transform: rotate(-5deg); }
-        75% { transform: rotate(5deg); }
-      }
-      .record-slot.wiggle .slot-icon {
-        animation: wiggle 0.3s ease-in-out;
-      }
-      /* 脈動動畫 */
-      @keyframes pulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.12); }
-      }
-      .record-slot.pulse {
-        animation: pulse 0.5s ease-in-out;
-      }
-      /* 翻轉後的❓背面 */
-      .record-slot .slot-question {
-        width: 100%;
-        height: 100%;
-        background: var(--primary-color);
-        border-radius: var(--slot-radius);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 1.5rem;
-        font-weight: bold;
-        color: white;
-        position: absolute;
-        backface-visibility: hidden;
-        transform: rotateY(180deg);
-        opacity: 0;
-      }
-      .record-slot.flipped {
-        animation: flipCard 0.4s ease-in-out forwards;
-      }
-      @keyframes flipCard {
-        0% { transform: rotateY(0deg); }
-        50% { transform: rotateY(90deg); }
-        100% { transform: rotateY(180deg); }
-      }
-      .record-slot.flipped .slot-icon {
-        opacity: 0 !important;
-      }
-      .record-slot.flipped .slot-question {
-        opacity: 1;
-      }
+    /* ===== 後段 ===== */
+    .wm-scene { width:100%; display:none; flex-direction:column; align-items:center; padding:15px; opacity:0; transition:opacity 0.5s; }
+    .wm-scene.active { display:flex; }
+    .wm-container {
+      width:92%; border:3px solid var(--forward-color); border-radius:15px;
+      padding:18px 12px; display:flex; flex-direction:column; align-items:center; gap:10px;
+    }
+    .wm-title { font-size:1.2em; font-weight:bold; color:var(--forward-color); }
+    .wm-question { text-align:center; line-height:1.5; font-size:0.9em; }
+    .wm-question strong { color:var(--accent-yellow); }
+    .wm-hint { font-size:0.75em; color:rgba(255,255,255,0.5); }
+    .wm-answer-bar { display:flex; gap:4px; flex-wrap:nowrap; justify-content:center; }
+    .wm-answer-slot {
+      width:45px; height:65px; border:3px solid var(--primary-color); border-radius:10px;
+      background:rgba(255,255,255,0.08); display:flex; flex-direction:column;
+      align-items:center; justify-content:center; position:relative;
+    }
+    .wm-answer-slot .slot-num { font-size:0.65em; color:var(--accent-yellow); font-weight:bold; }
+    .wm-answer-slot .slot-icon { font-size:1.6em; color:var(--error-color); font-weight:bold; }
+    .wm-answer-slot svg { width:32px; height:32px; }
+    .wm-btn { padding:8px 20px; border:none; border-radius:10px; color:white; font-size:0.85em; cursor:default; font-weight:bold; }
+    .wm-btn-reset { background:#7f8c8d; }
+    .wm-btn-confirm { background:linear-gradient(135deg,#3498db,#2980b9); width:75%; padding:10px; }
+    .wm-btn-confirm.pressed { transform:translateY(3px); }
+    .wm-btn-confirm.glow { box-shadow:0 0 15px rgba(46,204,113,0.6); }
+    .wm-result {
+      display:none; background:rgba(0,0,0,0.5); border-radius:12px;
+      padding:12px 18px; text-align:center; line-height:1.7; width:90%; margin-top:8px;
+    }
+    .wm-result.show { display:block; }
+    .wm-result h3 { color:var(--success-color); font-size:1.3em; margin-bottom:3px; }
+    .wm-result .detail { font-size:0.8em; color:rgba(255,255,255,0.7); }
+    .wm-btn-continue { background:#9b59b6; width:65%; padding:10px; display:none; margin-top:8px; border:none; border-radius:10px; color:white; font-weight:bold; font-size:0.9em; }
 
-      /* ============================================================
-         🎯 刺激物（主要顯示區）
-      ============================================================ */
-      .stimulus {
-        position: absolute;
-        z-index: 10;
-        width: 120px;
-        height: 120px;
-        bottom: 70px;
-        left: 50%;
-        transform: translateX(-50%);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        opacity: 0;
-        transition: opacity 0.3s;
-      }
-      .stimulus svg {
-        width: 100%;
-        height: 100%;
-        filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
-      }
-
-      /* ============================================================
-         🔘 按鈕（與遊戲一致）
-      ============================================================ */
-      .controls-area {
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        padding: 10px 0 15px;
-      }
-      .btn-key {
-        width: 200px;
-        height: 120px;
-        border: none;
-        border-radius: 15px;
-        font-size: 2.5em;
-        color: white;
-        cursor: default;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
-        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-        transition: transform 0.1s, box-shadow 0.1s, opacity 0.3s;
-        position: relative;
-      }
-      .btn-key.pressed {
-        transform: translateY(4px);
-        box-shadow: none;
-      }
-      .btn-key.glow {
-        box-shadow: 0 0 20px rgba(52, 152, 219, 0.8), 0 0 40px rgba(46, 204, 113, 0.4);
-      }
-      .key-hint {
-        font-size: 1rem;
-        opacity: 0.8;
-        margin-bottom: 5px;
-        font-weight: bold;
-      }
-      .btn-label {
-        font-size: 1.5rem;
-        font-weight: bold;
-      }
-
-      /* ============================================================
-         ✋ 手圖層
-      ============================================================ */
-      .hand-layer {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 50;
-        pointer-events: none;
-        overflow: visible;
-      }
-      .hand {
-        position: absolute;
-        width: 80px;
-        height: 100px;
-        opacity: 0;
-        will-change: transform, opacity, top, left;
-      }
-      .hand-finger {
-        left: 440px;
-        top: 420px;
-      }
-      .hand-stop {
-        left: -100px;
-        top: 400px;
-      }
-      .hand svg {
-        width: 100%;
-        height: 100%;
-        filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.3));
-      }
-
-      /* ✅ 勾勾 */
-      .checkmark {
-        position: absolute;
-        z-index: 20;
-        font-size: 50px;
-        bottom: 200px;
-        left: 50%;
-        transform: translateX(-50%) scale(0);
-        opacity: 0;
-        will-change: transform, opacity;
-      }
-      @keyframes popIn {
-        0% { transform: translateX(-50%) scale(0); opacity: 0; }
-        50% { transform: translateX(-50%) scale(1.3); opacity: 1; }
-        100% { transform: translateX(-50%) scale(1); opacity: 1; }
-      }
-      @keyframes fadeOut {
-        0% { opacity: 1; }
-        100% { opacity: 0; }
-      }
-      .checkmark.show { animation: popIn 0.3s ease-out forwards; }
-      .checkmark.hide { animation: fadeOut 0.2s ease-out forwards; }
-
-      /* 搖手（±45°） */
-      @keyframes shakeHand {
-        0% { transform: rotate(0deg); }
-        12.5% { transform: rotate(-45deg); }
-        25% { transform: rotate(45deg); }
-        37.5% { transform: rotate(-45deg); }
-        50% { transform: rotate(45deg); }
-        62.5% { transform: rotate(-45deg); }
-        75% { transform: rotate(45deg); }
-        87.5% { transform: rotate(-45deg); }
-        100% { transform: rotate(0deg); }
-      }
-
-      /* ============================================================
-         📝 答題介面（後段）
-      ============================================================ */
-      .answer-area {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: var(--game-bg);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 15px 20px;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.5s;
-        z-index: 30;
-      }
-      .answer-area.show {
-        opacity: 1;
-        pointer-events: auto;
-      }
-      
-      /* 紅框容器 */
-      .answer-container {
-        border: 2px solid rgba(231, 76, 60, 0.5);
-        border-radius: 15px;
-        padding: 20px 15px;
-        width: 100%;
-        max-width: 380px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      }
-      
-      .answer-title {
-        font-size: 1.3rem;
-        font-weight: bold;
-        margin-bottom: 20px;
-      }
-      .answer-main-instruction {
-        font-size: 1.4rem;
-        font-weight: bold;
-        margin-bottom: 12px;
-      }
-      .answer-direction {
-        font-size: 1.1rem;
-        text-align: center;
-        line-height: 1.6;
-        margin-bottom: 8px;
-      }
-      .answer-direction .green { color: var(--success-color); font-weight: bold; }
-      .answer-direction .yellow { color: var(--yellow-color); font-weight: bold; }
-      
-      .answer-hint {
-        font-size: 0.9rem;
-        color: rgba(255, 255, 255, 0.6);
-        margin-bottom: 20px;
-      }
-      
-      /* 答題方塊網格（6 格一排）*/
-      .answer-grid {
-        display: flex;
-        justify-content: center;
-        gap: var(--answer-gap);
-        margin-bottom: 25px;
-      }
-      .answer-box {
-        width: var(--answer-size);
-        height: var(--answer-size);
-        background: rgba(0, 0, 0, 0.25);
-        border-radius: 8px;
-        border: 2px solid rgba(255, 255, 255, 0.15);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        position: relative;
-        transition: transform 0.1s, border-color 0.2s;
-      }
-      .answer-box .box-number {
-        position: absolute;
-        top: 2px;
-        left: 5px;
-        font-size: 0.65rem;
-        color: var(--warning-color);
-        font-weight: bold;
-      }
-      .answer-box .box-content {
-        font-size: 1.3rem;
-        transition: transform 0.15s;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-      .answer-box .box-content.question {
-        color: var(--danger-color);
-        font-weight: bold;
-      }
-      .answer-box .box-content svg {
-        width: 28px;
-        height: 28px;
-      }
-      .answer-box.selected {
-        border-color: var(--primary-color);
-      }
-      .answer-box.pressed {
-        transform: scale(0.95);
-      }
-      
-      /* 底部按鈕 */
-      .answer-buttons {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 12px;
-        width: 100%;
-      }
-      .answer-btn {
-        padding: 12px 25px;
-        border: none;
-        border-radius: 20px;
-        font-size: 1rem;
-        font-weight: bold;
-        cursor: default;
-        transition: transform 0.1s, box-shadow 0.15s;
-      }
-      .answer-btn.reset {
-        background: rgba(255, 255, 255, 0.15);
-        color: white;
-      }
-      .answer-btn.confirm {
-        width: 90%;
-        padding: 14px;
-        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-        color: white;
-        border-radius: 12px;
-        box-shadow: 0 3px 0 rgba(0, 0, 0, 0.2);
-      }
-      .answer-btn.pressed {
-        transform: translateY(3px);
-        box-shadow: none;
-      }
-
-      /* 結果反饋（直接顯示，無動畫）*/
-      .result-feedback {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: var(--game-bg);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-        opacity: 0;
-        pointer-events: none;
-        z-index: 35;
-        transition: opacity 0.3s;
-      }
-      .result-feedback.show {
-        opacity: 1;
-        pointer-events: auto;
-      }
-      .result-title {
-        font-size: 1.6rem;
-        font-weight: bold;
-        margin-bottom: 10px;
-      }
-      .result-subtitle {
-        font-size: 1.2rem;
-        margin-bottom: 20px;
-      }
-      .result-details {
-        background: rgba(0, 0, 0, 0.25);
-        border-radius: 12px;
-        padding: 15px 25px;
-        line-height: 1.8;
-        text-align: left;
-      }
-      .result-details .pass {
-        color: var(--success-color);
-        font-weight: bold;
-      }
-
-      /* ============================================================
-         📊 進度條
-      ============================================================ */
-      .progress-bar {
-        width: 90%;
-        height: 4px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 2px;
-        margin: 8px auto 10px;
-        overflow: hidden;
-      }
-      .progress-fill {
-        height: 100%;
-        width: 0%;
-        border-radius: 2px;
-        transition: width 0.3s linear;
-      }
-      .progress-fill.phase1 { background: var(--success-color); }
-      .progress-fill.phase2 { background: var(--primary-color); }
-      .progress-fill.phase3 { background: var(--warning-color); }
-      
-      .phase-label {
-        font-size: 0.75rem;
-        color: rgba(255, 255, 255, 0.5);
-        margin-bottom: 8px;
-        min-height: 1.2em;
-        text-align: center;
-      }
-
-      /* ============================================================
-         🎛️ 控制覆蓋
-      ============================================================ */
-      .guide-done-overlay {
-        position: absolute;
-        inset: 0;
-        z-index: 100;
-        background: rgba(44, 62, 80, 0.95);
-        display: none;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 16px;
-        border-radius: 15px;
-      }
-      .guide-done-overlay.show { display: flex; }
-      .guide-done-title {
-        font-size: 1.3rem;
-        font-weight: 700;
-      }
-      .guide-btn {
-        padding: 12px 28px;
-        border: none;
-        border-radius: 12px;
-        font-size: 1.05rem;
-        font-weight: 700;
-        cursor: pointer;
-        color: #fff;
-        transition: transform 0.15s, box-shadow 0.15s;
-      }
-      .guide-btn:active { transform: scale(0.96); }
-      .guide-btn-ready {
-        background: linear-gradient(135deg, #2ecc71, #27ae60);
-        box-shadow: 0 4px 12px rgba(46, 204, 113, 0.4);
-      }
-      .guide-btn-replay {
-        background: rgba(255, 255, 255, 0.12);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-      }
-      .guide-btn-skip {
-        position: absolute;
-        top: 12px;
-        right: 12px;
-        z-index: 110;
-        background: rgba(255, 255, 255, 0.25);
-        border: 2px solid rgba(255, 255, 255, 0.5);
-        padding: 10px 22px;
-        font-size: 1rem;
-        display: none;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="demo-container" id="demoContainer">
-      
-      <!-- 跳過按鈕 -->
-      <button class="guide-btn guide-btn-skip" id="btnGuideSkip">跳過 ▶</button>
-      
-      <!-- ═══ 遊戲區（前段 + 中段）═══ -->
-      <div class="game-area" id="gameArea">
-        <div class="stimulus-container" id="stimulusContainer">
-          <div class="background-layer" id="bgLayer"></div>
-          
-          <!-- 記錄區（在老鼠洞內部）-->
-          <div class="record-area" id="recordArea">
-            <div class="record-slot" id="slot1">
-              <div class="slot-icon" id="slotIcon1"></div>
-              <div class="slot-question">❓</div>
-            </div>
-            <div class="record-slot" id="slot2">
-              <div class="slot-icon" id="slotIcon2"></div>
-              <div class="slot-question">❓</div>
-            </div>
-            <div class="record-slot" id="slot3">
-              <div class="slot-icon" id="slotIcon3"></div>
-              <div class="slot-question">❓</div>
-            </div>
-            <div class="record-slot" id="slot4">
-              <div class="slot-icon" id="slotIcon4"></div>
-              <div class="slot-question">❓</div>
-            </div>
-            <div class="record-slot" id="slot5">
-              <div class="slot-icon" id="slotIcon5"></div>
-              <div class="slot-question">❓</div>
-            </div>
-            <div class="record-slot" id="slot6">
-              <div class="slot-icon" id="slotIcon6"></div>
-              <div class="slot-question">❓</div>
-            </div>
-          </div>
-          
-          <div class="stimulus" id="stimulus"></div>
-          <div class="checkmark" id="checkmark">✅</div>
+    .hand-layer {
+      position:absolute; top:0; left:0; width:100%; height:100%;
+      z-index:50; pointer-events:none; overflow:visible;
+    }
+    .hand { position:absolute; width:80px; height:100px; opacity:0; will-change:transform,opacity,top,left; }
+    .hand-finger { left:440px; top:420px; }
+    .hand-stop { left:-100px; top:400px; }
+    .hand svg { width:100%; height:100%; filter:drop-shadow(2px 4px 6px rgba(0,0,0,0.3)); }
+    .progress-bar { width:90%; height:4px; background:rgba(255,255,255,0.1); border-radius:2px; margin:5px auto 10px; overflow:hidden; }
+    .progress-fill { height:100%; width:0%; border-radius:2px; transition:width linear; }
+    .progress-fill { background:linear-gradient(90deg, var(--primary-color), var(--success-color)); }
+    .phase-label { font-size:0.7rem; color:rgba(255,255,255,0.35); margin-bottom:5px; min-height:1em; }
+  </style>
+</head>
+<body>
+  <div class="demo-container" id="demoContainer">
+    <div class="game-scene" id="gameScene">
+      <div class="stimulus-container" id="stimContainer">
+        <div class="background-layer" id="bgLayer"></div>
+        <div class="record-bar" id="recordBar">
+          <div class="record-slot" id="rs0"><div class="guide-ring" id="gr0"></div><div class="slot-inner"><div class="slot-front" id="sf0"></div><div class="slot-back">❓</div></div></div>
+          <div class="record-slot" id="rs1"><div class="guide-ring" id="gr1"></div><div class="slot-inner"><div class="slot-front" id="sf1"></div><div class="slot-back">❓</div></div></div>
+          <div class="record-slot" id="rs2"><div class="guide-ring" id="gr2"></div><div class="slot-inner"><div class="slot-front" id="sf2"></div><div class="slot-back">❓</div></div></div>
+          <div class="record-slot" id="rs3"><div class="guide-ring" id="gr3"></div><div class="slot-inner"><div class="slot-front" id="sf3"></div><div class="slot-back">❓</div></div></div>
+          <div class="record-slot" id="rs4"><div class="guide-ring" id="gr4"></div><div class="slot-inner"><div class="slot-front" id="sf4"></div><div class="slot-back">❓</div></div></div>
+          <div class="record-slot" id="rs5"><div class="guide-ring" id="gr5"></div><div class="slot-inner"><div class="slot-front" id="sf5"></div><div class="slot-back">❓</div></div></div>
         </div>
-        <div class="controls-area">
-          <button class="btn-key" id="actionBtn">
-            <span class="key-hint">🔑 空白鍵</span>
-            <span class="btn-label">蒐集起司</span>
-          </button>
+        <div class="stimulus" id="stimulus"></div>
+        <div class="checkmark" id="checkmark">✅</div>
+      </div>
+      <div class="controls-area" id="controlsArea">
+        <div class="btn-key" id="actionBtn">
+          <span class="key-hint">按空白鍵(或點此)</span>
+          <span class="btn-label">蒐集起司</span>
         </div>
       </div>
-      
-      <!-- ═══ 答題區（後段）═══ -->
-      <div class="answer-area" id="answerArea">
-        <div class="answer-container">
-          <div class="answer-title">🧠 記憶力測試</div>
-          <div class="answer-main-instruction">請回想：</div>
-          <div class="answer-direction">
-            按照「<span class="green">順序</span>」，<br>
-            剛才「<span class="yellow">最後 6 個物件</span>」的順序為何？
-          </div>
-          <div class="answer-hint">點擊按鈕切換圖示（❓ → 🧀 → 🐈‍⬛ → ❓）</div>
-          
-          <div class="answer-grid" id="answerGrid">
-            <div class="answer-box" id="ansBox1">
-              <span class="box-number">1</span>
-              <span class="box-content question" id="ansContent1">❓</span>
-            </div>
-            <div class="answer-box" id="ansBox2">
-              <span class="box-number">2</span>
-              <span class="box-content question" id="ansContent2">❓</span>
-            </div>
-            <div class="answer-box" id="ansBox3">
-              <span class="box-number">3</span>
-              <span class="box-content question" id="ansContent3">❓</span>
-            </div>
-            <div class="answer-box" id="ansBox4">
-              <span class="box-number">4</span>
-              <span class="box-content question" id="ansContent4">❓</span>
-            </div>
-            <div class="answer-box" id="ansBox5">
-              <span class="box-number">5</span>
-              <span class="box-content question" id="ansContent5">❓</span>
-            </div>
-            <div class="answer-box" id="ansBox6">
-              <span class="box-number">6</span>
-              <span class="box-content question" id="ansContent6">❓</span>
-            </div>
-          </div>
-          
-          <div class="answer-buttons">
-            <button class="answer-btn reset" id="btnReset">🔄 重新選擇</button>
-            <button class="answer-btn confirm" id="btnConfirm">✓ 確認答案</button>
-          </div>
-        </div>
-        
-        <!-- 結果反饋 -->
-        <div class="result-feedback" id="resultFeedback">
-          <div class="result-title">🎉 答對了！</div>
-          <div class="result-subtitle">你的記憶力真棒！</div>
-          <div class="result-details">
-            方向：順向 👉<br>
-            答對：6/6<br>
-            完成時間：8.5 秒<br>
-            WM 得分：5<br>
-            <span class="pass">✅ 通過！</span>
-          </div>
-        </div>
-      </div>
-      
-      <!-- ═══ 手圖層 ═══ -->
-      <div class="hand-layer" id="handLayer">
-        <div class="hand hand-finger" id="handFinger"></div>
-        <div class="hand hand-stop" id="handStop"></div>
-      </div>
-      
-      <!-- ═══ 進度與階段 ═══ -->
-      <div class="progress-bar">
-        <div class="progress-fill phase1" id="progressFill"></div>
-      </div>
-      <div class="phase-label" id="phaseLabel"></div>
-      
-      <!-- ═══ 完成控制 ═══ -->
-      <div class="guide-done-overlay" id="guideDoneOverlay">
-        <div class="guide-done-title">✨ 示範完成！</div>
-        <button class="guide-btn guide-btn-ready" id="btnGuideReady">我準備好了！</button>
-        <button class="guide-btn guide-btn-replay" id="btnGuideReplay">🔄 再看一次</button>
-      </div>
-      
     </div>
+    <div class="wm-scene" id="wmScene">
+      <div class="wm-container">
+        <div class="wm-title">🧠 記憶力測試</div>
+        <div class="wm-question">
+          <strong>請回想：</strong><br>
+          按照<span style="color:var(--forward-color);font-weight:bold">順序</span>，<br>
+          剛才<strong>最後 6 個物件</strong>的順序為何？
+        </div>
+        <div class="wm-hint">點擊按鈕切換答案（❓ → 🧀 → 🐈‍⬛ → ❓）</div>
+        <div class="wm-answer-bar" id="wmAnswerBar"></div>
+        <div style="display:flex;gap:8px;justify-content:center">
+          <button class="wm-btn wm-btn-reset">🔄 重新選擇</button>
+        </div>
+        <button class="wm-btn wm-btn-confirm" id="wmConfirmBtn">✓ 確認答案</button>
+      </div>
+      <div class="wm-result" id="wmResult">
+        <h3>✓ 答對了！</h3>
+        <p>你的記憶力真棒！</p>
+        <div class="detail">
+          方向：順向 👉<br>答對：6 / 6<br>完成時間：4.2 秒<br>
+          WM 得分：3（基礎 2 + 全對 1 + 速度 0）<br>
+          <span style="color:var(--success-color)">✅ 通過！</span>
+        </div>
+      </div>
+      <button class="wm-btn-continue" id="wmContinueBtn">➡ 繼續</button>
+    </div>
+    <div class="phase-label" id="phaseLabel"></div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="hand-layer">
+      <div class="hand hand-finger" id="handFinger"></div>
+      <div class="hand hand-stop" id="handStop"></div>
+    </div>
+  </div>
+  <script>
+    const SVG_BG = `<svg viewBox="0 0 300 400" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="300" height="350" fill="#E0CCB8"/><rect x="0" y="335" width="300" height="15" fill="#bdc3c7"/><rect x="0" y="350" width="300" height="50" fill="#95a5a6"/><path d="M 110 350 L 110 300 A 40 40 0 0 1 190 300 L 190 350 Z" fill="#1a252f"/></svg>`;
+    const SVG_CHEESE = `<svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg"><path d="M48.18 68.45L6.7 69.95s-2.63-2.63-2.25-3.57S39.18 38.6 40.49 38.79s4.32 3.38 6.76 2.25c2.44-1.13 0-7.7.75-8.63c.75-.94 27.59-15.39 29.28-16.14c1.69-.75 3.19-2.44 6.57-1.69s11.83 2.25 21.02 8.45s18.77 13.33 18.02 17.27c-.75 3.94-74.71 28.15-74.71 28.15z" fill="#ffe265"/><path d="M19.46 115.57c9.2-1.13 94.98-19.52 98.55-20.08c3.57-.56 5.82-3.94 5.82-7.7s-.94-47.49-.94-47.49s-4.13 1.31-9.01 2.44C109 43.86 69.01 53.62 53.25 57.19S12.33 67.33 9.51 67.33s-5.07-.94-5.07-.94s.75 39.04.94 41.86c.19 2.82 1.5 6.19 4.69 7.13s5.27.69 9.39.19z" fill="#feb502"/><path d="M74.97 25.56c0 2.4 2.44 3.99 6.48 3.87c4.41-.13 5.63-2.75 5.49-4.43c-.14-1.69-2.17-3.17-6.19-3.1c-3.73.07-5.78 1.55-5.78 3.66z" fill="#ff8b0d"/><path d="M29.92 55.48c-6.5 2.19-5.77 7.88-3.87 9.15c1.9 1.27 4.43 1.2 7.39.14s4.84-2.27 5.14-4.25c.28-1.88-2.18-7.23-8.66-5.04z" fill="#ed6b31"/><path d="M88.98 39.22c-4.36.2-9.18 3.33-10.98 6.34c-1.9 3.17-2.04 6.9 2.32 9.22c4.36 2.32 19.78-3.59 19.01-9.01c-.77-5.43-5.77-6.76-10.35-6.55z" fill="#ed6b31"/><path d="M73.85 83.07s6.19-4.58 6.19-7.81c0-3.24-2.67-10.89-14.01-11.47c-10.63-.55-17.18 13.94-10.21 21.4c6.97 7.46 11.19 4.08 13.8 3.38c2.61-.71 4.23-5.5 4.23-5.5z" fill="#ed6b31"/><path d="M43.23 96.09s6.15-3.85 1.43-8.07c-3.32-2.97-7.76-1.63-10.02.68c-2.89 2.96-2.11 7.67.56 9.78c2.68 2.12 8.03-2.39 8.03-2.39z" fill="#ed6b31"/><path d="M22.39 78.78s-.7-2.21-3.21-3.1c-2.82-1-7.03 2.51-5.23 6.26c1.62 3.38 5.21 2.39 5.21 2.39l3.23-5.55z" fill="#ed6b31"/><path d="M112.42 82.01c.61-.66 4.6-3.54 4.6-5.73c0-2.18-6.01-8.92-13.68-3.85s-3.66 12.74-1.55 14.01c2.11 1.27 7.96-1.54 10.63-4.43z" fill="#ed6b31"/><path d="M30.86 58.93c-4.27 1.48-5.88 4.5-4.81 5.7c1.13 1.27 3.59 2.11 7.88.56c3.32-1.2 5-3.21 4.72-5c-.2-1.3-3.92-2.6-7.79-1.26z" fill="#ff8b0d"/><path d="M16.62 78.63c-1.87 2.34-.35 5 1.41 5.63c1.76.63 4.86-1.27 4.65-4.43c-.22-3.17-4.37-3.31-6.06-1.2z" fill="#ff8b0d"/><path d="M38.37 91.38c-4.02 3.26-4.13 6.45-2.58 7.53c1.08.76 5.06 2.34 8.7-.35c2.7-1.99 2.75-6.17 1.9-8.17c-.71-1.7-4.64-1.76-8.02.99z" fill="#ff8b0d"/><path d="M62.77 73.61c-5.38 5.23-6.66 13.72-1.38 15.72c4.65 1.76 11.33.7 15.27-4.15c4.14-5.1 4.58-10.73 1.92-14.05c-3.18-3.99-11.65-1.55-15.81 2.48z" fill="#ff8b0d"/><path d="M87.22 44.43c-7.04 2.39-11.19 7.46-7.6 10c3.59 2.53 7.32 2.16 11.4.77c4.63-1.57 8.17-5.21 8.31-8.66c.11-2.83-5.91-4.22-12.11-2.11z" fill="#ff8b0d"/><path d="M106.02 76.8c-4.79 3.9-6.19 7.81-4.22 9.64s6.69 2.67 11.05-.35c4.53-3.14 4.86-6.7 4.36-9.57c-.56-3.23-6.27-3.73-11.19.28z" fill="#ff8b0d"/></svg>`;
+    const SVG_CAT = `<svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><path fill="#292F33" d="M10.478 22.439s.702 2.281-.337 7.993c-.186 1.025-.46 2.072-.599 2.93c-1.757 0-1.851 2.002-1.478 2.002h2.094c1.337 0 2.971-3.334 3.854-7.961s-3.534-4.964-3.534-4.964zm13.042 3.702s2.272 1.22 2.188 4.081c-.033 1.131-.249 2.091-.355 3.024c-1.832 0-1.839 1.985-1.305 1.985h1.856c.923 0 3.001-3.158 3.379-7.281c.379-4.122-5.763-1.809-5.763-1.809z"/><path fill="#292F33" d="M36 8.447C36 3.525 31.859 1 27 1a1 1 0 1 0 0 2c1.804 0 6.717.934 6.717 5.447c0 2.881-1.567 5.462-3.77 5.982c-.164-.073-.345-.104-.509-.192c-7.239-3.917-13.457.902-15.226-.29c-1.752-1.182-.539-3.255-2.824-5.243c-.33-1.841-1.073-4.477-1.794-4.477c-.549 0-1.265 1.825-1.74 3.656c-.591-1.381-1.363-2.756-1.86-2.756c-.64 0-1.278 2.273-1.594 4.235c-1.68 1.147-2.906 2.809-2.906 4.765c0 2.7 4.05 3.357 5.4 3.411c1.35.054 3.023 3.562 3.585 5.072c1.242 4.367 2.051 8.699 2.698 11.183c-1.649 0-1.804 2.111-1.348 2.111c.713 0 1.953-.003 2.225 0c1.381.014 2.026-4.706 2.026-8.849c0-.212-.011-.627-.011-.627s1.93.505 6.038-.208c2.444-.424 5.03.849 5.746 3.163c.527 1.704 1.399 3.305 1.868 4.484c-1.589 0-1.545 2.037-1.084 2.037c.787 0 1.801.014 2.183 0c1.468-.055.643-7.574 1.03-10.097s1.267-5.578-.229-8.797C34.857 15.236 36 11.505 36 8.447z"/><circle fill="#C3C914" cx="5.994" cy="11.768" r=".9"/><path fill="#66757F" d="M2.984 12.86c-.677.423-.677 1.777-1.015 1.777S.954 13.841.954 12.86c-.001-.981 2.862-.52 2.03 0zm3.594 1.483c-.041.026-.09.036-.142.026c-.018-.004-1.548-.241-2.545.146c-.129.05-.341-.023-.413-.191s.023-.365.152-.415c1.44-.569 2.857-.234 2.934-.218c.139.029.195.19.188.372c-.004.114-.104.235-.174.28zm-.472 2.339a.186.186 0 0 1-.141-.031c-.015-.01-1.331-.83-2.402-.853c-.138-.003-.305-.154-.305-.341c0-.186.165-.335.304-.333c1.552.024 2.724.891 2.789.937c.117.082.104.255.027.424c-.049.107-.189.182-.272.197z"/><path d="M7.854 7.881s.372-.039.859.033c.217-.46.585-.887.585-.887s.281.668.386 1.179c.025.12.218.117.322.189c0 0 .038-3.463-.863-3.836c.001-.002-.755 1.124-1.289 3.322zM4.399 9.36s.384-.267.883-.574c.217-.624.568-1.333.568-1.333s.307.602.345.81c.21-.114.21-.106.403-.19c0 0-.114-2.286-1.099-2.527c0 0-.732 1.372-1.1 3.814z" fill="#7F676D"/><path fill="#66757F" d="M18.45 23.644c-2.649.57-2.38 2.782-2.38 2.782s1.93.505 6.038-.208a5.542 5.542 0 0 1 3.107.377c-1.607-3.047-4.315-3.479-6.765-2.951z"/><path fill="#292F33" d="M5.976 10.982s.333.347.319.778c-.014.43-.25.833-.25.833s-.292-.347-.319-.826c-.027-.48.25-.785.25-.785z"/></svg>`;
+    // 前段：SpaceTap（手掌）
+    const SVG_SPACE_UP = `<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><g><path style="fill:#FDC794;" d="M427.677,326.621V220.69c0-16.772-14.124-35.31-30.897-35.31s-30.897,17.655-30.897,35.31V52.966 c0-16.772-14.124-35.31-30.897-35.31c-16.772,0-30.897,18.538-30.897,35.31v185.379V35.31c0-16.772-14.124-35.31-30.897-35.31 c-16.772,0-30.897,17.655-30.897,35.31v35.31c0-16.772-14.124-35.31-30.897-35.31s-30.897,17.655-30.897,35.31v211.862 c0-24.717-21.186-74.152-44.138-97.103l0,0c-19.421-19.421-74.152-6.179-44.138,35.31c21.186,29.131,35.31,90.924,35.31,123.586 c0,78.566,61.793,105.931,61.793,105.931v60.91h211.862v-60.91l0,0C429.442,411.366,427.677,414.014,427.677,326.621"/>
+    <g>
+      <path style="fill:#F9A671;" d="M304.091,440.497h-26.483c-5.297,0-8.828-3.531-8.828-8.828s3.531-8.828,8.828-8.828h26.483 c5.297,0,8.828,3.531,8.828,8.828S309.387,440.497,304.091,440.497z"/>
+      <path style="fill:#F9A671;" d="M312.918,475.807H268.78c-5.297,0-8.828-3.531-8.828-8.828s3.531-8.828,8.828-8.828h44.138 c5.297,0,8.828,3.531,8.828,8.828S318.215,475.807,312.918,475.807z"/>
+      <path style="fill:#F9A671;" d="M242.297,184.497c-5.297,0-8.828-3.531-8.828-8.828V60.91c0-5.297,3.531-8.828,8.828-8.828 s8.828,3.531,8.828,8.828v114.759C251.125,180.966,247.594,184.497,242.297,184.497z"/>
+      <path style="fill:#F9A671;" d="M304.091,184.497c-5.297,0-8.828-3.531-8.828-8.828V43.255c0-5.297,3.531-8.828,8.828-8.828 c5.297,0,8.828,3.531,8.828,8.828v132.414C312.918,180.966,309.387,184.497,304.091,184.497z"/>
+      <path style="fill:#F9A671;" d="M365.884,263.945c-5.297,0-8.828-3.531-8.828-8.828v-44.138c0-5.297,3.531-8.828,8.828-8.828 c5.297,0,8.828,3.531,8.828,8.828v44.138C374.711,260.414,371.18,263.945,365.884,263.945z"/>
+    </g></g></svg>`;
+    const SVG_SPACE_DOWN = `<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><g><path style="fill:#FDC794;" d="M425.201,347.119V242.983c0-16.488-13.885-34.712-30.373-34.712s-30.373,17.356-30.373,34.712V95.458 c0-16.488-13.885-34.712-30.373-34.712s-30.373,18.224-30.373,34.712V78.102c0-16.488-13.885-34.712-30.373-34.712 s-30.373,18.224-30.373,34.712v173.559V112.814c0-16.488-13.885-34.712-30.373-34.712s-30.373,18.224-30.373,34.712v190.915 c0-24.298-20.827-72.895-43.39-95.458l0,0c-19.092-19.092-72.895-6.075-43.39,34.712c20.827,28.637,29.505,90.251,34.712,121.492 c13.017,76.366,60.746,86.78,60.746,86.78V512h208.271v-60.746l0,0C426.936,413.939,425.201,433.031,425.201,347.119"/>
+    
+    <path style="fill:#71C386;" d="M152.713,121.492c-4.339,0-7.81-2.603-8.678-6.942c-0.868-3.471-0.868-6.942-0.868-10.414 c0-38.183,30.373-68.556,68.556-69.424C224.74,13.885,253.377,0,273.336,0c18.224,0,38.183,6.942,51.2,17.356h9.546 c38.183,0,69.424,31.241,69.424,69.424c0,7.81-0.868,13.885-1.736,19.092c-0.868,4.339-6.075,7.81-10.414,6.075 c-4.339-0.868-7.81-6.075-6.075-10.414c0.868-4.339,1.736-8.678,1.736-15.62c0-28.637-23.431-52.068-52.068-52.068h-13.885 c-2.603,0-4.339-0.868-6.075-2.603c-8.678-8.678-26.034-14.753-41.654-14.753S232.55,29.505,224.74,45.993 c-0.868,0.868-0.868,1.736-1.736,2.603c-1.736,2.603-4.339,3.471-6.942,3.471c-0.868,0-2.603,0-3.471,0 c-28.637,0-52.068,23.431-52.068,52.068c0,2.603,0,4.339,0.868,6.942c0.868,4.339-1.736,9.546-6.075,10.414 C154.448,121.492,153.581,121.492,152.713,121.492"/>
+    
+    <g>
+      <path style="fill:#F9A671;" d="M303.709,442.576h-26.034c-5.207,0-8.678-3.471-8.678-8.678c0-5.207,3.471-8.678,8.678-8.678h26.034 c5.207,0,8.678,3.471,8.678,8.678C312.387,439.105,308.916,442.576,303.709,442.576"/>
+      <path style="fill:#F9A671;" d="M312.387,477.288h-43.39c-5.207,0-8.678-3.471-8.678-8.678s3.471-8.678,8.678-8.678h43.39 c5.207,0,8.678,3.471,8.678,8.678S317.594,477.288,312.387,477.288"/>
+      <path style="fill:#F9A671;" d="M242.964,260.339c-5.207,0-8.678-3.471-8.678-8.678V95.458c0-5.207,3.471-8.678,8.678-8.678 s8.678,3.471,8.678,8.678v156.203C251.642,256.868,248.17,260.339,242.964,260.339"/>
+      <path style="fill:#F9A671;" d="M303.709,269.017c-5.207,0-8.678-3.471-8.678-8.678V86.78c0-5.207,3.471-8.678,8.678-8.678 s8.678,3.471,8.678,8.678v173.559C312.387,265.546,308.916,269.017,303.709,269.017"/>
+      <path style="fill:#F9A671;" d="M364.455,286.373c-5.207,0-8.678-3.471-8.678-8.678v-52.068c0-5.207,3.471-8.678,8.678-8.678 s8.678,3.471,8.678,8.678v52.068C373.133,282.902,369.662,286.373,364.455,286.373"/>
+    </g></g></svg>`;
+    // 前段 NoGo
+    const SVG_HAND_STOP = `<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><g transform="translate(-1)"><path style="fill:#FDC794;" d="M402.635,450.207c28.248-37.959,26.483-36.193,26.483-123.586V145.655c0-16.772-14.124-30.897-30.897-30.897s-30.897,14.124-30.897,30.897V256V48.552c0-16.772-14.124-30.897-30.897-30.897c-16.772,0-30.897,14.124-30.897,30.897v189.793V30.897C305.532,14.124,291.408,0,274.635,0s-30.897,14.124-30.897,30.897v198.621V66.207c0-16.772-14.124-30.897-30.897-30.897s-30.897,14.124-30.897,30.897v216.276c0-24.717-21.186-74.152-44.138-97.103l0,0c-19.421-19.421-74.152-6.179-44.138,35.31c21.186,29.131,35.31,90.924,35.31,123.586c0,78.566,61.793,105.931,61.793,105.931v35.31c0,15.007,11.476,26.483,26.483,26.483h158.897c15.007,0,26.483-11.476,26.483-26.483V450.207z"/><g><path style="fill:#F9A671;" d="M216.373,459.034h-26.483c-5.297,0-8.828-3.531-8.828-8.828c0-5.297,3.531-8.828,8.828-8.828h26.483c5.297,0,8.828,3.531,8.828,8.828C225.201,455.503,221.67,459.034,216.373,459.034z"/><path style="fill:#F9A671;" d="M401.753,459.034H384.98c-5.297,0-8.828-3.531-8.828-8.828c0-5.297,3.531-8.828,8.828-8.828h16.772c5.297,0,8.828,3.531,8.828,8.828C410.58,455.503,407.049,459.034,401.753,459.034z"/><path style="fill:#F9A671;" d="M243.739,238.345c-5.297,0-8.828-3.531-8.828-8.828V61.793c0-5.297,3.531-8.828,8.828-8.828s8.828,3.531,8.828,8.828v167.724C252.566,234.814,249.035,238.345,243.739,238.345z"/><path style="fill:#F9A671;" d="M305.532,238.345c-5.297,0-8.828-3.531-8.828-8.828V44.138c0-5.297,3.531-8.828,8.828-8.828c5.297,0,8.828,3.531,8.828,8.828v185.379C314.36,234.814,310.828,238.345,305.532,238.345z"/><path style="fill:#F9A671;" d="M367.325,264.828c-5.297,0-8.828-3.531-8.828-8.828V123.586c0-5.297,3.531-8.828,8.828-8.828s8.828,3.531,8.828,8.828V256C376.153,261.297,372.622,264.828,367.325,264.828z"/></g></g></svg>`;
+    // 後段：FingerTap（單指）
+    const SVG_FT_IDLE = `<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><g><path style="fill:#FDC794;" d="M427.677,326.621V220.69c0-16.772-14.124-35.31-30.897-35.31s-30.897,17.655-30.897,35.31V52.966 c0-16.772-14.124-35.31-30.897-35.31c-16.772,0-30.897,18.538-30.897,35.31v185.379V35.31c0-16.772-14.124-35.31-30.897-35.31 c-16.772,0-30.897,17.655-30.897,35.31v35.31c0-16.772-14.124-35.31-30.897-35.31s-30.897,17.655-30.897,35.31v211.862 c0-24.717-21.186-74.152-44.138-97.103l0,0c-19.421-19.421-74.152-6.179-44.138,35.31c21.186,29.131,35.31,90.924,35.31,123.586 c0,78.566,61.793,105.931,61.793,105.931v60.91h211.862v-60.91l0,0C429.442,411.366,427.677,414.014,427.677,326.621"/>
+    <g>
+      <path style="fill:#F9A671;" d="M304.091,440.497h-26.483c-5.297,0-8.828-3.531-8.828-8.828s3.531-8.828,8.828-8.828h26.483 c5.297,0,8.828,3.531,8.828,8.828S309.387,440.497,304.091,440.497z"/>
+      <path style="fill:#F9A671;" d="M312.918,475.807H268.78c-5.297,0-8.828-3.531-8.828-8.828s3.531-8.828,8.828-8.828h44.138 c5.297,0,8.828,3.531,8.828,8.828S318.215,475.807,312.918,475.807z"/>
+      <path style="fill:#F9A671;" d="M242.297,184.497c-5.297,0-8.828-3.531-8.828-8.828V60.91c0-5.297,3.531-8.828,8.828-8.828 s8.828,3.531,8.828,8.828v114.759C251.125,180.966,247.594,184.497,242.297,184.497z"/>
+      <path style="fill:#F9A671;" d="M304.091,184.497c-5.297,0-8.828-3.531-8.828-8.828V43.255c0-5.297,3.531-8.828,8.828-8.828 c5.297,0,8.828,3.531,8.828,8.828v132.414C312.918,180.966,309.387,184.497,304.091,184.497z"/>
+      <path style="fill:#F9A671;" d="M365.884,263.945c-5.297,0-8.828-3.531-8.828-8.828v-44.138c0-5.297,3.531-8.828,8.828-8.828 c5.297,0,8.828,3.531,8.828,8.828v44.138C374.711,260.414,371.18,263.945,365.884,263.945z"/>
+    </g></g></svg>`;
+    const SVG_FT_CLICK = `<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><g transform="translate(-1)"><path style="fill:#FDC794;" d="M426.201,347.119v-86.78c0-16.488-13.885-34.712-30.373-34.712s-30.373,17.356-30.373,33.844 v-42.522c0-16.488-13.885-34.712-30.373-34.712s-30.373,18.224-30.373,34.712v60.746v-95.458c0-16.488-13.885-34.712-30.373-34.712 s-30.373,18.224-30.373,34.712v-69.424c0-16.488-13.885-34.712-30.373-34.712s-30.373,18.224-30.373,34.712v190.915 c0-24.298-20.827-72.895-43.39-95.458c-19.092-19.092-72.895-6.075-43.39,34.712c20.827,28.637,29.505,90.251,34.712,121.492 c13.017,76.366,60.746,86.78,60.746,86.78V512h208.271v-60.746l0,0C427.936,413.939,426.201,433.031,426.201,347.119"/>
+    
+    <g>
+      <path style="fill:#71C386;" d="M217.93,52.068c-5.207,0-8.678-3.471-8.678-8.678V8.678c0-5.207,3.471-8.678,8.678-8.678 c5.207,0,8.678,3.471,8.678,8.678V43.39C226.608,48.597,223.136,52.068,217.93,52.068"/>
+      <path style="fill:#71C386;" d="M313.387,104.136h-34.712c-5.207,0-8.678-3.471-8.678-8.678c0-5.207,3.471-8.678,8.678-8.678 h34.712c5.207,0,8.678,3.471,8.678,8.678C322.065,100.664,318.594,104.136,313.387,104.136"/>
+      <path style="fill:#71C386;" d="M148.506,104.136h-34.712c-5.207,0-8.678-3.471-8.678-8.678c0-5.207,3.471-8.678,8.678-8.678 h34.712c5.207,0,8.678,3.471,8.678,8.678C157.184,100.664,153.713,104.136,148.506,104.136"/>
+      <path style="fill:#71C386;" d="M261.32,69.424c-2.603,0-4.339-0.868-6.075-2.603c-3.471-3.471-3.471-8.678,0-12.149l26.034-26.034 c3.471-3.471,8.678-3.471,12.149,0c3.471,3.471,3.471,8.678,0,12.149L267.394,66.82C265.659,68.556,263.923,69.424,261.32,69.424"/>
+      <path style="fill:#71C386;" d="M165.862,69.424c-2.603,0-4.339-0.868-6.075-2.603l-26.034-26.034 c-3.471-3.471-3.471-8.678,0-12.149c3.471-3.471,8.678-3.471,12.149,0l26.034,26.034c3.471,3.471,3.471,8.678,0,12.149 C170.201,68.556,168.465,69.424,165.862,69.424"/>
+    </g>
+    
+    <g>
+      <path style="fill:#F9A671;" d="M304.709,442.576h-26.034c-5.207,0-8.678-3.471-8.678-8.678c0-5.207,3.471-8.678,8.678-8.678 h26.034c5.207,0,8.678,3.471,8.678,8.678C313.387,439.105,309.916,442.576,304.709,442.576"/>
+      <path style="fill:#F9A671;" d="M313.387,477.288h-43.39c-5.207,0-8.678-3.471-8.678-8.678s3.471-8.678,8.678-8.678h43.39 c5.207,0,8.678,3.471,8.678,8.678S318.594,477.288,313.387,477.288"/>
+      <path style="fill:#F9A671;" d="M243.964,277.695c-5.207,0-8.678-3.471-8.678-8.678V156.203c0-5.207,3.471-8.678,8.678-8.678 s8.678,3.471,8.678,8.678v112.814C252.642,274.224,249.17,277.695,243.964,277.695"/>
+      <path style="fill:#F9A671;" d="M304.709,286.373c-5.207,0-8.678-3.471-8.678-8.678v-86.78c0-5.207,3.471-8.678,8.678-8.678 s8.678,3.471,8.678,8.678v86.78C313.387,282.902,309.916,286.373,304.709,286.373"/>
+      <path style="fill:#F9A671;" d="M365.455,286.373c-5.207,0-8.678-3.471-8.678-8.678v-43.39c0-5.207,3.471-8.678,8.678-8.678 c5.207,0,8.678,3.471,8.678,8.678v43.39C374.133,282.902,370.662,286.373,365.455,286.373"/>
+    </g></g></svg>`;
 
-    <script>
-      /* ============================================================
-         📦 SVG 素材定義（使用正確的素材）
-         教學註記：將 SVG 程式碼存成字串常數，方便動態插入
-      ============================================================ */
-      
-      // 老鼠洞背景（300×300，移除動畫）
-      const SVG_MOUSE_HOLE = `<svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <linearGradient id="wallGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" style="stop-color:#E8D4C0"/>
-            <stop offset="100%" style="stop-color:#E0CCB8"/>
-          </linearGradient>
-        </defs>
-        <rect x="0" y="0" width="300" height="250" fill="url(#wallGrad)"/>
-        <rect x="0" y="250" width="300" height="50" fill="#95a5a6"/>
-        <rect x="0" y="235" width="300" height="15" fill="#bdc3c7"/>
-        <path d="M 110 250 L 110 200 A 40 40 0 0 1 190 200 L 190 250 Z" fill="#1a252f"/>
-      </svg>`;
-      
-      // 起司（完整版）
-      const SVG_CHEESE = `<svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg"><path d="M48.18 68.45L6.7 69.95s-2.63-2.63-2.25-3.57S39.18 38.6 40.49 38.79s4.32 3.38 6.76 2.25c2.44-1.13 0-7.7.75-8.63c.75-.94 27.59-15.39 29.28-16.14c1.69-.75 3.19-2.44 6.57-1.69s11.83 2.25 21.02 8.45s18.77 13.33 18.02 17.27c-.75 3.94-74.71 28.15-74.71 28.15z" fill="#ffe265"/><path d="M19.46 115.57c9.2-1.13 94.98-19.52 98.55-20.08c3.57-.56 5.82-3.94 5.82-7.7s-.94-47.49-.94-47.49s-4.13 1.31-9.01 2.44C109 43.86 69.01 53.62 53.25 57.19S12.33 67.33 9.51 67.33s-5.07-.94-5.07-.94s.75 39.04.94 41.86c.19 2.82 1.5 6.19 4.69 7.13s5.27.69 9.39.19z" fill="#feb502"/><path d="M74.97 25.56c0 2.4 2.44 3.99 6.48 3.87c4.41-.13 5.63-2.75 5.49-4.43c-.14-1.69-2.17-3.17-6.19-3.1c-3.73.07-5.78 1.55-5.78 3.66z" fill="#ff8b0d"/><path d="M29.92 55.48c-6.5 2.19-5.77 7.88-3.87 9.15c1.9 1.27 4.43 1.2 7.39.14s4.84-2.27 5.14-4.25c.28-1.88-2.18-7.23-8.66-5.04z" fill="#ed6b31"/><path d="M88.98 39.22c-4.36.2-9.18 3.33-10.98 6.34c-1.9 3.17-2.04 6.9 2.32 9.22c4.36 2.32 19.78-3.59 19.01-9.01c-.77-5.43-5.77-6.76-10.35-6.55z" fill="#ed6b31"/><path d="M73.85 83.07s6.19-4.58 6.19-7.81c0-3.24-2.67-10.89-14.01-11.47c-10.63-.55-17.18 13.94-10.21 21.4c6.97 7.46 11.19 4.08 13.8 3.38c2.61-.71 4.23-5.5 4.23-5.5z" fill="#ed6b31"/><path d="M43.23 96.09s6.15-3.85 1.43-8.07c-3.32-2.97-7.76-1.63-10.02.68c-2.89 2.96-2.11 7.67.56 9.78c2.68 2.12 8.03-2.39 8.03-2.39z" fill="#ed6b31"/><path d="M22.39 78.78s-.7-2.21-3.21-3.1c-2.82-1-7.03 2.51-5.23 6.26c1.62 3.38 5.21 2.39 5.21 2.39l3.23-5.55z" fill="#ed6b31"/><path d="M112.42 82.01c.61-.66 4.6-3.54 4.6-5.73c0-2.18-6.01-8.92-13.68-3.85s-3.66 12.74-1.55 14.01c2.11 1.27 7.96-1.54 10.63-4.43z" fill="#ed6b31"/><path d="M30.86 58.93c-4.27 1.48-5.88 4.5-4.81 5.7c1.13 1.27 3.59 2.11 7.88.56c3.32-1.2 5-3.21 4.72-5c-.2-1.3-3.92-2.6-7.79-1.26z" fill="#ff8b0d"/><path d="M16.62 78.63c-1.87 2.34-.35 5 1.41 5.63c1.76.63 4.86-1.27 4.65-4.43c-.22-3.17-4.37-3.31-6.06-1.2z" fill="#ff8b0d"/><path d="M38.37 91.38c-4.02 3.26-4.13 6.45-2.58 7.53c1.08.76 5.06 2.34 8.7-.35c2.7-1.99 2.75-6.17 1.9-8.17c-.71-1.7-4.64-1.76-8.02.99z" fill="#ff8b0d"/><path d="M62.77 73.61c-5.38 5.23-6.66 13.72-1.38 15.72c4.65 1.76 11.33.7 15.27-4.15c4.14-5.1 4.58-10.73 1.92-14.05c-3.18-3.99-11.65-1.55-15.81 2.48z" fill="#ff8b0d"/><path d="M87.22 44.43c-7.04 2.39-11.19 7.46-7.6 10c3.59 2.53 7.32 2.16 11.4.77c4.63-1.57 8.17-5.21 8.31-8.66c.11-2.83-5.91-4.22-12.11-2.11z" fill="#ff8b0d"/><path d="M106.02 76.8c-4.79 3.9-6.19 7.81-4.22 9.64s6.69 2.67 11.05-.35c4.53-3.14 4.86-6.7 4.36-9.57c-.56-3.23-6.27-3.73-11.19.28z" fill="#ff8b0d"/></svg>`;
-      
-      // 貓咪（完整版）
-      const SVG_CAT = `<svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><path fill="#292F33" d="M10.478 22.439s.702 2.281-.337 7.993c-.186 1.025-.46 2.072-.599 2.93c-1.757 0-1.851 2.002-1.478 2.002h2.094c1.337 0 2.971-3.334 3.854-7.961s-3.534-4.964-3.534-4.964zm13.042 3.702s2.272 1.22 2.188 4.081c-.033 1.131-.249 2.091-.355 3.024c-1.832 0-1.839 1.985-1.305 1.985h1.856c.923 0 3.001-3.158 3.379-7.281c.379-4.122-5.763-1.809-5.763-1.809z"/><path fill="#292F33" d="M36 8.447C36 3.525 31.859 1 27 1a1 1 0 1 0 0 2c1.804 0 6.717.934 6.717 5.447c0 2.881-1.567 5.462-3.77 5.982c-.164-.073-.345-.104-.509-.192c-7.239-3.917-13.457.902-15.226-.29c-1.752-1.182-.539-3.255-2.824-5.243c-.33-1.841-1.073-4.477-1.794-4.477c-.549 0-1.265 1.825-1.74 3.656c-.591-1.381-1.363-2.756-1.86-2.756c-.64 0-1.278 2.273-1.594 4.235c-1.68 1.147-2.906 2.809-2.906 4.765c0 2.7 4.05 3.357 5.4 3.411c1.35.054 3.023 3.562 3.585 5.072c1.242 4.367 2.051 8.699 2.698 11.183c-1.649 0-1.804 2.111-1.348 2.111c.713 0 1.953-.003 2.225 0c1.381.014 2.026-4.706 2.026-8.849c0-.212-.011-.627-.011-.627s1.93.505 6.038-.208c2.444-.424 5.03.849 5.746 3.163c.527 1.704 1.399 3.305 1.868 4.484c-1.589 0-1.545 2.037-1.084 2.037c.787 0 1.801.014 2.183 0c1.468-.055.643-7.574 1.03-10.097s1.267-5.578-.229-8.797C34.857 15.236 36 11.505 36 8.447z"/><circle fill="#C3C914" cx="5.994" cy="11.768" r=".9"/><path fill="#66757F" d="M2.984 12.86c-.677.423-.677 1.777-1.015 1.777S.954 13.841.954 12.86c-.001-.981 2.862-.52 2.03 0zm3.594 1.483c-.041.026-.09.036-.142.026c-.018-.004-1.548-.241-2.545.146c-.129.05-.341-.023-.413-.191s.023-.365.152-.415c1.44-.569 2.857-.234 2.934-.218c.139.029.195.19.188.372c-.004.114-.104.235-.174.28zm-.472 2.339a.186.186 0 0 1-.141-.031c-.015-.01-1.331-.83-2.402-.853c-.138-.003-.305-.154-.305-.341c0-.186.165-.335.304-.333c1.552.024 2.724.891 2.789.937c.117.082.104.255.027.424c-.049.107-.189.182-.272.197z"/><path d="M7.854 7.881s.372-.039.859.033c.217-.46.585-.887.585-.887s.281.668.386 1.179c.025.12.218.117.322.189c0 0 .038-3.463-.863-3.836c.001-.002-.755 1.124-1.289 3.322zM4.399 9.36s.384-.267.883-.574c.217-.624.568-1.333.568-1.333s.307.602.345.81c.21-.114.21-.106.403-.19c0 0-.114-2.286-1.099-2.527c0 0-.732 1.372-1.1 3.814z" fill="#7F676D"/><path fill="#66757F" d="M18.45 23.644c-2.649.57-2.38 2.782-2.38 2.782s1.93.505 6.038-.208a5.542 5.542 0 0 1 3.107.377c-1.607-3.047-4.315-3.479-6.765-2.951z"/><path fill="#292F33" d="M5.976 10.982s.333.347.319.778c-.014.43-.25.833-.25.833s-.292-.347-.319-.826c-.027-.48.25-.785.25-.785z"/></svg>`;
-      
-      // 手指（移入用）
-      const SVG_FINGER_TAP = `<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><path style="fill:#FDC794;" d="M427.677,326.621V220.69c0-16.772-14.124-35.31-30.897-35.31s-30.897,17.655-30.897,35.31V52.966c0-16.772-14.124-35.31-30.897-35.31c-16.772,0-30.897,18.538-30.897,35.31v185.379V35.31c0-16.772-14.124-35.31-30.897-35.31c-16.772,0-30.897,17.655-30.897,35.31v35.31c0-16.772-14.124-35.31-30.897-35.31s-30.897,17.655-30.897,35.31v211.862c0-24.717-21.186-74.152-44.138-97.103l0,0c-19.421-19.421-74.152-6.179-44.138,35.31c21.186,29.131,35.31,90.924,35.31,123.586c0,78.566,61.793,105.931,61.793,105.931v60.91h211.862v-60.91l0,0C429.442,411.366,427.677,414.014,427.677,326.621"/><g><path style="fill:#F9A671;" d="M304.091,440.497h-26.483c-5.297,0-8.828-3.531-8.828-8.828s3.531-8.828,8.828-8.828h26.483c5.297,0,8.828,3.531,8.828,8.828S309.387,440.497,304.091,440.497z"/><path style="fill:#F9A671;" d="M312.918,475.807H268.78c-5.297,0-8.828-3.531-8.828-8.828s3.531-8.828,8.828-8.828h44.138c5.297,0,8.828,3.531,8.828,8.828S318.215,475.807,312.918,475.807z"/><path style="fill:#F9A671;" d="M242.297,184.497c-5.297,0-8.828-3.531-8.828-8.828V60.91c0-5.297,3.531-8.828,8.828-8.828s8.828,3.531,8.828,8.828v114.759C251.125,180.966,247.594,184.497,242.297,184.497z"/><path style="fill:#F9A671;" d="M304.091,184.497c-5.297,0-8.828-3.531-8.828-8.828V43.255c0-5.297,3.531-8.828,8.828-8.828c5.297,0,8.828,3.531,8.828,8.828v132.414C312.918,180.966,309.387,184.497,304.091,184.497z"/><path style="fill:#F9A671;" d="M365.884,263.945c-5.297,0-8.828-3.531-8.828-8.828v-44.138c0-5.297,3.531-8.828,8.828-8.828c5.297,0,8.828,3.531,8.828,8.828v44.138C374.711,260.414,371.18,263.945,365.884,263.945z"/></g></svg>`;
-      
-      // 點擊狀態（綠色光環）
-      const SVG_HAND2_CLICK = `<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><path style="fill:#FDC794;" d="M425.201,347.119V242.983c0-16.488-13.885-34.712-30.373-34.712s-30.373,17.356-30.373,34.712V95.458c0-16.488-13.885-34.712-30.373-34.712s-30.373,18.224-30.373,34.712V78.102c0-16.488-13.885-34.712-30.373-34.712s-30.373,18.224-30.373,34.712v173.559V112.814c0-16.488-13.885-34.712-30.373-34.712s-30.373,18.224-30.373,34.712v190.915c0-24.298-20.827-72.895-43.39-95.458l0,0c-19.092-19.092-72.895-6.075-43.39,34.712c20.827,28.637,29.505,90.251,34.712,121.492c13.017,76.366,60.746,86.78,60.746,86.78V512h208.271v-60.746l0,0C426.936,413.939,425.201,433.031,425.201,347.119"/><path style="fill:#71C386;" d="M152.713,121.492c-4.339,0-7.81-2.603-8.678-6.942c-0.868-3.471-0.868-6.942-0.868-10.414c0-38.183,30.373-68.556,68.556-69.424C224.74,13.885,253.377,0,273.336,0c18.224,0,38.183,6.942,51.2,17.356h9.546c38.183,0,69.424,31.241,69.424,69.424c0,7.81-0.868,13.885-1.736,19.092c-0.868,4.339-6.075,7.81-10.414,6.075c-4.339-0.868-7.81-6.075-6.075-10.414c0.868-4.339,1.736-8.678,1.736-15.62c0-28.637-23.431-52.068-52.068-52.068h-13.885c-2.603,0-4.339-0.868-6.075-2.603c-8.678-8.678-26.034-14.753-41.654-14.753S232.55,29.505,224.74,45.993c-0.868,0.868-0.868,1.736-1.736,2.603c-1.736,2.603-4.339,3.471-6.942,3.471c-0.868,0-2.603,0-3.471,0c-28.637,0-52.068,23.431-52.068,52.068c0,2.603,0,4.339,0.868,6.942c0.868,4.339-1.736,9.546-6.075,10.414C154.448,121.492,153.581,121.492,152.713,121.492"/><g><path style="fill:#F9A671;" d="M303.709,442.576h-26.034c-5.207,0-8.678-3.471-8.678-8.678c0-5.207,3.471-8.678,8.678-8.678h26.034c5.207,0,8.678,3.471,8.678,8.678C312.387,439.105,308.916,442.576,303.709,442.576"/><path style="fill:#F9A671;" d="M312.387,477.288h-43.39c-5.207,0-8.678-3.471-8.678-8.678s3.471-8.678,8.678-8.678h43.39c5.207,0,8.678,3.471,8.678,8.678S317.594,477.288,312.387,477.288"/><path style="fill:#F9A671;" d="M242.964,260.339c-5.207,0-8.678-3.471-8.678-8.678V95.458c0-5.207,3.471-8.678,8.678-8.678s8.678,3.471,8.678,8.678v156.203C251.642,256.868,248.17,260.339,242.964,260.339"/><path style="fill:#F9A671;" d="M303.709,269.017c-5.207,0-8.678-3.471-8.678-8.678V86.78c0-5.207,3.471-8.678,8.678-8.678s8.678,3.471,8.678,8.678v173.559C312.387,265.546,308.916,269.017,303.709,269.017"/><path style="fill:#F9A671;" d="M364.455,286.373c-5.207,0-8.678-3.471-8.678-8.678v-52.068c0-5.207,3.471-8.678,8.678-8.678s8.678,3.471,8.678,8.678v52.068C373.133,282.902,369.662,286.373,364.455,286.373"/></g></svg>`;
-      
-      // 停止手（NoGo 推開用）
-      const SVG_HAND_STOP = `<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><g transform="translate(-1)"><path style="fill:#FDC794;" d="M402.635,450.207c28.248-37.959,26.483-36.193,26.483-123.586V145.655c0-16.772-14.124-30.897-30.897-30.897s-30.897,14.124-30.897,30.897V256V48.552c0-16.772-14.124-30.897-30.897-30.897c-16.772,0-30.897,14.124-30.897,30.897v189.793V30.897C305.532,14.124,291.408,0,274.635,0s-30.897,14.124-30.897,30.897v198.621V66.207c0-16.772-14.124-30.897-30.897-30.897s-30.897,14.124-30.897,30.897v216.276c0-24.717-21.186-74.152-44.138-97.103l0,0c-19.421-19.421-74.152-6.179-44.138,35.31c21.186,29.131,35.31,90.924,35.31,123.586c0,78.566,61.793,105.931,61.793,105.931v35.31c0,15.007,11.476,26.483,26.483,26.483h158.897c15.007,0,26.483-11.476,26.483-26.483V450.207z"/><g><path style="fill:#F9A671;" d="M216.373,459.034h-26.483c-5.297,0-8.828-3.531-8.828-8.828c0-5.297,3.531-8.828,8.828-8.828h26.483c5.297,0,8.828,3.531,8.828,8.828C225.201,455.503,221.67,459.034,216.373,459.034z"/><path style="fill:#F9A671;" d="M401.753,459.034H384.98c-5.297,0-8.828-3.531-8.828-8.828c0-5.297,3.531-8.828,8.828-8.828h16.772c5.297,0,8.828,3.531,8.828,8.828C410.58,455.503,407.049,459.034,401.753,459.034z"/><path style="fill:#F9A671;" d="M243.739,238.345c-5.297,0-8.828-3.531-8.828-8.828V61.793c0-5.297,3.531-8.828,8.828-8.828s8.828,3.531,8.828,8.828v167.724C252.566,234.814,249.035,238.345,243.739,238.345z"/><path style="fill:#F9A671;" d="M305.532,238.345c-5.297,0-8.828-3.531-8.828-8.828V44.138c0-5.297,3.531-8.828,8.828-8.828c5.297,0,8.828,3.531,8.828,8.828v185.379C314.36,234.814,310.828,238.345,305.532,238.345z"/><path style="fill:#F9A671;" d="M367.325,264.828c-5.297,0-8.828-3.531-8.828-8.828V123.586c0-5.297,3.531-8.828,8.828-8.828s8.828,3.531,8.828,8.828V256C376.153,261.297,372.622,264.828,367.325,264.828z"/></g></g></svg>`;
+    const SEQ = ['cheese','cat','cheese','cat','cheese','cheese'];
+    const SVGS = { cheese: SVG_CHEESE, cat: SVG_CAT };
+    const CYCLE = [null, 'cheese', 'cat']; // ❓→cheese→cat→❓
 
-      /* ============================================================
-         📦 DOM 元素快取
-      ============================================================ */
-      const DOM = {
-        container: document.getElementById("demoContainer"),
-        bgLayer: document.getElementById("bgLayer"),
-        stimulus: document.getElementById("stimulus"),
-        checkmark: document.getElementById("checkmark"),
-        handFinger: document.getElementById("handFinger"),
-        handStop: document.getElementById("handStop"),
-        btn: document.getElementById("actionBtn"),
-        phaseLabel: document.getElementById("phaseLabel"),
-        progressFill: document.getElementById("progressFill"),
-        gameArea: document.getElementById("gameArea"),
-        answerArea: document.getElementById("answerArea"),
-        resultFeedback: document.getElementById("resultFeedback"),
-        btnConfirm: document.getElementById("btnConfirm"),
-        btnReset: document.getElementById("btnReset"),
-        // 記錄區
-        slots: [1,2,3,4,5,6].map(i => document.getElementById(`slot${i}`)),
-        slotIcons: [1,2,3,4,5,6].map(i => document.getElementById(`slotIcon${i}`)),
-        // 答題區
-        ansBoxes: [1,2,3,4,5,6].map(i => document.getElementById(`ansBox${i}`)),
-        ansContents: [1,2,3,4,5,6].map(i => document.getElementById(`ansContent${i}`)),
-      };
+    const DOM = {
+      container: document.getElementById('demoContainer'),
+      gameScene: document.getElementById('gameScene'),
+      wmScene:   document.getElementById('wmScene'),
+      bgLayer:   document.getElementById('bgLayer'),
+      stim:      document.getElementById('stimulus'),
+      checkmark: document.getElementById('checkmark'),
+      hand:      document.getElementById('handFinger'),
+      handStop:  document.getElementById('handStop'),
+      btn:       document.getElementById('actionBtn'),
+      controls:  document.getElementById('controlsArea'),
+      phaseLabel:document.getElementById('phaseLabel'),
+      progressFill:document.getElementById('progressFill'),
+      wmBar:     document.getElementById('wmAnswerBar'),
+      wmConfirm: document.getElementById('wmConfirmBtn'),
+      wmResult:  document.getElementById('wmResult'),
+      wmCont:    document.getElementById('wmContinueBtn'),
+      slots:  Array.from({length:6},(_,i)=>document.getElementById('rs'+i)),
+      fronts: Array.from({length:6},(_,i)=>document.getElementById('sf'+i)),
+      rings:  Array.from({length:6},(_,i)=>document.getElementById('gr'+i)),
+    };
 
-      /* ============================================================
-         ⏱️ 計時器管理
-      ============================================================ */
-      let timers = [];
-      function schedule(fn, delay) {
-        const id = setTimeout(fn, delay);
-        timers.push(id);
-        return id;
-      }
-      function clearAllTimers() {
-        timers.forEach(id => clearTimeout(id));
-        timers = [];
-      }
+    let T=[];
+    function sc(fn,d){ const id=setTimeout(fn,d); T.push(id); return id; }
+    function clr(){ T.forEach(id=>clearTimeout(id)); T=[]; }
 
-      /* ============================================================
-         🎯 動畫序列資料
-         教學註記：定義前段 6 個刺激物的類型
-      ============================================================ */
-      // 示範序列：🧀😺🧀😺🧀🧀
-      const SEQUENCE = ['cheese', 'cat', 'cheese', 'cat', 'cheese', 'cheese'];
-      // 答題狀態：0=❓, 1=🧀, 2=😺
-      let answerStates = [0, 0, 0, 0, 0, 0];
-
-      /* ============================================================
-         🔧 工具函數
-      ============================================================ */
-      
-      // 取得按鈕中心座標（相對於容器）
-      function getBtnCenter() {
-        const cRect = DOM.container.getBoundingClientRect();
-        const bRect = DOM.btn.getBoundingClientRect();
-        return {
-          left: bRect.left - cRect.left + bRect.width / 2 - 40,
-          top: bRect.top - cRect.top + bRect.height / 2 - 50,
-        };
-      }
-      
-      // 取得答題方塊中心座標
-      function getAnswerBoxCenter(index) {
-        const cRect = DOM.container.getBoundingClientRect();
-        const bRect = DOM.ansBoxes[index].getBoundingClientRect();
-        return {
-          left: bRect.left - cRect.left + bRect.width / 2 - 40,
-          top: bRect.top - cRect.top + bRect.height / 2 - 50,
-        };
-      }
-      
-      // 取得確認按鈕中心座標
-      function getConfirmBtnCenter() {
-        const cRect = DOM.container.getBoundingClientRect();
-        const bRect = DOM.btnConfirm.getBoundingClientRect();
-        return {
-          left: bRect.left - cRect.left + bRect.width / 2 - 40,
-          top: bRect.top - cRect.top + bRect.height / 2 - 50,
-        };
-      }
-
-      // 手移動動畫
-      function moveHandTo(hand, left, top, dur, ease = "cubic-bezier(0.4,0,0.2,1)") {
-        hand.style.transition = `left ${dur}ms ${ease}, top ${dur}ms ${ease}, opacity 0.15s`;
-        hand.style.left = left + "px";
-        hand.style.top = top + "px";
-      }
-      
-      // 重置手指
-      function resetFinger() {
-        DOM.handFinger.style.transition = "none";
-        DOM.handFinger.style.opacity = "0";
-        DOM.handFinger.style.left = "440px";
-        DOM.handFinger.style.top = "420px";
-      }
-      
-      // 重置停止手
-      function resetStop() {
-        DOM.handStop.style.transition = "none";
-        DOM.handStop.style.opacity = "0";
-        DOM.handStop.style.left = "-100px";
-        DOM.handStop.style.top = "400px";
-        DOM.handStop.style.animation = "none";
-        DOM.handStop.style.transformOrigin = "center bottom";
-      }
-      
-      // 勾勾動畫
-      function showCheck() { DOM.checkmark.className = "checkmark show"; }
-      function hideCheck() { DOM.checkmark.className = "checkmark hide"; }
-      function resetCheck() {
-        DOM.checkmark.className = "checkmark";
-        DOM.checkmark.style.opacity = "0";
-        DOM.checkmark.style.transform = "translateX(-50%) scale(0)";
-      }
-      
-      // 按鈕狀態
-      function pressBtn() { DOM.btn.classList.add("pressed", "glow"); }
-      function releaseBtn() { DOM.btn.classList.remove("pressed", "glow"); }
-      
-      // 進度條更新
-      function updateProgress(pct, phase) {
-        DOM.progressFill.className = `progress-fill ${phase}`;
-        DOM.progressFill.style.width = pct + "%";
-      }
-
-      // 記錄區重置
-      function resetRecordArea() {
-        DOM.slots.forEach(slot => {
-          slot.classList.remove("glow-green", "wiggle", "pulse", "flipped");
+    function btnCenter(){
+      const c=DOM.container.getBoundingClientRect(), b=DOM.btn.getBoundingClientRect();
+      return { l:(b.left-c.left)+(b.width/2)-40, t:(b.top-c.top)+(b.height/2)-50 };
+    }
+    function moveTo(h,l,t,d,e='cubic-bezier(0.4,0,0.2,1)'){
+      h.style.transition=`left ${d}ms ${e}, top ${d}ms ${e}, opacity 0.15s`;
+      h.style.left=l+'px'; h.style.top=t+'px';
+    }
+    function startTimebar(durationMs){
+      DOM.progressFill.style.transition='none';
+      DOM.progressFill.style.width='0%';
+      requestAnimationFrame(()=>{
+        requestAnimationFrame(()=>{
+          DOM.progressFill.style.transition='width '+(durationMs/1000)+'s linear';
+          DOM.progressFill.style.width='100%';
         });
-        DOM.slotIcons.forEach(icon => {
-          icon.innerHTML = "";
-          icon.classList.remove("show");
-        });
-      }
-
-      // 答題區重置
-      function resetAnswerArea() {
-        answerStates = [0, 0, 0, 0, 0, 0];
-        DOM.ansContents.forEach(content => {
-          content.innerHTML = "❓";
-          content.className = "box-content question";
-        });
-        DOM.ansBoxes.forEach(box => box.classList.remove("selected", "pressed"));
-        DOM.btnConfirm.classList.remove("pressed");
-        DOM.btnReset.classList.remove("pressed");
-        DOM.resultFeedback.classList.remove("show");
-      }
-
-      // 全部重置
-      function resetAll() {
-        DOM.stimulus.style.opacity = "0";
-        DOM.stimulus.innerHTML = "";
-        resetFinger();
-        resetStop();
-        resetCheck();
-        releaseBtn();
-        resetRecordArea();
-        resetAnswerArea();
-        updateProgress(0, "phase1");
-        DOM.phaseLabel.textContent = "";
-        DOM.gameArea.style.opacity = "1";
-        DOM.btn.style.opacity = "1";
-        DOM.answerArea.classList.remove("show");
-      }
-
-      /* ============================================================
-         🎬 前段：Go/NoGo + 順序記錄（0s ~ 19s）
-      ============================================================ */
-      function playPhase1() {
-        DOM.phaseLabel.textContent = "── 前段：記住出現順序 ──";
-        updateProgress(0, "phase1");
-        const bp = getBtnCenter();
-
-        // 遍歷 6 個刺激物
-        SEQUENCE.forEach((type, idx) => {
-          const startTime = 1000 + idx * 3000;
-          const isGo = type === "cheese";
-          
-          // 1. 刺激物出現 + 記錄區小圖淡入
-          schedule(() => {
-            DOM.stimulus.innerHTML = isGo ? SVG_CHEESE : SVG_CAT;
-            DOM.stimulus.style.opacity = "1";
-            DOM.slotIcons[idx].innerHTML = isGo ? SVG_CHEESE : SVG_CAT;
-            DOM.slotIcons[idx].classList.add("show");
-          }, startTime);
-
-          if (isGo) {
-            // ═══ Go 流程 ═══
-            schedule(() => {
-              resetFinger();
-              DOM.handFinger.innerHTML = SVG_FINGER_TAP;
-              requestAnimationFrame(() => {
-                DOM.handFinger.style.opacity = "1";
-                moveHandTo(DOM.handFinger, bp.left, bp.top, 800);
-              });
-            }, startTime + 400);
-            
-            schedule(() => {
-              DOM.handFinger.innerHTML = SVG_HAND2_CLICK;
-              DOM.handFinger.style.transition = "top 150ms ease-in";
-              DOM.handFinger.style.top = (bp.top + 20) + "px";
-              pressBtn();
-            }, startTime + 1500);
-            
-            schedule(() => {
-              DOM.handFinger.innerHTML = SVG_FINGER_TAP;
-              DOM.handFinger.style.transition = "top 150ms ease-out";
-              DOM.handFinger.style.top = bp.top + "px";
-              releaseBtn();
-            }, startTime + 1900);
-            
-            schedule(() => {
-              DOM.handFinger.style.transition = "left 0.4s ease-in, opacity 0.3s";
-              DOM.handFinger.style.left = "440px";
-              DOM.handFinger.style.opacity = "0";
-            }, startTime + 2100);
-            
-            schedule(() => showCheck(), startTime + 2500);
-            schedule(() => hideCheck(), startTime + 2800);
-            schedule(() => resetCheck(), startTime + 2900);
-            
-          } else {
-            // ═══ NoGo 流程 ═══
-            schedule(() => {
-              resetFinger();
-              DOM.handFinger.innerHTML = SVG_FINGER_TAP;
-              requestAnimationFrame(() => {
-                DOM.handFinger.style.opacity = "1";
-                moveHandTo(DOM.handFinger, bp.left + 80, bp.top, 500, "cubic-bezier(0.6,0,0.4,1)");
-              });
-            }, startTime + 400);
-            
-            schedule(() => {
-              resetStop();
-              DOM.handStop.innerHTML = SVG_HAND_STOP;
-              requestAnimationFrame(() => {
-                DOM.handStop.style.opacity = "1";
-                moveHandTo(DOM.handStop, bp.left - 10, bp.top - 20, 300, "cubic-bezier(0.2,0,0,1)");
-                DOM.handStop.style.animation = "shakeHand 0.8s ease-in-out 1";
-              });
-              DOM.handFinger.style.transition = "left 0.4s cubic-bezier(0,0,0.6,1), opacity 0.3s";
-              DOM.handFinger.style.left = "440px";
-              DOM.handFinger.style.opacity = "0";
-            }, startTime + 850);
-            
-            schedule(() => {
-              DOM.handStop.style.animation = "none";
-              DOM.handStop.style.transition = "left 0.4s ease-in, opacity 0.3s";
-              DOM.handStop.style.left = "-100px";
-              DOM.handStop.style.opacity = "0";
-            }, startTime + 1900);
-            schedule(() => resetStop(), startTime + 2300);
-          }
-          
-          schedule(() => {
-            DOM.stimulus.style.opacity = "0";
-          }, startTime + 2800);
-          
-          schedule(() => {
-            updateProgress(((idx + 1) / 6) * 46, "phase1");
-          }, startTime + 2900);
-        });
-        
-        schedule(() => {
-          resetFinger();
-          resetStop();
-          resetCheck();
-          DOM.stimulus.innerHTML = "";
-        }, 19000);
-      }
-
-      /* ============================================================
-         🎬 中段：順序引導（19s ~ 24s）
-      ============================================================ */
-      function playPhase2() {
-        schedule(() => {
-          DOM.phaseLabel.textContent = "── 中段：記住這個順序 ──";
-          DOM.btn.style.opacity = "0.3";
-        }, 19000);
-        
-        for (let i = 0; i < 6; i++) {
-          schedule(() => {
-            DOM.slots[i].classList.add("glow-green", "wiggle");
-            updateProgress(46 + ((i + 1) / 6) * 12, "phase2");
-          }, 19500 + i * 600);
-          
-          schedule(() => {
-            DOM.slots[i].classList.remove("wiggle");
-          }, 19800 + i * 600);
-        }
-        
-        schedule(() => {
-          DOM.slots.forEach(slot => slot.classList.add("pulse"));
-        }, 23000);
-        schedule(() => {
-          DOM.slots.forEach(slot => slot.classList.remove("pulse"));
-        }, 23500);
-        
-        schedule(() => {
-          DOM.slots.forEach(slot => {
-            slot.classList.remove("glow-green");
-            slot.classList.add("flipped");
-          });
-        }, 23500);
-        
-        schedule(() => {
-          DOM.phaseLabel.textContent = "";
-          updateProgress(58, "phase2");
-        }, 24000);
-      }
-
-      /* ============================================================
-         🎬 後段：操作示範（24.5s ~ 41.5s）
-      ============================================================ */
-      function playPhase3() {
-        schedule(() => {
-          DOM.gameArea.style.opacity = "0";
-          DOM.phaseLabel.textContent = "── 後段：示範作答 ──";
-        }, 24500);
-        
-        schedule(() => {
-          DOM.answerArea.classList.add("show");
-          resetAnswerArea();
-          updateProgress(60, "phase3");
-        }, 25000);
-
-        // 點選示範：1🧀 2😺 3🧀 4😺 5🧀 6🧀
-        const clickPlan = [
-          { box: 0, clicks: 1, targetState: 1 },
-          { box: 1, clicks: 2, targetState: 2 },
-          { box: 2, clicks: 1, targetState: 1 },
-          { box: 3, clicks: 2, targetState: 2 },
-          { box: 4, clicks: 1, targetState: 1 },
-          { box: 5, clicks: 1, targetState: 1 },
-        ];
-        
-        let baseTime = 25500;
-        
-        clickPlan.forEach((plan, planIdx) => {
-          const boxPos = () => getAnswerBoxCenter(plan.box);
-          
-          schedule(() => {
-            resetFinger();
-            DOM.handFinger.innerHTML = SVG_FINGER_TAP;
-            requestAnimationFrame(() => {
-              DOM.handFinger.style.opacity = "1";
-              const pos = boxPos();
-              moveHandTo(DOM.handFinger, pos.left, pos.top, 600);
-            });
-          }, baseTime);
-          
-          for (let c = 0; c < plan.clicks; c++) {
-            const clickTime = baseTime + 800 + c * 700;
-            
-            schedule(() => {
-              DOM.handFinger.innerHTML = SVG_HAND2_CLICK;
-              DOM.ansBoxes[plan.box].classList.add("pressed");
-              
-              answerStates[plan.box] = (answerStates[plan.box] + 1) % 3;
-              const state = answerStates[plan.box];
-              const content = DOM.ansContents[plan.box];
-              
-              if (state === 0) {
-                content.innerHTML = "❓";
-                content.className = "box-content question";
-              } else if (state === 1) {
-                content.innerHTML = SVG_CHEESE;
-                content.className = "box-content";
-              } else {
-                content.innerHTML = SVG_CAT;
-                content.className = "box-content";
-              }
-            }, clickTime);
-            
-            schedule(() => {
-              DOM.handFinger.innerHTML = SVG_FINGER_TAP;
-              DOM.ansBoxes[plan.box].classList.remove("pressed");
-              DOM.ansBoxes[plan.box].classList.add("selected");
-            }, clickTime + 200);
-          }
-          
-          baseTime += 800 + plan.clicks * 700 + 300;
-          
-          schedule(() => {
-            updateProgress(60 + ((planIdx + 1) / 6) * 30, "phase3");
-          }, baseTime);
-        });
-        
-        schedule(() => {
-          DOM.handFinger.style.transition = "left 0.4s ease-in, opacity 0.3s";
-          DOM.handFinger.style.left = "440px";
-          DOM.handFinger.style.opacity = "0";
-        }, 36000);
-        
-        schedule(() => {
-          resetFinger();
-          DOM.handFinger.innerHTML = SVG_FINGER_TAP;
-          requestAnimationFrame(() => {
-            DOM.handFinger.style.opacity = "1";
-            const pos = getConfirmBtnCenter();
-            moveHandTo(DOM.handFinger, pos.left, pos.top, 600);
-          });
-        }, 36500);
-        
-        schedule(() => {
-          DOM.handFinger.innerHTML = SVG_HAND2_CLICK;
-          DOM.btnConfirm.classList.add("pressed");
-        }, 37300);
-        
-        schedule(() => {
-          DOM.handFinger.innerHTML = SVG_FINGER_TAP;
-          DOM.btnConfirm.classList.remove("pressed");
-          DOM.handFinger.style.transition = "left 0.4s ease-in, opacity 0.3s";
-          DOM.handFinger.style.left = "440px";
-          DOM.handFinger.style.opacity = "0";
-        }, 37700);
-        
-        schedule(() => {
-          DOM.resultFeedback.classList.add("show");
-          updateProgress(100, "phase3");
-        }, 38000);
-        
-        schedule(() => {
-          DOM.resultFeedback.classList.remove("show");
-          DOM.answerArea.style.opacity = "0";
-        }, 40500);
-      }
-
-      /* ============================================================
-         🔄 主循環
-      ============================================================ */
-      const TOTAL_DURATION = 41500;
-      
-      function startCycle() {
-        clearAllTimers();
-        resetAll();
-        document.getElementById("guideDoneOverlay").classList.remove("show");
-        
-        DOM.bgLayer.innerHTML = SVG_MOUSE_HOLE;
-        DOM.handFinger.innerHTML = SVG_FINGER_TAP;
-        DOM.handStop.innerHTML = SVG_HAND_STOP;
-        
-        playPhase1();
-        playPhase2();
-        playPhase3();
-        
-        schedule(() => showDoneOverlay(), TOTAL_DURATION);
-      }
-      
-      function showDoneOverlay() {
-        clearAllTimers();
-        resetAll();
-        document.getElementById("guideDoneOverlay").classList.add("show");
-      }
-
-      /* ============================================================
-         🎛️ 事件綁定
-      ============================================================ */
-      document.addEventListener("DOMContentLoaded", function() {
-        document.getElementById("btnGuideReady").addEventListener("click", function() {
-          clearAllTimers();
-          if (window.parent !== window) {
-            window.parent.postMessage({ type: "guide-ready" }, "*");
-          }
-        });
-        
-        document.getElementById("btnGuideReplay").addEventListener("click", function() {
-          startCycle();
-        });
-        
-        document.getElementById("btnGuideSkip").addEventListener("click", function() {
-          clearAllTimers();
-          if (window.parent !== window) {
-            window.parent.postMessage({ type: "guide-ready" }, "*");
-          }
-        });
-        
-        startCycle();
       });
+    }
+    function resetTimebar(){ DOM.progressFill.style.transition='none'; DOM.progressFill.style.width='0%'; }
+    function rstHand(){ DOM.hand.style.transition='none'; DOM.hand.style.opacity='0'; DOM.hand.style.left='440px'; DOM.hand.style.top='420px'; }
+    function rstStop(){ DOM.handStop.style.transition='none'; DOM.handStop.style.opacity='0'; DOM.handStop.style.left='-100px'; DOM.handStop.style.top='400px'; DOM.handStop.style.animation='none'; }
+    function showChk(){ DOM.checkmark.className='checkmark show'; }
+    function hideChk(){ DOM.checkmark.className='checkmark hide'; }
+    function rstChk(){ DOM.checkmark.className='checkmark'; DOM.checkmark.style.opacity='0'; DOM.checkmark.style.transform='translateX(-50%) scale(0)'; }
+    function pressB(){ DOM.btn.classList.add('pressed','glow'); }
+    function relB(){ DOM.btn.classList.remove('pressed','glow'); }
 
-      window.addEventListener("message", function(e) {
-        if (e.data && e.data.type === "init") {
-          document.getElementById("btnGuideSkip").style.display = "block";
+    function fillSlot(i, type){
+      const fr = DOM.fronts[i];
+      fr.innerHTML = SVGS[type];
+      const svg = fr.querySelector('svg');
+      if(svg){ svg.style.width='90%'; svg.style.height='90%'; svg.style.opacity='0'; svg.style.transition='opacity 0.3s';
+        requestAnimationFrame(()=>{ svg.style.opacity='0.75'; svg.classList.add('show'); });
+      }
+    }
+
+    function buildWmSlots(){
+      DOM.wmBar.innerHTML='';
+      for(let i=0;i<6;i++){
+        const d=document.createElement('div'); d.className='wm-answer-slot'; d.id='wa'+i; d.dataset.state='0';
+        d.innerHTML=`<span class="slot-num">${i+1}</span><span class="slot-icon">❓</span>`;
+        DOM.wmBar.appendChild(d);
+      }
+    }
+    // 後段手指定位：右下角（偏移 +15px right, +10px down）
+    function waPos(i){
+      const c=DOM.container.getBoundingClientRect(), s=document.getElementById('wa'+i).getBoundingClientRect();
+      return { l:(s.left-c.left)+(s.width)-25, t:(s.top-c.top)+(s.height)-30 };
+    }
+    function cycleWa(i){
+      const el=document.getElementById('wa'+i); let st=parseInt(el.dataset.state);
+      st=(st+1)%3; el.dataset.state=st;
+      const icon=el.querySelector('.slot-icon');
+      const old=el.querySelector('svg'); if(old) old.remove();
+      if(st===0){ icon.innerHTML='❓'; icon.style.color='var(--error-color)'; }
+      else{ icon.innerHTML=''; const type=CYCLE[st];
+        const dv=document.createElement('div'); dv.innerHTML=SVGS[type];
+        const svg=dv.querySelector('svg'); svg.style.width='32px'; svg.style.height='32px';
+        el.appendChild(svg);
+      }
+    }
+    function confPos(){
+      const c=DOM.container.getBoundingClientRect(), b=DOM.wmConfirm.getBoundingClientRect();
+      return { l:(b.left-c.left)+(b.width/2)-40, t:(b.top-c.top)+(b.height/2)-50 };
+    }
+
+    function resetAll(){
+      DOM.stim.style.opacity='0'; DOM.stim.innerHTML='';
+      rstHand(); rstStop(); rstChk(); relB();
+      DOM.phaseLabel.textContent='';
+      DOM.slots.forEach(s=>{ s.classList.remove('flipped','wiggle'); s.style.transform=''; });
+      DOM.fronts.forEach(f=>f.innerHTML='');
+      DOM.rings.forEach(r=>r.classList.remove('on'));
+      DOM.gameScene.style.display='flex'; DOM.gameScene.style.opacity='1';
+      DOM.wmScene.style.display='none'; DOM.wmScene.style.opacity='0';
+      DOM.wmScene.classList.remove('active');
+      DOM.wmResult.classList.remove('show');
+      DOM.wmCont.style.display='none';
+      DOM.controls.style.opacity='1';
+      resetTimebar();
+    }
+
+    // ===== 前段 =====
+    function playFront(){
+      const bp=btnCenter(); const GAP=4000;
+      SEQ.forEach((type,i)=>{
+        const t=1000+i*GAP; const isGo=(type==='cheese');
+        sc(()=>{ DOM.stim.innerHTML=SVGS[type]; DOM.stim.style.opacity='1'; fillSlot(i,type); }, t);
+        if(isGo){
+          sc(()=>{ rstHand(); DOM.hand.innerHTML=SVG_SPACE_UP;
+            requestAnimationFrame(()=>{ DOM.hand.style.opacity='1'; moveTo(DOM.hand,bp.l,bp.t,800); }); }, t+400);
+          sc(()=>{ DOM.hand.innerHTML=SVG_SPACE_DOWN; DOM.hand.style.transition='top 150ms ease-in'; DOM.hand.style.top=(bp.t+20)+'px'; pressB(); }, t+1500);
+          sc(()=>{ DOM.hand.innerHTML=SVG_SPACE_UP; DOM.hand.style.transition='top 150ms ease-out'; DOM.hand.style.top=bp.t+'px'; relB(); }, t+1900);
+          sc(()=>{ DOM.hand.style.transition='left 0.4s ease-in, opacity 0.3s'; DOM.hand.style.left='440px'; DOM.hand.style.opacity='0'; }, t+2100);
+          sc(()=>showChk(), t+2300);
+          sc(()=>hideChk(), t+3300);
+          sc(()=>{ rstChk(); rstHand(); DOM.stim.style.transition='opacity 0.3s'; DOM.stim.style.opacity='0'; }, t+3500);
+        } else {
+          sc(()=>{ rstHand(); DOM.hand.innerHTML=SVG_SPACE_UP;
+            requestAnimationFrame(()=>{ DOM.hand.style.opacity='1'; moveTo(DOM.hand,bp.l+80,bp.t,500,'cubic-bezier(0.6,0,0.4,1)'); }); }, t+400);
+          sc(()=>{ rstStop(); DOM.handStop.innerHTML=SVG_HAND_STOP;
+            requestAnimationFrame(()=>{ DOM.handStop.style.opacity='1'; moveTo(DOM.handStop,bp.l-10,bp.t-20,300,'cubic-bezier(0.2,0,0,1)'); DOM.handStop.style.animation='shakeHand 0.8s ease-in-out 1'; });
+            DOM.hand.style.transition='left 0.4s cubic-bezier(0,0,0.6,1), opacity 0.3s'; DOM.hand.style.left='440px'; DOM.hand.style.opacity='0'; }, t+850);
+          sc(()=>{ DOM.handStop.style.animation='none'; DOM.handStop.style.transition='left 0.4s ease-in, opacity 0.3s'; DOM.handStop.style.left='-100px'; DOM.handStop.style.opacity='0'; }, t+1500);
+          sc(()=>{ rstStop(); rstHand(); }, t+1900);
+          sc(()=>showChk(), t+2000);
+          sc(()=>hideChk(), t+3000);
+          sc(()=>{ rstChk(); DOM.stim.style.transition='opacity 0.3s'; DOM.stim.style.opacity='0'; }, t+3200);
         }
-        if (e.data && e.data.type === "stop") {
-          clearAllTimers();
-        }
+        sc(()=>{ DOM.stim.style.transition='none'; DOM.stim.innerHTML=''; }, t+3800);
       });
-    </script>
-  </body>
+    }
+
+    // ===== 中段 =====
+    function playMid(){
+      const S0=25500;
+      sc(()=>{ DOM.controls.style.transition='opacity 0.3s'; DOM.controls.style.opacity='0'; }, 25000);
+      for(let i=0;i<6;i++){
+        sc(()=>{ DOM.rings[i].classList.add('on'); DOM.slots[i].classList.add('wiggle');
+          setTimeout(()=>DOM.slots[i].classList.remove('wiggle'),600); }, S0+i*600);
+      }
+      // 全亮脈動
+      sc(()=>{ DOM.slots.forEach(s=>{ s.style.transition='transform 0.3s'; s.style.transform='scale(1.2)'; });
+        setTimeout(()=>DOM.slots.forEach(s=>s.style.transform='scale(1)'),350); }, S0+6*600+300);
+      // 3D 翻轉
+      sc(()=>{ DOM.slots.forEach(s=>s.classList.add('flipped'));
+        DOM.rings.forEach(r=>r.classList.remove('on')); }, S0+6*600+900);
+    }
+
+    // ===== 後段 =====
+    function playBack(){
+      const T0=31000;
+      sc(()=>{ DOM.gameScene.style.transition='opacity 0.5s'; DOM.gameScene.style.opacity='0'; }, T0);
+      sc(()=>{
+        DOM.gameScene.style.display='none';
+        DOM.wmScene.classList.add('active'); DOM.wmScene.style.display='flex';
+        buildWmSlots();
+        requestAnimationFrame(()=>DOM.wmScene.style.opacity='1');
+      }, T0+600);
+
+      // 正確答案：cheese,cat,cheese,cat,cheese,cheese → 點擊次數：1,2,1,2,1,1
+      const ops=[{s:0,n:1},{s:1,n:2},{s:2,n:1},{s:3,n:2},{s:4,n:1},{s:5,n:1}];
+      let t=T0+1500;
+      ops.forEach(o=>{
+        sc(()=>{ rstHand(); DOM.hand.innerHTML=SVG_FT_IDLE;
+          requestAnimationFrame(()=>{ DOM.hand.style.opacity='1'; const p=waPos(o.s); moveTo(DOM.hand,p.l,p.t,500); }); }, t);
+        t+=700;
+        for(let k=0;k<o.n;k++){
+          const ct=t;
+          sc(()=>{ DOM.hand.innerHTML=SVG_FT_CLICK; cycleWa(o.s); }, ct);
+          sc(()=>{ DOM.hand.innerHTML=SVG_FT_IDLE; }, ct+200);
+          t+=600;
+        }
+        t+=150;
+      });
+      // 確認
+      const cf=t+200;
+      sc(()=>{ rstHand(); DOM.hand.innerHTML=SVG_FT_IDLE;
+        requestAnimationFrame(()=>{ DOM.hand.style.opacity='1'; const p=confPos(); moveTo(DOM.hand,p.l,p.t,500); }); }, cf);
+      sc(()=>{ DOM.hand.innerHTML=SVG_FT_CLICK; DOM.wmConfirm.classList.add('pressed','glow'); }, cf+700);
+      sc(()=>{ DOM.hand.innerHTML=SVG_FT_IDLE; DOM.wmConfirm.classList.remove('pressed','glow');
+        DOM.hand.style.transition='left 0.3s, opacity 0.3s'; DOM.hand.style.left='440px'; DOM.hand.style.opacity='0'; }, cf+1000);
+      sc(()=>{ DOM.wmResult.classList.add('show'); DOM.wmCont.style.display='block'; }, cf+1400);
+      sc(()=>{ DOM.wmScene.style.transition='opacity 0.5s'; DOM.wmScene.style.opacity='0'; }, cf+3800);
+      sc(()=>startCycle(), cf+4500);
+    }
+
+    function startCycle(){ clr(); resetAll(); startTimebar(42000);
+      DOM.phaseLabel.textContent='── 工作記憶示範 ──'; playFront(); playMid(); playBack(); }
+    function init(){ DOM.bgLayer.innerHTML=SVG_BG; DOM.hand.innerHTML=SVG_SPACE_UP; DOM.handStop.innerHTML=SVG_HAND_STOP; startCycle(); }
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
 </html>
