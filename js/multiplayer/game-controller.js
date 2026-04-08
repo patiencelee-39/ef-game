@@ -58,6 +58,7 @@ var GameController = (function () {
   var _totalTrials = 0;
   var _allTrialResults = []; // 跨 combo 累積（修復原 finishGame 僅取最後 combo 的 bug）
   var _comboScores = []; // 每個 combo 的 calculateRuleScore 結果
+  var _totalQuestionsAcrossCombos = 0; // 所有 combo 的總題數（用於計算整體進度）
   var _isRelayMode = false;
   var _isTeamMode = false;
 
@@ -424,8 +425,14 @@ var GameController = (function () {
     _updateDifficultyBadge();
 
     MultiplayerBridge.recordAnswer(record);
+    // 使用整體進度（跨所有 combo）而非單個 combo 進度
+    // 避免 combo 1 結束時 progress=100% 誤觸發全員完成檢測
+    var overallProgress =
+      _totalQuestionsAcrossCombos > 0
+        ? Math.round((_totalTrials / _totalQuestionsAcrossCombos) * 100)
+        : 0;
     MultiplayerBridge.broadcastState({
-      progress: Math.round(((_trialIndex + 1) / _questions.length) * 100),
+      progress: overallProgress,
       score: _totalCorrect,
       comboName: _combos[_comboIndex] ? _combos[_comboIndex].displayName : "",
     });
@@ -1033,6 +1040,24 @@ var GameController = (function () {
             workingMemoryTest: stage.workingMemoryTest || null,
           };
         });
+      }
+
+      // 計算所有 combo 的總題數（用於整體進度計算）
+      _totalQuestionsAcrossCombos = 0;
+      for (var ci = 0; ci < _combos.length; ci++) {
+        var c = _combos[ci];
+        var qCount = 0;
+        if (c.questions && c.questions.length > 0) {
+          qCount = c.questions.length;
+        } else {
+          qCount =
+            c.questionCount ||
+            c.questionsCount ||
+            (typeof GAME_CONFIG !== "undefined"
+              ? GAME_CONFIG.QUESTIONS.DEFAULT_COUNT
+              : 10);
+        }
+        _totalQuestionsAcrossCombos += qCount;
       }
 
       // 讀取房間自訂倒數秒數

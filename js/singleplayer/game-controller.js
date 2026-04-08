@@ -135,6 +135,61 @@ var GameController = (function () {
     },
   };
 
+  /** 工作記憶規則動畫 HTML 檔案路徑對照 */
+  var WM_GUIDE_ANIM_PATHS = {
+    mouse: {
+      forward: "guides/mouse/demo-mouse-wm-forward.html",
+      reverse: "guides/mouse/demo-mouse-wm-reverse.html",
+    },
+    fishing: {
+      forward: "guides/ocean/demo-ocean-wm-forward.html",
+      reverse: "guides/ocean/demo-ocean-wm-reverse.html",
+    },
+  };
+
+  /**
+   * 工作記憶活潑版指導語文字（針對學前幼兒設計）
+   * 根據 fieldId 和 direction 顯示對應的指導語
+   */
+  var WM_TUTORIAL_TEXTS = {
+    mouse: {
+      forward: [
+        '嘿！小老鼠肚子好餓喔～要去找起司吃！',
+        '等一下會有好多東西跑出來，有起司🧀，也可能有貓咪🐱喔！',
+        '你要用眼睛記住：<span class="wm-tutorial-highlight">誰先跑出來？誰後面才出來？</span>',
+        '看完之後，<span class="wm-tutorial-action">照順序點出來！</span>',
+        '第一個出來的先點、第二個出來的再點、最後出來的最後點！',
+        '就像排隊買冰淇淋一樣，誰先來誰先買～'
+      ],
+      reverse: [
+        '哇！這次小老鼠要玩<span class="wm-tutorial-reverse">倒著走</span>的遊戲囉！',
+        '一樣會有起司🧀和貓咪🐱跑出來～',
+        '但這次不一樣喔！你要<span class="wm-tutorial-reverse">「倒著點」</span>！',
+        '<span class="wm-tutorial-highlight">最後跑出來的，你要第一個點！</span>',
+        '第一個跑出來的，反而要最後才點喔！',
+        '就像倒退嚕～咻咻咻～從後面走回來！'
+      ]
+    },
+    fishing: {
+      forward: [
+        '耶！我們要去釣魚囉～🎣',
+        '等一下海裡會游出好多東西，有小魚🐟，也可能有鯊魚🦈喔！',
+        '你要記住：<span class="wm-tutorial-highlight">誰先游出來？誰後面才游出來？</span>',
+        '看完之後，<span class="wm-tutorial-action">照順序點出來！</span>',
+        '誰先游出來就先點誰，誰最後游出來就最後點！',
+        '就像魚兒排隊游泳一樣，一條接一條～'
+      ],
+      reverse: [
+        '哇喔！這次魚兒要玩<span class="wm-tutorial-reverse">倒游</span>的遊戲！',
+        '一樣會有小魚🐟和鯊魚🦈游出來～',
+        '但這次要<span class="wm-tutorial-reverse">「倒著點」</span>喔！',
+        '<span class="wm-tutorial-highlight">最後游出來的魚，你要第一個點牠！</span>',
+        '第一條游出來的魚，反而要最後才點喔！',
+        '就像魚兒在倒退嚕～噗噗噗～往回游！'
+      ]
+    }
+  };
+
   /** stimulus key → SVG HTML（委派 TrialRenderer） */
   function getSVG(key) {
     return TrialRenderer.svg(key);
@@ -438,6 +493,15 @@ var GameController = (function () {
   function showGuideAnimation(combo, onReady) {
     var fieldId = combo.fieldId;
     var ruleId = combo.ruleId;
+    var hasWM = combo.enableWm || combo.hasWM;
+
+    // 如果有工作記憶，使用 WM 動畫流程
+    if (hasWM) {
+      _showWmGuideFlow(combo, onReady);
+      return;
+    }
+
+    // 原本的 Go/No-Go 動畫流程
     var paths = GUIDE_ANIM_PATHS[fieldId];
     var path = paths && paths[ruleId];
 
@@ -477,6 +541,135 @@ var GameController = (function () {
     };
   }
 
+  /**
+   * 工作記憶專用的動畫流程：活潑版指導語 → WM 規則動畫
+   * @param {Object} combo - combo 定義
+   * @param {Function} onReady - 完成後的回調
+   */
+  function _showWmGuideFlow(combo, onReady) {
+    var fieldId = combo.fieldId;
+    // 目前固定使用 forward（順向），之後可根據 combo 配置決定
+    var direction = combo.wmDirection || "forward";
+
+    // Step 1: 顯示活潑版指導語
+    _showWmTutorialText(fieldId, direction, function () {
+      // Step 2: 播放 WM 規則動畫
+      _playWmGuideAnimation(combo, direction, onReady);
+    });
+  }
+
+  /**
+   * 顯示工作記憶活潑版指導語（5秒或點擊跳過）
+   * @param {string} fieldId - 'mouse' | 'fishing'
+   * @param {string} direction - 'forward' | 'reverse'
+   * @param {Function} onDone - 完成後的回調
+   */
+  function _showWmTutorialText(fieldId, direction, onDone) {
+    var texts = WM_TUTORIAL_TEXTS[fieldId]
+      ? WM_TUTORIAL_TEXTS[fieldId][direction]
+      : WM_TUTORIAL_TEXTS.mouse[direction];
+
+    if (!texts || texts.length === 0) {
+      onDone();
+      return;
+    }
+
+    // 建立指導語 overlay
+    var overlay = document.createElement("div");
+    overlay.className = "wm-tutorial-overlay";
+    overlay.style.cssText =
+      "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);" +
+      "display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;box-sizing:border-box;";
+
+    var titleEmoji = fieldId === "mouse" ? "🐭" : "🎣";
+    var titleText = fieldId === "mouse" ? "小老鼠記憶遊戲" : "釣魚記憶遊戲";
+
+    var html =
+      '<div class="wm-tutorial-box" style="' +
+      "max-width:420px;padding:24px 28px;border-radius:16px;" +
+      "background:linear-gradient(135deg,rgba(255,255,255,0.15),rgba(255,255,255,0.05));" +
+      "border:2px solid rgba(255,255,255,0.25);text-align:left;line-height:1.8;" +
+      'font-size:1.15rem;color:#fff;">' +
+      '<p style="font-size:1.4rem;font-weight:700;margin:0 0 16px;text-align:center;">' +
+      titleEmoji + " " + titleText + "</p>";
+
+    for (var i = 0; i < texts.length; i++) {
+      html += '<p style="margin:10px 0;">' + texts[i] + "</p>";
+    }
+
+    html +=
+      '<p style="display:block;text-align:center;font-size:1.5rem;font-weight:700;margin-top:20px;color:#ffd43b;">' +
+      "準備好了嗎？GO！</p>";
+    html += "</div>";
+
+    // 注入高亮樣式
+    var styleId = "wm-tutorial-text-style";
+    if (!document.getElementById(styleId)) {
+      var style = document.createElement("style");
+      style.id = styleId;
+      style.textContent =
+        ".wm-tutorial-highlight{color:#ffd43b;font-weight:700}" +
+        ".wm-tutorial-action{color:#51cf66;font-weight:700}" +
+        ".wm-tutorial-reverse{color:#ff6b6b;font-weight:700}";
+      document.head.appendChild(style);
+    }
+
+    overlay.innerHTML = html;
+    document.body.appendChild(overlay);
+
+    var closed = false;
+    function closeOverlay() {
+      if (closed) return;
+      closed = true;
+      if (overlay.parentNode) {
+        overlay.parentNode.removeChild(overlay);
+      }
+      onDone();
+    }
+
+    // 點擊可提前關閉
+    overlay.addEventListener("click", closeOverlay);
+
+    // 5 秒後自動關閉
+    setTimeout(closeOverlay, 5000);
+  }
+
+  /**
+   * 播放工作記憶規則動畫
+   * @param {Object} combo - combo 定義
+   * @param {string} direction - 'forward' | 'reverse'
+   * @param {Function} onReady - 動畫結束後的回調
+   */
+  function _playWmGuideAnimation(combo, direction, onReady) {
+    var fieldId = combo.fieldId;
+    var wmPaths = WM_GUIDE_ANIM_PATHS[fieldId];
+    var path = wmPaths && wmPaths[direction];
+
+    if (!path) {
+      // 沒有對應的 WM 動畫，直接回調
+      onReady();
+      return;
+    }
+
+    // 設定回調
+    _guideReadyCallback = onReady;
+
+    // 載入 iframe
+    dom.guideIframe.src = path;
+    showScreen(dom.guideAnimScreen);
+
+    dom.guideIframe.onload = function () {
+      try {
+        dom.guideIframe.contentWindow.postMessage(
+          { type: "init", isWmGuide: true },
+          "*",
+        );
+      } catch (err) {
+        console.warn("[WmGuideAnim] postMessage failed:", err);
+      }
+    };
+  }
+
   /** 動畫結束後：直接進入練習 */
   function _afterGuideReady(combo) {
     _practiceRetryCount = 0;
@@ -506,8 +699,16 @@ var GameController = (function () {
   function _beforeBeginTrials(combo) {
     var hasWM = combo.enableWm || combo.hasWM;
     if (hasWM) {
-      showScreen(dom.wmTransitionScreen);
-      // btnWmTransitionReady 事件已在 bindEvents 中綁定，會呼叫 beginTrials()
+      // 工作記憶提示已在動畫流程中顯示，這裡只需簡短過場
+      showStageTransition({
+        icon: "🧠",
+        title: "記住順序喔！",
+        subtitle: "遊戲中要記住看到的東西",
+        duration: 2000,
+        onDone: function () {
+          beginTrials();
+        },
+      });
     } else {
       beginTrials();
     }

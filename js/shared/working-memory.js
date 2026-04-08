@@ -151,6 +151,8 @@ function _randomDirection() {
 }
 
 /**
+ * 顯示活潑版指導語
+ /**
  * 隨機決定位置數量 n
  * @param {number} questionCount - 該規則的題數
  * @returns {number}
@@ -593,6 +595,17 @@ var WorkingMemory = {
       );
     }
 
+    // 確保 WM 容器可見
+    if (_container) {
+      _container.style.display = "";
+      _container.classList.remove("hidden");
+    }
+
+    // 隱藏結果區域
+    if (resultEl) {
+      resultEl.style.display = "none";
+    }
+
     // 5. 顯示方向指示（含色彩提示）
     var n = sequence.length;
     var dirText =
@@ -626,17 +639,6 @@ var WorkingMemory = {
     // 7. 重設按鈕
     _resetButtons(gridEl, n);
 
-    // 確保 WM 容器可見
-    if (_container) {
-      _container.style.display = "";
-      _container.classList.remove("hidden");
-    }
-
-    // 隱藏結果區域
-    if (resultEl) {
-      resultEl.style.display = "none";
-    }
-
     return voicePromise.then(function () {
       // 語音播報結束 → 直接重設按鈕為 ❓ → 開放作答
       // （移除了原本的「準備記住順序」提示和「亮起序列」階段，
@@ -663,7 +665,7 @@ var WorkingMemory = {
         if (remaining <= 3) countdownEl.style.color = "#ff6b6b";
       }, 250);
 
-      // 10. 等待玩家按「確認」（或逾時）
+      // 8. 等待玩家按「確認」（或逾時）
       return new Promise(function (resolve) {
         var _resolved = false;
         var _timeoutTimer = null;
@@ -674,402 +676,402 @@ var WorkingMemory = {
           clearInterval(_cdInterval);
           if (_timeoutTimer) clearTimeout(_timeoutTimer);
           if (countdownEl.parentNode) countdownEl.parentNode.removeChild(countdownEl);
-
-          if (isTimeout) {
-            // ── 逾時處理：偵測玩家是否已有選擇 ──
-            var playerAnswer = _collectAnswers(gridEl, n);
-            var hasSelection = playerAnswer.some(function (a) {
-              return a !== "unknown";
-            });
-
-            if (hasSelection) {
-              // ✅ 玩家已有選擇 → 鎖定為最終答案並計分
-              // 鎖定按鈕（禁止再更改）
-              var allBtns = gridEl.querySelectorAll(".wm-position-btn");
-              for (var li = 0; li < allBtns.length; li++) {
-                allBtns[li].style.pointerEvents = "none";
-                allBtns[li].style.opacity = "0.8";
-              }
-
-              var wmScore = _calculateWmScore({
-                playerAnswer: playerAnswer,
-                sequence: sequence,
-                direction: direction,
-                completionMs: timeoutMs,
-                personalBest: personalBest,
+  
+            if (isTimeout) {
+              // ── 逾時處理：偵測玩家是否已有選擇 ──
+              var playerAnswer = _collectAnswers(gridEl, n);
+              var hasSelection = playerAnswer.some(function (a) {
+                return a !== "unknown";
               });
-              wmScore.timedOut = true;
-
-              // 播放結果音效
-              if (typeof AudioPlayer !== "undefined" && AudioPlayer.playSfx) {
-                var sfxPath = wmScore.passed
-                  ? "audio/sfx/wm-correct.mp3"
-                  : "audio/sfx/wm-incorrect.mp3";
-                AudioPlayer.playSfx(sfxPath, { synthPreset: wmScore.passed ? "correct" : "error" });
-              }
-
-              // 顯示結果（含答案比對）
-              if (resultEl) {
-                resultEl.style.display = "";
-
-                var toggleStates = TOGGLE_STATES[fieldId] || TOGGLE_STATES.mouse;
-                var stimKeyToEmoji = {};
-                for (var si = 0; si < toggleStates.length; si++) {
-                  stimKeyToEmoji[toggleStates[si].key] = toggleStates[si].emoji;
+  
+              if (hasSelection) {
+                // ✅ 玩家已有選擇 → 鎖定為最終答案並計分
+                // 鎖定按鈕（禁止再更改）
+                var allBtns = gridEl.querySelectorAll(".wm-position-btn");
+                for (var li = 0; li < allBtns.length; li++) {
+                  allBtns[li].style.pointerEvents = "none";
+                  allBtns[li].style.opacity = "0.8";
                 }
-
-                var timeoutHeader =
-                  "<div class='wm-result-summary'>" +
-                  "<div style='font-size:2em;margin-bottom:10px;color:#ffa726;'>⏰ 時間到！</div>" +
-                  "<div style='margin-bottom:12px;'>已自動鎖定你目前的選擇作為答案</div>" +
-                  "</div>";
-
-                if (wmScore.allCorrect) {
-                  resultEl.innerHTML = timeoutHeader +
+  
+                var wmScore = _calculateWmScore({
+                  playerAnswer: playerAnswer,
+                  sequence: sequence,
+                  direction: direction,
+                  completionMs: timeoutMs,
+                  personalBest: personalBest,
+                });
+                wmScore.timedOut = true;
+  
+                // 播放結果音效
+                if (typeof AudioPlayer !== "undefined" && AudioPlayer.playSfx) {
+                  var sfxPath = wmScore.passed
+                    ? "audio/sfx/wm-correct.mp3"
+                    : "audio/sfx/wm-incorrect.mp3";
+                  AudioPlayer.playSfx(sfxPath, { synthPreset: wmScore.passed ? "correct" : "error" });
+                }
+  
+                // 顯示結果（含答案比對）
+                if (resultEl) {
+                  resultEl.style.display = "";
+  
+                  var toggleStates = TOGGLE_STATES[fieldId] || TOGGLE_STATES.mouse;
+                  var stimKeyToEmoji = {};
+                  for (var si = 0; si < toggleStates.length; si++) {
+                    stimKeyToEmoji[toggleStates[si].key] = toggleStates[si].emoji;
+                  }
+  
+                  var timeoutHeader =
                     "<div class='wm-result-summary'>" +
-                    "<div style='font-size:1.5em;margin-bottom:10px;'>✓ 全部答對！</div>" +
-                    "<p>答對：" + wmScore.correctCount + " / " + wmScore.total + "</p>" +
-                    "<p>WM 得分：" + wmScore.totalScore + "</p>" +
+                    "<div style='font-size:2em;margin-bottom:10px;color:#ffa726;'>⏰ 時間到！</div>" +
+                    "<div style='margin-bottom:12px;'>已自動鎖定你目前的選擇作為答案</div>" +
                     "</div>";
+  
+                  if (wmScore.allCorrect) {
+                    resultEl.innerHTML = timeoutHeader +
+                      "<div class='wm-result-summary'>" +
+                      "<div style='font-size:1.5em;margin-bottom:10px;'>✓ 全部答對！</div>" +
+                      "<p>答對：" + wmScore.correctCount + " / " + wmScore.total + "</p>" +
+                      "<p>WM 得分：" + wmScore.totalScore + "</p>" +
+                      "</div>";
+                  } else {
+                    // 顯示答案比對
+                    var compHtml = "<div class='wm-comparison'>";
+                    compHtml += "<div class='wm-comparison-row'><div class='wm-comparison-label'>正確答案：</div><div class='wm-comparison-items'>";
+                    for (var ci = 0; ci < wmScore.details.length; ci++) {
+                      var d = wmScore.details[ci];
+                      compHtml += "<div class='wm-comparison-item'><span style='color:#ffd700;'>" + d.position + ":</span> <span>" + (stimKeyToEmoji[d.expected] || "❓") + "</span></div>";
+                    }
+                    compHtml += "</div></div>";
+                    compHtml += "<div class='wm-comparison-row'><div class='wm-comparison-label'>你的答案：</div><div class='wm-comparison-items'>";
+                    for (var pi = 0; pi < wmScore.details.length; pi++) {
+                      var dp = wmScore.details[pi];
+                      var itemClass = dp.correct ? "wm-comparison-item correct" : "wm-comparison-item incorrect";
+                      compHtml += "<div class='" + itemClass + "'><span style='color:#ffd700;'>" + dp.position + ":</span> <span>" + (stimKeyToEmoji[dp.actual] || "❓") + "</span></div>";
+                    }
+                    compHtml += "</div></div></div>";
+  
+                    resultEl.innerHTML = timeoutHeader + compHtml +
+                      "<div class='wm-result-summary' style='margin-top:12px;'>" +
+                      "<p>答對：" + wmScore.correctCount + " / " + wmScore.total + "</p>" +
+                      "<p>WM 得分：" + wmScore.totalScore + "</p>" +
+                      "</div>";
+                  }
+  
+                  // 注入比對樣式
+                  if (!document.getElementById("wm-comparison-style")) {
+                    var cmpStyle = document.createElement("style");
+                    cmpStyle.id = "wm-comparison-style";
+                    cmpStyle.textContent =
+                      ".wm-comparison{display:flex;flex-direction:column;gap:12px;margin-top:16px;width:100%;max-width:600px}" +
+                      ".wm-comparison-row{display:flex;align-items:center;gap:10px;padding:10px;background:rgba(255,255,255,0.05);border-radius:8px}" +
+                      ".wm-comparison-label{font-size:1em;min-width:80px;color:#ccc;white-space:nowrap}" +
+                      ".wm-comparison-items{display:flex;gap:8px;flex-wrap:wrap}" +
+                      ".wm-comparison-item{display:flex;align-items:center;gap:4px;padding:4px 10px;background:rgba(255,255,255,0.1);border-radius:5px;font-size:1.1em}" +
+                      ".wm-comparison-item.correct{background:rgba(46,204,113,0.2);border:1px solid #2ecc71}" +
+                      ".wm-comparison-item.incorrect{background:rgba(231,76,60,0.2);border:1px solid #e74c3c}" +
+                      ".wm-continue-btn{display:block;margin:20px auto 0;padding:12px 32px;font-size:1.1rem;font-weight:700;border:none;border-radius:12px;cursor:pointer;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;box-shadow:0 4px 12px rgba(102,126,234,0.4);transition:all .2s}" +
+                      ".wm-continue-btn:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(102,126,234,0.5)}";
+                    document.head.appendChild(cmpStyle);
+                  }
+  
+                  // 加入「繼續」按鈕
+                  var continueBtn = document.createElement("button");
+                  continueBtn.className = "wm-continue-btn";
+                  continueBtn.textContent = "➡️ 繼續";
+                  resultEl.appendChild(continueBtn);
+  
+                  continueBtn.addEventListener("click", function () {
+                    continueBtn.disabled = true;
+                    if (onResult) {
+                      try { onResult(wmScore); } catch (e) { Logger.error("WorkingMemory onResult error:", e); }
+                    }
+                    resolve(wmScore);
+                  }, { once: true });
                 } else {
-                  // 顯示答案比對
-                  var compHtml = "<div class='wm-comparison'>";
-                  compHtml += "<div class='wm-comparison-row'><div class='wm-comparison-label'>正確答案：</div><div class='wm-comparison-items'>";
-                  for (var ci = 0; ci < wmScore.details.length; ci++) {
-                    var d = wmScore.details[ci];
-                    compHtml += "<div class='wm-comparison-item'><span style='color:#ffd700;'>" + d.position + ":</span> <span>" + (stimKeyToEmoji[d.expected] || "❓") + "</span></div>";
-                  }
-                  compHtml += "</div></div>";
-                  compHtml += "<div class='wm-comparison-row'><div class='wm-comparison-label'>你的答案：</div><div class='wm-comparison-items'>";
-                  for (var pi = 0; pi < wmScore.details.length; pi++) {
-                    var dp = wmScore.details[pi];
-                    var itemClass = dp.correct ? "wm-comparison-item correct" : "wm-comparison-item incorrect";
-                    compHtml += "<div class='" + itemClass + "'><span style='color:#ffd700;'>" + dp.position + ":</span> <span>" + (stimKeyToEmoji[dp.actual] || "❓") + "</span></div>";
-                  }
-                  compHtml += "</div></div></div>";
-
-                  resultEl.innerHTML = timeoutHeader + compHtml +
-                    "<div class='wm-result-summary' style='margin-top:12px;'>" +
-                    "<p>答對：" + wmScore.correctCount + " / " + wmScore.total + "</p>" +
-                    "<p>WM 得分：" + wmScore.totalScore + "</p>" +
-                    "</div>";
-                }
-
-                // 注入比對樣式
-                if (!document.getElementById("wm-comparison-style")) {
-                  var cmpStyle = document.createElement("style");
-                  cmpStyle.id = "wm-comparison-style";
-                  cmpStyle.textContent =
-                    ".wm-comparison{display:flex;flex-direction:column;gap:12px;margin-top:16px;width:100%;max-width:600px}" +
-                    ".wm-comparison-row{display:flex;align-items:center;gap:10px;padding:10px;background:rgba(255,255,255,0.05);border-radius:8px}" +
-                    ".wm-comparison-label{font-size:1em;min-width:80px;color:#ccc;white-space:nowrap}" +
-                    ".wm-comparison-items{display:flex;gap:8px;flex-wrap:wrap}" +
-                    ".wm-comparison-item{display:flex;align-items:center;gap:4px;padding:4px 10px;background:rgba(255,255,255,0.1);border-radius:5px;font-size:1.1em}" +
-                    ".wm-comparison-item.correct{background:rgba(46,204,113,0.2);border:1px solid #2ecc71}" +
-                    ".wm-comparison-item.incorrect{background:rgba(231,76,60,0.2);border:1px solid #e74c3c}" +
-                    ".wm-continue-btn{display:block;margin:20px auto 0;padding:12px 32px;font-size:1.1rem;font-weight:700;border:none;border-radius:12px;cursor:pointer;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;box-shadow:0 4px 12px rgba(102,126,234,0.4);transition:all .2s}" +
-                    ".wm-continue-btn:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(102,126,234,0.5)}";
-                  document.head.appendChild(cmpStyle);
-                }
-
-                // 加入「繼續」按鈕
-                var continueBtn = document.createElement("button");
-                continueBtn.className = "wm-continue-btn";
-                continueBtn.textContent = "➡️ 繼續";
-                resultEl.appendChild(continueBtn);
-
-                continueBtn.addEventListener("click", function () {
-                  continueBtn.disabled = true;
+                  // 無結果區域 — 直接回呼
                   if (onResult) {
                     try { onResult(wmScore); } catch (e) { Logger.error("WorkingMemory onResult error:", e); }
                   }
                   resolve(wmScore);
-                }, { once: true });
+                }
+  
               } else {
-                // 無結果區域 — 直接回呼
-                if (onResult) {
-                  try { onResult(wmScore); } catch (e) { Logger.error("WorkingMemory onResult error:", e); }
-                }
-                resolve(wmScore);
-              }
-
-            } else {
-              // ❌ 玩家完全未選擇 → 顯示無資料 + 繼續按鈕
-              var emptyResult = {
-                correctCount: 0,
-                totalPositions: sequence.length,
-                direction: direction,
-                completionTimeMs: timeoutMs,
-                passed: false,
-                timedOut: true,
-              };
-
-              if (resultEl) {
-                resultEl.style.display = "";
-                resultEl.innerHTML =
-                  "<div class='wm-result-summary'>" +
-                  "<div style='font-size:2em;margin-bottom:10px;color:#ff6b6b;'>⏰ 時間到！</div>" +
-                  "<div style='margin-bottom:12px;'>工作記憶逾時 " + Math.ceil(timeoutMs / 1000) + " 秒未作答，無資料</div>" +
-                  "</div>";
-
-                // 注入按鈕樣式
-                if (!document.getElementById("wm-comparison-style")) {
-                  var btnStyle = document.createElement("style");
-                  btnStyle.id = "wm-comparison-style";
-                  btnStyle.textContent =
-                    ".wm-continue-btn{display:block;margin:20px auto 0;padding:12px 32px;font-size:1.1rem;font-weight:700;border:none;border-radius:12px;cursor:pointer;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;box-shadow:0 4px 12px rgba(102,126,234,0.4);transition:all .2s}" +
-                    ".wm-continue-btn:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(102,126,234,0.5)}";
-                  document.head.appendChild(btnStyle);
-                }
-
-                var continueBtn = document.createElement("button");
-                continueBtn.className = "wm-continue-btn";
-                continueBtn.textContent = "➡️ 繼續";
-                resultEl.appendChild(continueBtn);
-
-                continueBtn.addEventListener("click", function () {
-                  continueBtn.disabled = true;
+                // ❌ 玩家完全未選擇 → 顯示無資料 + 繼續按鈕
+                var emptyResult = {
+                  correctCount: 0,
+                  totalPositions: sequence.length,
+                  direction: direction,
+                  completionTimeMs: timeoutMs,
+                  passed: false,
+                  timedOut: true,
+                };
+  
+                if (resultEl) {
+                  resultEl.style.display = "";
+                  resultEl.innerHTML =
+                    "<div class='wm-result-summary'>" +
+                    "<div style='font-size:2em;margin-bottom:10px;color:#ff6b6b;'>⏰ 時間到！</div>" +
+                    "<div style='margin-bottom:12px;'>工作記憶逾時 " + Math.ceil(timeoutMs / 1000) + " 秒未作答，無資料</div>" +
+                    "</div>";
+  
+                  // 注入按鈕樣式
+                  if (!document.getElementById("wm-comparison-style")) {
+                    var btnStyle = document.createElement("style");
+                    btnStyle.id = "wm-comparison-style";
+                    btnStyle.textContent =
+                      ".wm-continue-btn{display:block;margin:20px auto 0;padding:12px 32px;font-size:1.1rem;font-weight:700;border:none;border-radius:12px;cursor:pointer;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;box-shadow:0 4px 12px rgba(102,126,234,0.4);transition:all .2s}" +
+                      ".wm-continue-btn:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(102,126,234,0.5)}";
+                    document.head.appendChild(btnStyle);
+                  }
+  
+                  var continueBtn = document.createElement("button");
+                  continueBtn.className = "wm-continue-btn";
+                  continueBtn.textContent = "➡️ 繼續";
+                  resultEl.appendChild(continueBtn);
+  
+                  continueBtn.addEventListener("click", function () {
+                    continueBtn.disabled = true;
+                    if (onResult) {
+                      try { onResult(emptyResult); } catch (e) { Logger.error("WorkingMemory onResult error:", e); }
+                    }
+                    resolve(emptyResult);
+                  }, { once: true });
+                } else {
+                  // 無結果區域 — 直接回呼
                   if (onResult) {
                     try { onResult(emptyResult); } catch (e) { Logger.error("WorkingMemory onResult error:", e); }
                   }
                   resolve(emptyResult);
-                }, { once: true });
-              } else {
-                // 無結果區域 — 直接回呼
-                if (onResult) {
-                  try { onResult(emptyResult); } catch (e) { Logger.error("WorkingMemory onResult error:", e); }
                 }
-                resolve(emptyResult);
               }
+              return;
             }
-            return;
           }
-        }
-
-        // 設定逾時
-        _timeoutTimer = setTimeout(function () {
-          _finalize(true);
-        }, timeoutMs);
-
-        if (confirmBtn) {
-          confirmBtn.disabled = false;
-          confirmBtn.style.display = "";
-
-          // 移除舊的 listener（防重複綁定）
-          var newBtn = confirmBtn.cloneNode(true);
-          confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
-
-          newBtn.addEventListener(
-            "click",
-            function () {
-              if (_resolved) return; // 已逾時，忽略點擊
-              _finalize(false); // 停止倒數
-              newBtn.disabled = true;
-              var completionMs = Date.now() - _state.startTime;
-
-              // 11. 收集答案
-              var playerAnswer = _collectAnswers(gridEl, n);
-
-              // 12. 計分
-              var wmScore = _calculateWmScore({
-                playerAnswer: playerAnswer,
-                sequence: sequence,
-                direction: direction,
-                completionMs: completionMs,
-                personalBest: personalBest,
-              });
-
-              // 13. 播放結果音效
-              if (typeof AudioPlayer !== "undefined" && AudioPlayer.playSfx) {
-                var sfxPath = wmScore.passed
-                  ? "audio/sfx/wm-correct.mp3"
-                  : "audio/sfx/wm-incorrect.mp3";
-                var sfxPreset = wmScore.passed ? "correct" : "error";
-                AudioPlayer.playSfx(sfxPath, {
-                  synthPreset: sfxPreset,
+  
+          // 設定逾時
+          _timeoutTimer = setTimeout(function () {
+            _finalize(true);
+          }, timeoutMs);
+  
+          if (confirmBtn) {
+            confirmBtn.disabled = false;
+            confirmBtn.style.display = "";
+  
+            // 移除舊的 listener（防重複綁定）
+            var newBtn = confirmBtn.cloneNode(true);
+            confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+  
+            newBtn.addEventListener(
+              "click",
+              function () {
+                if (_resolved) return; // 已逾時，忽略點擊
+                _finalize(false); // 停止倒數
+                newBtn.disabled = true;
+                var completionMs = Date.now() - _state.startTime;
+  
+                // 11. 收集答案
+                var playerAnswer = _collectAnswers(gridEl, n);
+  
+                // 12. 計分
+                var wmScore = _calculateWmScore({
+                  playerAnswer: playerAnswer,
+                  sequence: sequence,
+                  direction: direction,
+                  completionMs: completionMs,
+                  personalBest: personalBest,
                 });
-              }
-
-              // 14. 顯示結果（含答錯比對回饋）
-              if (resultEl) {
-                resultEl.style.display = "";
-
-                // 取得刺激物 emoji 映射
-                var toggleStates =
-                  TOGGLE_STATES[fieldId] || TOGGLE_STATES.mouse;
-                var stimKeyToEmoji = {};
-                for (var si = 0; si < toggleStates.length; si++) {
-                  stimKeyToEmoji[toggleStates[si].key] = toggleStates[si].emoji;
+  
+                // 13. 播放結果音效
+                if (typeof AudioPlayer !== "undefined" && AudioPlayer.playSfx) {
+                  var sfxPath = wmScore.passed
+                    ? "audio/sfx/wm-correct.mp3"
+                    : "audio/sfx/wm-incorrect.mp3";
+                  var sfxPreset = wmScore.passed ? "correct" : "error";
+                  AudioPlayer.playSfx(sfxPath, {
+                    synthPreset: sfxPreset,
+                  });
                 }
-
-                if (wmScore.allCorrect) {
-                  // ✅ 全對
-                  resultEl.innerHTML =
-                    "<div class='wm-result-summary'>" +
-                    "<div style='font-size:2em;margin-bottom:10px;'>✓ 答對了！</div>" +
-                    "<div style='margin-bottom:12px;'>你的記憶力真棒！</div>" +
-                    "<p>方向：" +
-                    (direction === "reverse" ? "逆向 🔄" : "順向 👉") +
-                    "</p>" +
-                    "<p>答對：" +
-                    wmScore.correctCount +
-                    " / " +
-                    wmScore.total +
-                    "</p>" +
-                    "<p>完成時間：" +
-                    (completionMs / 1000).toFixed(1) +
-                    " 秒</p>" +
-                    "<p>WM 得分：" +
-                    wmScore.totalScore +
-                    "（基礎 " +
-                    wmScore.baseScore +
-                    " + 全對 " +
-                    wmScore.bonus +
-                    " + 速度 " +
-                    wmScore.speedBonus +
-                    "）</p>" +
-                    "<p>✅ 通過！</p>" +
-                    "</div>";
-                } else {
-                  // ❌ 答錯 — 顯示比對
-                  var compHtml = "<div class='wm-comparison'>";
-
-                  // 正確答案列
-                  compHtml += "<div class='wm-comparison-row'>";
-                  compHtml +=
-                    "<div class='wm-comparison-label'>正確答案：</div>";
-                  compHtml += "<div class='wm-comparison-items'>";
-                  for (var ci = 0; ci < wmScore.details.length; ci++) {
-                    var d = wmScore.details[ci];
-                    var expectedEmoji = stimKeyToEmoji[d.expected] || "❓";
-                    compHtml +=
-                      "<div class='wm-comparison-item'>" +
-                      "<span style='color:#ffd700;'>" +
-                      d.position +
-                      ":</span> " +
-                      "<span>" +
-                      expectedEmoji +
-                      "</span></div>";
+  
+                // 14. 顯示結果（含答錯比對回饋）
+                if (resultEl) {
+                  resultEl.style.display = "";
+  
+                  // 取得刺激物 emoji 映射
+                  var toggleStates =
+                    TOGGLE_STATES[fieldId] || TOGGLE_STATES.mouse;
+                  var stimKeyToEmoji = {};
+                  for (var si = 0; si < toggleStates.length; si++) {
+                    stimKeyToEmoji[toggleStates[si].key] = toggleStates[si].emoji;
                   }
-                  compHtml += "</div></div>";
-
-                  // 玩家答案列
-                  compHtml += "<div class='wm-comparison-row'>";
-                  compHtml +=
-                    "<div class='wm-comparison-label'>你的答案：</div>";
-                  compHtml += "<div class='wm-comparison-items'>";
-                  for (var pi = 0; pi < wmScore.details.length; pi++) {
-                    var dp = wmScore.details[pi];
-                    var actualEmoji = stimKeyToEmoji[dp.actual] || "❓";
-                    var itemClass = dp.correct
-                      ? "wm-comparison-item correct"
-                      : "wm-comparison-item incorrect";
+  
+                  if (wmScore.allCorrect) {
+                    // ✅ 全對
+                    resultEl.innerHTML =
+                      "<div class='wm-result-summary'>" +
+                      "<div style='font-size:2em;margin-bottom:10px;'>✓ 答對了！</div>" +
+                      "<div style='margin-bottom:12px;'>你的記憶力真棒！</div>" +
+                      "<p>方向：" +
+                      (direction === "reverse" ? "逆向 🔄" : "順向 👉") +
+                      "</p>" +
+                      "<p>答對：" +
+                      wmScore.correctCount +
+                      " / " +
+                      wmScore.total +
+                      "</p>" +
+                      "<p>完成時間：" +
+                      (completionMs / 1000).toFixed(1) +
+                      " 秒</p>" +
+                      "<p>WM 得分：" +
+                      wmScore.totalScore +
+                      "（基礎 " +
+                      wmScore.baseScore +
+                      " + 全對 " +
+                      wmScore.bonus +
+                      " + 速度 " +
+                      wmScore.speedBonus +
+                      "）</p>" +
+                      "<p>✅ 通過！</p>" +
+                      "</div>";
+                  } else {
+                    // ❌ 答錯 — 顯示比對
+                    var compHtml = "<div class='wm-comparison'>";
+  
+                    // 正確答案列
+                    compHtml += "<div class='wm-comparison-row'>";
                     compHtml +=
-                      "<div class='" +
-                      itemClass +
-                      "'>" +
-                      "<span style='color:#ffd700;'>" +
-                      dp.position +
-                      ":</span> " +
-                      "<span>" +
-                      actualEmoji +
-                      "</span></div>";
-                  }
-                  compHtml += "</div></div>";
-                  compHtml += "</div>";
-
-                  resultEl.innerHTML =
-                    "<div class='wm-result-summary'>" +
-                    "<div style='font-size:2em;margin-bottom:10px;'>✗ 答錯了</div>" +
-                    "<div style='margin-bottom:12px;'>請對照下方的答案：</div>" +
-                    "</div>" +
-                    compHtml +
-                    "<div class='wm-result-summary' style='margin-top:12px;'>" +
-                    "<p>方向：" +
-                    (direction === "reverse" ? "逆向 🔄" : "順向 👉") +
-                    "</p>" +
-                    "<p>答對：" +
-                    wmScore.correctCount +
-                    " / " +
-                    wmScore.total +
-                    "</p>" +
-                    "<p>完成時間：" +
-                    (completionMs / 1000).toFixed(1) +
-                    " 秒</p>" +
-                    "<p>WM 得分：" +
-                    wmScore.totalScore +
-                    "（基礎 " +
-                    wmScore.baseScore +
-                    " + 全對 " +
-                    wmScore.bonus +
-                    " + 速度 " +
-                    wmScore.speedBonus +
-                    "）</p>" +
-                    "<p>❌ 未通過</p>" +
-                    "</div>";
-                }
-
-                // 注入比對樣式（如尚未注入）
-                if (!document.getElementById("wm-comparison-style")) {
-                  var cmpStyle = document.createElement("style");
-                  cmpStyle.id = "wm-comparison-style";
-                  cmpStyle.textContent =
-                    ".wm-comparison{display:flex;flex-direction:column;gap:12px;margin-top:16px;width:100%;max-width:600px}" +
-                    ".wm-comparison-row{display:flex;align-items:center;gap:10px;padding:10px;background:rgba(255,255,255,0.05);border-radius:8px}" +
-                    ".wm-comparison-label{font-size:1em;min-width:80px;color:#ccc;white-space:nowrap}" +
-                    ".wm-comparison-items{display:flex;gap:8px;flex-wrap:wrap}" +
-                    ".wm-comparison-item{display:flex;align-items:center;gap:4px;padding:4px 10px;background:rgba(255,255,255,0.1);border-radius:5px;font-size:1.1em}" +
-                    ".wm-comparison-item.correct{background:rgba(46,204,113,0.2);border:1px solid #2ecc71}" +
-                    ".wm-comparison-item.incorrect{background:rgba(231,76,60,0.2);border:1px solid #e74c3c}" +
-                    ".wm-continue-btn{display:block;margin:20px auto 0;padding:12px 32px;font-size:1.1rem;font-weight:700;border:none;border-radius:12px;cursor:pointer;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;box-shadow:0 4px 12px rgba(102,126,234,0.4);transition:all .2s}" +
-                    ".wm-continue-btn:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(102,126,234,0.5)}";
-                  document.head.appendChild(cmpStyle);
-                }
-
-                // 在結果區域加入「繼續」按鈕，等待使用者手動點擊
-                var continueBtn = document.createElement("button");
-                continueBtn.className = "wm-continue-btn";
-                continueBtn.textContent = "➡️ 繼續";
-                resultEl.appendChild(continueBtn);
-
-                continueBtn.addEventListener(
-                  "click",
-                  function () {
-                    continueBtn.disabled = true;
-
-                    // 回呼
-                    if (onResult) {
-                      try {
-                        onResult(wmScore);
-                      } catch (e) {
-                        Logger.error("WorkingMemory onResult error:", e);
-                      }
+                      "<div class='wm-comparison-label'>正確答案：</div>";
+                    compHtml += "<div class='wm-comparison-items'>";
+                    for (var ci = 0; ci < wmScore.details.length; ci++) {
+                      var d = wmScore.details[ci];
+                      var expectedEmoji = stimKeyToEmoji[d.expected] || "❓";
+                      compHtml +=
+                        "<div class='wm-comparison-item'>" +
+                        "<span style='color:#ffd700;'>" +
+                        d.position +
+                        ":</span> " +
+                        "<span>" +
+                        expectedEmoji +
+                        "</span></div>";
                     }
-
-                    resolve(wmScore);
-                  },
-                  { once: true },
-                );
-              } else {
-                // 無結果區域 — 直接回呼
-                if (onResult) {
-                  try {
-                    onResult(wmScore);
-                  } catch (e) {
-                    Logger.error("WorkingMemory onResult error:", e);
+                    compHtml += "</div></div>";
+  
+                    // 玩家答案列
+                    compHtml += "<div class='wm-comparison-row'>";
+                    compHtml +=
+                      "<div class='wm-comparison-label'>你的答案：</div>";
+                    compHtml += "<div class='wm-comparison-items'>";
+                    for (var pi = 0; pi < wmScore.details.length; pi++) {
+                      var dp = wmScore.details[pi];
+                      var actualEmoji = stimKeyToEmoji[dp.actual] || "❓";
+                      var itemClass = dp.correct
+                        ? "wm-comparison-item correct"
+                        : "wm-comparison-item incorrect";
+                      compHtml +=
+                        "<div class='" +
+                        itemClass +
+                        "'>" +
+                        "<span style='color:#ffd700;'>" +
+                        dp.position +
+                        ":</span> " +
+                        "<span>" +
+                        actualEmoji +
+                        "</span></div>";
+                    }
+                    compHtml += "</div></div>";
+                    compHtml += "</div>";
+  
+                    resultEl.innerHTML =
+                      "<div class='wm-result-summary'>" +
+                      "<div style='font-size:2em;margin-bottom:10px;'>✗ 答錯了</div>" +
+                      "<div style='margin-bottom:12px;'>請對照下方的答案：</div>" +
+                      "</div>" +
+                      compHtml +
+                      "<div class='wm-result-summary' style='margin-top:12px;'>" +
+                      "<p>方向：" +
+                      (direction === "reverse" ? "逆向 🔄" : "順向 👉") +
+                      "</p>" +
+                      "<p>答對：" +
+                      wmScore.correctCount +
+                      " / " +
+                      wmScore.total +
+                      "</p>" +
+                      "<p>完成時間：" +
+                      (completionMs / 1000).toFixed(1) +
+                      " 秒</p>" +
+                      "<p>WM 得分：" +
+                      wmScore.totalScore +
+                      "（基礎 " +
+                      wmScore.baseScore +
+                      " + 全對 " +
+                      wmScore.bonus +
+                      " + 速度 " +
+                      wmScore.speedBonus +
+                      "）</p>" +
+                      "<p>❌ 未通過</p>" +
+                      "</div>";
                   }
+  
+                  // 注入比對樣式（如尚未注入）
+                  if (!document.getElementById("wm-comparison-style")) {
+                    var cmpStyle = document.createElement("style");
+                    cmpStyle.id = "wm-comparison-style";
+                    cmpStyle.textContent =
+                      ".wm-comparison{display:flex;flex-direction:column;gap:12px;margin-top:16px;width:100%;max-width:600px}" +
+                      ".wm-comparison-row{display:flex;align-items:center;gap:10px;padding:10px;background:rgba(255,255,255,0.05);border-radius:8px}" +
+                      ".wm-comparison-label{font-size:1em;min-width:80px;color:#ccc;white-space:nowrap}" +
+                      ".wm-comparison-items{display:flex;gap:8px;flex-wrap:wrap}" +
+                      ".wm-comparison-item{display:flex;align-items:center;gap:4px;padding:4px 10px;background:rgba(255,255,255,0.1);border-radius:5px;font-size:1.1em}" +
+                      ".wm-comparison-item.correct{background:rgba(46,204,113,0.2);border:1px solid #2ecc71}" +
+                      ".wm-comparison-item.incorrect{background:rgba(231,76,60,0.2);border:1px solid #e74c3c}" +
+                      ".wm-continue-btn{display:block;margin:20px auto 0;padding:12px 32px;font-size:1.1rem;font-weight:700;border:none;border-radius:12px;cursor:pointer;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;box-shadow:0 4px 12px rgba(102,126,234,0.4);transition:all .2s}" +
+                      ".wm-continue-btn:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(102,126,234,0.5)}";
+                    document.head.appendChild(cmpStyle);
+                  }
+  
+                  // 在結果區域加入「繼續」按鈕，等待使用者手動點擊
+                  var continueBtn = document.createElement("button");
+                  continueBtn.className = "wm-continue-btn";
+                  continueBtn.textContent = "➡️ 繼續";
+                  resultEl.appendChild(continueBtn);
+  
+                  continueBtn.addEventListener(
+                    "click",
+                    function () {
+                      continueBtn.disabled = true;
+  
+                      // 回呼
+                      if (onResult) {
+                        try {
+                          onResult(wmScore);
+                        } catch (e) {
+                          Logger.error("WorkingMemory onResult error:", e);
+                        }
+                      }
+  
+                      resolve(wmScore);
+                    },
+                    { once: true },
+                  );
+                } else {
+                  // 無結果區域 — 直接回呼
+                  if (onResult) {
+                    try {
+                      onResult(wmScore);
+                    } catch (e) {
+                      Logger.error("WorkingMemory onResult error:", e);
+                    }
+                  }
+                  resolve(wmScore);
                 }
-                resolve(wmScore);
-              }
-            },
-            { once: true },
-          );
-        } else {
-          // 無確認按鈕 — 直接 resolve（不應發生）
-          resolve(null);
-        }
+              },
+              { once: true },
+            );
+          } else {
+            // 無確認按鈕 — 直接 resolve（不應發生）
+            resolve(null);
+          }
+        });
       });
-    });
   },
 
   /**
