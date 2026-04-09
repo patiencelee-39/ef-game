@@ -99,10 +99,8 @@
     .hand-stop { left:-100px; top:400px; }
     .hand svg { width:100%; height:100%; filter:drop-shadow(2px 4px 6px rgba(0,0,0,0.3)); }
     .progress-bar { width:90%; height:4px; background:rgba(255,255,255,0.1); border-radius:2px; margin:5px auto 10px; overflow:hidden; }
-    .progress-fill { height:100%; width:0%; border-radius:2px; transition:width 0.3s linear; }
-    .progress-fill.go { background:var(--success-color); }
-    .progress-fill.nogo { background:var(--error-color); }
-    .progress-fill.wm { background:var(--primary-color); }
+    .progress-fill { height:100%; width:0%; border-radius:2px; transition:width linear; }
+    .progress-fill { background:linear-gradient(90deg, var(--primary-color), var(--success-color)); }
     .phase-label { font-size:0.7rem; color:rgba(255,255,255,0.35); margin-bottom:5px; min-height:1em; }
   </style>
 </head>
@@ -229,7 +227,17 @@
     let T=[]; function sc(fn,d){ const id=setTimeout(fn,d);T.push(id);return id; } function clr(){ T.forEach(id=>clearTimeout(id));T=[]; }
     function btnCenter(){ const c=DOM.container.getBoundingClientRect(),b=DOM.btn.getBoundingClientRect(); return {l:(b.left-c.left)+(b.width/2)-40,t:(b.top-c.top)+(b.height/2)-50}; }
     function moveTo(h,l,t,d,e='cubic-bezier(0.4,0,0.2,1)'){ h.style.transition=`left ${d}ms ${e}, top ${d}ms ${e}, opacity 0.15s`; h.style.left=l+'px'; h.style.top=t+'px'; }
-    function updateProg(p,type){ DOM.progressFill.className='progress-fill '+type; DOM.progressFill.style.width=p+'%'; }
+    function startTimebar(durationMs){
+      DOM.progressFill.style.transition='none';
+      DOM.progressFill.style.width='0%';
+      requestAnimationFrame(()=>{
+        requestAnimationFrame(()=>{
+          DOM.progressFill.style.transition='width '+(durationMs/1000)+'s linear';
+          DOM.progressFill.style.width='100%';
+        });
+      });
+    }
+    function resetTimebar(){ DOM.progressFill.style.transition='none'; DOM.progressFill.style.width='0%'; }
     function rstH(){ DOM.hand.style.transition='none'; DOM.hand.style.opacity='0'; DOM.hand.style.left='440px'; DOM.hand.style.top='420px'; }
     function rstS(){ DOM.handStop.style.transition='none'; DOM.handStop.style.opacity='0'; DOM.handStop.style.left='-100px'; DOM.handStop.style.top='400px'; DOM.handStop.style.animation='none'; }
     function showC(){ DOM.checkmark.className='checkmark show'; }
@@ -242,7 +250,7 @@
     function waPos(i){ const c=DOM.container.getBoundingClientRect(),s=document.getElementById('wa'+i).getBoundingClientRect(); return {l:(s.left-c.left)+(s.width)-25,t:(s.top-c.top)+(s.height)-30}; }
     function cycleWa(i){ const el=document.getElementById('wa'+i); let st=parseInt(el.dataset.state); st=(st+1)%3; el.dataset.state=st; const icon=el.querySelector('.slot-icon'); const old=el.querySelector('svg'); if(old)old.remove(); if(st===0){icon.innerHTML='❓';icon.style.color='var(--error-color)';} else{icon.innerHTML='';const type=CYCLE[st];const dv=document.createElement('div');dv.innerHTML=SVGS[type];const svg=dv.querySelector('svg');svg.style.width='32px';svg.style.height='32px';el.appendChild(svg);} }
     function cfPos(){ const c=DOM.container.getBoundingClientRect(),b=DOM.wmConfirm.getBoundingClientRect(); return {l:(b.left-c.left)+(b.width/2)-40,t:(b.top-c.top)+(b.height/2)-50}; }
-    function resetScene(){ DOM.stim.style.opacity='0'; DOM.stim.innerHTML=''; rstH();rstS();rstC();rB(); DOM.slots.forEach(s=>{s.classList.remove('flipped','wiggle');s.style.transform='';}); DOM.fronts.forEach(f=>f.innerHTML=''); DOM.rings.forEach(r=>{r.classList.remove('on','forward','reverse');}); DOM.gameScene.style.display='flex'; DOM.gameScene.style.opacity='1'; DOM.wmScene.style.display='none'; DOM.wmScene.style.opacity='0'; DOM.wmScene.classList.remove('active'); DOM.wmResult.classList.remove('show'); DOM.wmCont.style.display='none'; DOM.controls.style.opacity='1'; updateProg(0,'go'); }
+    function resetScene(){ DOM.stim.style.opacity='0'; DOM.stim.innerHTML=''; rstH();rstS();rstC();rB(); DOM.slots.forEach(s=>{s.classList.remove('flipped','wiggle');s.style.transform='';}); DOM.fronts.forEach(f=>f.innerHTML=''); DOM.rings.forEach(r=>{r.classList.remove('on','forward','reverse');}); DOM.gameScene.style.display='flex'; DOM.gameScene.style.opacity='1'; DOM.wmScene.style.display='none'; DOM.wmScene.style.opacity='0'; DOM.wmScene.classList.remove('active'); DOM.wmResult.classList.remove('show'); DOM.wmCont.style.display='none'; DOM.controls.style.opacity='1'; }
 
     /** 播放完整一輪（前段+中段+後段），結束後呼叫 onDone */
     function playRound(isReverse, onDone) {
@@ -277,7 +285,7 @@
           sc(() => hideC(), t + 3000);
           sc(() => { rstC(); DOM.stim.style.transition = 'opacity 0.3s'; DOM.stim.style.opacity = '0'; }, t + 3200);
         }
-        sc(() => { DOM.stim.style.transition = 'none'; DOM.stim.innerHTML = ''; updateProg(Math.round((i+1)/6*50), isGo?'go':'nogo'); }, t + 3800);
+        sc(() => { DOM.stim.style.transition = 'none'; DOM.stim.innerHTML = ''; }, t + 3800);
       });
 
       // ── 中段 ──
@@ -287,7 +295,7 @@
         sc(() => { DOM.rings[idx].classList.add('on', colorCls); DOM.slots[idx].classList.add('wiggle'); setTimeout(() => DOM.slots[idx].classList.remove('wiggle'), 600); }, 25500 + step * 600);
       }
       sc(() => { DOM.slots.forEach(s => { s.style.transition = 'transform 0.3s'; s.style.transform = 'scale(1.2)'; }); setTimeout(() => DOM.slots.forEach(s => s.style.transform = 'scale(1)'), 350); }, 25500 + 6 * 600 + 300);
-      sc(() => { DOM.slots.forEach(s => s.classList.add('flipped')); DOM.rings.forEach(r => r.classList.remove('on', 'forward', 'reverse')); updateProg(70,'wm'); }, 25500 + 6 * 600 + 900);
+      sc(() => { DOM.slots.forEach(s => s.classList.add('flipped')); DOM.rings.forEach(r => r.classList.remove('on', 'forward', 'reverse')); }, 25500 + 6 * 600 + 900);
 
       // ── 後段 ──
       sc(() => { DOM.gameScene.style.transition = 'opacity 0.5s'; DOM.gameScene.style.opacity = '0'; }, 30500);
@@ -300,7 +308,6 @@
         DOM.wmResult.innerHTML = `<h3>✓ 答對了！</h3><p>你的記憶力真棒！</p><div class="detail">方向：${dirResult}<br>答對：6 / 6<br>完成時間：${dirTime} 秒<br>WM 得分：3（基礎 2 + 全對 1 + 速度 0）<br><span style="color:var(--success-color)">✅ 通過！</span></div>`;
         buildWm();
         requestAnimationFrame(() => DOM.wmScene.style.opacity = '1');
-        updateProg(75,'wm');
       }, 31600);
 
       let t = 32500;
@@ -314,15 +321,16 @@
       sc(() => { rstH(); DOM.hand.innerHTML = SVG_FT_IDLE; requestAnimationFrame(() => { DOM.hand.style.opacity = '1'; const p = cfPos(); moveTo(DOM.hand, p.l, p.t, 500); }); }, cf);
       sc(() => { DOM.hand.innerHTML = SVG_FT_CLICK; DOM.wmConfirm.classList.add('pressed', 'glow'); }, cf + 700);
       sc(() => { DOM.hand.innerHTML = SVG_FT_IDLE; DOM.wmConfirm.classList.remove('pressed', 'glow'); DOM.hand.style.transition = 'left 0.3s, opacity 0.3s'; DOM.hand.style.left = '440px'; DOM.hand.style.opacity = '0'; }, cf + 1000);
-      sc(() => { DOM.wmResult.classList.add('show'); DOM.wmCont.style.display = 'block'; updateProg(100,'wm'); }, cf + 1400);
+      sc(() => { DOM.wmResult.classList.add('show'); DOM.wmCont.style.display = 'block'; }, cf + 1400);
       sc(() => { DOM.wmScene.style.transition = 'opacity 0.5s'; DOM.wmScene.style.opacity = '0'; }, cf + 3800);
       sc(() => onDone(), cf + 4500);
     }
 
     function startCycle() {
-      clr(); resetScene();
+      clr(); resetScene(); resetTimebar();
       DOM.bgLayer.innerHTML = SVG_BG;
       DOM.phaseLabel.textContent = '── 工作記憶示範（順向）──';
+      startTimebar(84000);
 
       playRound(false, () => {
         // 順向結束 → 開始逆向
