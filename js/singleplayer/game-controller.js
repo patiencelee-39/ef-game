@@ -1105,28 +1105,41 @@ var GameController = (function () {
     var accuracy = _practiceCorrect / _practiceQuestions.length;
     var passed = accuracy >= PRACTICE_PASS_THRESHOLD;
 
+    var hasWM = _practiceCombo && (_practiceCombo.enableWm || _practiceCombo.hasWM);
     dom.practiceResult.classList.remove("hidden");
     if (passed) {
-      dom.practiceResult.className = "practice-result-overlay pass";
-      dom.practiceResult.innerHTML =
-        "🎉 全部答對！準備好了！<br>馬上開始正式挑戰！";
-
-      setTimeout(function () {
+      if (hasWM) {
+        // 有 WM → 直接銜接 WM 練習，不顯示「正式挑戰」訊息
+        dom.practiceResult.classList.add("hidden");
         if (_practiceOnComplete) _practiceOnComplete();
-      }, 1500);
+      } else {
+        dom.practiceResult.className = "practice-result-overlay pass";
+        dom.practiceResult.innerHTML =
+          "🎉 全部答對！準備好了！<br>馬上開始正式挑戰！";
+
+        setTimeout(function () {
+          if (_practiceOnComplete) _practiceOnComplete();
+        }, 1500);
+      }
     } else {
       _practiceRetryCount++;
       dom.practiceResult.className = "practice-result-overlay retry";
 
       if (_practiceRetryCount >= 3) {
-        // 最多重試 3 次，之後直接進入正式
-        dom.practiceResult.innerHTML =
-          "💪 練習了 " +
-          _practiceRetryCount +
-          " 次，你很棒！<br>準備開始正式挑戰吧！";
-        setTimeout(function () {
+        // 最多重試 3 次
+        if (hasWM) {
+          // 有 WM → 直接銜接 WM 練習
+          dom.practiceResult.classList.add("hidden");
           if (_practiceOnComplete) _practiceOnComplete();
-        }, 2000);
+        } else {
+          dom.practiceResult.innerHTML =
+            "💪 練習了 " +
+            _practiceRetryCount +
+            " 次，你很棒！<br>準備開始正式挑戰吧！";
+          setTimeout(function () {
+            if (_practiceOnComplete) _practiceOnComplete();
+          }, 2000);
+        }
       } else {
         dom.practiceResult.innerHTML =
           "答對 " +
