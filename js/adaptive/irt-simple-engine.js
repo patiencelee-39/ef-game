@@ -122,11 +122,11 @@ var IRTSimpleEngine = (function () {
   };
 
   var LEVEL_WM = {
-    1: { minPositions: 2, maxPositions: 3, highlightDurationMs: 1000 },
-    2: { minPositions: 2, maxPositions: 4, highlightDurationMs: 900 },
-    3: { minPositions: 2, maxPositions: 6, highlightDurationMs: 800 },
-    4: { minPositions: 3, maxPositions: 6, highlightDurationMs: 700 },
-    5: { minPositions: 3, maxPositions: 6, highlightDurationMs: 600 },
+    1: { minPositions: 2, maxPositions: 3, highlightDurationMs: 1000, reverseProbability: 0.5 },
+    2: { minPositions: 2, maxPositions: 4, highlightDurationMs: 900, reverseProbability: 0.6 },
+    3: { minPositions: 2, maxPositions: 6, highlightDurationMs: 800, reverseProbability: 0.7 },
+    4: { minPositions: 3, maxPositions: 6, highlightDurationMs: 700, reverseProbability: 0.8 },
+    5: { minPositions: 3, maxPositions: 6, highlightDurationMs: 600, reverseProbability: 0.9 },
   };
 
   // =========================================
@@ -388,7 +388,7 @@ var IRTSimpleEngine = (function () {
         direction = "forward";
       } else {
         direction =
-          Math.random() < (wm.REVERSE_PROBABILITY || 0.5)
+          Math.random() < (lvl.reverseProbability || wm.REVERSE_PROBABILITY || 0.5)
             ? "reverse"
             : "forward";
       }
@@ -396,6 +396,7 @@ var IRTSimpleEngine = (function () {
       return {
         positions: positions,
         direction: direction,
+        reverseProbability: lvl.reverseProbability || wm.REVERSE_PROBABILITY || 0.5,
         highlightDurationMs: lvl.highlightDurationMs,
         highlightIntervalMs: wm.HIGHLIGHT_INTERVAL_MS || 400,
         responseTimeoutMs: wm.RESPONSE_TIMEOUT_MS || 10000,

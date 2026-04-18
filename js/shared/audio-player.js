@@ -893,6 +893,45 @@ var AudioPlayer = {
     _stopCurrentVoice();
   },
 
+  /**
+   * 白話版說明：
+   *   把好幾段語音「排隊」依序播放，前一段播完才播下一段。
+   *   回傳一個物件：.promise 是全部播完後 resolve、.cancel() 可以隨時中斷。
+   *
+   * 可修改項目：無
+   *
+   * 修改注意：
+   *   - 每段語音仍走 playVoice 的 5 級降級機制
+   *   - cancel() 會停止當前播放並跳過後續所有段落
+   *
+   * @param {Array<{filePath: string, text: string, gender: string}>} items
+   * @param {Function} [onItemStart] - 每段開始播放時的回調，傳入該段 index
+   * @returns {{promise: Promise, cancel: Function}}
+   */
+  playVoiceSequence: function (items, onItemStart) {
+    var cancelled = false;
+    var self = this;
+
+    var promise = (items || []).reduce(function (chain, item, index) {
+      return chain.then(function () {
+        if (cancelled) return { level: "cancelled", played: false };
+        if (typeof onItemStart === "function") onItemStart(index);
+        return self.playVoice(item.filePath, {
+          text: item.text,
+          gender: item.gender || "female",
+        });
+      });
+    }, Promise.resolve());
+
+    return {
+      promise: promise,
+      cancel: function () {
+        cancelled = true;
+        self.stopVoice();
+      },
+    };
+  },
+
   // -----------------------------------------
   // 合成音直接播放（v14 相容 API）
   // -----------------------------------------

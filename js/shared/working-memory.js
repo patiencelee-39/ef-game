@@ -142,11 +142,20 @@ function _extractSequence(questions, n) {
 }
 
 /**
- * 隨機決定方向（Forward / Reverse）
+ * 根據 ruleId 決定 WM 方向
+ *   rule1 → 順向（forward）
+ *   rule2 → 逆向（reverse）
+ *   mixed → 隨機（依 customProb 或 REVERSE_PROBABILITY）
+ *
+ * @param {string} [ruleId] - 'rule1' | 'rule2' | 'mixed'
+ * @param {number} [customProb] - 自訂逆向機率（可選）
  * @returns {'forward'|'reverse'}
  */
-function _randomDirection() {
-  var prob = _getConfig("REVERSE_PROBABILITY");
+function _resolveDirection(ruleId, customProb) {
+  if (ruleId === "rule1") return "forward";
+  if (ruleId === "rule2") return "reverse";
+  // mixed 或未指定 → 隨機
+  var prob = customProb !== undefined ? customProb : _getConfig("REVERSE_PROBABILITY");
   return Math.random() < prob ? "reverse" : "forward";
 }
 
@@ -431,7 +440,61 @@ function _highlightSequence(sequence, fieldId, gridEl) {
 }
 
 /**
- * 重設所有位置按鈕為 ❓ 狀態
+ * 練習用亮起序列：顯示實際刺激物 emoji（讓兒童看清楚要記什麼）
+ *
+ * @param {Array<string>} sequence - stimulus key 序列
+ * @param {string}        fieldId  - 'mouse' | 'fishing'
+ * @param {HTMLElement}   gridEl   - 按鈕容器
+ * @returns {Promise<void>}
+ */
+function _highlightPractice(sequence, fieldId, gridEl) {
+  var highlightMs = _getConfig("HIGHLIGHT_DURATION_MS");
+  var intervalMs = _getConfig("HIGHLIGHT_INTERVAL_MS");
+  var buttons = gridEl.querySelectorAll(".wm-position-btn");
+  var toggleStates = TOGGLE_STATES[fieldId] || TOGGLE_STATES.mouse;
+
+  // 建立 stimKey → emoji 對照
+  var keyToEmoji = {};
+  for (var t = 0; t < toggleStates.length; t++) {
+    keyToEmoji[toggleStates[t].key] = toggleStates[t].emoji;
+  }
+
+  return new Promise(function (resolve) {
+    var i = 0;
+
+    function next() {
+      if (i >= sequence.length) {
+        resolve();
+        return;
+      }
+
+      var stimKey = sequence[i];
+
+      if (buttons[i]) {
+        buttons[i].classList.add("wm-highlight");
+        buttons[i].textContent = keyToEmoji[stimKey] || "❓";
+        buttons[i].setAttribute("data-stim", stimKey);
+
+        if (typeof AudioPlayer !== "undefined" && AudioPlayer.playSfx) {
+          AudioPlayer.playSfx("audio/sfx/wm-highlight.mp3", {
+            synthPreset: "highlight",
+          });
+        }
+      }
+
+      setTimeout(function () {
+        setTimeout(next, intervalMs);
+      }, highlightMs);
+
+      i++;
+    }
+
+    next();
+  });
+}
+
+/**
+ * 重設所有位置按鈕為 ❓ 狀態（含移除舊事件）
  *
  * @param {HTMLElement} gridEl
  * @param {number} n
@@ -558,12 +621,14 @@ var WorkingMemory = {
     }
 
     var fieldId = options.fieldId;
+    var ruleId = options.ruleId || "";
     var questions = options.questions;
     var personalBest = options.personalBest || null;
     var onResult = options.onResult || null;
+    var reverseProbability = options.reverseProbability;
 
-    // 1. 隨機方向與位置數
-    var direction = _randomDirection();
+    // 1. 根據 ruleId 決定方向 + 隨機位置數
+    var direction = _resolveDirection(ruleId, reverseProbability);
     var n = _randomN(questions.length);
 
     // 2. 擷取序列
@@ -1072,6 +1137,326 @@ var WorkingMemory = {
           }
         });
       });
+  },
+
+  /**
+   * 白話版說明：
+   *   WM 練習模式 — 固定只記 2 個位置，讓兒童先練習一次。
+   *   會亮起刺激物讓兒童看，然後開放作答。
+   *   答對 → 成功過關。答錯 → 顯示正確答案，最多重試 3 次後強制通過。
+   *
+   * 可修改項目：
+   *   - PRACTICE_N：練習的位置數（預設 2）
+   *   - MAX_PRACTICE_ATTEMPTS：最多重試次數（預設 3）
+   *
+   * 修改注意：
+   *   - 必須先呼叫 init() 載入模板才能使用
+   *   - 使用 onComplete 回呼通知完成，不使用 Promise
+   *
+   * @param {Object} options
+   * @param {string}   options.fieldId    - 'mouse' | 'fishing'
+   * @param {string}   [options.ruleId]   - 'rule1' | 'rule2' | 'mixed'
+   * @param {Function} options.onComplete - 練習結束後回呼
+   */
+  startPractice: function (options) {
+    if (!options || !options.fieldId) {
+      Logger.error("WorkingMemory.startPractice: fieldId is required");
+      if (options && options.onComplete) options.onComplete();
+      return;
+    }
+
+    var fieldId = options.fieldId;
+    var ruleId = options.ruleId || "";
+    var onComplete = options.onComplete || function () {};
+    var PRACTICE_N = 2;
+    var MAX_ATTEMPTS = 3;
+    var attemptCount = 0;
+
+    // 根據 ruleId 決定方向
+    var direction = _resolveDirection(ruleId);
+
+    // 從 Go/No-Go 練習題擷取序列；若無題目則 fallback 隨機
+    var sequence;
+    if (options.questions && options.questions.length >= PRACTICE_N) {
+      sequence = _extractSequence(options.questions, PRACTICE_N);
+    } else {
+      var stimKeys = fieldId === "fishing" ? ["fish", "shark"] : ["cheese", "cat"];
+      var s = [];
+      for (var i = 0; i < PRACTICE_N; i++) {
+        s.push(stimKeys[Math.floor(Math.random() * stimKeys.length)]);
+      }
+      sequence = s;
+    }
+
+    // 取得 UI 元素
+    var gridEl = _container ? _container.querySelector(".wm-grid") : null;
+    var directionEl = _container
+      ? _container.querySelector(".wm-direction-label")
+      : null;
+    var confirmBtn = _container
+      ? _container.querySelector(".wm-confirm-btn")
+      : null;
+    var resultEl = _container ? _container.querySelector(".wm-result") : null;
+
+    if (!gridEl) {
+      Logger.error("WorkingMemory.startPractice: .wm-grid not found");
+      onComplete();
+      return;
+    }
+
+    // 顯示容器
+    if (_container) {
+      _container.style.display = "";
+      _container.classList.remove("hidden");
+    }
+
+    // 方向標籤（加「練習」前綴）
+    if (directionEl) {
+      if (direction === "reverse") {
+        directionEl.innerHTML =
+          '🔄 練習：按照<span style="color:#ff6b6b;font-weight:700">逆序</span>點選！';
+      } else {
+        directionEl.innerHTML =
+          '👉 練習：按照<span style="color:#51cf66;font-weight:700">順序</span>點選！';
+      }
+    }
+
+    // 注入比對樣式（如尚未注入）
+    if (!document.getElementById("wm-comparison-style")) {
+      var cmpStyle = document.createElement("style");
+      cmpStyle.id = "wm-comparison-style";
+      cmpStyle.textContent =
+        ".wm-comparison{display:flex;flex-direction:column;gap:12px;margin-top:16px;width:100%;max-width:600px}" +
+        ".wm-comparison-row{display:flex;align-items:center;gap:10px;padding:10px;background:rgba(255,255,255,0.05);border-radius:8px}" +
+        ".wm-comparison-label{font-size:1em;min-width:80px;color:#ccc;white-space:nowrap}" +
+        ".wm-comparison-items{display:flex;gap:8px;flex-wrap:wrap}" +
+        ".wm-comparison-item{display:flex;align-items:center;gap:4px;padding:4px 10px;background:rgba(255,255,255,0.1);border-radius:5px;font-size:1.1em}" +
+        ".wm-comparison-item.correct{background:rgba(46,204,113,0.2);border:1px solid #2ecc71}" +
+        ".wm-comparison-item.incorrect{background:rgba(231,76,60,0.2);border:1px solid #e74c3c}" +
+        ".wm-continue-btn{display:block;margin:20px auto 0;padding:12px 32px;font-size:1.1rem;font-weight:700;border:none;border-radius:12px;cursor:pointer;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;box-shadow:0 4px 12px rgba(102,126,234,0.4);transition:all .2s}" +
+        ".wm-continue-btn:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(102,126,234,0.5)}";
+      document.head.appendChild(cmpStyle);
+    }
+
+    // 建立答案比對 HTML
+    function buildComparisonHtml(details) {
+      var toggleStates = TOGGLE_STATES[fieldId] || TOGGLE_STATES.mouse;
+      var stimKeyToEmoji = {};
+      for (var si = 0; si < toggleStates.length; si++) {
+        stimKeyToEmoji[toggleStates[si].key] = toggleStates[si].emoji;
+      }
+
+      var html = "<div class='wm-comparison'>";
+      html +=
+        "<div class='wm-comparison-row'><div class='wm-comparison-label'>正確答案：</div><div class='wm-comparison-items'>";
+      for (var ci = 0; ci < details.length; ci++) {
+        html +=
+          "<div class='wm-comparison-item'><span style='color:#ffd700;'>" +
+          details[ci].position +
+          ":</span> <span>" +
+          (stimKeyToEmoji[details[ci].expected] || "❓") +
+          "</span></div>";
+      }
+      html += "</div></div>";
+      html +=
+        "<div class='wm-comparison-row'><div class='wm-comparison-label'>你的答案：</div><div class='wm-comparison-items'>";
+      for (var pi = 0; pi < details.length; pi++) {
+        var cls = details[pi].correct
+          ? "wm-comparison-item correct"
+          : "wm-comparison-item incorrect";
+        html +=
+          "<div class='" + cls + "'><span style='color:#ffd700;'>" +
+          details[pi].position +
+          ":</span> <span>" +
+          (stimKeyToEmoji[details[pi].actual] || "❓") +
+          "</span></div>";
+      }
+      html += "</div></div></div>";
+      return html;
+    }
+
+    /** 執行一輪練習 */
+    function runAttempt() {
+      attemptCount++;
+
+      // 清除舊按鈕事件：clone 所有 position-btn
+      var oldBtns = gridEl.querySelectorAll(".wm-position-btn");
+      for (var bi = 0; bi < oldBtns.length; bi++) {
+        var fresh = oldBtns[bi].cloneNode(true);
+        oldBtns[bi].parentNode.replaceChild(fresh, oldBtns[bi]);
+      }
+
+      _resetButtons(gridEl, PRACTICE_N);
+      if (resultEl) resultEl.style.display = "none";
+      if (confirmBtn) {
+        confirmBtn.style.display = "none";
+        confirmBtn.disabled = true;
+      }
+
+      // 語音播報方向
+      var voicePath =
+        direction === "reverse"
+          ? "audio/voice/wm/wm-reverse.mp3"
+          : "audio/voice/wm/wm-forward.mp3";
+
+      var voicePromise = Promise.resolve();
+      if (typeof AudioPlayer !== "undefined" && AudioPlayer.playVoice) {
+        voicePromise = AudioPlayer.playVoice(voicePath, {
+          text: direction === "reverse" ? "請倒著點選" : "請照順序點選",
+          gender: "female",
+        });
+      }
+
+      voicePromise
+        .then(function () {
+          return _showMemoryPrompt(gridEl);
+        })
+        .then(function () {
+          // 練習用高亮：顯示刺激物 emoji
+          return _highlightPractice(sequence, fieldId, gridEl);
+        })
+        .then(function () {
+          // 短暫維持顯示後重設為 ❓
+          return new Promise(function (r) {
+            setTimeout(r, 600);
+          });
+        })
+        .then(function () {
+          _resetButtons(gridEl, PRACTICE_N);
+          _setupToggle(gridEl, fieldId, PRACTICE_N);
+
+          // 顯示確認按鈕（clone 移除舊事件）
+          var curConfirm = _container
+            ? _container.querySelector(".wm-confirm-btn")
+            : null;
+          if (curConfirm) {
+            var newConfirm = curConfirm.cloneNode(true);
+            curConfirm.parentNode.replaceChild(newConfirm, curConfirm);
+            confirmBtn = newConfirm;
+
+            newConfirm.style.display = "";
+            newConfirm.disabled = false;
+
+            newConfirm.addEventListener(
+              "click",
+              function () {
+                newConfirm.disabled = true;
+
+                var playerAnswer = _collectAnswers(gridEl, PRACTICE_N);
+                var comparison = _compareAnswers(
+                  playerAnswer,
+                  sequence,
+                  direction,
+                );
+                var allCorrect = comparison.correctCount === PRACTICE_N;
+
+                // 音效回饋
+                if (typeof AudioPlayer !== "undefined" && AudioPlayer.playSfx) {
+                  AudioPlayer.playSfx(
+                    allCorrect
+                      ? "audio/sfx/wm-correct.mp3"
+                      : "audio/sfx/wm-incorrect.mp3",
+                    { synthPreset: allCorrect ? "correct" : "error" },
+                  );
+                }
+
+                if (allCorrect) {
+                  // ✅ 答對
+                  if (resultEl) {
+                    resultEl.style.display = "";
+                    resultEl.innerHTML =
+                      "<div class='wm-result-summary'>" +
+                      "<div style='font-size:2em;margin-bottom:10px;'>🎉 答對了！</div>" +
+                      "<div>你的記憶力真棒！準備開始正式遊戲囉～</div>" +
+                      "</div>";
+
+                    var doneBtn = document.createElement("button");
+                    doneBtn.className = "wm-continue-btn";
+                    doneBtn.textContent = "➡️ 開始正式遊戲";
+                    resultEl.appendChild(doneBtn);
+                    doneBtn.addEventListener(
+                      "click",
+                      function () {
+                        doneBtn.disabled = true;
+                        onComplete();
+                      },
+                      { once: true },
+                    );
+                  } else {
+                    onComplete();
+                  }
+                } else {
+                  // ❌ 答錯
+                  var compHtml = buildComparisonHtml(comparison.details);
+
+                  if (resultEl) {
+                    resultEl.style.display = "";
+
+                    if (attemptCount >= MAX_ATTEMPTS) {
+                      // 已達重試上限 → 強制通過
+                      resultEl.innerHTML =
+                        "<div class='wm-result-summary'>" +
+                        "<div style='font-size:2em;margin-bottom:10px;'>沒關係！</div>" +
+                        "<div style='margin-bottom:12px;'>我們直接開始正式遊戲吧～</div>" +
+                        "</div>" +
+                        compHtml;
+
+                      var forceBtn = document.createElement("button");
+                      forceBtn.className = "wm-continue-btn";
+                      forceBtn.textContent = "➡️ 開始正式遊戲";
+                      resultEl.appendChild(forceBtn);
+                      forceBtn.addEventListener(
+                        "click",
+                        function () {
+                          forceBtn.disabled = true;
+                          onComplete();
+                        },
+                        { once: true },
+                      );
+                    } else {
+                      // 還可以重試
+                      resultEl.innerHTML =
+                        "<div class='wm-result-summary'>" +
+                        "<div style='font-size:2em;margin-bottom:10px;'>✗ 再試試看！</div>" +
+                        "<div style='margin-bottom:12px;'>看看正確答案，再來一次吧！</div>" +
+                        "</div>" +
+                        compHtml;
+
+                      var retryBtn = document.createElement("button");
+                      retryBtn.className = "wm-continue-btn";
+                      retryBtn.textContent =
+                        "🔄 再試一次 (" +
+                        attemptCount +
+                        "/" +
+                        MAX_ATTEMPTS +
+                        ")";
+                      resultEl.appendChild(retryBtn);
+                      retryBtn.addEventListener(
+                        "click",
+                        function () {
+                          retryBtn.disabled = true;
+                          runAttempt();
+                        },
+                        { once: true },
+                      );
+                    }
+                  } else {
+                    if (attemptCount >= MAX_ATTEMPTS) {
+                      onComplete();
+                    } else {
+                      runAttempt();
+                    }
+                  }
+                }
+              },
+              { once: true },
+            );
+          }
+        });
+    }
+
+    // 開始第一輪練習
+    runAttempt();
   },
 
   /**

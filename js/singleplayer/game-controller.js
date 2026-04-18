@@ -154,38 +154,54 @@ var GameController = (function () {
   var WM_TUTORIAL_TEXTS = {
     mouse: {
       forward: [
-        '嘿！小老鼠肚子好餓喔～要去找起司吃！',
+        '你剛才玩小老鼠的遊戲好棒！現在要來玩記憶遊戲囉～',
         '等一下會有好多東西跑出來，有起司🧀，也可能有貓咪🐱喔！',
         '你要用眼睛記住：<span class="wm-tutorial-highlight">誰先跑出來？誰後面才出來？</span>',
         '看完之後，<span class="wm-tutorial-action">照順序點出來！</span>',
         '第一個出來的先點、第二個出來的再點、最後出來的最後點！',
-        '就像排隊買冰淇淋一樣，誰先來誰先買～'
+        '就像排隊買冰淇淋一樣，誰先來誰先買～照順序喔！'
       ],
       reverse: [
-        '哇！這次小老鼠要玩<span class="wm-tutorial-reverse">倒著走</span>的遊戲囉！',
-        '一樣會有起司🧀和貓咪🐱跑出來～',
-        '但這次不一樣喔！你要<span class="wm-tutorial-reverse">「倒著點」</span>！',
+        '你剛才玩小老鼠的遊戲好棒！現在要來玩記憶遊戲囉～',
+        '一樣會有起司🧀和貓咪🐱跑出來，但這次不一樣喔！',
+        '這次要玩<span class="wm-tutorial-reverse">「倒著點」</span>的遊戲！',
         '<span class="wm-tutorial-highlight">最後跑出來的，你要第一個點！</span>',
         '第一個跑出來的，反而要最後才點喔！',
-        '就像倒退嚕～咻咻咻～從後面走回來！'
+        '就像倒退嚕～咻咻咻～從後面走回來！記住，倒著點喔！'
+      ],
+      mixed: [
+        '你剛才玩小老鼠的遊戲好棒！現在要來玩記憶遊戲囉～',
+        '等一下會有好多東西跑出來，有起司🧀，也可能有貓咪🐱喔！',
+        '這次的記憶遊戲很特別喔！<span class="wm-tutorial-highlight">有時候要照順序點，有時候要倒著點！</span>',
+        '遊戲會告訴你：這一次要<span class="wm-tutorial-action">「照順序」</span>還是<span class="wm-tutorial-reverse">「倒著來」</span>。',
+        '照順序就是誰先出來先點誰，倒著就是最後出來的要先點！',
+        '仔細看提示，你一定可以的！加油～'
       ]
     },
     fishing: {
       forward: [
-        '耶！我們要去釣魚囉～🎣',
+        '你剛才釣魚的遊戲玩得好棒！現在要來玩記憶遊戲囉～🎣',
         '等一下海裡會游出好多東西，有小魚🐟，也可能有鯊魚🦈喔！',
         '你要記住：<span class="wm-tutorial-highlight">誰先游出來？誰後面才游出來？</span>',
         '看完之後，<span class="wm-tutorial-action">照順序點出來！</span>',
         '誰先游出來就先點誰，誰最後游出來就最後點！',
-        '就像魚兒排隊游泳一樣，一條接一條～'
+        '就像魚兒排隊游泳一樣，一條接一條～照順序喔！'
       ],
       reverse: [
-        '哇喔！這次魚兒要玩<span class="wm-tutorial-reverse">倒游</span>的遊戲！',
-        '一樣會有小魚🐟和鯊魚🦈游出來～',
-        '但這次要<span class="wm-tutorial-reverse">「倒著點」</span>喔！',
+        '你剛才釣魚的遊戲玩得好棒！現在要來玩記憶遊戲囉～🎣',
+        '一樣會有小魚🐟和鯊魚🦈游出來，但這次不一樣喔！',
+        '這次要玩<span class="wm-tutorial-reverse">「倒著點」</span>的遊戲！',
         '<span class="wm-tutorial-highlight">最後游出來的魚，你要第一個點牠！</span>',
         '第一條游出來的魚，反而要最後才點喔！',
-        '就像魚兒在倒退嚕～噗噗噗～往回游！'
+        '就像魚兒在倒退嚕～噗噗噗～往回游！記住，倒著點喔！'
+      ],
+      mixed: [
+        '你剛才釣魚的遊戲玩得好棒！現在要來玩記憶遊戲囉～🎣',
+        '等一下海裡會游出好多東西，有小魚🐟，也可能有鯊魚🦈喔！',
+        '這次的記憶遊戲很特別喔！<span class="wm-tutorial-highlight">有時候要照順序點，有時候要倒著點！</span>',
+        '遊戲會告訴你：這一次要<span class="wm-tutorial-action">「照順序」</span>還是<span class="wm-tutorial-reverse">「倒著來」</span>。',
+        '照順序就是誰先游出來先點誰，倒著就是最後游出來的要先點！',
+        '仔細看提示，你一定可以的！加油～'
       ]
     }
   };
@@ -548,22 +564,46 @@ var GameController = (function () {
    */
   function _showWmGuideFlow(combo, onReady) {
     var fieldId = combo.fieldId;
-    // 目前固定使用 forward（順向），之後可根據 combo 配置決定
-    var direction = combo.wmDirection || "forward";
+    var ruleId = combo.ruleId || "";
+
+    // 根據 ruleId 決定指導語方向
+    // rule1 → forward、rule2 → reverse、mixed → "mixed" 專屬指導語
+    var direction;
+    if (ruleId === "rule1") {
+      direction = "forward";
+    } else if (ruleId === "rule2") {
+      direction = "reverse";
+    } else {
+      direction = "mixed";
+    }
 
     // Step 1: 顯示活潑版指導語
     _showWmTutorialText(fieldId, direction, function () {
-      // Step 2: 播放 WM 規則動畫
-      _playWmGuideAnimation(combo, direction, onReady);
+      // Step 2: 播放 WM 規則動畫（mixed 隨機選 forward/reverse 動畫）
+      var animDirection = direction === "mixed"
+        ? (Math.random() < 0.5 ? "reverse" : "forward")
+        : direction;
+      _playWmGuideAnimation(combo, animDirection, onReady);
     });
   }
 
   /**
-   * 顯示工作記憶活潑版指導語（5秒或點擊跳過）
-   * @param {string} fieldId - 'mouse' | 'fishing'
-   * @param {string} direction - 'forward' | 'reverse'
-   * @param {Function} onDone - 完成後的回調
+   * 白話版說明：
+   *   工作記憶的活潑版指導語，所有段落一次全部顯示。
+   *   語音從頭串聯播到尾，正在播的那句會高亮。
+   *   小朋友隨時可以按「下一步」跳過語音，進入規則動畫。
+   *
+   * 可修改項目：
+   *   - WM_TUTORIAL_VOICE_DIR：語音檔存放路徑
+   *   - 按鈕文字
+   *
+   * 修改注意：
+   *   - 語音檔命名規則：{fieldId}-{direction}-{步驟號碼}.mp3
+   *     例如 mouse-forward-1.mp3、fishing-mixed-3.mp3
+   *   - 使用 AudioPlayer.playVoiceSequence() 串聯播放
    */
+  var WM_TUTORIAL_VOICE_DIR = "audio/voice/wm-tutorial/";
+
   function _showWmTutorialText(fieldId, direction, onDone) {
     var texts = WM_TUTORIAL_TEXTS[fieldId]
       ? WM_TUTORIAL_TEXTS[fieldId][direction]
@@ -574,35 +614,7 @@ var GameController = (function () {
       return;
     }
 
-    // 建立指導語 overlay
-    var overlay = document.createElement("div");
-    overlay.className = "wm-tutorial-overlay";
-    overlay.style.cssText =
-      "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);" +
-      "display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;box-sizing:border-box;";
-
-    var titleEmoji = fieldId === "mouse" ? "🐭" : "🎣";
-    var titleText = fieldId === "mouse" ? "小老鼠記憶遊戲" : "釣魚記憶遊戲";
-
-    var html =
-      '<div class="wm-tutorial-box" style="' +
-      "max-width:420px;padding:24px 28px;border-radius:16px;" +
-      "background:linear-gradient(135deg,rgba(255,255,255,0.15),rgba(255,255,255,0.05));" +
-      "border:2px solid rgba(255,255,255,0.25);text-align:left;line-height:1.8;" +
-      'font-size:1.15rem;color:#fff;">' +
-      '<p style="font-size:1.4rem;font-weight:700;margin:0 0 16px;text-align:center;">' +
-      titleEmoji + " " + titleText + "</p>";
-
-    for (var i = 0; i < texts.length; i++) {
-      html += '<p style="margin:10px 0;">' + texts[i] + "</p>";
-    }
-
-    html +=
-      '<p style="display:block;text-align:center;font-size:1.5rem;font-weight:700;margin-top:20px;color:#ffd43b;">' +
-      "準備好了嗎？GO！</p>";
-    html += "</div>";
-
-    // 注入高亮樣式
+    // 注入樣式
     var styleId = "wm-tutorial-text-style";
     if (!document.getElementById(styleId)) {
       var style = document.createElement("style");
@@ -610,28 +622,106 @@ var GameController = (function () {
       style.textContent =
         ".wm-tutorial-highlight{color:#ffd43b;font-weight:700}" +
         ".wm-tutorial-action{color:#51cf66;font-weight:700}" +
-        ".wm-tutorial-reverse{color:#ff6b6b;font-weight:700}";
+        ".wm-tutorial-reverse{color:#ff6b6b;font-weight:700}" +
+        ".wm-tutorial-next-btn{display:block;margin:20px auto 0;padding:12px 32px;" +
+        "border:none;border-radius:12px;font-size:1.2rem;font-weight:700;color:#fff;" +
+        "background:linear-gradient(135deg,#3498db,#2980b9);cursor:pointer;" +
+        "box-shadow:0 4px 0 rgba(0,0,0,0.2);transition:transform 0.1s,box-shadow 0.1s;}" +
+        ".wm-tutorial-next-btn:active{transform:translateY(3px);box-shadow:none;}" +
+        ".wm-tut-sentence{margin:6px 0;padding:4px 8px;border-radius:8px;" +
+        "border-left:3px solid transparent;transition:background 0.3s,border-color 0.3s;}" +
+        ".wm-tut-sentence.speaking{background:rgba(255,255,255,0.1);" +
+        "border-left-color:#ffd43b;}";
       document.head.appendChild(style);
     }
 
-    overlay.innerHTML = html;
+    // 組裝所有段落 HTML
+    var paragraphs = "";
+    for (var i = 0; i < texts.length; i++) {
+      paragraphs +=
+        '<p class="wm-tut-sentence" id="wmTutS' + i + '">' +
+        texts[i] + "</p>";
+    }
+
+    // 建立指導語 overlay
+    var overlay = document.createElement("div");
+    overlay.className = "wm-tutorial-overlay";
+    overlay.style.cssText =
+      "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);" +
+      "display:flex;align-items:center;justify-content:center;z-index:9999;" +
+      "padding:20px;box-sizing:border-box;";
+
+    var titleEmoji = fieldId === "mouse" ? "🐭" : "🎣";
+    var titleText = fieldId === "mouse" ? "小老鼠記憶遊戲" : "釣魚記憶遊戲";
+
+    overlay.innerHTML =
+      '<div class="wm-tutorial-box" style="' +
+      "max-width:420px;max-height:85vh;overflow-y:auto;padding:24px 28px;" +
+      "border-radius:16px;" +
+      "background:linear-gradient(135deg,rgba(255,255,255,0.15),rgba(255,255,255,0.05));" +
+      "border:2px solid rgba(255,255,255,0.25);text-align:left;line-height:1.8;" +
+      'font-size:1.15rem;color:#fff;">' +
+      '<p style="font-size:1.4rem;font-weight:700;margin:0 0 12px;text-align:center;">' +
+      titleEmoji + " " + titleText + "</p>" +
+      paragraphs +
+      '<button class="wm-tutorial-next-btn" id="wmTutNextBtn">下一步 ➡</button>' +
+      "</div>";
+
     document.body.appendChild(overlay);
 
-    var closed = false;
-    function closeOverlay() {
-      if (closed) return;
-      closed = true;
+    var nextBtn = overlay.querySelector("#wmTutNextBtn");
+
+    /** 從 HTML 文字中去除標籤，取得純文字供 TTS 朗讀 */
+    function stripHtml(s) {
+      var tmp = document.createElement("div");
+      tmp.innerHTML = s;
+      return tmp.textContent || tmp.innerText || "";
+    }
+
+    // 組裝語音序列
+    var voiceItems = [];
+    for (var j = 0; j < texts.length; j++) {
+      voiceItems.push({
+        filePath:
+          WM_TUTORIAL_VOICE_DIR +
+          fieldId + "-" + direction + "-" + (j + 1) + ".mp3",
+        text: stripHtml(texts[j]),
+        gender: "female",
+      });
+    }
+
+    // 開始串聯播放語音
+    var seq = null;
+    if (typeof AudioPlayer !== "undefined" && AudioPlayer.playVoiceSequence) {
+      seq = AudioPlayer.playVoiceSequence(voiceItems, function (index) {
+        // 高亮正在播放的句子
+        var sentences = overlay.querySelectorAll(".wm-tut-sentence");
+        for (var k = 0; k < sentences.length; k++) {
+          if (k === index) {
+            sentences[k].classList.add("speaking");
+          } else {
+            sentences[k].classList.remove("speaking");
+          }
+        }
+      });
+
+      // 全部播完 → 移除高亮
+      seq.promise.then(function () {
+        var sentences = overlay.querySelectorAll(".wm-tut-sentence");
+        for (var m = 0; m < sentences.length; m++) {
+          sentences[m].classList.remove("speaking");
+        }
+      });
+    }
+
+    // 按鈕：隨時可點，跳過語音 → 關閉 → 進入動畫
+    nextBtn.addEventListener("click", function () {
+      if (seq) seq.cancel();
       if (overlay.parentNode) {
         overlay.parentNode.removeChild(overlay);
       }
       onDone();
-    }
-
-    // 點擊可提前關閉
-    overlay.addEventListener("click", closeOverlay);
-
-    // 5 秒後自動關閉
-    setTimeout(closeOverlay, 5000);
+    });
   }
 
   /**
@@ -677,17 +767,73 @@ var GameController = (function () {
       AudioPlayer.resumeAudioContext();
     }
 
-    // ★ 階段過場 2：練習
+    // ★ 階段過場 2：規則練習
     showStageTransition({
       icon: "🎯",
       title: "練習時間！",
       subtitle: "先練習 " + PRACTICE_TRIAL_COUNT + " 題，答錯可以再試喔！",
       duration: 2500,
       onDone: function () {
-        // Plan D：跑練習（完成後經 WM 判斷再進入正式）
+        // 跑規則練習 → 完成後判斷是否需要 WM 練習
         runPracticeTrials(combo, function () {
-          _beforeBeginTrials(combo);
+          var hasWM = combo.enableWm || combo.hasWM;
+          if (hasWM) {
+            _runWmPractice(combo, function () {
+              _beforeBeginTrials(combo);
+            });
+          } else {
+            _beforeBeginTrials(combo);
+          }
         });
+      },
+    });
+  }
+
+  /**
+   * 白話版說明：
+   *   規則練習完成後、正式試驗之前，讓兒童先練習一次工作記憶。
+   *   固定只記 2 個位置（降低難度），答錯可重試最多 3 次。
+   *
+   * 可修改項目：無（練習參數在 WorkingMemory.startPractice 內調整）
+   *
+   * 修改注意：
+   *   - 只在「觀看示範與練習」流程中執行，跳過示範則不會進到這裡
+   *   - 需要 WorkingMemory 模組已載入
+   *
+   * @param {Object}   combo  - combo 定義
+   * @param {Function} onDone - 練習結束後回呼
+   */
+  function _runWmPractice(combo, onDone) {
+    // ★ 階段過場：WM 練習
+    showStageTransition({
+      icon: "🧠",
+      title: "記憶練習！",
+      subtitle: "先練習記住順序，答錯可以再試喔！",
+      duration: 2500,
+      onDone: function () {
+        dom.wmContainer.classList.remove("hidden");
+
+        WorkingMemory.init({
+          container: dom.wmContainer,
+          templatePath: "../shared/working-memory.html",
+        })
+          .then(function () {
+            WorkingMemory.startPractice({
+              fieldId: combo.fieldId,
+              ruleId: combo.ruleId,
+              questions: _practiceQuestions,
+              onComplete: function () {
+                WorkingMemory.hide();
+                dom.wmContainer.classList.add("hidden");
+                onDone();
+              },
+            });
+          })
+          .catch(function (err) {
+            Logger.error("❌ WM 練習初始化錯誤:", err);
+            dom.wmContainer.classList.add("hidden");
+            onDone();
+          });
       },
     });
   }
@@ -1393,10 +1539,19 @@ var GameController = (function () {
     })
       .then(function () {
         if (_wmTimedOut) return; // 已逾時跳過
+        // 新增：取得當前難度的 WM 參數
+        var _wmDiffParams = DifficultyProvider.getWMParams({
+          fieldId: combo.fieldId,
+          ruleId: combo.ruleId,
+          ruleQuestionCount: _questions.length,
+        });
+
         return WorkingMemory.start({
           fieldId: combo.fieldId,
+          ruleId: combo.ruleId,
           questions: _questions,
           personalBest: personalBest,
+          reverseProbability: _wmDiffParams.reverseProbability,
           onResult: function (wmScore) {
             if (_wmTimedOut) return; // 已逾時跳過
             _wmDone();

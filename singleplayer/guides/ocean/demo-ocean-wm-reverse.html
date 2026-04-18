@@ -149,6 +149,40 @@
     .progress-fill { height:100%; width:0%; border-radius:2px; transition:width linear; }
     .progress-fill { background:linear-gradient(90deg, var(--primary-color), var(--success-color)); }
     .phase-label { font-size:0.7rem; color:rgba(255,255,255,0.35); margin-bottom:5px; min-height:1em; }
+    /* 完成覆蓋 + 控制按鈕 */
+    .guide-done-overlay {
+      position:absolute; inset:0; z-index:100;
+      background:rgba(44,62,80,0.92);
+      display:none; flex-direction:column; align-items:center; justify-content:center;
+      gap:16px; border-radius:15px;
+    }
+    .guide-done-overlay.show { display:flex; }
+    .guide-done-title { font-size:1.3rem; font-weight:700; }
+    .guide-btn {
+      padding:12px 28px; border:none; border-radius:12px;
+      font-size:1.05rem; font-weight:700; cursor:pointer; color:#fff;
+      transition:transform 0.15s, box-shadow 0.15s;
+    }
+    .guide-btn:active { transform:scale(0.96); }
+    .guide-btn-ready {
+      background:linear-gradient(135deg,#2ecc71,#27ae60);
+      box-shadow:0 4px 12px rgba(46,204,113,0.4);
+    }
+    .guide-btn-replay {
+      background:rgba(255,255,255,0.12);
+      border:1px solid rgba(255,255,255,0.2);
+    }
+    .guide-btn-skip {
+      position:absolute; top:12px; right:12px; z-index:110;
+      background:rgba(255,255,255,0.25);
+      border:2px solid rgba(255,255,255,0.5);
+      color:#fff; padding:10px 22px; border-radius:12px;
+      font-size:1rem; font-weight:700; cursor:pointer;
+      display:none; box-shadow:0 2px 8px rgba(0,0,0,0.25);
+      transition:background 0.15s, transform 0.1s;
+    }
+    .guide-btn-skip:hover { background:rgba(255,255,255,0.4); transform:scale(1.05); }
+    .guide-btn-skip:active { transform:scale(0.97); }
   </style>
 </head>
 <body>
@@ -182,7 +216,7 @@
           按照<span style="color:var(--reverse-color);font-weight:bold">逆序</span>，<br>
           剛才<strong>最後 6 個物件</strong>的順序為何？
         </div>
-        <div class="wm-hint">點擊按鈕切換答案（❓ → 🐟 → 🦈 → ❓）</div>
+        <div class="wm-hint">點擊按鈕切換答案（❓ → 🦈 → 🐟 → ❓）</div>
         <div class="wm-answer-bar" id="wmAnswerBar"></div>
         <div style="display:flex;gap:8px;justify-content:center">
           <button class="wm-btn wm-btn-reset">🔄 重新選擇</button>
@@ -206,9 +240,16 @@
       <div class="hand hand-finger" id="handFinger"></div>
       <div class="hand hand-stop" id="handStop"></div>
     </div>
+    <!-- 完成覆蓋 -->
+    <div class="guide-done-overlay" id="guideDoneOverlay">
+      <div class="guide-done-title">👀 看完了！</div>
+      <button class="guide-btn guide-btn-ready" id="btnGuideReady">準備好了！✅</button>
+      <button class="guide-btn guide-btn-replay" id="btnGuideReplay">再看一次 🔄</button>
+    </div>
+    <button class="guide-btn-skip" id="btnGuideSkip">跳過 ⏩</button>
   </div>
   <script>
-    const SVG_BG = `<svg height="100%" width="100%" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 -70 512 582" xml:space="preserve">
+    const SVG_BG = `<svg height="100%" width="100%" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 -70 512 582" preserveAspectRatio="xMidYMid slice" xml:space="preserve">
           <rect x="43" y="-170" width="434" height="682" fill="#ffffff" />
           <g transform="translate(10, 0)">
 	<circle style="fill:#FFC552;" cx="128.516" cy="93.459" r="43.036"/>
@@ -281,9 +322,9 @@
       <path style="fill:#F9A671;" d="M365.455,286.373c-5.207,0-8.678-3.471-8.678-8.678v-43.39c0-5.207,3.471-8.678,8.678-8.678 c5.207,0,8.678,3.471,8.678,8.678v43.39C374.133,282.902,370.662,286.373,365.455,286.373"/>
     </g></g></svg>`;
 
-    const SEQ = ['fish','shark','fish','shark','fish','fish'];
+    const SEQ = ['shark','fish','shark','fish','shark','shark'];
     const SVGS = { fish: SVG_FISH, shark: SVG_SHARK };
-    const CYCLE = [null, 'fish', 'shark']; // ❓→fish→shark→❓
+    const CYCLE = [null, 'shark', 'fish']; // ❓→fish→shark→❓
 
     const DOM = {
       container: document.getElementById('demoContainer'),
@@ -397,7 +438,7 @@
     function playFront(){
       const bp=btnCenter(); const GAP=4000;
       SEQ.forEach((type,i)=>{
-        const t=1000+i*GAP; const isGo=(type==='fish');
+        const t=1000+i*GAP; const isGo=(type==='shark');
         sc(()=>{ DOM.stim.innerHTML=SVGS[type]; DOM.stim.style.opacity='1'; fillSlot(i,type); }, t);
         if(isGo){
           sc(()=>{ rstHand(); DOM.hand.innerHTML=SVG_SPACE_UP;
@@ -475,13 +516,47 @@
         DOM.hand.style.transition='left 0.3s, opacity 0.3s'; DOM.hand.style.left='440px'; DOM.hand.style.opacity='0'; }, cf+1000);
       sc(()=>{ DOM.wmResult.classList.add('show'); DOM.wmCont.style.display='block'; }, cf+1400);
       sc(()=>{ DOM.wmScene.style.transition='opacity 0.5s'; DOM.wmScene.style.opacity='0'; }, cf+3800);
-      sc(()=>startCycle(), cf+4500);
+      sc(()=>showDoneOverlay(), cf+4500);
     }
 
-    function startCycle(){ clr(); resetAll(); startTimebar(42000);
+    var _isEmbedded = (window.parent !== window);
+
+    function showDoneOverlay(){
+      clr(); resetAll();
+      document.getElementById('guideDoneOverlay').classList.add('show');
+    }
+
+    function startCycle(){ clr(); resetAll();
+      document.getElementById('guideDoneOverlay').classList.remove('show');
+      startTimebar(42000);
       DOM.phaseLabel.textContent='── 工作記憶示範（海洋場・逆向）──'; playFront(); playMid(); playBack(); }
     function init(){ DOM.bgLayer.innerHTML=SVG_BG; DOM.hand.innerHTML=SVG_SPACE_UP; DOM.handStop.innerHTML=SVG_HAND_STOP; startCycle(); }
     document.addEventListener('DOMContentLoaded', init);
+
+    // 控制按鈕
+    document.addEventListener('DOMContentLoaded', function(){
+      document.getElementById('btnGuideReady').addEventListener('click', function(){
+        clr();
+        if(_isEmbedded) window.parent.postMessage({type:'guide-ready'},'*');
+      });
+      document.getElementById('btnGuideReplay').addEventListener('click', function(){
+        startCycle();
+      });
+      document.getElementById('btnGuideSkip').addEventListener('click', function(){
+        clr();
+        if(_isEmbedded) window.parent.postMessage({type:'guide-ready'},'*');
+      });
+    });
+
+    // 接收父頁面訊息
+    window.addEventListener('message', function(e){
+      if(e.data && e.data.type==='init'){
+        document.getElementById('btnGuideSkip').style.display='block';
+      }
+      if(e.data && e.data.type==='stop'){
+        clr();
+      }
+    });
   </script>
 </body>
 </html>

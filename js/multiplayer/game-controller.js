@@ -492,10 +492,19 @@ var GameController = (function () {
       templatePath: "../shared/working-memory.html",
     })
       .then(function () {
+        // 新增：取得當前難度的 WM 參數
+        var _wmDiffParams = DifficultyProvider.getWMParams({
+          fieldId: combo.fieldId,
+          ruleId: combo.ruleId,
+          ruleQuestionCount: _questions.length,
+        });
+
         return WorkingMemory.start({
           fieldId: combo.fieldId,
+          ruleId: combo.ruleId,
           questions: _questions,
           personalBest: null, // MP 不使用 ProgressTracker，無 personalBest
+          reverseProbability: _wmDiffParams.reverseProbability,
           onResult: function (wmScore) {
             WorkingMemory.hide();
             dom.wmContainer.classList.add("hidden");

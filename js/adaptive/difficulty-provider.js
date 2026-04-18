@@ -176,6 +176,9 @@ var DifficultyProvider = (function () {
         /** 'forward' | 'reverse' */
         direction: direction,
 
+        /** 難度對應的逆向機率 */
+        reverseProbability: wm.REVERSE_PROBABILITY || 0.5,
+
         /** 位置亮起時間（ms） */
         highlightDurationMs: wm.HIGHLIGHT_DURATION_MS || 800,
 
