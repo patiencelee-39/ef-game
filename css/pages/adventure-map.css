@@ -125,6 +125,7 @@ body {
   width: 100%;
   height: 100%;
   pointer-events: none;
+  /* JS 會動態覆寫 top/left/width/height，對齊圖片實際區域 */
 }
 
 .adventure-point {

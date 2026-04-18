@@ -10,22 +10,58 @@ var _detectedBoard = null;
 // ─── 探險點座標（百分比，相對於地圖圖片）───
 // 座標會在地圖圖片載入後套用
 // 每張地圖 6 個點沿白色路徑分佈
+
+/**
+ * 計算 object-fit: contain 圖片的實際顯示區域
+ * 回傳 { offsetX, offsetY, width, height }（單位：px）
+ */
+function _calcContainedRect(imgEl) {
+  var cW = imgEl.clientWidth;
+  var cH = imgEl.clientHeight;
+  var nW = imgEl.naturalWidth;
+  var nH = imgEl.naturalHeight;
+  if (!nW || !nH) return { offsetX: 0, offsetY: 0, width: cW, height: cH };
+
+  var ratio = Math.min(cW / nW, cH / nH);
+  var drawW = nW * ratio;
+  var drawH = nH * ratio;
+  return {
+    offsetX: (cW - drawW) / 2,
+    offsetY: (cH - drawH) / 2,
+    width: drawW,
+    height: drawH,
+  };
+}
+
+/** 根據圖片實際顯示區域，調整 points-overlay 的位置與大小 */
+function _alignOverlay() {
+  var mapBg = document.getElementById("map-bg");
+  var overlay = document.getElementById("points-overlay");
+  if (!mapBg || !overlay) return;
+
+  var rect = _calcContainedRect(mapBg);
+  overlay.style.left = rect.offsetX + "px";
+  overlay.style.top = rect.offsetY + "px";
+  overlay.style.width = rect.width + "px";
+  overlay.style.height = rect.height + "px";
+}
+
 var POINT_POSITIONS = {
   mouse: [
     { left: "16%", top: "58%" },  // ① 左下紫色房子旁
     { left: "35%", top: "52%" },  // ② 蘑菇旁
-    { left: "68%", top: "78%" },  // ③ 右下紅屋頂房子旁
-    { left: "62%", top: "45%" },  // ④ 右中綠屋頂房子旁
-    { left: "48%", top: "12%" },  // ⑤ 上中粉紅房子旁
-    { left: "15%", top: "18%" },  // ⑥ 左上鳥巢金蛋旁
+    { left: "74%", top: "85%" },  // ③ 右下紅屋頂房子旁
+    { left: "68%", top: "45%" },  // ④ 右中綠屋頂房子旁
+    { left: "52%", top: "16%" },  // ⑤ 上中粉紅房子旁
+    { left: "22%", top: "24%" },  // ⑥ 左上鳥巢金蛋旁
   ],
   fishing: [
-    { left: "42%", top: "82%" },  // ① 下方中間紅綠蛋旁
-    { left: "85%", top: "72%" },  // ② 右下黃蛋旁
-    { left: "28%", top: "45%" },  // ③ 左中紫蛋旁
-    { left: "8%",  top: "18%" },  // ④ 左上角綠蛋旁
-    { left: "40%", top: "22%" },  // ⑤ 上中偏左綠紅蛋旁
-    { left: "68%", top: "25%" },  // ⑥ 右中偏上籃子旁
+    { left: "52%", top: "83%" },  // ① 下方中間紅綠蛋旁
+    { left: "87%", top: "85%" },  // ② 右下黃蛋旁
+    { left: "35%", top: "45%" },  // ③ 左中紫蛋旁
+    { left: "15%",  top: "12%" },  // ④ 左上角綠蛋旁
+    { left: "42%", top: "20%" },  // ⑤ 上中偏左綠紅蛋旁
+    { left: "75%", top: "39%" },  // ⑥ 右中偏上籃子旁
   ],
 };
 
@@ -306,6 +342,19 @@ function _initMap() {
     renderMap(0);
   }
 
+  // 監聽視窗大小變化（旋轉螢幕、縮放等）→ 重新對齊 overlay
+  window.addEventListener("resize", _alignOverlay);
+
+  // 首次載入：等圖片載入完成後對齊
+  var mapBg = document.getElementById("map-bg");
+  if (mapBg) {
+    if (mapBg.complete) {
+      _alignOverlay();
+    } else {
+      mapBg.addEventListener("load", _alignOverlay);
+    }
+  }
+
   // === 故事系統：檢查是否有待播放的完成對話 / 進化動畫 ===
   if (typeof StoryDialogue !== "undefined" && StoryDialogue.checkPendingEvent) {
     StoryDialogue.checkPendingEvent(function () {
@@ -421,6 +470,9 @@ function switchMap(mapIndex) {
   ];
   if (mapBg && MAP_SVG_FILES[mapIndex]) {
     mapBg.src = MAP_SVG_FILES[mapIndex];
+    mapBg.onload = function () {
+      _alignOverlay();
+    };
   }
 
   renderMap(mapIndex);
@@ -536,6 +588,9 @@ function renderMap(mapIndex) {
 
     overlay.appendChild(el);
   });
+
+  // 對齊 overlay 到圖片實際區域
+  _alignOverlay();
 }
 
 // ─── 探險點 Info Popup ───
