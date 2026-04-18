@@ -319,21 +319,27 @@ function _initMap() {
   updateHeaderInfo();
   setupMapTabs();
 
-  // 讀取 URL 參數決定預設地圖（從釣魚結算回來時顯示釣魚地圖）
+  // 決定初始地圖：URL 參數 > localStorage > 預設 0
   var initialMap = 0;
+  var mapCount = typeof ADVENTURE_MAPS !== "undefined" ? ADVENTURE_MAPS.length : 2;
   try {
     var params = new URLSearchParams(window.location.search);
     var mapParam = parseInt(params.get("map"), 10);
-    if (
-      !isNaN(mapParam) &&
-      mapParam >= 0 &&
-      mapParam <
-        (typeof ADVENTURE_MAPS !== "undefined" ? ADVENTURE_MAPS.length : 2)
-    ) {
+    if (!isNaN(mapParam) && mapParam >= 0 && mapParam < mapCount) {
       initialMap = mapParam;
     }
   } catch (e) {
     /* ignore */
+  }
+  if (initialMap === 0) {
+    try {
+      var saved = parseInt(localStorage.getItem("efgame-last-map"), 10);
+      if (!isNaN(saved) && saved >= 0 && saved < mapCount) {
+        initialMap = saved;
+      }
+    } catch (e) {
+      /* ignore */
+    }
   }
 
   if (initialMap > 0) {
@@ -449,6 +455,7 @@ function setupMapTabs() {
 
 function switchMap(mapIndex) {
   currentViewMapIndex = mapIndex;
+  try { localStorage.setItem("efgame-last-map", mapIndex); } catch (e) { /* ignore */ }
 
   // 更新 tab 狀態
   document.querySelectorAll(".map-tab").forEach(function (t) {
@@ -685,9 +692,14 @@ function closePointInfo() {
   document.getElementById("point-info-popup").classList.remove("visible");
   FocusTrap.deactivate();
   selectedPointData = null;
+
+  // 停止開場對話語音
+  if (typeof AudioPlayer !== "undefined" && AudioPlayer.stopVoice) {
+    AudioPlayer.stopVoice();
+  }
 }
 
-function playCurrentPoint() {
+function playCurrentPoint(skipGuide) {
   // 🔊 開始遊戲音效
   if (typeof AudioPlayer !== "undefined" && AudioPlayer.playSfx) {
     AudioPlayer.playSfx(
@@ -716,10 +728,10 @@ function playCurrentPoint() {
   if (!profile || !profile.nickname) {
     _showIdentityModal(function () {
       updateHeaderInfo();
-      ModeController.startAdventureGame(pointOverride);
+      ModeController.startAdventureGame(pointOverride, skipGuide);
     });
   } else {
-    ModeController.startAdventureGame(pointOverride);
+    ModeController.startAdventureGame(pointOverride, skipGuide);
   }
 }
 

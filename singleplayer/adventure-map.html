@@ -137,18 +137,13 @@
             <p>⭐ 已獲星星：<span id="popup-best-stars">0</span></p>
           </div>
           <div class="point-info-actions">
-            <button class="btn-cancel" onclick="closePointInfo()">取消</button>
-            <a
-              class="btn-cancel"
-              id="popup-rule-link"
-              style="text-decoration: none; text-align: center"
-              target="_blank"
-              >📖 規則</a
-            >
+            <button class="btn-cancel" onclick="playCurrentPoint(true)">
+              跳過規則與動畫說明<br>開始
+            </button>
             <button
               class="btn-play"
               id="popup-play-btn"
-              onclick="playCurrentPoint()"
+              onclick="playCurrentPoint(false)"
             >
               ▶️ 開始
             </button>

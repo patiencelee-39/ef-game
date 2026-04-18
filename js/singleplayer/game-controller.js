@@ -1199,7 +1199,7 @@ var GameController = (function () {
       Logger.error("❌ 題目生成失敗:", combo.fieldId, combo.ruleId);
       GameModal.alert("題目生成失敗", "將返回地圖", { icon: "❌" }).then(
         function () {
-          ModeController.goToAdventureMap();
+          ModeController.goToAdventureMap(_session ? _session.mapIndex : 0);
         },
       );
       return;
@@ -1734,7 +1734,7 @@ var GameController = (function () {
       GameModal.alert("結算錯誤", "結算過程發生錯誤，將返回地圖", {
         icon: "❌",
       }).then(function () {
-        ModeController.goToAdventureMap();
+        ModeController.goToAdventureMap(_session ? _session.mapIndex : 0);
       });
     }
   }
@@ -1980,7 +1980,7 @@ var GameController = (function () {
         Logger.error("❌ 無效的場地/規則:", _session.field, _session.rule);
         GameModal.alert("遊戲設定錯誤", "將返回地圖", { icon: "❌" }).then(
           function () {
-            ModeController.goToAdventureMap();
+            ModeController.goToAdventureMap(_session ? _session.mapIndex : 0);
           },
         );
         return;
@@ -2024,6 +2024,12 @@ var GameController = (function () {
     }
     var combo = _combos[_comboIndex];
 
+    // 從 session 讀取是否跳過規則說明
+    if (_session && _session.skipGuide) {
+      _beforeBeginTrials(combo);
+      return;
+    }
+
     // ★ 詢問是否需要示範＋練習
     GameModal.confirm("會玩嗎？", "要先觀看示範和做練習嗎？", {
       icon: "🤔",
@@ -2039,7 +2045,7 @@ var GameController = (function () {
       showStageTransition({
         icon: "👀",
         title: "先看看規則！",
-        subtitle: "注意看動畫怎麼玩喔",
+        subtitle: "接下來注意看動畫怎麼玩喔",
         duration: 2500,
         onDone: function () {
           // Plan C：播放規則動畫
@@ -2235,11 +2241,11 @@ var GameController = (function () {
       hideExitConfirm();
       if (_exitAction === "quit") {
         // 從暫停選單結束
-        if (_mode === "adventure") ModeController.goToAdventureMap();
+        if (_mode === "adventure") ModeController.goToAdventureMap(_session ? _session.mapIndex : 0);
         else ModeController.goToFreeSelect();
       } else {
         // 從返回鍵 / 瀏覽器返回
-        if (_mode === "adventure") ModeController.goToAdventureMap();
+        if (_mode === "adventure") ModeController.goToAdventureMap(_session ? _session.mapIndex : 0);
         else ModeController.goToFreeSelect();
       }
     });
@@ -2253,7 +2259,7 @@ var GameController = (function () {
       if (_isPlaying) {
         showExitConfirm("back");
       } else {
-        if (_mode === "adventure") ModeController.goToAdventureMap();
+        if (_mode === "adventure") ModeController.goToAdventureMap(_session ? _session.mapIndex : 0);
         else ModeController.goToFreeSelect();
       }
     });

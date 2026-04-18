@@ -204,8 +204,9 @@ var ModeController = (function () {
    * @param {number} pointOverride.mapIndex
    * @param {number} pointOverride.pointIndex
    */
-  function startAdventureGame(pointOverride) {
+  function startAdventureGame(pointOverride, skipGuide) {
     var session = createAdventureSession(pointOverride || null);
+    if (skipGuide) session.skipGuide = true;
     if (!session) return;
 
     var params = new URLSearchParams();
