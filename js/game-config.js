@@ -100,10 +100,10 @@ const GAME_CONFIG = {
    *  ⚠️ 請勿修改：MIN_COUNT 不能大於 MAX_COUNT
    * ──────────────────────────────────────────────────────── */
   QUESTIONS: {
-    DEFAULT_COUNT: 12, // ← 教師可改：每場基本題數（12題）
+    DEFAULT_COUNT: 20, // ← 教師可改：每場基本題數（12題）
     MIXED_MULTIPLIER: 2, // ← 教師可改：自由選擇混合規則倍率（×2）
-    MIN_COUNT: 6, // ← 教師可改：最少可選題數
-    MAX_COUNT: 30, // ← 教師可改：最多可選題數
+    MIN_COUNT: 15, // ← 教師可改：最少可選題數
+    MAX_COUNT: 50, // ← 教師可改：最多可選題數
     PRACTICE_COUNT: 6, // ← 教師可改：練習題數
   },
 
@@ -400,7 +400,7 @@ const GAME_CONFIG = {
     LOG_LEVEL: "warn",
     /**
      * 自適應引擎選擇
-     * "simple" = 簡易版（連對升級、連錯降級）
+     * "simple" = 動態評量版（連對升級、連錯降級）
      * "irt"    = IRT 智慧版（3PL 模型 + EAP 估計）
      * "static" = 固定難度（Level 3，不自適應）
      *
