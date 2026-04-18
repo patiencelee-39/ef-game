@@ -1307,21 +1307,7 @@ var WorkingMemory = {
         });
       }
 
-      voicePromise
-        .then(function () {
-          return _showMemoryPrompt(gridEl);
-        })
-        .then(function () {
-          // 練習用高亮：顯示刺激物 emoji
-          return _highlightPractice(sequence, fieldId, gridEl);
-        })
-        .then(function () {
-          // 短暫維持顯示後重設為 ❓
-          return new Promise(function (r) {
-            setTimeout(r, 600);
-          });
-        })
-        .then(function () {
+      voicePromise.then(function () {
           _resetButtons(gridEl, PRACTICE_N);
           _setupToggle(gridEl, fieldId, PRACTICE_N);
 
