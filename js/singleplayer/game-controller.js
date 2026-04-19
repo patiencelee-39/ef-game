@@ -507,6 +507,7 @@ var GameController = (function () {
    * @param {Function} onReady - 動畫結束（或跳過）後的回調
    */
   function showGuideAnimation(combo, onReady) {
+    dom.btnPause.style.display = "none";
     var fieldId = combo.fieldId;
     var ruleId = combo.ruleId;
     var hasWM = combo.enableWm || combo.hasWM;
@@ -1235,6 +1236,7 @@ var GameController = (function () {
 
     showScreen(dom.playScreen);
     _isPlaying = true;
+    dom.btnPause.style.display = "";
     dom.btnSpace.disabled = true;
 
     // 3-2-1 倒數
