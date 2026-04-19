@@ -206,8 +206,9 @@ var ModeController = (function () {
    */
   function startAdventureGame(pointOverride, skipGuide) {
     var session = createAdventureSession(pointOverride || null);
-    if (skipGuide) session.skipGuide = true;
     if (!session) return;
+    if (skipGuide) session.skipGuide = true;
+    _saveSession(session);
 
     var params = new URLSearchParams();
     params.set("mode", MODES.ADVENTURE);
