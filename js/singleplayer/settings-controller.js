@@ -255,6 +255,7 @@
         });
         showToast("每回合題數已設定為 " + count + " 題");
     });
+    }
 
     // --- 難度引擎選擇 ---
     if (engineSelector) {
