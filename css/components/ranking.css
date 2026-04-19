@@ -26,7 +26,7 @@
   color: #fff;
   font-weight: 700;
   font-size: 0.9rem;
-  min-width: 650px;
+  min-width: 585px;
 }
 
 .ranking-row {
@@ -38,7 +38,7 @@
   transition: background 0.2s;
   font-size: 0.9rem;
   align-items: center;
-  min-width: 650px;
+  min-width: 585px;
 }
 
 .ranking-row:hover {
