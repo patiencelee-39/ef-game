@@ -9,10 +9,12 @@
 .ranking-table {
   --ranking-cols: 60px 1fr 90px 90px 100px;
   border-radius: 12px;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  max-width: 700px;
+  max-width: 900px;
   margin-inline: auto;
+  min-width: 0;
 }
 
 .ranking-header {
@@ -23,6 +25,7 @@
   color: #fff;
   font-weight: 700;
   font-size: 0.9rem;
+  min-width: 500px;
 }
 
 .ranking-row {
@@ -34,6 +37,7 @@
   transition: background 0.2s;
   font-size: 0.9rem;
   align-items: center;
+  min-width: 500px;
 }
 
 .ranking-row:hover {

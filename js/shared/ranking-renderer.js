@@ -454,16 +454,20 @@ var RankingRenderer = (function () {
     showTime,
     hasDelete,
   ) {
-    var cols = ["40px", "minmax(50px,2fr)", "minmax(55px,1fr)"]; // rank, name, score
-    if (showAcc) cols.push("60px");
-    if (showRT) cols.push("70px");
-    if (showCorrect) cols.push("55px");
-    if (showStars) cols.push("40px");
-    if (showLevel) cols.push("50px");
-    if (showMode) cols.push("45px");
-    if (showGameEndTime) cols.push("155px");
-    if (showTime) cols.push("155px");
-    if (hasDelete) cols.push("40px");
+    var cols = [
+      "minmax(30px, 0.5fr)",   // rank    排名：🥇/4
+      "minmax(50px, 3fr)",     // name    玩家：小明
+      "minmax(35px, 1fr)",     // score   分數：48
+    ];
+    if (showAcc)         cols.push("minmax(42px, 1.2fr)");   // 正確率：96.0%
+    if (showRT)          cols.push("minmax(48px, 1.2fr)");   // 平均RT：823 ms
+    if (showCorrect)     cols.push("minmax(38px, 1fr)");     // 答對：48/50
+    if (showStars)       cols.push("minmax(25px, 0.5fr)");   // ⭐：3
+    if (showLevel)       cols.push("minmax(35px, 0.8fr)");   // 等級
+    if (showMode)        cols.push("minmax(60px, 2.5fr)");   // 模式：小老鼠·混合規則
+    if (showGameEndTime) cols.push("minmax(70px, 2.5fr)");   // 遊戲結束時間
+    if (showTime)        cols.push("minmax(70px, 2.5fr)");   // 上傳時間
+    if (hasDelete)       cols.push("minmax(30px, 0.5fr)");   // 刪除
     return "--ranking-cols: " + cols.join(" ") + ";";
   }
 
