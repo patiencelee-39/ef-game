@@ -2030,30 +2030,17 @@ var GameController = (function () {
       return;
     }
 
-    // ★ 詢問是否需要示範＋練習
-    GameModal.confirm("會玩嗎？", "要先觀看示範和做練習嗎？", {
-      icon: "🤔",
-      okText: "觀看示範與練習",
-      cancelText: "跳過，直接開始",
-    }).then(function (wantGuide) {
-      if (!wantGuide) {
-        // 跳過示範＋練習 → WM 判斷後進入正式
-        _beforeBeginTrials(combo);
-        return;
-      }
-      // ★ 階段過場 1：規則學習
-      showStageTransition({
-        icon: "👀",
-        title: "先看看規則！",
-        subtitle: "接下來注意看動畫怎麼玩喔",
-        duration: 2500,
-        onDone: function () {
-          // Plan C：播放規則動畫
-          showGuideAnimation(combo, function () {
-            _afterGuideReady(combo);
-          });
-        },
-      });
+    // ★ 階段過場：規則學習（直接進入動畫說明與練習）
+    showStageTransition({
+      icon: "👀",
+      title: "先看看規則！",
+      subtitle: "接下來注意看動畫怎麼玩喔",
+      duration: 2500,
+      onDone: function () {
+        showGuideAnimation(combo, function () {
+          _afterGuideReady(combo);
+        });
+      },
     });
   }
 
