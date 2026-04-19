@@ -54,6 +54,7 @@ body {
 /* === 設定列 === */
 .settings-item {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
   padding: 11px 0;
@@ -234,6 +235,7 @@ body {
 
 /* === 引擎說明提示 === */
 .settings-item__hint {
+  width: 100%;
   margin-top: 8px;
   font-size: 0.72rem;
   line-height: 1.6;
