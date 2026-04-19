@@ -124,12 +124,9 @@
     var count =
       typeof getQuestionCountPreference === "function"
         ? getQuestionCountPreference()
-        : 6;
-    var btns = countSelector.querySelectorAll(".count-btn");
-    btns.forEach(function (b) {
-      var c = parseInt(b.getAttribute("data-count"), 10);
-      b.classList.toggle("active", c === count);
-    });
+        : 50;
+    var input = document.getElementById("countInput");
+    if (input) input.value = count;
   }
 
   // =========================================
