@@ -380,9 +380,11 @@ body {
   border-radius: 8px;
   border: none;
   cursor: pointer;
-  min-width: 120px;
+  min-width: 100px;
   min-height: var(--touch-target-min);
   transition: all var(--transition-fast);
+  white-space: nowrap;
+  flex: 1;
 }
 
 .btn-play {
@@ -418,6 +420,15 @@ body {
 
   .header-title {
     font-size: var(--font-size-md);
+  }
+
+  .point-info-actions {
+    flex-direction: column;
+  }
+
+  .point-info-actions button {
+    min-width: unset;
+    width: 100%;
   }
 }
 
