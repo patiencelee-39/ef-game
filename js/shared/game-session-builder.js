@@ -113,10 +113,7 @@ function _createEmptySession(overrides) {
  */
 function _createCombo(fieldId, ruleId, questionCount, enableWm) {
   var qConfig = _getQConfig();
-  var isMixed = ruleId === "mixed";
-  var defaultCount = isMixed
-    ? qConfig.DEFAULT_COUNT * qConfig.MIXED_MULTIPLIER
-    : qConfig.DEFAULT_COUNT;
+  var defaultCount = qConfig.DEFAULT_COUNT;
   var count = questionCount || defaultCount;
 
   // 確保在範圍內

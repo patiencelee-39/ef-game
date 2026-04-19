@@ -3,7 +3,7 @@
 // =========================================
 // 使用 StagePicker 共用元件取代舊的 field toggle + per-field rule 選擇
 
-var questionCount = 6;
+var questionCount = 50;
 
 // ─── 題數更新 ───
 function updateQuestionCount(val) {
@@ -19,10 +19,7 @@ function buildCombos() {
   return stageIds.map(function (stageId) {
     var s = ComboSelector.getById(stageId);
     if (!s) return null;
-    var isMixed = s.ruleId === "mixed";
-    var qCount = isMixed
-      ? questionCount * (GAME_CONFIG.QUESTIONS.MIXED_MULTIPLIER || 2)
-      : questionCount;
+    var qCount = questionCount;
     return {
       fieldId: s.fieldId,
       ruleId: s.ruleId,
@@ -55,7 +52,8 @@ document.addEventListener("DOMContentLoaded", function () {
   var savedCount = getQuestionCountPreference();
   if (savedCount) {
     questionCount = savedCount;
-    document.getElementById("count-slider").value = savedCount;
+      var sliderEl = document.getElementById("count-slider");
+      if (sliderEl) sliderEl.value = savedCount;
     document.getElementById("count-value").textContent = savedCount;
   }
 

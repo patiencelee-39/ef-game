@@ -225,21 +225,35 @@
     });
 
     // --- 題數按鈕 ---
-    countSelector.addEventListener("click", function (e) {
-      var btn = e.target.closest(".count-btn");
-      if (!btn) return;
-      var count = parseInt(btn.getAttribute("data-count"), 10);
-      if (typeof saveQuestionCountPreference === "function") {
-        saveQuestionCountPreference(count);
-      }
-      var btns = countSelector.querySelectorAll(".count-btn");
-      btns.forEach(function (b) {
-        b.classList.toggle(
-          "active",
-          parseInt(b.getAttribute("data-count"), 10) === count,
-        );
+    var countInput = document.getElementById("countInput");
+    if (countInput) {
+      countInput.addEventListener("change", function (e) {
+        var count = parseInt(e.target.value, 10);
+        if (typeof saveQuestionCountPreference === "function") {
+          saveQuestionCountPreference(count);
+        }
+        document.getElementById("count-value").textContent = count;
+        showToast("每回合題數已設定為 " + count + " 題");
       });
-      showToast("每回合題數已設定為 " + count + " 題");
+    }
+
+    // 舊的按鈕邏輯保留作為 fallback（如有其他頁面使用）
+    if (countSelector && countSelector.querySelectorAll(".count-btn").length > 0) {
+      countSelector.addEventListener("click", function (e) {
+        var btn = e.target.closest(".count-btn");
+        if (!btn) return;
+        var count = parseInt(btn.getAttribute("data-count"), 10);
+        if (typeof saveQuestionCountPreference === "function") {
+          saveQuestionCountPreference(count);
+        }
+        var btns = countSelector.querySelectorAll(".count-btn");
+        btns.forEach(function (b) {
+          b.classList.toggle(
+            "active",
+            parseInt(b.getAttribute("data-count"), 10) === count,
+          );
+        });
+        showToast("每回合題數已設定為 " + count + " 題");
     });
 
     // --- 難度引擎選擇 ---

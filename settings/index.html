@@ -103,11 +103,20 @@
         <!-- 題數設定 -->
         <div class="settings-item">
           <span class="settings-item__label">📝 每回合題數</span>
-          <div class="count-selector" id="countSelector">
-            <button class="count-btn" data-count="4">4</button>
-            <button class="count-btn active" data-count="6">6</button>
-            <button class="count-btn" data-count="8">8</button>
-            <button class="count-btn" data-count="10">10</button>
+          <div class="count-input-row" id="countSelector">
+            <input
+              type="number"
+              class="count-input"
+              id="countInput"
+              min="10"
+              max="100"
+              step="1"
+              value="50"
+              aria-label="每回合題數"
+              onchange="updateQuestionCount(this.value)"
+            />
+            <span class="count-value" id="count-value">50</span>
+            <span style="color:rgba(255,255,255,0.5);font-size:0.8rem">題（10～100）</span>
           </div>
         </div>
         <!-- 難度調整模式 -->

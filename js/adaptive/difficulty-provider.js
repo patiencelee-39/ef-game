@@ -101,9 +101,7 @@ var DifficultyProvider = (function () {
       } else {
         count = questions.DEFAULT_COUNT || 6;
       }
-      if (context.ruleId === "mixed" && !context.isPractice) {
-        count = count * (questions.MIXED_MULTIPLIER || 2);
-      }
+        // 混合規則不再額外倍增
 
       // Go 比例
       var goRatio;

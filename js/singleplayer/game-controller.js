@@ -1987,11 +1987,14 @@ var GameController = (function () {
         );
         return;
       }
-      _combos = [
+        var userPrefCount = (typeof getQuestionCountPreference === "function")
+          ? getQuestionCountPreference()
+          : GAME_CONFIG.QUESTIONS.DEFAULT_COUNT;
+        _combos = [
         {
           fieldId: _session.field,
           ruleId: _session.rule,
-          questionCount: _session.questionsCount,
+          questionCount: userPrefCount,
           hasWM: _session.hasWM,
           enableWm: _session.hasWM,
           displayName: f.icon + " " + f.rules[_session.rule].name,

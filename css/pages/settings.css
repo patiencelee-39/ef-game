@@ -439,3 +439,32 @@ body {
   background: #e74c3c;
   color: #fff;
 }
+
+/* === 新增：題數輸入框樣式 === */
+.count-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.count-input {
+  width: 80px;
+  padding: 6px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.count-input:focus {
+  outline: none;
+  border-color: var(--primary-blue, #3498db);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.count-input-row .count-value {
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.8);
+}

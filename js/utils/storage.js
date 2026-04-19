@@ -157,7 +157,7 @@ function createDefaultPlayerProfile(seatNumber, nickname) {
     soundPack: "default",
     soundOverrides: {},
     questionCountPrefs: {
-      ruleQuestionCount: 6, // 預設 6 題（混合自動 ×2）
+      ruleQuestionCount: 50, // 預設 50 題
     },
     totalPlayTime: 0,
     firestoreUploadPrefs: {
@@ -610,8 +610,9 @@ function saveStimuliPackPreference(packId) {
  */
 function getQuestionCountPreference() {
   var profile = getPlayerProfile();
-  if (!profile || !profile.questionCountPrefs) return 6;
-  return profile.questionCountPrefs.ruleQuestionCount || 6;
+  var def = (typeof GAME_CONFIG !== "undefined") ? GAME_CONFIG.QUESTIONS.DEFAULT_COUNT : 50;
+  if (!profile || !profile.questionCountPrefs) return def;
+  return profile.questionCountPrefs.ruleQuestionCount || def;
 }
 
 /**
