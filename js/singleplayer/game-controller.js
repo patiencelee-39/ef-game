@@ -1172,10 +1172,9 @@ var GameController = (function () {
     TrialRenderer.clear(_demoStimulusElements());
     _resetDemoVisuals();
 
-    // 直接呼叫練習完成回調
-    if (_practiceOnComplete) {
-      _practiceOnComplete();
-    }
+    // 跳過所有練習（含 WM 練習），直接進入正式遊戲
+    var combo = _combos[_comboIndex];
+    _beforeBeginTrials(combo);
   }
 
   // =========================================

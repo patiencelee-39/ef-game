@@ -687,16 +687,32 @@ var WorkingMemory = {
       }
     }
 
-    // 6. 語音播報方向
+    // 6. 語音播報方向（依物件數量 n 選擇對應音檔）
     var voicePath =
       direction === "reverse"
-        ? "audio/voice/wm/wm-reverse.mp3"
-        : "audio/voice/wm/wm-forward.mp3";
+        ? "audio/voice/wm/wm-reverse-" + n + ".mp3"
+        : "audio/voice/wm/wm-forward-" + n + ".mp3";
+
+    var WM_VOICE_TEXT = {
+      "forward-1": "請回想，按照順序，剛才最後1個物件的次序為何？",
+      "forward-2": "請回想，按照順序，剛才最後2個物件的次序為何？",
+      "forward-3": "請回想，按照順序，剛才最後3個物件的次序為何？",
+      "forward-4": "請回想，按照順序，剛才最後4個物件的次序為何？",
+      "forward-5": "請回想，按照順序，剛才最後5個物件的次序為何？",
+      "forward-6": "請回想，按照順序，剛才最後6個物件的次序為何？",
+      "reverse-1": "請回想，倒回去從最後1個到第1個物件的次序為何？",
+      "reverse-2": "請回想，倒回去從最後1個到第2個物件的次序為何？",
+      "reverse-3": "請回想，倒回去從最後1個到第3個物件的次序為何？",
+      "reverse-4": "請回想，倒回去從最後1個到第4個物件的次序為何？",
+      "reverse-5": "請回想，倒回去從最後1個到第5個物件的次序為何？",
+      "reverse-6": "請回想，倒回去從最後1個到第6個物件的次序為何？",
+    };
+    var voiceTextKey = direction + "-" + n;
 
     var voicePromise = Promise.resolve();
     if (typeof AudioPlayer !== "undefined" && AudioPlayer.playVoice) {
       voicePromise = AudioPlayer.playVoice(voicePath, {
-        text: direction === "reverse" ? "請倒著點選" : "請照順序點選",
+        text: WM_VOICE_TEXT[voiceTextKey] || "請回想物件的次序",
         gender: "female",
       });
     }
@@ -1293,16 +1309,32 @@ var WorkingMemory = {
         confirmBtn.disabled = true;
       }
 
-      // 語音播報方向
+      // 語音播報方向（練習模式固定 PRACTICE_N=2）
       var voicePath =
         direction === "reverse"
-          ? "audio/voice/wm/wm-reverse.mp3"
-          : "audio/voice/wm/wm-forward.mp3";
+          ? "audio/voice/wm/wm-reverse-" + PRACTICE_N + ".mp3"
+          : "audio/voice/wm/wm-forward-" + PRACTICE_N + ".mp3";
+
+      var WM_VOICE_TEXT = {
+        "forward-1": "請回想，按照順序，剛才最後1個物件的次序為何？",
+        "forward-2": "請回想，按照順序，剛才最後2個物件的次序為何？",
+        "forward-3": "請回想，按照順序，剛才最後3個物件的次序為何？",
+        "forward-4": "請回想，按照順序，剛才最後4個物件的次序為何？",
+        "forward-5": "請回想，按照順序，剛才最後5個物件的次序為何？",
+        "forward-6": "請回想，按照順序，剛才最後6個物件的次序為何？",
+        "reverse-1": "請回想，倒回去從最後1個到第1個物件的次序為何？",
+        "reverse-2": "請回想，倒回去從最後1個到第2個物件的次序為何？",
+        "reverse-3": "請回想，倒回去從最後1個到第3個物件的次序為何？",
+        "reverse-4": "請回想，倒回去從最後1個到第4個物件的次序為何？",
+        "reverse-5": "請回想，倒回去從最後1個到第5個物件的次序為何？",
+        "reverse-6": "請回想，倒回去從最後1個到第6個物件的次序為何？",
+      };
+      var voiceTextKey = direction + "-" + PRACTICE_N;
 
       var voicePromise = Promise.resolve();
       if (typeof AudioPlayer !== "undefined" && AudioPlayer.playVoice) {
         voicePromise = AudioPlayer.playVoice(voicePath, {
-          text: direction === "reverse" ? "請倒著點選" : "請照順序點選",
+          text: WM_VOICE_TEXT[voiceTextKey] || "請回想物件的次序",
           gender: "female",
         });
       }
