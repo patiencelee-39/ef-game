@@ -413,6 +413,17 @@
     // --- 僅清除快取 ---
     if (btnClearCache)
       btnClearCache.addEventListener("click", handleClearCache);
+
+    // --- 動態評量完整參數表展開 ---
+    var edToggle = document.getElementById("edToggleTable");
+    var edTableWrap = document.getElementById("edTableWrap");
+    if (edToggle && edTableWrap) {
+      edToggle.addEventListener("click", function () {
+        var isHidden = edTableWrap.style.display === "none";
+        edTableWrap.style.display = isHidden ? "" : "none";
+        edToggle.textContent = isHidden ? "▲ 收合參數表" : "▼ 查看完整參數表";
+      });
+    }
   }
 
   // =========================================
@@ -474,17 +485,6 @@
     };
     reader.readAsText(file);
     importFileInput.value = "";
-
-    // --- 動態評量完整參數表展開 ---
-    var edToggle = document.getElementById("edToggleTable");
-    var edTableWrap = document.getElementById("edTableWrap");
-    if (edToggle && edTableWrap) {
-      edToggle.addEventListener("click", function () {
-        var isHidden = edTableWrap.style.display === "none";
-        edTableWrap.style.display = isHidden ? "" : "none";
-        edToggle.textContent = isHidden ? "▲ 收合參數表" : "▼ 查看完整參數表";
-      });
-    }
   }
 
   // =========================================
