@@ -125,12 +125,14 @@
           <div class="engine-selector" id="engineSelector">
             <button class="engine-btn" data-engine="static" title="固定難度，不隨表現調整">📊 固定</button>
             <button class="engine-btn active" data-engine="simple" title="連對升級、連錯降級（預設）">🎯 動態評量</button>
-            <button class="engine-btn" data-engine="irt" title="IRT 智慧分析，依能力精準選題">🧠 IRT</button>
+            <!-- [隱藏] IRT 引擎功能尚未完善，待未來優化後再開放 -->
+            <!-- <button class="engine-btn" data-engine="irt" title="IRT 智慧分析，依能力精準選題">🧠 IRT</button> -->
           </div>
           <p class="settings-item__hint" id="engineHint">
             📊 固定：難度不變，適合標準化測驗<br>
-            🎯 動態評量：連續答對自動升級、連錯降級（推薦）<br>
-            🧠 IRT：根據試題反應理論(Item Response Theory)即時估計能力值，智慧選題
+            🎯 動態評量：連續答對自動升級、連錯降級（推薦）
+            <!-- [隱藏] IRT 說明，與按鈕同步隱藏 -->
+            <!-- <br>🧠 IRT：根據試題反應理論(Item Response Theory)即時估計能力值，智慧選題 -->
           </p>
 
           <!-- 動態評量詳細面板（選中 simple 時才顯示） -->
@@ -200,8 +202,9 @@
       </div>
 
       <!-- ==================== -->
-      <!-- 🎨 配色主題           -->
+      <!-- [隱藏] 配色主題功能尚未完善，待未來實作自訂色彩組合後再開放 -->
       <!-- ==================== -->
+      <!--
       <div class="settings-section">
         <h2>🎨 配色主題</h2>
         <div class="theme-selector" id="themeSelector">
@@ -217,6 +220,7 @@
           </button>
         </div>
       </div>
+      -->
 
       <!-- ==================== -->
       <!--  玩家資訊           -->
