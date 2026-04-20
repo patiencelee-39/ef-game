@@ -135,6 +135,55 @@
             <!-- <br>🧠 IRT：根據試題反應理論(Item Response Theory)即時估計能力值，智慧選題 -->
           </p>
 
+          <!-- 固定模式詳細面板（選中 static 時才顯示） -->
+          <div class="engine-detail-panel engine-detail-panel--static" id="staticDetailPanel" style="display:none">
+            <p class="engine-static-desc">難度固定不變，不隨答題表現調整，適合標準化測驗</p>
+
+            <div class="engine-detail-bar-group">
+              <div class="engine-detail-bar-row">
+                <span class="engine-detail-bar-label">📷 圖片速度</span>
+                <div class="engine-detail-bar-track">
+                  <div class="engine-detail-bar-fill engine-detail-bar-fill--static" style="width:50%"></div>
+                </div>
+                <span class="engine-detail-bar-value">2.0 秒</span>
+              </div>
+
+              <div class="engine-detail-bar-row">
+                <span class="engine-detail-bar-label">⏱️  間隔時間</span>
+                <div class="engine-detail-bar-track">
+                  <div class="engine-detail-bar-fill engine-detail-bar-fill--static" style="width:50%"></div>
+                </div>
+                <span class="engine-detail-bar-value">0.8～1.2 秒</span>
+              </div>
+
+              <div class="engine-detail-bar-row">
+                <span class="engine-detail-bar-label">💬 提示時間</span>
+                <div class="engine-detail-bar-track">
+                  <div class="engine-detail-bar-fill engine-detail-bar-fill--static" style="width:50%"></div>
+                </div>
+                <span class="engine-detail-bar-value">0.8 秒</span>
+              </div>
+
+              <div class="engine-detail-bar-row">
+                <span class="engine-detail-bar-label">🧠 記憶位置</span>
+                <div class="engine-detail-bar-track">
+                  <div class="engine-detail-bar-fill engine-detail-bar-fill--static" style="width:50%"></div>
+                </div>
+                <span class="engine-detail-bar-value">2～6 個</span>
+              </div>
+
+              <div class="engine-detail-bar-row">
+                <span class="engine-detail-bar-label">🔄 逆向機率</span>
+                <div class="engine-detail-bar-track">
+                  <div class="engine-detail-bar-fill engine-detail-bar-fill--static" style="width:50%"></div>
+                </div>
+                <span class="engine-detail-bar-value">50%</span>
+              </div>
+            </div>
+
+            <p class="engine-detail-rule">※ 所有參數固定，等同動態評量的 Level 3</p>
+          </div>
+
           <!-- 動態評量詳細面板（選中 simple 時才顯示） -->
           <div class="engine-detail-panel" id="engineDetailPanel" style="display:none">
             <div class="engine-detail-level">

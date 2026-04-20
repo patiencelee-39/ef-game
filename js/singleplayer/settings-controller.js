@@ -179,8 +179,15 @@
   /** 渲染動態評量詳細面板 */
   function renderEngineDetailPanel(engine) {
     var panel = document.getElementById("engineDetailPanel");
-    if (!panel) return;
+    var staticPanel = document.getElementById("staticDetailPanel");
 
+    // 固定模式面板
+    if (staticPanel) {
+      staticPanel.style.display = (engine === "static") ? "" : "none";
+    }
+
+    // 動態評量面板
+    if (!panel) return;
     if (engine !== "simple") {
       panel.style.display = "none";
       return;

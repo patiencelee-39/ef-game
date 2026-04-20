@@ -376,6 +376,23 @@ body {
   font-weight: 700;
 }
 
+/* === 固定模式面板 === */
+.engine-detail-panel--static {
+  border-color: rgba(52, 152, 219, 0.2);
+  background: rgba(52, 152, 219, 0.08);
+}
+
+.engine-static-desc {
+  text-align: center;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 12px;
+}
+
+.engine-detail-bar-fill--static {
+  background: linear-gradient(90deg, #3498db, #5dade2);
+}
+
 /* === 按鈕 === */
 .settings-btn {
   display: flex;
