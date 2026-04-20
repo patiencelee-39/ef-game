@@ -132,6 +132,70 @@
             🎯 動態評量：連續答對自動升級、連錯降級（推薦）<br>
             🧠 IRT：根據試題反應理論(Item Response Theory)即時估計能力值，智慧選題
           </p>
+
+          <!-- 動態評量詳細面板（選中 simple 時才顯示） -->
+          <div class="engine-detail-panel" id="engineDetailPanel" style="display:none">
+            <div class="engine-detail-level">
+              目前等級：<span id="edLevelStars">⭐⭐⭐☆☆</span>
+              <span class="engine-detail-level-tag" id="edLevelTag">Level 3</span>
+            </div>
+
+            <div class="engine-detail-bar-group">
+              <div class="engine-detail-bar-row">
+                <span class="engine-detail-bar-label">📷 圖片速度</span>
+                <div class="engine-detail-bar-track">
+                  <div class="engine-detail-bar-fill" id="edBarStimulus"></div>
+                </div>
+                <span class="engine-detail-bar-value" id="edValStimulus">2.0 秒</span>
+              </div>
+
+              <div class="engine-detail-bar-row">
+                <span class="engine-detail-bar-label">⏱️  間隔時間</span>
+                <div class="engine-detail-bar-track">
+                  <div class="engine-detail-bar-fill" id="edBarIsi"></div>
+                </div>
+                <span class="engine-detail-bar-value" id="edValIsi">0.8～1.2 秒</span>
+              </div>
+
+              <div class="engine-detail-bar-row">
+                <span class="engine-detail-bar-label">🧠 記憶位置</span>
+                <div class="engine-detail-bar-track">
+                  <div class="engine-detail-bar-fill" id="edBarWmPos"></div>
+                </div>
+                <span class="engine-detail-bar-value" id="edValWmPos">2～6 個</span>
+              </div>
+
+              <div class="engine-detail-bar-row">
+                <span class="engine-detail-bar-label">🔄 逆向機率</span>
+                <div class="engine-detail-bar-track">
+                  <div class="engine-detail-bar-fill" id="edBarReverse"></div>
+                </div>
+                <span class="engine-detail-bar-value" id="edValReverse">70%</span>
+              </div>
+            </div>
+
+            <p class="engine-detail-rule">※ 連對 2 題升一級，連錯 2 題降一級（Level 1～5）</p>
+
+            <button class="engine-detail-toggle" id="edToggleTable">▼ 查看完整參數表</button>
+
+            <div class="engine-detail-table-wrap" id="edTableWrap" style="display:none">
+              <table class="engine-detail-table">
+                <thead>
+                  <tr>
+                    <th></th><th>L1</th><th>L2</th><th>L3</th><th>L4</th><th>L5</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>📷 圖片</td><td>3.0s</td><td>2.5s</td><td>2.0s</td><td>1.5s</td><td>1.2s</td></tr>
+                  <tr><td>⏱️  間隔</td><td>1.0～1.5s</td><td>0.9～1.3s</td><td>0.8～1.2s</td><td>0.6～1.0s</td><td>0.5～0.8s</td></tr>
+                  <tr><td>💬 提示</td><td>1.2s</td><td>1.0s</td><td>0.8s</td><td>0.6s</td><td>0.5s</td></tr>
+                  <tr><td>🧠 位置</td><td>2～3</td><td>2～4</td><td>2～6</td><td>3～6</td><td>3～6</td></tr>
+                  <tr><td>💡 亮起</td><td>1.0s</td><td>0.9s</td><td>0.8s</td><td>0.7s</td><td>0.6s</td></tr>
+                  <tr><td>🔄 逆向</td><td>50%</td><td>60%</td><td>70%</td><td>80%</td><td>90%</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
 

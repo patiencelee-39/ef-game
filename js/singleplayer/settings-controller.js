@@ -26,6 +26,9 @@
     loadAudioSettings();
     loadGameSettings();
     loadEngineSettings();
+    renderEngineDetailPanel(
+      localStorage.getItem("ef_engine_choice") || "simple"
+    );
     loadThemeSettings();
     bindEvents();
   }
@@ -147,6 +150,92 @@
     engineSelector.querySelectorAll(".engine-btn").forEach(function (b) {
       b.classList.toggle("active", b.getAttribute("data-engine") === choice);
     });
+  }
+
+  /** 讀取 localStorage 存儲的難度等級 */
+  function getStoredLevel() {
+    var lvStr = localStorage.getItem("ef_adaptive_level");
+    return lvStr ? parseInt(lvStr, 10) : 3;
+  }
+
+  /** 簡易引擎的時間參數表 */
+  var SIMPLE_TIMING = {
+    1: { stimulus: 3000, isiMin: 1000, isiMax: 1500, feedback: 1200 },
+    2: { stimulus: 2500, isiMin: 900, isiMax: 1300, feedback: 1000 },
+    3: { stimulus: 2000, isiMin: 800, isiMax: 1200, feedback: 800 },
+    4: { stimulus: 1500, isiMin: 600, isiMax: 1000, feedback: 600 },
+    5: { stimulus: 1200, isiMin: 500, isiMax: 800, feedback: 500 },
+  };
+
+  /** 簡易引擎的工作記憶參數表 */
+  var SIMPLE_WM = {
+    1: { minPos: 2, maxPos: 3, highlightMs: 1000, reverse: 0.5 },
+    2: { minPos: 2, maxPos: 4, highlightMs: 900, reverse: 0.6 },
+    3: { minPos: 2, maxPos: 6, highlightMs: 800, reverse: 0.7 },
+    4: { minPos: 3, maxPos: 6, highlightMs: 700, reverse: 0.8 },
+    5: { minPos: 3, maxPos: 6, highlightMs: 600, reverse: 0.9 },
+  };
+
+  /** 渲染動態評量詳細面板 */
+  function renderEngineDetailPanel(engine) {
+    var panel = document.getElementById("engineDetailPanel");
+    if (!panel) return;
+
+    if (engine !== "simple") {
+      panel.style.display = "none";
+      return;
+    }
+    panel.style.display = "";
+
+    var lv = getStoredLevel();
+    var t = SIMPLE_TIMING[lv];
+    var w = SIMPLE_WM[lv];
+
+    // 星星
+    var stars = "";
+    for (var i = 1; i <= 5; i++) {
+      stars += i <= lv ? "⭐" : "☆";
+    }
+    document.getElementById("edLevelStars").textContent = stars;
+    document.getElementById("edLevelTag").textContent = "Level " + lv;
+
+    // 進度條百分比（L1=0%, L5=100%）
+    var pct = ((lv - 1) / 4) * 100;
+
+    document.getElementById("edBarStimulus").style.width = pct + "%";
+    document.getElementById("edValStimulus").textContent = (t.stimulus / 1000).toFixed(1) + " 秒";
+
+    document.getElementById("edBarIsi").style.width = pct + "%";
+    document.getElementById("edValIsi").textContent =
+      (t.isiMin / 1000).toFixed(1) + "～" + (t.isiMax / 1000).toFixed(1) + " 秒";
+
+    document.getElementById("edBarWmPos").style.width = pct + "%";
+    document.getElementById("edValWmPos").textContent = w.minPos + "～" + w.maxPos + " 個";
+
+    document.getElementById("edBarReverse").style.width = pct + "%";
+    document.getElementById("edValReverse").textContent = Math.round(w.reverse * 100) + "%";
+
+    // 完整參數表的當前等級高亮
+    var table = panel.querySelector(".engine-detail-table");
+    if (table) {
+      var rows = table.querySelectorAll("tbody tr");
+      var ths = table.querySelectorAll("thead th");
+      ths.forEach(function (th, idx) {
+        if (idx >= 1) {
+          th.style.color = (idx === lv) ? "#c39bd3" : "";
+          th.style.fontWeight = (idx === lv) ? "900" : "";
+        }
+      });
+      rows.forEach(function (row) {
+        var cells = row.querySelectorAll("td");
+        cells.forEach(function (cell, idx) {
+          if (idx >= 1) {
+            cell.style.color = (idx === lv) ? "#c39bd3" : "";
+            cell.style.fontWeight = (idx === lv) ? "700" : "";
+          }
+        });
+      });
+    }
   }
 
   // =========================================
@@ -279,6 +368,7 @@
         showToast(
           "已切換為「" + (names[engine] || engine) + "」，下次遊戲生效",
         );
+        renderEngineDetailPanel(engine);
       });
     }
 
@@ -384,6 +474,17 @@
     };
     reader.readAsText(file);
     importFileInput.value = "";
+
+    // --- 動態評量完整參數表展開 ---
+    var edToggle = document.getElementById("edToggleTable");
+    var edTableWrap = document.getElementById("edTableWrap");
+    if (edToggle && edTableWrap) {
+      edToggle.addEventListener("click", function () {
+        var isHidden = edTableWrap.style.display === "none";
+        edTableWrap.style.display = isHidden ? "" : "none";
+        edToggle.textContent = isHidden ? "▲ 收合參數表" : "▼ 查看完整參數表";
+      });
+    }
   }
 
   // =========================================
