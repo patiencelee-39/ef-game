@@ -200,7 +200,7 @@ const GAME_CONFIG = {
     MAX_POSITIONS: 6, // ← 教師可改：最多記幾個位置
     HIGHLIGHT_DURATION_MS: 800, // ← 教師可改：位置亮起時間（0.8秒）
     HIGHLIGHT_INTERVAL_MS: 400, // ← 教師可改：位置間隔時間（0.4秒）
-    RESPONSE_TIMEOUT_MS: 10000, // ← 教師可改：作答時間限制（10秒）
+    RESPONSE_TIMEOUT_MS: 60000, // ← 教師可改：作答時間限制（60秒）
     PASS_THRESHOLD: 0.83, // ← 教師可改：通關門檻（83%）
     SCORE_PER_POSITION: 1, // ← 教師可改：每個位置的得分
     REVERSE_PROBABILITY: 0.5, // ← 教師可改：逆向記憶出題機率（50%）
