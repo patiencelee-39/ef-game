@@ -324,7 +324,7 @@ var SimpleAdaptiveEngine = (function () {
         reverseProbability: lvl.reverseProbability || wm.REVERSE_PROBABILITY || 0.5,
         highlightDurationMs: lvl.highlightDurationMs,
         highlightIntervalMs: wm.HIGHLIGHT_INTERVAL_MS || 400,
-        responseTimeoutMs: wm.RESPONSE_TIMEOUT_MS || 10000,
+        responseTimeoutMs: wm.RESPONSE_TIMEOUT_MS || 60000,
       };
     },
 

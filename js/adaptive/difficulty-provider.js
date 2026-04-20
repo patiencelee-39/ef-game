@@ -198,7 +198,7 @@ var DifficultyProvider = (function () {
         highlightIntervalMs: wm.HIGHLIGHT_INTERVAL_MS || 400,
 
         /** 作答超時（ms） */
-        responseTimeoutMs: wm.RESPONSE_TIMEOUT_MS || 10000,
+        responseTimeoutMs: wm.RESPONSE_TIMEOUT_MS || 60000,
       };
     },
 

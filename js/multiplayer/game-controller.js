@@ -499,11 +499,14 @@ var GameController = (function () {
           ruleQuestionCount: _questions.length,
         });
 
+        var wmPreset = combo.workingMemoryTest || {};
         return WorkingMemory.start({
           fieldId: combo.fieldId,
           ruleId: combo.ruleId,
           questions: _questions,
           personalBest: null, // MP 不使用 ProgressTracker，無 personalBest
+          direction: wmPreset.direction,
+          positions: wmPreset.positions,
           reverseProbability: _wmDiffParams.reverseProbability,
           onResult: function (wmScore) {
             WorkingMemory.hide();

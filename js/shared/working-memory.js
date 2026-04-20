@@ -53,7 +53,7 @@ var WM_DEFAULTS = {
   MAX_POSITIONS: 6,
   HIGHLIGHT_DURATION_MS: 800,
   HIGHLIGHT_INTERVAL_MS: 400,
-  RESPONSE_TIMEOUT_MS: 10000,
+  RESPONSE_TIMEOUT_MS: 60000,
   PASS_THRESHOLD: 0.83,
   SCORE_PER_POSITION: 1,
   REVERSE_PROBABILITY: 0.5,
@@ -627,9 +627,9 @@ var WorkingMemory = {
     var onResult = options.onResult || null;
     var reverseProbability = options.reverseProbability;
 
-    // 1. 根據 ruleId 決定方向 + 隨機位置數
-    var direction = _resolveDirection(ruleId, reverseProbability);
-    var n = _randomN(questions.length);
+    // 1. 根據 ruleId 決定方向 + 隨機位置數（若有預生成值則直接使用）
+    var direction = options.direction || _resolveDirection(ruleId, reverseProbability);
+    var n = options.positions || _randomN(questions.length);
 
     // 2. 擷取序列
     var sequence = _extractSequence(questions, n);
