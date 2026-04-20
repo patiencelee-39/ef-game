@@ -393,6 +393,77 @@ body {
   background: linear-gradient(90deg, #3498db, #5dade2);
 }
 
+/* === 固定模式參數輸入 === */
+.engine-static-params {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.engine-param-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.engine-param-label {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.engine-param-input-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.engine-param-input {
+  width: 64px;
+  height: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  font-size: 0.85rem;
+  text-align: center;
+  outline: none;
+  -moz-appearance: textfield;
+}
+
+.engine-param-input::-webkit-inner-spin-button,
+.engine-param-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.engine-param-input:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.3);
+}
+
+.engine-param-unit {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.4);
+  min-width: 20px;
+}
+
+.engine-param-reset {
+  display: block;
+  margin: 12px auto 0;
+  padding: 6px 20px;
+  background: none;
+  border: 1px solid rgba(231, 76, 60, 0.4);
+  border-radius: 8px;
+  color: #e74c3c;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.engine-param-reset:hover {
+  background: rgba(231, 76, 60, 0.1);
+}
+
 /* === 按鈕 === */
 .settings-btn {
   display: flex;

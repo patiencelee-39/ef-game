@@ -58,21 +58,28 @@ var DifficultyProvider = (function () {
       var cfg = typeof GAME_CONFIG !== "undefined" ? GAME_CONFIG : {};
       var timing = cfg.TIMING || {};
 
+      // 讀取使用者自訂的固定模式參數
+      var custom = null;
+      try {
+        var raw = localStorage.getItem("ef_static_params");
+        if (raw) custom = JSON.parse(raw);
+      } catch (e) { /* ignore */ }
+
       return {
         /** 刺激物顯示時間（ms） */
-        stimulusDurationMs: timing.STIMULUS_DURATION_MS || 2000,
+        stimulusDurationMs: (custom && custom.stimulusMs) || timing.STIMULUS_DURATION_MS || 2000,
 
         /** 刺激物消失後的額外回應寬限期（ms） */
         responseGraceMs: timing.RESPONSE_GRACE_MS || 1000,
 
         /** ISI 最小值（ms） */
-        isiMinMs: timing.ISI_MIN_MS || 800,
+        isiMinMs: (custom && custom.isiMinMs) || timing.ISI_MIN_MS || 800,
 
         /** ISI 最大值（ms） */
-        isiMaxMs: timing.ISI_MAX_MS || 1200,
+        isiMaxMs: (custom && custom.isiMaxMs) || timing.ISI_MAX_MS || 1200,
 
         /** 回饋顯示時間（ms） */
-        feedbackDurationMs: timing.FEEDBACK_DURATION_MS || 800,
+        feedbackDurationMs: (custom && custom.feedbackMs) || timing.FEEDBACK_DURATION_MS || 800,
 
         /** 倒數秒數 */
         countdownSeconds: timing.COUNTDOWN_SECONDS || 3,
@@ -145,10 +152,17 @@ var DifficultyProvider = (function () {
       var cfg = typeof GAME_CONFIG !== "undefined" ? GAME_CONFIG : {};
       var wm = cfg.WORKING_MEMORY || {};
 
-      var minPos = wm.MIN_POSITIONS || 2;
+      // 讀取使用者自訂的固定模式參數
+      var custom = null;
+      try {
+        var raw = localStorage.getItem("ef_static_params");
+        if (raw) custom = JSON.parse(raw);
+      } catch (e) { /* ignore */ }
+
+      var minPos = (custom && custom.wmMinPos) || wm.MIN_POSITIONS || 2;
       var maxPos = Math.min(
         context.ruleQuestionCount || 6,
-        wm.MAX_POSITIONS || 6,
+        (custom && custom.wmMaxPos) || wm.MAX_POSITIONS || 6,
       );
       if (maxPos < minPos) maxPos = minPos;
 
@@ -161,10 +175,9 @@ var DifficultyProvider = (function () {
       if (positions < 2) {
         direction = "forward";
       } else {
-        direction =
-          Math.random() < (wm.REVERSE_PROBABILITY || 0.5)
-            ? "reverse"
-            : "forward";
+        var revProb = (custom && custom.wmReverse != null) ? custom.wmReverse / 100 :
+          (wm.REVERSE_PROBABILITY || 0.5);
+        direction = Math.random() < revProb ? "reverse" : "forward";
       }
 
       return {
@@ -175,7 +188,8 @@ var DifficultyProvider = (function () {
         direction: direction,
 
         /** 難度對應的逆向機率 */
-        reverseProbability: wm.REVERSE_PROBABILITY || 0.5,
+        reverseProbability: (custom && custom.wmReverse != null) ? custom.wmReverse / 100 :
+          (wm.REVERSE_PROBABILITY || 0.5),
 
         /** 位置亮起時間（ms） */
         highlightDurationMs: wm.HIGHLIGHT_DURATION_MS || 800,

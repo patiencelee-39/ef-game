@@ -29,6 +29,7 @@
     renderEngineDetailPanel(
       localStorage.getItem("ef_engine_choice") || "simple"
     );
+    loadStaticParams();
     loadThemeSettings();
     bindEvents();
   }
@@ -246,6 +247,92 @@
   }
 
   // =========================================
+  // 📊 固定模式參數自訂
+  // =========================================
+
+  var SP_KEY = "ef_static_params";
+
+  var SP_DEFAULTS = {
+    stimulusMs: 2000,
+    isiMinMs: 800,
+    isiMaxMs: 1200,
+    feedbackMs: 800,
+    wmMinPos: 2,
+    wmMaxPos: 6,
+    wmReverse: 50,
+  };
+
+  var SP_FIELDS = [
+    { id: "spStimulus", key: "stimulusMs" },
+    { id: "spIsiMin",   key: "isiMinMs"   },
+    { id: "spIsiMax",   key: "isiMaxMs"   },
+    { id: "spFeedback", key: "feedbackMs" },
+    { id: "spWmMin",    key: "wmMinPos"   },
+    { id: "spWmMax",    key: "wmMaxPos"   },
+    { id: "spReverse",  key: "wmReverse"  },
+  ];
+
+  function loadStaticParams() {
+    var saved = {};
+    try {
+      var raw = localStorage.getItem(SP_KEY);
+      if (raw) saved = JSON.parse(raw);
+    } catch (e) { /* ignore */ }
+
+    SP_FIELDS.forEach(function (f) {
+      var el = document.getElementById(f.id);
+      if (el) {
+        el.value = saved[f.key] != null ? saved[f.key] : SP_DEFAULTS[f.key];
+      }
+    });
+  }
+
+  function saveStaticParams() {
+    var data = {};
+    SP_FIELDS.forEach(function (f) {
+      var el = document.getElementById(f.id);
+      if (el) {
+        var val = parseInt(el.value, 10);
+        var min = parseInt(el.min, 10);
+        var max = parseInt(el.max, 10);
+        if (isNaN(val) || val < min) val = min;
+        if (val > max) val = max;
+        el.value = val;
+        data[f.key] = val;
+      }
+    });
+
+    // 驗證：isiMin 不能大於 isiMax
+    if (data.isiMinMs > data.isiMaxMs) {
+      data.isiMaxMs = data.isiMinMs;
+      var isiMaxEl = document.getElementById("spIsiMax");
+      if (isiMaxEl) isiMaxEl.value = data.isiMaxMs;
+    }
+
+    // 驗證：wmMinPos 不能大於 wmMaxPos
+    if (data.wmMinPos > data.wmMaxPos) {
+      data.wmMaxPos = data.wmMinPos;
+      var wmMaxEl = document.getElementById("spWmMax");
+      if (wmMaxEl) wmMaxEl.value = data.wmMaxPos;
+    }
+
+    try {
+      localStorage.setItem(SP_KEY, JSON.stringify(data));
+    } catch (e) { /* ignore */ }
+  }
+
+  function resetStaticParams() {
+    try {
+      localStorage.removeItem(SP_KEY);
+    } catch (e) { /* ignore */ }
+
+    SP_FIELDS.forEach(function (f) {
+      var el = document.getElementById(f.id);
+      if (el) el.value = SP_DEFAULTS[f.key];
+    });
+  }
+
+  // =========================================
   // 🎨 配色主題
   // =========================================
   function loadThemeSettings() {
@@ -429,6 +516,26 @@
         var isHidden = edTableWrap.style.display === "none";
         edTableWrap.style.display = isHidden ? "" : "none";
         edToggle.textContent = isHidden ? "▲ 收合參數表" : "▼ 查看完整參數表";
+      });
+    }
+
+    // --- 固定模式參數輸入 ---
+    SP_FIELDS.forEach(function (f) {
+      var el = document.getElementById(f.id);
+      if (el) {
+        el.addEventListener("change", function () {
+          saveStaticParams();
+          showToast("📊 固定模式參數已儲存");
+        });
+      }
+    });
+
+    // --- 固定模式恢復預設 ---
+    var spResetBtn = document.getElementById("spResetBtn");
+    if (spResetBtn) {
+      spResetBtn.addEventListener("click", function () {
+        resetStaticParams();
+        showToast("📊 已恢復預設參數");
       });
     }
   }

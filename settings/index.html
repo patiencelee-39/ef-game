@@ -23,6 +23,7 @@
     <noscript><link rel="stylesheet" href="../css/components/landscape-hint.css" /></noscript>
     <link rel="stylesheet" href="../css/pages/settings.css" />
     <!-- === Scripts === -->
+    <script defer src="../js/game-config.js"></script>
     <script defer src="../js/utils/logger.js"></script>
     <script defer src="../js/utils/storage.js"></script>
     <script defer src="../js/shared/audio-player.js"></script>
@@ -139,49 +140,73 @@
           <div class="engine-detail-panel engine-detail-panel--static" id="staticDetailPanel" style="display:none">
             <p class="engine-static-desc">難度固定不變，不隨答題表現調整，適合標準化測驗</p>
 
-            <div class="engine-detail-bar-group">
-              <div class="engine-detail-bar-row">
-                <span class="engine-detail-bar-label">📷 圖片速度</span>
-                <div class="engine-detail-bar-track">
-                  <div class="engine-detail-bar-fill engine-detail-bar-fill--static" style="width:50%"></div>
+            <div class="engine-static-params">
+              <div class="engine-param-row">
+                <span class="engine-param-label">📷 圖片顯示時間</span>
+                <div class="engine-param-input-group">
+                  <input type="number" class="engine-param-input" id="spStimulus"
+                    min="500" max="5000" step="100" value="2000" />
+                  <span class="engine-param-unit">ms</span>
                 </div>
-                <span class="engine-detail-bar-value">2.0 秒</span>
               </div>
 
-              <div class="engine-detail-bar-row">
-                <span class="engine-detail-bar-label">⏱️  間隔時間</span>
-                <div class="engine-detail-bar-track">
-                  <div class="engine-detail-bar-fill engine-detail-bar-fill--static" style="width:50%"></div>
+              <div class="engine-param-row">
+                <span class="engine-param-label">⏱️  間隔最短</span>
+                <div class="engine-param-input-group">
+                  <input type="number" class="engine-param-input" id="spIsiMin"
+                    min="300" max="3000" step="100" value="800" />
+                  <span class="engine-param-unit">ms</span>
                 </div>
-                <span class="engine-detail-bar-value">0.8～1.2 秒</span>
               </div>
 
-              <div class="engine-detail-bar-row">
-                <span class="engine-detail-bar-label">💬 提示時間</span>
-                <div class="engine-detail-bar-track">
-                  <div class="engine-detail-bar-fill engine-detail-bar-fill--static" style="width:50%"></div>
+              <div class="engine-param-row">
+                <span class="engine-param-label">⏱️  間隔最長</span>
+                <div class="engine-param-input-group">
+                  <input type="number" class="engine-param-input" id="spIsiMax"
+                    min="500" max="5000" step="100" value="1200" />
+                  <span class="engine-param-unit">ms</span>
                 </div>
-                <span class="engine-detail-bar-value">0.8 秒</span>
               </div>
 
-              <div class="engine-detail-bar-row">
-                <span class="engine-detail-bar-label">🧠 記憶位置</span>
-                <div class="engine-detail-bar-track">
-                  <div class="engine-detail-bar-fill engine-detail-bar-fill--static" style="width:50%"></div>
+              <div class="engine-param-row">
+                <span class="engine-param-label">💬 提示時間</span>
+                <div class="engine-param-input-group">
+                  <input type="number" class="engine-param-input" id="spFeedback"
+                    min="300" max="3000" step="100" value="800" />
+                  <span class="engine-param-unit">ms</span>
                 </div>
-                <span class="engine-detail-bar-value">2～6 個</span>
               </div>
 
-              <div class="engine-detail-bar-row">
-                <span class="engine-detail-bar-label">🔄 逆向機率</span>
-                <div class="engine-detail-bar-track">
-                  <div class="engine-detail-bar-fill engine-detail-bar-fill--static" style="width:50%"></div>
+              <div class="engine-param-row">
+                <span class="engine-param-label">🧠 最少記憶位置</span>
+                <div class="engine-param-input-group">
+                  <input type="number" class="engine-param-input" id="spWmMin"
+                    min="2" max="6" step="1" value="2" />
+                  <span class="engine-param-unit">個</span>
                 </div>
-                <span class="engine-detail-bar-value">50%</span>
+              </div>
+
+              <div class="engine-param-row">
+                <span class="engine-param-label">🧠 最多記憶位置</span>
+                <div class="engine-param-input-group">
+                  <input type="number" class="engine-param-input" id="spWmMax"
+                    min="2" max="9" step="1" value="6" />
+                  <span class="engine-param-unit">個</span>
+                </div>
+              </div>
+
+              <div class="engine-param-row">
+                <span class="engine-param-label">🔄 逆向機率</span>
+                <div class="engine-param-input-group">
+                  <input type="number" class="engine-param-input" id="spReverse"
+                    min="0" max="100" step="10" value="50" />
+                  <span class="engine-param-unit">%</span>
+                </div>
               </div>
             </div>
 
-            <p class="engine-detail-rule">※ 所有參數固定，等同動態評量的 Level 3</p>
+            <button class="engine-param-reset" id="spResetBtn">🔄 恢復預設</button>
+            <p class="engine-detail-rule">※ 修改後下次遊戲生效，預設值等同動態評量 Level 3</p>
           </div>
 
           <!-- 動態評量詳細面板（選中 simple 時才顯示） -->
