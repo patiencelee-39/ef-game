@@ -4,8 +4,11 @@
 !icon-512x512.png
 !screenshots/*.png
 
+# 4. 忽略系統產生的雜物
 .DS_Store
+Thumbs.db
 .Rhistory
+
 Icon
 Icon?
 # 報告文件
@@ -23,12 +26,20 @@ CONTRIBUTING.md
 test-*.html
 test-*.js
 
-# Node 模組
+# Node 模組# 1.忽略套件包 (體積巨大)
 node_modules/
 _inline-audit-full-output.txt
 
-# Firebase 本地部署快取
+# Firebase 本地部署快取# 5. 忽略 Firebase 的本地緩存
 .firebase/
 
 # Vite 建置輸出
 dist/
+
+# 2. 忽略編譯後的成品 (部署時會重新產生)
+dist/
+*.local
+
+# 3. 忽略敏感環境變數 (這是最重要的保護！)
+.env
+.env.*
