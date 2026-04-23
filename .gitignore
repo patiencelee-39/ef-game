@@ -43,3 +43,6 @@ dist/
 # 3. 忽略敏感環境變數 (這是最重要的保護！)
 .env
 .env.*
+
+.venv
+_archive
