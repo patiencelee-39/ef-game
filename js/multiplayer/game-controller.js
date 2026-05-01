@@ -289,11 +289,11 @@ var GameController = (function () {
 
     _isiTimerId = setTimeout(function () {
       if (_isPaused) return;
-      presentStimulus(question, combo, _tp.stimulusDurationMs);
+      presentStimulus(question, combo, _tp.stimulusDurationMs, _tp);
     }, isiMs);
   }
 
-  function presentStimulus(question, combo, duration) {
+  function presentStimulus(question, combo, duration, trialParams) {
     // 委派 TrialRenderer 渲染背景 + 情境指示 + 刺激物
     TrialRenderer.render(_stimEls(), question, combo.fieldId, combo.ruleId);
 
@@ -331,7 +331,7 @@ var GameController = (function () {
       if (question.isGo) {
         // Go 題：進入寬限期，按鈕保持可用
         var graceMs =
-          (_tp && _tp.responseGraceMs) ||
+          (trialParams && trialParams.responseGraceMs) ||
           (typeof GAME_CONFIG !== "undefined" &&
             GAME_CONFIG.TIMING &&
             GAME_CONFIG.TIMING.RESPONSE_GRACE_MS) ||
