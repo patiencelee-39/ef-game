@@ -206,49 +206,78 @@
                   >開始遊戲時自動隨機分隊</small
                 >
               </div>
-              <div class="form-group">
-                <label>隊長選擇</label>
-                <div class="team-assign-row" id="captainSelectRow">
-                  <button
-                    type="button"
-                    class="team-assign-btn active"
-                    data-captain="hostAssign"
-                  >
-                    👑 房主指派
-                  </button>
-                  <button
-                    type="button"
-                    class="team-assign-btn"
-                    data-captain="random"
-                  >
-                    🎲 隨機產生
-                  </button>
-                </div>
-                <small class="team-assign-hint" id="captainSelectHint"
-                  >房主在等待室指定各隊隊長</small
-                >
-              </div>
             </div>
 
             <!-- 接力賽選項 -->
             <div class="relay-options" id="relayOptions">
-              <label>隊伍數量</label>
-              <div class="team-count-row" id="teamCountRow">
-                <button
-                  type="button"
-                  class="team-count-btn active"
-                  data-count="2"
-                >
-                  2 隊
-                </button>
-                <button type="button" class="team-count-btn" data-count="3">
-                  3 隊
-                </button>
-                <button type="button" class="team-count-btn" data-count="4">
-                  4 隊
-                </button>
+              <div class="form-group">
+                <label for="relayTeamCount">隊伍數量</label>
+                <div class="team-count-slider-row">
+                  <input
+                    type="range"
+                    id="relayTeamCount"
+                    min="2"
+                    max="10"
+                    value="2"
+                    class="team-count-slider"
+                  />
+                  <span class="team-count-value" id="relayTeamCountValue"
+                    >2 隊</span
+                  >
+                </div>
               </div>
-              <div class="form-group" style="margin-top: 12px;">
+              <div class="form-group">
+                <label>分隊方式</label>
+                <div class="team-assign-row" id="relayAssignRow">
+                  <button
+                    type="button"
+                    class="team-assign-btn active"
+                    data-assign="random"
+                  >
+                    🔀 隨機分隊
+                  </button>
+                  <button
+                    type="button"
+                    class="team-assign-btn"
+                    data-assign="selfSelect"
+                  >
+                    🙋 玩家自選
+                  </button>
+                  <button
+                    type="button"
+                    class="team-assign-btn"
+                    data-assign="manual"
+                  >
+                    ✋ 手動分隊
+                  </button>
+                </div>
+                <small class="team-assign-hint" id="relayAssignHint"
+                  >開始遊戲時自動隨機分隊</small
+                >
+              </div>
+              <div class="form-group">
+                <label>棒次排列</label>
+                <div class="team-assign-row" id="relayBatonOrderRow">
+                  <button
+                    type="button"
+                    class="team-assign-btn active"
+                    data-baton="captainAssign"
+                  >
+                    👑 隊長分配
+                  </button>
+                  <button
+                    type="button"
+                    class="team-assign-btn"
+                    data-baton="random"
+                  >
+                    🎲 隨機排列
+                  </button>
+                </div>
+                <small class="team-assign-hint" id="relayBatonOrderHint"
+                  >隊長在等待室手動安排接力順序</small
+                >
+              </div>
+              <div class="form-group">
                 <label>隊長選擇</label>
                 <div class="team-assign-row" id="relayCaptainSelectRow">
                   <button

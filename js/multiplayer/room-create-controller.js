@@ -197,14 +197,27 @@ function collectFormData() {
   var teamCount = 2;
   var teamAssignment = "random";
   var captainSelection = "hostAssign";
+  var batonOrderMode = "captainAssign";
 
   if (gameMode === "relay") {
-    var activeCount = document.querySelector(
-      "#teamCountRow .team-count-btn.active",
+    // 接力賽：共用隊伍對抗的 slider 讀取隊數
+    var relaySlider = document.getElementById("relayTeamCount");
+    teamCount = relaySlider ? parseInt(relaySlider.value, 10) : 2;
+    // 接力賽：讀取分隊方式
+    var relayAssignBtn = document.querySelector(
+      "#relayAssignRow .team-assign-btn.active",
     );
-    teamCount = activeCount
-      ? parseInt(activeCount.getAttribute("data-count"), 10)
-      : 2;
+    teamAssignment = relayAssignBtn
+      ? relayAssignBtn.getAttribute("data-assign")
+      : "random";
+    // 接力賽：讀取棒次排列
+    var relayBatonBtn = document.querySelector(
+      "#relayBatonOrderRow .team-assign-btn.active",
+    );
+    batonOrderMode = relayBatonBtn
+      ? relayBatonBtn.getAttribute("data-baton")
+      : "captainAssign";
+    // 接力賽：讀取隊長選擇
     var relayCaptainBtn = document.querySelector(
       "#relayCaptainSelectRow .team-assign-btn.active",
     );
@@ -220,12 +233,7 @@ function collectFormData() {
     teamAssignment = activeAssign
       ? activeAssign.getAttribute("data-assign")
       : "random";
-    var teamCaptainBtn = document.querySelector(
-      "#captainSelectRow .team-assign-btn.active",
-    );
-    captainSelection = teamCaptainBtn
-      ? teamCaptainBtn.getAttribute("data-captain")
-      : "hostAssign";
+    // 隊伍對抗沒有隊長功能，captainSelection 保持預設值
   }
 
   return {
@@ -240,6 +248,7 @@ function collectFormData() {
     teamCount,
     teamAssignment,
     captainSelection,
+    batonOrderMode,
     maxPlayers: parseInt(document.getElementById("maxPlayers").value, 10) || 8,
     selectedStages,
     questionsCount: parseInt(document.getElementById("questionsCount").value),
@@ -265,7 +274,6 @@ function initGameModeSelector() {
   var selector = document.getElementById("gameModeSelector");
   var relayOptions = document.getElementById("relayOptions");
   var teamOptions = document.getElementById("teamOptions");
-  var teamCountRow = document.getElementById("teamCountRow");
   var teamAssignRow = document.getElementById("teamAssignRow");
   var teamCountSlider = document.getElementById("teamCount");
   var teamCountValue = document.getElementById("teamCountValue");
@@ -300,16 +308,56 @@ function initGameModeSelector() {
     }
   });
 
-  // 接力賽隊伍數切換
-  if (teamCountRow) {
-    teamCountRow.addEventListener("click", function (e) {
-      var btn = e.target.closest(".team-count-btn");
-      if (!btn) return;
+  // 接力賽隊伍數 slider
+  var relayTeamSlider = document.getElementById("relayTeamCount");
+  var relayTeamValue = document.getElementById("relayTeamCountValue");
+  if (relayTeamSlider && relayTeamValue) {
+    relayTeamSlider.addEventListener("input", function () {
+      relayTeamValue.textContent = relayTeamSlider.value + " 隊";
+    });
+  }
 
-      teamCountRow.querySelectorAll(".team-count-btn").forEach(function (b) {
+  // 接力賽分隊方式切換
+  var relayAssignRow = document.getElementById("relayAssignRow");
+  var relayAssignHint = document.getElementById("relayAssignHint");
+  if (relayAssignRow) {
+    relayAssignRow.addEventListener("click", function (e) {
+      var btn = e.target.closest(".team-assign-btn");
+      if (!btn) return;
+      relayAssignRow.querySelectorAll(".team-assign-btn").forEach(function (b) {
         b.classList.remove("active");
       });
       btn.classList.add("active");
+      var method = btn.getAttribute("data-assign");
+      if (relayAssignHint) {
+        var hints = {
+          random: "開始遊戲時自動隨機分隊",
+          selfSelect: "玩家在等待室自行選擇加入哪一隊",
+          manual: "房主在等待室手動分配隊伍",
+        };
+        relayAssignHint.textContent = hints[method] || "";
+      }
+    });
+  }
+
+  // 接力賽棒次排列模式切換
+  var relayBatonRow = document.getElementById("relayBatonOrderRow");
+  var relayBatonHint = document.getElementById("relayBatonOrderHint");
+  if (relayBatonRow) {
+    relayBatonRow.addEventListener("click", function (e) {
+      var btn = e.target.closest(".team-assign-btn");
+      if (!btn) return;
+      relayBatonRow.querySelectorAll(".team-assign-btn").forEach(function (b) {
+        b.classList.remove("active");
+      });
+      btn.classList.add("active");
+      var mode = btn.getAttribute("data-baton");
+      if (relayBatonHint) {
+        relayBatonHint.textContent =
+          mode === "random"
+            ? "開始遊戲時自動隨機排列棒次"
+            : "隊長在等待室手動安排接力順序";
+      }
     });
   }
 
@@ -343,8 +391,8 @@ function initGameModeSelector() {
     });
   }
 
-  // 隊長選擇方式切換（隊伍對抗 + 接力賽共用邏輯）
-  ["captainSelectRow", "relayCaptainSelectRow"].forEach(function (rowId) {
+  // 隊長選擇方式切換（僅接力賽）
+  ["relayCaptainSelectRow"].forEach(function (rowId) {
     var row = document.getElementById(rowId);
     if (!row) return;
     var hintId = rowId === "captainSelectRow" ? "captainSelectHint" : "relayCaptainSelectHint";

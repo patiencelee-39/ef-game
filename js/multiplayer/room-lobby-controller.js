@@ -332,10 +332,43 @@ async function startGame() {
       }
     }
 
-    // selfSelect 模式：檢查是否所有玩家都已選隊
+    // 接力賽：random 模式自動分隊
     if (
-      currentRoom.gameMode === "team" &&
-      currentRoom.teamAssignment === "selfSelect"
+      currentRoom.gameMode === "relay" &&
+      currentRoom.teamAssignment === "random" &&
+      window.RelayManager
+    ) {
+      var relayExistingTeams = currentRoom.teams || {};
+      var relayHasMembers = false;
+      for (var rk in relayExistingTeams) {
+        if (
+          relayExistingTeams.hasOwnProperty(rk) &&
+          relayExistingTeams[rk].members &&
+          Object.keys(relayExistingTeams[rk].members).length > 0
+        ) {
+          relayHasMembers = true;
+          break;
+        }
+      }
+      if (!relayHasMembers) {
+        var relayPlayersList = Object.entries(currentRoom.players || {}).map(
+          function (entry) {
+            return { id: entry[0], nickname: entry[1].nickname || "玩家" };
+          },
+        );
+        await RelayManager.autoAssignTeams(
+          relayPlayersList,
+          currentRoom.teamCount || 2,
+        );
+        Logger.info("✅ 接力賽：已自動隨機分隊");
+      }
+    }
+
+    // selfSelect / manual 模式：檢查是否所有玩家都已分配隊伍
+    if (
+      (currentRoom.gameMode === "team" || currentRoom.gameMode === "relay") &&
+      (currentRoom.teamAssignment === "selfSelect" ||
+        currentRoom.teamAssignment === "manual")
     ) {
       var allPlayerIds = Object.keys(currentRoom.players || {});
       var assignedIds = {};
@@ -352,7 +385,7 @@ async function startGame() {
       });
       if (unassigned.length > 0) {
         showToast(
-          "⚠️ 還有 " + unassigned.length + " 位玩家尚未選擇隊伍",
+          "⚠️ 還有 " + unassigned.length + " 位玩家尚未分配隊伍",
           "error",
         );
         return;
@@ -382,7 +415,26 @@ async function startGame() {
       }
     }
 
-    // 觀戰資訊已透過 URL 參數 role=spectator 及 localStorage 傳遞，
+    // 接力賽：batonOrderMode === "random" 時自動隨機排列棒次
+    if (
+      currentRoom.gameMode === "relay" &&
+      currentRoom.batonOrderMode === "random" &&
+      window.RelayManager
+    ) {
+      var batonTeams = currentRoom.teams || {};
+      var batonPromises = [];
+      for (var btid in batonTeams) {
+        if (batonTeams.hasOwnProperty(btid)) {
+          batonPromises.push(RelayManager.randomizeBatonOrder(btid));
+        }
+      }
+      if (batonPromises.length > 0) {
+        await Promise.all(batonPromises);
+        Logger.info("✅ 接力賽：已自動隨機排列棒次");
+      }
+    }
+
+    // 觀戲資訊已透過 URL 參數 role=spectator 及 localStorage 傳遞，
     // 不寫入 players 節點（觀戰房主不在 players 列表中，寫入會違反 validate 規則）
 
     // 更新房間狀態
@@ -441,8 +493,8 @@ function _updateTeamBattlePanel(roomData, playersList) {
       },
     });
 
-    // selfSelect 模式：首次自動建立空隊伍
-    if (teamAssignment === "selfSelect" && isHost) {
+    // selfSelect / manual 模式：首次自動建立空隊伍
+    if ((teamAssignment === "selfSelect" || teamAssignment === "manual") && isHost) {
       var existingTeams = roomData.teams || {};
       if (Object.keys(existingTeams).length === 0) {
         RelayManager.createEmptyTeams(teamCount);
@@ -460,14 +512,11 @@ function _updateTeamBattlePanel(roomData, playersList) {
     }
   }
 
-  // 操作按鈕：selfSelect 隱藏（玩家自選，不需房主操作）
-  var actionsDiv = panel.querySelector(".team-battle-actions");
+  // 操作按鈕：只在 random 模式且是房主時顯示「自動分隊」
+  var actionsDiv = document.getElementById("teamBattleActions");
   if (actionsDiv) {
-    if (teamAssignment === "selfSelect") {
-      actionsDiv.style.display = "none";
-    } else {
-      actionsDiv.style.display = isHost ? "" : "none";
-    }
+    actionsDiv.style.display =
+      isHost && teamAssignment === "random" ? "" : "none";
   }
 
   // 讀取 Firebase 中的 teams 資料
@@ -507,22 +556,10 @@ function _updateTeamBattlePanel(roomData, playersList) {
     }
   }
 
-  _renderTeamBattleCards(
-    teamsData,
-    playersList,
-    teamCount,
-    teamAssignment,
-    roomData.captainSelection || "hostAssign",
-  );
+  _renderTeamBattleCards(teamsData, playersList, teamCount, teamAssignment);
 }
 
-function _renderTeamBattleCards(
-  teamsData,
-  playersList,
-  teamCount,
-  teamAssignment,
-  captainSelection,
-) {
+function _renderTeamBattleCards(teamsData, playersList, teamCount, teamAssignment) {
   var grid = document.getElementById("teamBattleGrid");
   if (!grid) return;
 
@@ -606,40 +643,27 @@ function _renderTeamBattleCards(
           '<span class="team-member-name">' +
           _escTeamHtml(name) +
           "</span>" +
-          (isCaptain ? '<span class="team-captain-badge">👑 隊長</span>' : "") +
           (isMe ? '<span class="team-me-badge">← 你</span>' : "");
-
-        // hostAssign 模式：房主可設定隊長
-        if (isHost && captainSelection === "hostAssign" && !isCaptain) {
-          bodyHTML +=
-            '<button class="set-captain-btn" data-team-id="' +
-            teamId +
-            '" data-uid="' +
-            uid +
-            '" title="設為隊長">👑</button>';
-        }
 
         bodyHTML += "</div>";
       });
     }
     bodyHTML += "</div>";
 
-    // selfSelect 模式：加入此隊按鈕
-    if (teamAssignment === "selfSelect") {
-      var iAmInThisTeam = members[currentPlayerId] ? true : false;
-      if (iAmInThisTeam) {
-        bodyHTML +=
-          '<div class="team-join-row">' +
-          '<span class="team-joined-badge">✅ 已加入</span>' +
-          "</div>";
-      } else {
-        bodyHTML +=
-          '<div class="team-join-row">' +
-          '<button class="btn btn-sm team-join-btn" data-team-id="' +
-          teamId +
-          '">🙋 加入此隊</button>' +
-          "</div>";
-      }
+    // 所有玩家皆可換隊（selfSelect / manual / random 皆顯示）
+    var iAmInThisTeam = members[currentPlayerId] ? true : false;
+    if (iAmInThisTeam) {
+      bodyHTML +=
+        '<div class="team-join-row">' +
+        '<span class="team-joined-badge">✅ 已加入</span>' +
+        "</div>";
+    } else {
+      bodyHTML +=
+        '<div class="team-join-row">' +
+        '<button class="btn btn-sm team-join-btn" data-team-id="' +
+        teamId +
+        '">🙋 加入此隊</button>' +
+        "</div>";
     }
 
     card.innerHTML = headerHTML + bodyHTML;
@@ -682,23 +706,36 @@ function _renderTeamBattleCards(
     });
   });
 
-  // 綁定「設為隊長」按鈕（hostAssign 模式）
-  grid.querySelectorAll(".set-captain-btn").forEach(function (btn) {
-    btn.addEventListener("click", function (e) {
-      e.stopPropagation();
-      var teamId = btn.getAttribute("data-team-id");
-      var uid = btn.getAttribute("data-uid");
-      if (!window.RelayManager) return;
-
-      RelayManager.setCaptain(teamId, uid)
-        .then(function () {
-          showToast("👑 已設定為隊長", "success");
-        })
-        .catch(function (err) {
-          showToast("❌ " + err.message, "error");
-        });
+  // === 未分配玩家區 ===
+  var unassignedDiv = document.getElementById("teamBattleUnassigned");
+  var unassignedList = document.getElementById("teamBattleUnassignedList");
+  if (unassignedDiv && unassignedList) {
+    // 找出所有尚未分配隊伍的玩家
+    var assignedUids = {};
+    for (var checkTid in teamsData) {
+      if (!teamsData.hasOwnProperty(checkTid)) continue;
+      var checkMembers = teamsData[checkTid].members || {};
+      for (var checkUid in checkMembers) {
+        if (checkMembers.hasOwnProperty(checkUid)) assignedUids[checkUid] = true;
+      }
+    }
+    var unassignedPlayers = playersList.filter(function (p) {
+      return !assignedUids[p.id];
     });
-  });
+
+    if (unassignedPlayers.length > 0 && teamAssignment !== "random") {
+      unassignedDiv.style.display = "";
+      unassignedList.innerHTML = "";
+      unassignedPlayers.forEach(function (p) {
+        var row = document.createElement("div");
+        row.className = "unassigned-player";
+        row.textContent = p.nickname || p.name || "玩家";
+        unassignedList.appendChild(row);
+      });
+    } else {
+      unassignedDiv.style.display = "none";
+    }
+  }
 }
 
 function _showRenameDialog(teamId) {
@@ -893,6 +930,10 @@ function _updateRelayPanel(roomData, playersList) {
   }
   panel.style.display = "";
 
+  var teamCount = roomData.teamCount || 2;
+  var teamAssignment = roomData.teamAssignment || "random";
+  var batonOrderMode = roomData.batonOrderMode || "captainAssign";
+
   // 首次初始化 RelayManager + 按鈕事件
   if (!_relayInited && window.RelayManager) {
     _relayInited = true;
@@ -908,113 +949,491 @@ function _updateRelayPanel(roomData, playersList) {
       },
     });
 
-    // 綁定按鈕（僅房主可操作，按鈕在 render 時才顯示）
+    // selfSelect / manual 模式：首次自動建立空隊伍
+    if (
+      (teamAssignment === "selfSelect" || teamAssignment === "manual") &&
+      isHost
+    ) {
+      var existingTeams = roomData.teams || {};
+      if (Object.keys(existingTeams).length === 0) {
+        RelayManager.createEmptyTeams(teamCount);
+      }
+    }
+
+    // 綁定按鈕
     var autoBtn = document.getElementById("autoAssignBtn");
     var shuffleBtn = document.getElementById("shuffleBatonBtn");
 
     if (autoBtn) {
       autoBtn.addEventListener("click", function () {
-        var teamCount = roomData.teamCount || 2;
-        RelayManager.autoAssignTeams(playersList, teamCount);
+        var tc = currentRoom.teamCount || 2;
+        RelayManager.autoAssignTeams(playersList, tc);
         showToast("🔀 已自動分配隊伍", "success");
       });
     }
     if (shuffleBtn) {
       shuffleBtn.addEventListener("click", function () {
-        RelayManager.randomizeBatonOrder();
-        showToast("🎲 已隨機排列棒次", "success");
+        // 對所有隊伍隨機排列棒次
+        var teams = currentRoom.teams || {};
+        var promises = [];
+        for (var tid in teams) {
+          if (teams.hasOwnProperty(tid)) {
+            promises.push(RelayManager.randomizeBatonOrder(tid));
+          }
+        }
+        Promise.all(promises).then(function () {
+          showToast("🎲 已隨機排列所有隊伍棒次", "success");
+        });
       });
     }
   }
 
-  // 僅房主顯示操作按鈕
-  var actionsDiv = panel.querySelector(".relay-team-actions");
+  // 操作按鈕顯隱：
+  // - 自動分隊：random 模式 + 房主
+  // - 隨機棒次：batonOrderMode === "random" + 房主
+  var actionsDiv = document.getElementById("relayTeamActions");
   if (actionsDiv) {
-    actionsDiv.style.display = isHost ? "" : "none";
+    var autoBtn2 = document.getElementById("autoAssignBtn");
+    var shuffleBtn2 = document.getElementById("shuffleBatonBtn");
+    if (autoBtn2) {
+      autoBtn2.style.display =
+        isHost && teamAssignment === "random" ? "" : "none";
+    }
+    if (shuffleBtn2) {
+      shuffleBtn2.style.display =
+        isHost && batonOrderMode === "random" ? "" : "none";
+    }
+    // 如果兩個都隱藏，整個 actions 也隱藏
+    var anyVisible =
+      (autoBtn2 && autoBtn2.style.display !== "none") ||
+      (shuffleBtn2 && shuffleBtn2.style.display !== "none");
+    actionsDiv.style.display = anyVisible ? "" : "none";
   }
 
-  // 讀取 Firebase 中的 teams 資料
   var teamsData = roomData.teams || {};
-  var teamCount = roomData.teamCount || 2;
 
-  _renderRelayTeams(teamsData, playersList, teamCount);
+  _renderRelayTeams(
+    teamsData,
+    playersList,
+    teamCount,
+    teamAssignment,
+    batonOrderMode,
+    roomData.captainSelection || "hostAssign",
+  );
 }
 
-function _renderRelayTeams(teamsData, playersList, teamCount) {
+function _renderRelayTeams(
+  teamsData,
+  playersList,
+  teamCount,
+  teamAssignment,
+  batonOrderMode,
+  captainSelection,
+) {
   var grid = document.getElementById("relayTeamsGrid");
   if (!grid) return;
 
   var presets = window.RelayManager
-    ? RelayManager.TEAM_PRESETS.map(function (p, i) {
-        return {
-          id: "team" + (i + 1),
-          name: p.name,
-          color: p.color,
-          emoji: p.emoji,
-        };
-      })
+    ? RelayManager.TEAM_PRESETS
     : [
-        { id: "team1", name: "紅隊", color: "#EF4444", emoji: "🔴" },
-        { id: "team2", name: "藍隊", color: "#3B82F6", emoji: "🔵" },
+        { name: "紅隊", color: "#e74c3c", emoji: "🔴" },
+        { name: "藍隊", color: "#3498db", emoji: "🔵" },
       ];
 
   grid.innerHTML = "";
 
-  // 建立 uid → player 查找表
+  // uid → player 查找表
   var playerMap = {};
   playersList.forEach(function (p) {
     playerMap[p.id] = p;
   });
 
+  // 判斷我是否為隊長（任一隊）
+  var myTeamId = null;
+  var iAmCaptain = false;
+  for (var checkTid in teamsData) {
+    if (!teamsData.hasOwnProperty(checkTid)) continue;
+    var checkMembers = teamsData[checkTid].members || {};
+    if (checkMembers[currentPlayerId]) {
+      myTeamId = checkTid;
+      if (teamsData[checkTid].captainId === currentPlayerId) {
+        iAmCaptain = true;
+      }
+      break;
+    }
+  }
+
   for (var i = 0; i < teamCount; i++) {
-    var preset = presets[i];
-    var teamData = teamsData[preset.id] || {};
+    var preset = presets[i] || {
+      name: "隊伍" + (i + 1),
+      color: "#999",
+      emoji: "⚪",
+    };
+    var teamId = "team" + (i + 1);
+    var teamData = teamsData[teamId] || {};
     var members = teamData.members || {};
     var order = teamData.order || Object.keys(members);
+    var teamName = teamData.name || preset.name;
+    var teamColor = teamData.color || preset.color;
+    var teamEmoji = teamData.emoji || preset.emoji;
+    var captainId = teamData.captainId || null;
 
     var card = document.createElement("div");
     card.className = "relay-team-card";
-    card.style.borderColor = preset.color;
+    card.style.borderColor = teamColor;
 
-    var header =
+    // === header ===
+    var headerHTML =
       '<div class="relay-team-header" style="background:' +
-      preset.color +
+      teamColor +
       '">' +
       "<span>" +
-      preset.emoji +
+      teamEmoji +
       " " +
-      preset.name +
+      '<span class="team-name-text" data-team-id="' +
+      teamId +
+      '">' +
+      _escTeamHtml(teamName) +
+      "</span>";
+
+    // 隊長或房主可改名
+    if (isHost || captainId === currentPlayerId) {
+      headerHTML +=
+        '<button class="team-rename-btn" data-team-id="' +
+        teamId +
+        '" title="更改隊名">✏️ </button>';
+    }
+
+    headerHTML +=
       "</span>" +
       '<span class="relay-team-count">' +
       Object.keys(members).length +
       " 人</span>" +
       "</div>";
 
-    var body = '<div class="relay-team-members">';
+    // === body：成員列表（依棒次排序） ===
+    var bodyHTML = '<div class="relay-team-members" data-team-id="' + teamId + '">';
     if (order.length === 0) {
-      body += '<div class="relay-empty-hint">尚未分配成員</div>';
+      bodyHTML += '<div class="relay-empty-hint">尚未分配成員</div>';
     } else {
+      // 判斷是否允許棒次拖曳
+      // batonOrderMode === "captainAssign" 時：隊長 or 房主可拖曳
+      var canDragBaton =
+        batonOrderMode === "captainAssign" &&
+        (isHost || (captainId === currentPlayerId && teamId === myTeamId));
+
       order.forEach(function (uid, idx) {
         var p = playerMap[uid] || members[uid] || {};
         var name = p.nickname || p.name || uid.slice(0, 6);
-        var isCaptain = teamData.captainId === uid;
-        body +=
-          '<div class="relay-member-row">' +
+        var isCaptain = captainId === uid;
+        var isMe = uid === currentPlayerId;
+
+        bodyHTML +=
+          '<div class="relay-member-row' +
+          (isMe ? " is-me" : "") +
+          '"' +
+          (canDragBaton ? ' draggable="true"' : "") +
+          ' data-uid="' +
+          uid +
+          '" data-team-id="' +
+          teamId +
+          '">' +
           '<span class="relay-baton-num">' +
           (idx + 1) +
           "</span>" +
+          (canDragBaton ? '<span class="drag-handle">⠿</span>' : "") +
           '<span class="relay-member-name">' +
-          name +
+          _escTeamHtml(name) +
           "</span>" +
           (isCaptain ? '<span class="relay-captain-badge">👑</span>' : "") +
-          "</div>";
+          (isMe ? '<span class="team-me-badge">← 你</span>' : "");
+
+        // 設定隊長按鈕（hostAssign 模式，房主可操作）
+        if (
+          isHost &&
+          captainSelection === "hostAssign" &&
+          !isCaptain
+        ) {
+          bodyHTML +=
+            '<button class="set-captain-btn" data-team-id="' +
+            teamId +
+            '" data-uid="' +
+            uid +
+            '" title="設為隊長">👑</button>';
+        }
+
+        bodyHTML += "</div>";
       });
     }
-    body += "</div>";
+    bodyHTML += "</div>";
 
-    card.innerHTML = header + body;
+    // === 所有人可換隊按鈕 ===
+    var iAmInThisTeam = members[currentPlayerId] ? true : false;
+    if (iAmInThisTeam) {
+      bodyHTML +=
+        '<div class="team-join-row">' +
+        '<span class="team-joined-badge">✅ 已加入</span>' +
+        "</div>";
+    } else {
+      bodyHTML +=
+        '<div class="team-join-row">' +
+        '<button class="btn btn-sm team-join-btn" data-team-id="' +
+        teamId +
+        '">🙋 加入此隊</button>' +
+        "</div>";
+    }
+
+    card.innerHTML = headerHTML + bodyHTML;
     grid.appendChild(card);
   }
+
+  // === 事件綁定 ===
+
+  // 改名按鈕
+  grid.querySelectorAll(".team-rename-btn").forEach(function (btn) {
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      _showRenameDialog(btn.getAttribute("data-team-id"));
+    });
+  });
+
+  // 加入此隊按鈕
+  grid.querySelectorAll(".team-join-btn").forEach(function (btn) {
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      var tid = btn.getAttribute("data-team-id");
+      if (!window.RelayManager) return;
+
+      var localPlayer = JSON.parse(
+        localStorage.getItem("currentPlayer") || "{}",
+      );
+      var nickname = localPlayer.nickname || "玩家";
+
+      RelayManager.joinTeam(tid, nickname)
+        .then(function () {
+          showToast("✅ 已加入" + (teamsData[tid]?.name || tid), "success");
+        })
+        .catch(function (err) {
+          showToast("❌ 加入失敗：" + err.message, "error");
+        });
+    });
+  });
+
+  // 設為隊長按鈕
+  grid.querySelectorAll(".set-captain-btn").forEach(function (btn) {
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      var tid = btn.getAttribute("data-team-id");
+      var uid = btn.getAttribute("data-uid");
+      if (!window.RelayManager) return;
+
+      RelayManager.setCaptain(tid, uid)
+        .then(function () {
+          showToast("👑 已設定為隊長", "success");
+        })
+        .catch(function (err) {
+          showToast("❌ " + err.message, "error");
+        });
+    });
+  });
+
+  // === 棒次拖曳排序（batonOrderMode === "captainAssign"） ===
+  if (batonOrderMode === "captainAssign") {
+    _attachBatonDragEvents(grid);
+  }
+
+  // === 未分配玩家區 ===
+  var unassignedDiv = document.getElementById("relayUnassigned");
+  var unassignedList = document.getElementById("relayUnassignedList");
+  if (unassignedDiv && unassignedList) {
+    var assignedUids = {};
+    for (var auTid in teamsData) {
+      if (!teamsData.hasOwnProperty(auTid)) continue;
+      var auMembers = teamsData[auTid].members || {};
+      for (var auUid in auMembers) {
+        if (auMembers.hasOwnProperty(auUid)) assignedUids[auUid] = true;
+      }
+    }
+    var unassignedPlayers = playersList.filter(function (p) {
+      return !assignedUids[p.id];
+    });
+
+    if (unassignedPlayers.length > 0 && teamAssignment !== "random") {
+      unassignedDiv.style.display = "";
+      unassignedList.innerHTML = "";
+      unassignedPlayers.forEach(function (p) {
+        var row = document.createElement("div");
+        row.className = "unassigned-player";
+        row.textContent = p.nickname || p.name || "玩家";
+        unassignedList.appendChild(row);
+      });
+    } else {
+      unassignedDiv.style.display = "none";
+    }
+  }
+}
+
+// =========================================
+// 棒次拖曳排序（桌面 Drag & Drop + 行動觸控）
+// =========================================
+
+var _batonDragUid = null;
+var _batonDragTeamId = null;
+
+function _attachBatonDragEvents(grid) {
+  // === 桌面 Drag & Drop ===
+  grid.addEventListener("dragstart", function (e) {
+    var row = e.target.closest(".relay-member-row[draggable]");
+    if (!row) return;
+    _batonDragUid = row.getAttribute("data-uid");
+    _batonDragTeamId = row.getAttribute("data-team-id");
+    row.classList.add("dragging");
+    e.dataTransfer.effectAllowed = "move";
+  });
+
+  grid.addEventListener("dragover", function (e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    var row = e.target.closest(".relay-member-row");
+    if (row) row.classList.add("drag-over");
+  });
+
+  grid.addEventListener("dragleave", function (e) {
+    var row = e.target.closest(".relay-member-row");
+    if (row) row.classList.remove("drag-over");
+  });
+
+  grid.addEventListener("drop", function (e) {
+    e.preventDefault();
+    grid.querySelectorAll(".drag-over").forEach(function (el) {
+      el.classList.remove("drag-over");
+    });
+
+    var targetRow = e.target.closest(".relay-member-row");
+    if (!targetRow || !_batonDragUid) return;
+
+    var targetTeamId = targetRow.getAttribute("data-team-id");
+
+    // 只允許同隊伍內拖曳排序
+    if (targetTeamId !== _batonDragTeamId) {
+      _batonDragUid = null;
+      _batonDragTeamId = null;
+      return;
+    }
+
+    // 計算新順序
+    var teamMembers = grid.querySelectorAll(
+      '.relay-member-row[data-team-id="' + targetTeamId + '"]',
+    );
+    var newOrder = [];
+    teamMembers.forEach(function (row) {
+      newOrder.push(row.getAttribute("data-uid"));
+    });
+
+    // 從 newOrder 中移除被拖曳的 uid，插入到目標位置
+    var fromIdx = newOrder.indexOf(_batonDragUid);
+    var toIdx = newOrder.indexOf(targetRow.getAttribute("data-uid"));
+    if (fromIdx !== -1 && toIdx !== -1 && fromIdx !== toIdx) {
+      newOrder.splice(fromIdx, 1);
+      newOrder.splice(toIdx, 0, _batonDragUid);
+
+      // 寫入 Firebase
+      if (window.RelayManager) {
+        RelayManager.setBatonOrder(targetTeamId, newOrder)
+          .then(function () {
+            showToast("✅ 棒次已更新", "success");
+          })
+          .catch(function (err) {
+            showToast("❌ " + err.message, "error");
+          });
+      }
+    }
+
+    _batonDragUid = null;
+    _batonDragTeamId = null;
+  });
+
+  grid.addEventListener("dragend", function () {
+    _batonDragUid = null;
+    _batonDragTeamId = null;
+    grid.querySelectorAll(".dragging,.drag-over").forEach(function (el) {
+      el.classList.remove("dragging", "drag-over");
+    });
+  });
+
+  // === 行動觸控拖曳 ===
+  grid.querySelectorAll(".relay-member-row[draggable]").forEach(function (row) {
+    var startY = 0;
+
+    row.addEventListener(
+      "touchstart",
+      function (e) {
+        _batonDragUid = row.getAttribute("data-uid");
+        _batonDragTeamId = row.getAttribute("data-team-id");
+        startY = e.touches[0].clientY;
+        row.classList.add("dragging");
+      },
+      { passive: true },
+    );
+
+    row.addEventListener(
+      "touchmove",
+      function (e) {
+        e.preventDefault();
+      },
+      { passive: false },
+    );
+
+    row.addEventListener("touchend", function (e) {
+      row.classList.remove("dragging");
+      if (!_batonDragUid || !_batonDragTeamId) return;
+
+      var endY = e.changedTouches[0].clientY;
+      var sameTeamRows = grid.querySelectorAll(
+        '.relay-member-row[data-team-id="' + _batonDragTeamId + '"]',
+      );
+
+      // 找到放下位置對應的 row
+      var targetIdx = -1;
+      for (var ri = 0; ri < sameTeamRows.length; ri++) {
+        var rect = sameTeamRows[ri].getBoundingClientRect();
+        if (endY >= rect.top && endY <= rect.bottom) {
+          targetIdx = ri;
+          break;
+        }
+      }
+
+      if (targetIdx === -1) {
+        _batonDragUid = null;
+        _batonDragTeamId = null;
+        return;
+      }
+
+      // 計算新順序
+      var newOrder = [];
+      sameTeamRows.forEach(function (r) {
+        newOrder.push(r.getAttribute("data-uid"));
+      });
+      var fromIdx = newOrder.indexOf(_batonDragUid);
+      if (fromIdx !== -1 && fromIdx !== targetIdx) {
+        newOrder.splice(fromIdx, 1);
+        newOrder.splice(targetIdx, 0, _batonDragUid);
+
+        if (window.RelayManager) {
+          RelayManager.setBatonOrder(_batonDragTeamId, newOrder)
+            .then(function () {
+              showToast("✅ 棒次已更新", "success");
+            })
+            .catch(function (err) {
+              showToast("❌ " + err.message, "error");
+            });
+        }
+      }
+
+      _batonDragUid = null;
+      _batonDragTeamId = null;
+    });
+  });
 }
 
 // 離開頁面時清理

@@ -34,6 +34,7 @@ class RoomManager {
         teamCount = 2,
         teamAssignment = "random",
         captainSelection = "hostAssign",
+        batonOrderMode = "captainAssign",
         maxPlayers = window.GameConstants?.MAX_PLAYERS_PER_ROOM || 8,
       } = roomData;
 
@@ -69,9 +70,10 @@ class RoomManager {
         maxPlayers,
         teamCount:
           gameMode === "relay" || gameMode === "team" ? teamCount : null,
-        teamAssignment: gameMode === "team" ? teamAssignment : null,
+        teamAssignment: gameMode === "team" || gameMode === "relay" ? teamAssignment : null,
         captainSelection:
           gameMode === "relay" || gameMode === "team" ? captainSelection : null,
+        batonOrderMode: gameMode === "relay" ? batonOrderMode : null,
 
         // 遊戲開始狀態
         isGameStarted: false,

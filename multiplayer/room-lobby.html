@@ -83,9 +83,19 @@
       <!-- 接力賽隊伍面板（僅接力模式顯示）-->
       <div class="relay-team-panel" id="relayTeamPanel" style="display: none">
         <div class="section-title">🏁 接力隊伍分配</div>
-        <div class="relay-team-actions">
+        <div class="relay-team-actions" id="relayTeamActions">
           <button class="btn btn-sm" id="autoAssignBtn">🔀 自動分隊</button>
           <button class="btn btn-sm" id="shuffleBatonBtn">🎲 隨機棒次</button>
+        </div>
+        <div
+          class="relay-unassigned"
+          id="relayUnassigned"
+          style="display: none"
+        >
+          <div class="unassigned-title">📋 未分配玩家</div>
+          <div class="unassigned-list" id="relayUnassignedList">
+            <!-- JS 動態生成 -->
+          </div>
         </div>
         <div class="relay-teams-grid" id="relayTeamsGrid">
           <!-- 隊伍卡片由 JS 動態生成 -->
@@ -96,8 +106,18 @@
       <div class="team-battle-panel" id="teamBattlePanel" style="display: none">
         <div class="section-title">⚔️ 隊伍分配</div>
         <div id="myTeamBadge" style="display: none; margin-bottom: 12px"></div>
-        <div class="team-battle-actions">
+        <div class="team-battle-actions" id="teamBattleActions">
           <button class="btn btn-sm" id="teamBattleAutoBtn">🔀 自動分隊</button>
+        </div>
+        <div
+          class="relay-unassigned"
+          id="teamBattleUnassigned"
+          style="display: none"
+        >
+          <div class="unassigned-title">📋 未分配玩家</div>
+          <div class="unassigned-list" id="teamBattleUnassignedList">
+            <!-- JS 動態生成 -->
+          </div>
         </div>
         <div class="team-battle-grid" id="teamBattleGrid">
           <!-- 隊伍卡片由 JS 動態生成 -->

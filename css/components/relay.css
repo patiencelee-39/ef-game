@@ -797,3 +797,70 @@
   opacity: 1;
   background: rgba(241, 196, 15, 0.15);
 }
+
+/* =========================================
+   📋 未分配玩家區
+   ========================================= */
+.relay-unassigned {
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+}
+.unassigned-title {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 8px;
+}
+.unassigned-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.unassigned-player {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: var(--font-size-sm);
+  color: var(--text-light);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* =========================================
+   ⠿ 棒次拖曳排序
+   ========================================= */
+.relay-member-row[draggable] {
+  cursor: grab;
+  user-select: none;
+}
+.relay-member-row[draggable]:active {
+  cursor: grabbing;
+}
+.relay-member-row.dragging {
+  opacity: 0.4;
+  background: rgba(102, 126, 234, 0.15);
+}
+.relay-member-row.drag-over {
+  border-top: 2px solid var(--primary-blue);
+}
+.drag-handle {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.3);
+  margin-right: 4px;
+  cursor: grab;
+  user-select: none;
+}
+.relay-member-row:hover .drag-handle {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* 接力卡片 — is-me 標記（與隊伍對抗一致） */
+.relay-member-row.is-me {
+  background: rgba(102, 126, 234, 0.12);
+  border: 1px solid rgba(102, 126, 234, 0.25);
+  border-radius: 8px;
+}
