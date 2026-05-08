@@ -120,6 +120,24 @@
             <span style="color:rgba(255,255,255,0.5);font-size:0.8rem">題（10～100）</span>
           </div>
         </div>
+        <!-- 時間流程監控面板 -->
+        <div class="settings-item">
+          <span class="settings-item__label">⏱️ 時間流程監控面板</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="monitorToggle" checked aria-label="監控面板開關" />
+            <span class="toggle-switch__track"></span>
+          </label>
+        </div>
+        <div class="settings-item">
+          <span class="settings-item__label">👁️ 監控面板透明度</span>
+          <div class="count-input-row">
+            <input type="number" class="count-input" id="spMonitorOpacity"
+              min="0" max="100" step="5" value="85"
+              aria-label="監控面板透明度"
+              onchange="saveMonitorOpacity(this.value)" />
+            <span style="color:rgba(255,255,255,0.5);font-size:0.8rem">%（0=全透明, 100=不透明）</span>
+          </div>
+        </div>
         <!-- 難度調整模式 -->
         <div class="settings-item">
           <span class="settings-item__label">🧠 難度調整模式</span>
@@ -232,15 +250,6 @@
               </div>
             </div>
 
-            <div class="engine-param-row">
-                <span class="engine-param-label">👁️ 時間流程監控面板透明度</span>
-                <span class="engine-param-desc">遊戲畫面左上角的即時倒數面板背景透明程度（0=全透明, 100=全不透明）</span>
-                <div class="engine-param-input-group">
-                  <input type="number" class="engine-param-input" id="spMonitorOpacity"
-                    min="0" max="100" step="5" value="85" />
-                  <span class="engine-param-unit">%</span>
-                </div>
-              </div>
             </div>
 
             <button class="engine-param-reset" id="spResetBtn">🔄 恢復預設</button>

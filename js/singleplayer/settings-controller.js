@@ -30,6 +30,7 @@
       localStorage.getItem("ef_engine_choice") || "simple"
     );
     loadStaticParams();
+    loadMonitorOpacity();
     loadThemeSettings();
     bindEvents();
   }
@@ -290,12 +291,6 @@
       }
     });
 
-    // 監控面板透明度（獨立儲存）
-    var opEl = document.getElementById("spMonitorOpacity");
-    if (opEl) {
-      var savedOp = localStorage.getItem("ef_monitor_opacity");
-      opEl.value = savedOp != null ? Math.round(parseFloat(savedOp) * 100) : 85;
-    }
   }
 
   function saveStaticParams() {
@@ -331,21 +326,11 @@
       localStorage.setItem(SP_KEY, JSON.stringify(data));
     } catch (e) { /* ignore */ }
 
-    // 監控面板透明度（獨立儲存，0~1）
-    var opEl = document.getElementById("spMonitorOpacity");
-    if (opEl) {
-      var opVal = parseInt(opEl.value, 10);
-      if (isNaN(opVal) || opVal < 0) opVal = 0;
-      if (opVal > 100) opVal = 100;
-      opEl.value = opVal;
-      localStorage.setItem("ef_monitor_opacity", (opVal / 100).toString());
-    }
   }
 
   function resetStaticParams() {
     try {
       localStorage.removeItem(SP_KEY);
-      localStorage.removeItem("ef_monitor_opacity");
     } catch (e) { /* ignore */ }
 
     SP_FIELDS.forEach(function (f) {
@@ -353,9 +338,39 @@
       if (el) el.value = SP_DEFAULTS[f.key];
     });
 
-    var opEl = document.getElementById("spMonitorOpacity");
-    if (opEl) opEl.value = 85;
   }
+
+  // =========================================
+  // ⏱️ 監控面板設定（開關 + 透明度，獨立於難度參數）
+  // =========================================
+  function loadMonitorOpacity() {
+    // 開關
+    var toggle = document.getElementById("monitorToggle");
+    if (toggle) {
+      var enabled = localStorage.getItem("ef_monitor_enabled");
+      toggle.checked = enabled !== "false";
+      toggle.addEventListener("change", function () {
+        localStorage.setItem("ef_monitor_enabled", toggle.checked ? "true" : "false");
+        showToast(toggle.checked ? "⏱️ 監控面板已開啟" : "⏱️ 監控面板已關閉");
+      });
+    }
+
+    // 透明度
+    var el = document.getElementById("spMonitorOpacity");
+    if (!el) return;
+    var saved = localStorage.getItem("ef_monitor_opacity");
+    el.value = saved != null ? Math.round(parseFloat(saved) * 100) : 85;
+  }
+
+  window.saveMonitorOpacity = function (val) {
+    var v = parseInt(val, 10);
+    if (isNaN(v) || v < 0) v = 0;
+    if (v > 100) v = 100;
+    var el = document.getElementById("spMonitorOpacity");
+    if (el) el.value = v;
+    localStorage.setItem("ef_monitor_opacity", (v / 100).toString());
+    showToast("👁️ 監控面板透明度已儲存：" + v + "%");
+  };
 
   // =========================================
   // 🎨 配色主題
