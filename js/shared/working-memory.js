@@ -65,14 +65,28 @@ var WM_DEFAULTS = {
  */
 var TOGGLE_STATES = {
   mouse: [
-    { key: "unknown", emoji: "❓", label: "未選擇" },
-    { key: "cheese", emoji: "🧀", label: "起司" },
-    { key: "cat", emoji: "🐈‍⬛", label: "貓咪" },
+    { key: "unknown", img: null, contextImg: null, label: "未選擇" },
+    { key: "cheese", img: "stimuli/cheese.svg", contextImg: null, label: "起司" },
+    { key: "cat", img: "stimuli/cat.svg", contextImg: null, label: "貓咪" },
   ],
   fishing: [
-    { key: "unknown", emoji: "❓", label: "未選擇" },
-    { key: "fish", emoji: "🐟", label: "小魚" },
-    { key: "shark", emoji: "🦈", label: "鯊魚" },
+    { key: "unknown", img: null, contextImg: null, label: "未選擇" },
+    { key: "fish", img: "stimuli/fish.svg", contextImg: null, label: "小魚" },
+    { key: "shark", img: "stimuli/shark.svg", contextImg: null, label: "鯊魚" },
+  ],
+  mouse_mixed: [
+    { key: "unknown", img: null, contextImg: null, label: "未選擇" },
+    { key: "cheese_person", img: "stimuli/cheese.svg", contextImg: "stimuli/person.svg", label: "起司＋有人" },
+    { key: "cheese_noperson", img: "stimuli/cheese.svg", contextImg: null, label: "起司＋沒人" },
+    { key: "cat_person", img: "stimuli/cat.svg", contextImg: "stimuli/person.svg", label: "貓＋有人" },
+    { key: "cat_noperson", img: "stimuli/cat.svg", contextImg: null, label: "貓＋沒人" },
+  ],
+  fishing_mixed: [
+    { key: "unknown", img: null, contextImg: null, label: "未選擇" },
+    { key: "fish_sun", img: "stimuli/fish.svg", contextImg: "stimuli/sun.svg", label: "魚＋白天" },
+    { key: "fish_moon", img: "stimuli/fish.svg", contextImg: "stimuli/moon.svg", label: "魚＋晚上" },
+    { key: "shark_sun", img: "stimuli/shark.svg", contextImg: "stimuli/sun.svg", label: "鯊魚＋白天" },
+    { key: "shark_moon", img: "stimuli/shark.svg", contextImg: "stimuli/moon.svg", label: "鯊魚＋晚上" },
   ],
 };
 
@@ -85,6 +99,15 @@ var STIMULUS_TO_TOGGLE_INDEX = {
   cat: 2,
   fish: 1,
   shark: 2,
+  // 混合規則
+  cheese_person: 1,
+  cheese_noperson: 2,
+  cat_person: 3,
+  cat_noperson: 4,
+  fish_sun: 1,
+  fish_moon: 2,
+  shark_sun: 3,
+  shark_moon: 4,
 };
 
 // =========================================
@@ -131,12 +154,17 @@ function _getConfig(key) {
  * @param {number} n - 要擷取的位置數
  * @returns {Array<string>} stimulusKey 陣列，如 ['cheese', 'cat', 'cheese']
  */
-function _extractSequence(questions, n) {
+function _extractSequence(questions, n, ruleId) {
   var total = questions.length;
   var start = Math.max(0, total - n);
   var seq = [];
   for (var i = start; i < total && seq.length < n; i++) {
-    seq.push(questions[i].stimulusKey || questions[i].stimulus || "unknown");
+    var key = questions[i].stimulusKey || questions[i].stimulus || "unknown";
+    // 混合規則：如果有 context，組合成 key_context 格式
+    if (ruleId === "mixed" && questions[i].context) {
+      key = key + "_" + questions[i].context;
+    }
+    seq.push(key);
   }
   return seq;
 }
@@ -494,17 +522,46 @@ function _highlightPractice(sequence, fieldId, gridEl) {
 }
 
 /**
+ * 渲染按鈕內容（圖片取代 emoji）
+ * @param {HTMLElement} btn
+ * @param {Object} state - TOGGLE_STATES 中的一個項目
+ */
+function _renderBtnContent(btn, state) {
+  if (!state.img) {
+    // unknown 狀態，顯示問號文字
+    btn.innerHTML = '<span style="font-size:2rem;opacity:0.5;">?</span>';
+    return;
+  }
+
+  var html = '';
+  // 上方：刺激物圖片
+  html += '<img src="' + state.img + '" style="width:70%;height:auto;display:block;margin:0 auto;" alt="' + state.label + '">';
+
+  // 下方：情境提示（有圖就顯示，null 就空白）
+  if (state.contextImg) {
+    html += '<img src="' + state.contextImg + '" style="width:35%;height:auto;display:block;margin:2px auto 0;opacity:0.8;" alt="情境">';
+  } else if (state.contextImg === null && state.key !== "unknown" && state.key.indexOf("_") !== -1) {
+    // 混合規則但沒有情境圖（如「沒人」）→ 顯示空白佔位
+    html += '<div style="height:20px;"></div>';
+  }
+
+  btn.innerHTML = html;
+}
+
+/**
  * 重設所有位置按鈕為 ❓ 狀態（含移除舊事件）
  *
  * @param {HTMLElement} gridEl
  * @param {number} n
+ * @param {string} fieldId - 'mouse' | 'fishing'（決定使用哪個 TOGGLE_STATES）
  */
-function _resetButtons(gridEl, n) {
+function _resetButtons(gridEl, n, fieldId) {
+  var toggleStates = TOGGLE_STATES[fieldId] || TOGGLE_STATES.mouse;
   var buttons = gridEl.querySelectorAll(".wm-position-btn");
   for (var i = 0; i < buttons.length; i++) {
     buttons[i].classList.remove("wm-highlight");
     if (i < n) {
-      buttons[i].textContent = "❓";
+      _renderBtnContent(buttons[i], toggleStates[0]);
       buttons[i].removeAttribute("data-stim");
       buttons[i].setAttribute("data-toggle-index", "0");
       buttons[i].style.display = "";
@@ -519,11 +576,13 @@ function _resetButtons(gridEl, n) {
  *
  * @param {HTMLElement} gridEl
  * @param {string} fieldId - 'mouse' | 'fishing'
+ * @param {string} ruleId - 'rule1' | 'rule2' | 'mixed'（決定使用哪個 TOGGLE_STATES）
  * @param {number} n
  */
-function _setupToggle(gridEl, fieldId, n) {
+function _setupToggle(gridEl, fieldId, ruleId, n) {
   var buttons = gridEl.querySelectorAll(".wm-position-btn");
-  var toggleStates = TOGGLE_STATES[fieldId] || TOGGLE_STATES.mouse;
+  var stateKey = (ruleId === "mixed") ? fieldId + "_mixed" : fieldId;
+  var toggleStates = TOGGLE_STATES[stateKey] || TOGGLE_STATES[fieldId] || TOGGLE_STATES.mouse;
 
   for (var i = 0; i < n; i++) {
     (function (btn) {
@@ -532,16 +591,19 @@ function _setupToggle(gridEl, fieldId, n) {
           btn.getAttribute("data-toggle-index") || "0",
           10,
         );
-        var nextIndex = (currentIndex + 1) % toggleStates.length;
+
+        // ❓ 只出現一次：從 index 0(❓) 跳到 1，之後在 1~最後之間循環
+        var nextIndex;
+        if (currentIndex === 0) {
+          nextIndex = 1;
+        } else {
+          nextIndex = currentIndex + 1;
+          if (nextIndex >= toggleStates.length) nextIndex = 1;
+        }
 
         btn.setAttribute("data-toggle-index", String(nextIndex));
-        btn.textContent = toggleStates[nextIndex].emoji;
-
-        if (nextIndex === 0) {
-          btn.removeAttribute("data-stim");
-        } else {
-          btn.setAttribute("data-stim", toggleStates[nextIndex].key);
-        }
+        _renderBtnContent(btn, toggleStates[nextIndex]);
+        btn.setAttribute("data-stim", toggleStates[nextIndex].key);
 
         // 播放點擊音
         if (typeof AudioPlayer !== "undefined" && AudioPlayer.playSfx) {
@@ -632,11 +694,12 @@ var WorkingMemory = {
     var n = options.positions || _randomN(questions.length);
 
     // 2. 擷取序列
-    var sequence = _extractSequence(questions, n);
+    var sequence = _extractSequence(questions, n, ruleId);
 
     // 3. 初始化狀態
     _state = {
       fieldId: fieldId,
+      ruleId: ruleId,
       direction: direction,
       n: n,
       sequence: sequence,
@@ -723,8 +786,8 @@ var WorkingMemory = {
 
     return voicePromise.then(function () {
       // 語音播報結束 → 顯示按鈕 → 開放作答
-      _resetButtons(gridEl, n);
-      _setupToggle(gridEl, fieldId, n);
+      _resetButtons(gridEl, n, fieldId);
+      _setupToggle(gridEl, fieldId, ruleId, n);
       gridEl.style.visibility = "visible";
       if (confirmBtn) confirmBtn.style.visibility = "visible";
 
@@ -1195,7 +1258,7 @@ var WorkingMemory = {
     // 從 Go/No-Go 練習題擷取序列；若無題目則 fallback 隨機
     var sequence;
     if (options.questions && options.questions.length >= PRACTICE_N) {
-      sequence = _extractSequence(options.questions, PRACTICE_N);
+      sequence = _extractSequence(options.questions, PRACTICE_N, ruleId);
     } else {
       var stimKeys = fieldId === "fishing" ? ["fish", "shark"] : ["cheese", "cat"];
       var s = [];
@@ -1303,7 +1366,7 @@ var WorkingMemory = {
         oldBtns[bi].parentNode.replaceChild(fresh, oldBtns[bi]);
       }
 
-      _resetButtons(gridEl, PRACTICE_N);
+      _resetButtons(gridEl, PRACTICE_N, fieldId);
       if (resultEl) resultEl.style.display = "none";
       if (confirmBtn) {
         confirmBtn.style.display = "none";
@@ -1341,8 +1404,8 @@ var WorkingMemory = {
       }
 
       voicePromise.then(function () {
-          _resetButtons(gridEl, PRACTICE_N);
-          _setupToggle(gridEl, fieldId, PRACTICE_N);
+          _resetButtons(gridEl, PRACTICE_N, fieldId);
+          _setupToggle(gridEl, fieldId, ruleId, PRACTICE_N);
 
           // 顯示確認按鈕（clone 移除舊事件）
           var curConfirm = _container
