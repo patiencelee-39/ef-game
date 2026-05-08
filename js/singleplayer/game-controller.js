@@ -107,6 +107,93 @@ var GameController = (function () {
   var _currentISI = 0; // 本題 ISI (ms)
 
   // =========================================
+  // 偵錯倒數面板
+  // =========================================
+  var _debugPanel = null;
+  var _debugInterval = null;
+  var _debugPhase = "";
+  var _debugPhaseStart = 0;
+  var _debugPhaseDuration = 0;
+
+  function _initDebugPanel() {
+    if (_debugPanel) return;
+    _debugPanel = document.createElement("div");
+    _debugPanel.id = "debug-timing-panel";
+    _debugPanel.style.cssText =
+      "position:fixed;top:60px;right:8px;z-index:9999;background:rgba(0,0,0,0.85);" +
+      "color:#fff;font-family:monospace;font-size:12px;padding:10px 14px;" +
+      "border-radius:10px;border:1px solid rgba(255,255,255,0.2);min-width:200px;" +
+      "pointer-events:none;";
+    _debugPanel.innerHTML =
+      '<div style="font-weight:700;margin-bottom:6px;color:#ffd43b;">⏱️ 時間偵錯面板</div>' +
+      '<div id="dbgISI">⏱️ 題目間隔: —</div>' +
+      '<div id="dbgStim">📷 圖片顯示: —</div>' +
+      '<div id="dbgGrace">⏳ 寬限期: —</div>' +
+      '<div id="dbgFeedback">💬 回饋: —</div>' +
+      '<div style="margin-top:6px;border-top:1px solid rgba(255,255,255,0.15);padding-top:6px;" id="dbgParams"></div>';
+    document.body.appendChild(_debugPanel);
+
+    _debugInterval = setInterval(function () {
+      if (!_debugPhase || !_debugPhaseStart) return;
+      var elapsed = Date.now() - _debugPhaseStart;
+      var remaining = Math.max(0, _debugPhaseDuration - elapsed);
+      var el = document.getElementById("dbg" + _debugPhase);
+      if (el) {
+        var label = { ISI: "⏱️ 題目間隔", Stim: "📷 圖片顯示", Grace: "⏳ 寬限期", Feedback: "💬 回饋" };
+        el.textContent = (label[_debugPhase] || _debugPhase) + ": " + remaining + "ms";
+        el.style.color = remaining > 0 ? "#51cf66" : "#ffd43b";
+      }
+    }, 16);
+  }
+
+  function _debugSetPhase(phase, durationMs, params) {
+    _debugPhase = phase;
+    _debugPhaseStart = Date.now();
+    _debugPhaseDuration = durationMs;
+
+    // 標記已完成的階段
+    var phases = ["ISI", "Stim", "Grace", "Feedback"];
+    var labels = { ISI: "⏱️ 題目間隔", Stim: "📷 圖片顯示", Grace: "⏳ 寬限期", Feedback: "💬 回饋" };
+    var idx = phases.indexOf(phase);
+    for (var i = 0; i < phases.length; i++) {
+      var el = document.getElementById("dbg" + phases[i]);
+      if (!el) continue;
+      if (i < idx) {
+        el.textContent = labels[phases[i]] + ": ✓";
+        el.style.color = "rgba(255,255,255,0.4)";
+      } else if (i > idx) {
+        el.textContent = labels[phases[i]] + ": —";
+        el.style.color = "rgba(255,255,255,0.4)";
+      }
+    }
+
+    // 顯示當前參數值
+    if (params) {
+      var paramsEl = document.getElementById("dbgParams");
+      if (paramsEl) {
+        paramsEl.innerHTML =
+          "ISI=" + (params.isiMs != null ? params.isiMs : "—") + "ms | " +
+          "刺激=" + (params.stimMs != null ? params.stimMs : "—") + "ms | " +
+          "寬限=" + (params.graceMs != null ? params.graceMs : "—") + "ms | " +
+          "回饋=" + (params.feedbackMs != null ? params.feedbackMs : "—") + "ms";
+      }
+    }
+  }
+
+  function _debugReset() {
+    var phases = ["ISI", "Stim", "Grace", "Feedback"];
+    var labels = { ISI: "⏱️ 題目間隔", Stim: "📷 圖片顯示", Grace: "⏳ 寬限期", Feedback: "💬 回饋" };
+    for (var i = 0; i < phases.length; i++) {
+      var el = document.getElementById("dbg" + phases[i]);
+      if (el) {
+        el.textContent = labels[phases[i]] + ": —";
+        el.style.color = "rgba(255,255,255,0.4)";
+      }
+    }
+    _debugPhase = "";
+  }
+
+  // =========================================
   // 刺激物渲染（委派 TrialRenderer 共用模組）
   // =========================================
 
@@ -1292,8 +1379,17 @@ var GameController = (function () {
     dom.btnSpace.disabled = true;
     _responded = false;
 
+    // 偵錯面板：顯示 ISI 倒數
+    _initDebugPanel();
+    _debugReset();
+    var _dbgParams = { isiMs: Math.round(isiMs), stimMs: _tp.stimulusDurationMs, graceMs: _tp.responseGraceMs, feedbackMs: _tp.feedbackDurationMs };
+    _debugSetPhase("ISI", isiMs, _dbgParams);
+
     _isiTimerId = setTimeout(function () {
       if (_isPaused) return;
+
+      // 偵錯面板：顯示刺激物倒數
+      _debugSetPhase("Stim", _tp.stimulusDurationMs, _dbgParams);
 
       // 呈現刺激物
       TrialRenderer.render(_stimEls(), question, combo.fieldId, combo.ruleId);
@@ -1329,8 +1425,10 @@ var GameController = (function () {
       _stimTimerId = setTimeout(function () {
         if (_responded || !_isPlaying) return;
 
-        // Go 和 NoGo 都有相同的寬限期，確保時間流程對稱
+        // 偵錯面板：顯示寬限期倒數
         var graceMs = _tp.responseGraceMs || 1000;
+        _debugSetPhase("Grace", graceMs, _dbgParams);
+
         _graceTimerId = setTimeout(function () {
           if (!_responded && _isPlaying) {
             onTimeout(question);
@@ -1439,6 +1537,10 @@ var GameController = (function () {
       fieldId: combo.fieldId,
       ruleId: combo.ruleId,
     });
+
+    // 偵錯面板：顯示回饋倒數
+    _debugSetPhase("Feedback", _fp.feedbackDurationMs);
+
     FeedbackOverlay.show({
       gameContainer: dom.stimContainer,
       stimulusEl: dom.stimulus,
