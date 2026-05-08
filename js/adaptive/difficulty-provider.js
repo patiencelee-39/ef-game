@@ -70,7 +70,7 @@ var DifficultyProvider = (function () {
         stimulusDurationMs: (custom && custom.stimulusMs) || timing.STIMULUS_DURATION_MS || 2000,
 
         /** 刺激物消失後的額外回應寬限期（ms） */
-        responseGraceMs: timing.RESPONSE_GRACE_MS || 1000,
+        responseGraceMs: (custom && custom.graceMs != null) ? custom.graceMs : (timing.RESPONSE_GRACE_MS || 500),
 
         /** ISI 最小值（ms） */
         isiMinMs: (custom && custom.isiMinMs) || timing.ISI_MIN_MS || 800,

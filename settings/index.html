@@ -145,7 +145,7 @@
                 <span class="engine-param-label">📷 圖片顯示時間</span>
                 <div class="engine-param-input-group">
                   <input type="number" class="engine-param-input" id="spStimulus"
-                    min="500" max="5000" step="100" value="2000" />
+                    min="0" max="99999" step="100" value="2000" />
                   <span class="engine-param-unit">ms</span>
                 </div>
               </div>
@@ -154,7 +154,7 @@
                 <span class="engine-param-label">⏱️  間隔最短</span>
                 <div class="engine-param-input-group">
                   <input type="number" class="engine-param-input" id="spIsiMin"
-                    min="300" max="3000" step="100" value="800" />
+                    min="0" max="99999" step="100" value="800" />
                   <span class="engine-param-unit">ms</span>
                 </div>
               </div>
@@ -163,7 +163,7 @@
                 <span class="engine-param-label">⏱️  間隔最長</span>
                 <div class="engine-param-input-group">
                   <input type="number" class="engine-param-input" id="spIsiMax"
-                    min="500" max="5000" step="100" value="1200" />
+                    min="0" max="99999" step="100" value="1200" />
                   <span class="engine-param-unit">ms</span>
                 </div>
               </div>
@@ -172,7 +172,16 @@
                 <span class="engine-param-label">💬 提示時間</span>
                 <div class="engine-param-input-group">
                   <input type="number" class="engine-param-input" id="spFeedback"
-                    min="300" max="3000" step="100" value="800" />
+                    min="0" max="99999" step="100" value="800" />
+                  <span class="engine-param-unit">ms</span>
+                </div>
+              </div>
+
+              <div class="engine-param-row">
+                <span class="engine-param-label">⏳ 延遲秒數</span>
+                <div class="engine-param-input-group">
+                  <input type="number" class="engine-param-input" id="spGrace"
+                    min="0" max="99999" step="100" value="500" />
                   <span class="engine-param-unit">ms</span>
                 </div>
               </div>
@@ -181,7 +190,7 @@
                 <span class="engine-param-label">🧠 最少記憶位置</span>
                 <div class="engine-param-input-group">
                   <input type="number" class="engine-param-input" id="spWmMin"
-                    min="2" max="6" step="1" value="2" />
+                    min="0" max="99" step="1" value="2" />
                   <span class="engine-param-unit">個</span>
                 </div>
               </div>
@@ -190,7 +199,7 @@
                 <span class="engine-param-label">🧠 最多記憶位置</span>
                 <div class="engine-param-input-group">
                   <input type="number" class="engine-param-input" id="spWmMax"
-                    min="2" max="9" step="1" value="6" />
+                    min="0" max="99" step="1" value="6" />
                   <span class="engine-param-unit">個</span>
                 </div>
               </div>

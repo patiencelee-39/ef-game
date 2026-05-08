@@ -254,6 +254,7 @@
 
   var SP_DEFAULTS = {
     stimulusMs: 2000,
+    graceMs: 500,
     isiMinMs: 800,
     isiMaxMs: 1200,
     feedbackMs: 800,
@@ -264,6 +265,7 @@
 
   var SP_FIELDS = [
     { id: "spStimulus", key: "stimulusMs" },
+    { id: "spGrace",    key: "graceMs"    },
     { id: "spIsiMin",   key: "isiMinMs"   },
     { id: "spIsiMax",   key: "isiMaxMs"   },
     { id: "spFeedback", key: "feedbackMs" },
