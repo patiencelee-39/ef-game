@@ -702,7 +702,7 @@ var FirestoreLeaderboard = (function () {
     getWorldLeaderboard: getWorldLeaderboard,
     getMyWorldEntries: getMyWorldEntries,
     deleteMyWorldEntry: deleteMyWorldEntry,
-    trimWorldToTop10: _trimWorldToTop10,
+    trimWorldLeaderboard: _trimWorldLeaderboard,
 
     // 工具
     generateCode: _generateCode,
