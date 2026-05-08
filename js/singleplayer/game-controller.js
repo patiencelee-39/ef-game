@@ -1426,7 +1426,7 @@ var GameController = (function () {
         if (_responded || !_isPlaying) return;
 
         // 偵錯面板：顯示寬限期倒數
-        var graceMs = _tp.responseGraceMs || 1000;
+        var graceMs = _tp.responseGraceMs != null ? _tp.responseGraceMs : 1000;
         _debugSetPhase("Grace", graceMs, _dbgParams);
 
         _graceTimerId = setTimeout(function () {
