@@ -125,12 +125,12 @@ var GameController = (function () {
       "border-radius:10px;border:1px solid rgba(255,255,255,0.2);min-width:200px;" +
       "pointer-events:none;";
     _debugPanel.innerHTML =
-      '<div style="font-weight:700;margin-bottom:6px;color:#ffd43b;">⏱️ 時間偵錯面板</div>' +
+      '<div style="font-weight:700;margin-bottom:6px;color:#ffd43b;">⏱️ 時間流程監控</div>' +
       '<div id="dbgISI">⏱️ 題目間隔: —</div>' +
       '<div id="dbgStim">📷 圖片顯示: —</div>' +
-      '<div id="dbgGrace">⏳ 寬限期: —</div>' +
-      '<div id="dbgFeedback">💬 回饋: —</div>' +
-      '<div style="margin-top:6px;border-top:1px solid rgba(255,255,255,0.15);padding-top:6px;" id="dbgParams"></div>';
+      '<div id="dbgGrace">⏳ 額外反應: —</div>' +
+      '<div id="dbgFeedback">💬 對錯回饋: —</div>' +
+      '<div style="margin-top:6px;border-top:1px solid rgba(255,255,255,0.15);padding-top:6px;line-height:1.6;" id="dbgParams"></div>';
     document.body.appendChild(_debugPanel);
 
     _debugInterval = setInterval(function () {
@@ -139,7 +139,7 @@ var GameController = (function () {
       var remaining = Math.max(0, _debugPhaseDuration - elapsed);
       var el = document.getElementById("dbg" + _debugPhase);
       if (el) {
-        var label = { ISI: "⏱️ 題目間隔", Stim: "📷 圖片顯示", Grace: "⏳ 寬限期", Feedback: "💬 回饋" };
+        var label = { ISI: "⏱️ 題目間隔", Stim: "📷 圖片顯示", Grace: "⏳ 額外反應", Feedback: "💬 對錯回饋" };
         el.textContent = (label[_debugPhase] || _debugPhase) + ": " + remaining + "ms";
         el.style.color = remaining > 0 ? "#51cf66" : "#ffd43b";
       }
@@ -153,7 +153,7 @@ var GameController = (function () {
 
     // 標記已完成的階段
     var phases = ["ISI", "Stim", "Grace", "Feedback"];
-    var labels = { ISI: "⏱️ 題目間隔", Stim: "📷 圖片顯示", Grace: "⏳ 寬限期", Feedback: "💬 回饋" };
+    var labels = { ISI: "⏱️ 題目間隔", Stim: "📷 圖片顯示", Grace: "⏳ 額外反應", Feedback: "💬 對錯回饋" };
     var idx = phases.indexOf(phase);
     for (var i = 0; i < phases.length; i++) {
       var el = document.getElementById("dbg" + phases[i]);
@@ -172,17 +172,17 @@ var GameController = (function () {
       var paramsEl = document.getElementById("dbgParams");
       if (paramsEl) {
         paramsEl.innerHTML =
-          "ISI=" + (params.isiMs != null ? params.isiMs : "—") + "ms | " +
-          "刺激=" + (params.stimMs != null ? params.stimMs : "—") + "ms | " +
-          "寬限=" + (params.graceMs != null ? params.graceMs : "—") + "ms | " +
-          "回饋=" + (params.feedbackMs != null ? params.feedbackMs : "—") + "ms";
+          "題目間隔=" + (params.isiMs != null ? params.isiMs : "—") + "ms<br>" +
+          "圖片顯示=" + (params.stimMs != null ? params.stimMs : "—") + "ms<br>" +
+          "額外反應=" + (params.graceMs != null ? params.graceMs : "—") + "ms<br>" +
+          "對錯回饋=" + (params.feedbackMs != null ? params.feedbackMs : "—") + "ms";
       }
     }
   }
 
   function _debugReset() {
     var phases = ["ISI", "Stim", "Grace", "Feedback"];
-    var labels = { ISI: "⏱️ 題目間隔", Stim: "📷 圖片顯示", Grace: "⏳ 寬限期", Feedback: "💬 回饋" };
+    var labels = { ISI: "⏱️ 題目間隔", Stim: "📷 圖片顯示", Grace: "⏳ 額外反應", Feedback: "💬 對錯回饋" };
     for (var i = 0; i < phases.length; i++) {
       var el = document.getElementById("dbg" + phases[i]);
       if (el) {
