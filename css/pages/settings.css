@@ -214,6 +214,7 @@ body {
 .engine-selector {
   display: flex;
   gap: 6px;
+  flex-shrink: 0;
 }
 .engine-btn {
   padding: 6px 10px;

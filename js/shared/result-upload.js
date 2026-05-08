@@ -169,25 +169,7 @@ var ResultUpload = (function () {
         if (!_entries || _entries.length === 0) {
           return Promise.reject(new Error("沒有可上傳的資料"));
         }
-        // 查詢是否已有前一筆資料
-        return FirestoreLeaderboard.getMyWorldEntries();
-      })
-      .then(function (existingEntries) {
-        if (existingEntries && existingEntries.length > 0) {
-          // 有舊資料 → 彈出比較視窗
-          var html = _buildWorldCompareHtml(existingEntries, _entries);
-          return GameModal.confirm("⚠️ 你已有世界排行榜紀錄", html, {
-            icon: "🌍",
-            rawHtml: true,
-          });
-        }
-        return true; // 沒有舊資料
-      })
-      .then(function (ok) {
-        if (!ok) {
-          _showStatus(opts.statusMsg, "ℹ️ 已取消上傳", "info");
-          return "cancelled";
-        }
+        // 不再檢查舊紀錄，直接上傳（每次都新增）
         opts.confirmBtn.textContent = "上傳中…";
         var promises = _entries.map(function (e) {
           return FirestoreLeaderboard.uploadToWorld(e);

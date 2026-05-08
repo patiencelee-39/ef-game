@@ -3,7 +3,7 @@
 // =========================================
 // 使用 StagePicker 共用元件取代舊的 field toggle + per-field rule 選擇
 
-var questionCount = 50;
+var questionCount = 40;
 
 // ─── 題數更新 ───
 function updateQuestionCount(val) {
