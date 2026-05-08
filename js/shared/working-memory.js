@@ -717,15 +717,16 @@ var WorkingMemory = {
       });
     }
 
-    // 7. 重設按鈕
-    _resetButtons(gridEl, n);
+    // 7. 語音播報期間隱藏按鈕，避免兒童誤以為按鈕壞掉
+    gridEl.style.visibility = "hidden";
+    if (confirmBtn) confirmBtn.style.visibility = "hidden";
 
     return voicePromise.then(function () {
-      // 語音播報結束 → 直接重設按鈕為 ❓ → 開放作答
-      // （移除了原本的「準備記住順序」提示和「亮起序列」階段，
-      //   因為玩家應從遊戲過程中記憶）
+      // 語音播報結束 → 顯示按鈕 → 開放作答
       _resetButtons(gridEl, n);
       _setupToggle(gridEl, fieldId, n);
+      gridEl.style.visibility = "visible";
+      if (confirmBtn) confirmBtn.style.visibility = "visible";
 
       // 開始計時
       _state.startTime = Date.now();

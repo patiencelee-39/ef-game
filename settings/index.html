@@ -143,6 +143,7 @@
             <div class="engine-static-params">
               <div class="engine-param-row">
                 <span class="engine-param-label">📷 圖片顯示時間</span>
+                <span class="engine-param-desc">每張刺激圖片在畫面上停留多久</span>
                 <div class="engine-param-input-group">
                   <input type="number" class="engine-param-input" id="spStimulus"
                     min="0" max="99999" step="100" value="2000" />
@@ -151,7 +152,8 @@
               </div>
 
               <div class="engine-param-row">
-                <span class="engine-param-label">⏱️  間隔最短</span>
+                <span class="engine-param-label">⏱️ 題目間隔（最短）</span>
+                <span class="engine-param-desc">上一題結束到下一題出現的最短等待時間</span>
                 <div class="engine-param-input-group">
                   <input type="number" class="engine-param-input" id="spIsiMin"
                     min="0" max="99999" step="100" value="800" />
@@ -160,7 +162,8 @@
               </div>
 
               <div class="engine-param-row">
-                <span class="engine-param-label">⏱️  間隔最長</span>
+                <span class="engine-param-label">⏱️ 題目間隔（最長）</span>
+                <span class="engine-param-desc">上一題結束到下一題出現的最長等待時間（隨機取值）</span>
                 <div class="engine-param-input-group">
                   <input type="number" class="engine-param-input" id="spIsiMax"
                     min="0" max="99999" step="100" value="1200" />
@@ -169,7 +172,8 @@
               </div>
 
               <div class="engine-param-row">
-                <span class="engine-param-label">💬 提示時間</span>
+                <span class="engine-param-label">💬 答對/答錯提示時間</span>
+                <span class="engine-param-desc">顯示「答對✓」或「答錯✗」畫面的持續時間</span>
                 <div class="engine-param-input-group">
                   <input type="number" class="engine-param-input" id="spFeedback"
                     min="0" max="99999" step="100" value="800" />
@@ -178,7 +182,8 @@
               </div>
 
               <div class="engine-param-row">
-                <span class="engine-param-label">⏳ 延遲秒數</span>
+                <span class="engine-param-label">⏳ 圖片消失後額外反應時間</span>
+                <span class="engine-param-desc">圖片消失後，孩子仍可按按鈕的寬限時間</span>
                 <div class="engine-param-input-group">
                   <input type="number" class="engine-param-input" id="spGrace"
                     min="0" max="99999" step="100" value="500" />
@@ -187,7 +192,8 @@
               </div>
 
               <div class="engine-param-row">
-                <span class="engine-param-label">🧠 最少記憶位置</span>
+                <span class="engine-param-label">🧠 工作記憶位置數（最少）</span>
+                <span class="engine-param-desc">記憶遊戲中，最少要記幾個格子的位置</span>
                 <div class="engine-param-input-group">
                   <input type="number" class="engine-param-input" id="spWmMin"
                     min="0" max="99" step="1" value="2" />
@@ -196,7 +202,8 @@
               </div>
 
               <div class="engine-param-row">
-                <span class="engine-param-label">🧠 最多記憶位置</span>
+                <span class="engine-param-label">🧠 工作記憶位置數（最多）</span>
+                <span class="engine-param-desc">記憶遊戲中，最多要記幾個格子的位置（隨機取值）</span>
                 <div class="engine-param-input-group">
                   <input type="number" class="engine-param-input" id="spWmMax"
                     min="0" max="99" step="1" value="6" />
@@ -205,11 +212,22 @@
               </div>
 
               <div class="engine-param-row">
-                <span class="engine-param-label">🔄 逆向機率</span>
+                <span class="engine-param-label">🔄 逆向回憶機率</span>
+                <span class="engine-param-desc">記憶遊戲中，要求孩子「倒著回想」的機率</span>
                 <div class="engine-param-input-group">
                   <input type="number" class="engine-param-input" id="spReverse"
                     min="0" max="100" step="10" value="50" />
                   <span class="engine-param-unit">%</span>
+                </div>
+              </div>
+
+              <div class="engine-param-row">
+                <span class="engine-param-label">⏰ 工作記憶作答時間</span>
+                <span class="engine-param-desc">記憶遊戲中，孩子點選格子的作答時間上限</span>
+                <div class="engine-param-input-group">
+                  <input type="number" class="engine-param-input" id="spWmTimeout"
+                    min="0" max="99999" step="1000" value="60000" />
+                  <span class="engine-param-unit">ms</span>
                 </div>
               </div>
             </div>

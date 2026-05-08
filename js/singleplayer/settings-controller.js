@@ -261,17 +261,19 @@
     wmMinPos: 2,
     wmMaxPos: 6,
     wmReverse: 50,
+    wmTimeoutMs: 60000,
   };
 
   var SP_FIELDS = [
-    { id: "spStimulus", key: "stimulusMs" },
-    { id: "spGrace",    key: "graceMs"    },
-    { id: "spIsiMin",   key: "isiMinMs"   },
-    { id: "spIsiMax",   key: "isiMaxMs"   },
-    { id: "spFeedback", key: "feedbackMs" },
-    { id: "spWmMin",    key: "wmMinPos"   },
-    { id: "spWmMax",    key: "wmMaxPos"   },
-    { id: "spReverse",  key: "wmReverse"  },
+    { id: "spStimulus",   key: "stimulusMs"  },
+    { id: "spGrace",      key: "graceMs"     },
+    { id: "spIsiMin",     key: "isiMinMs"    },
+    { id: "spIsiMax",     key: "isiMaxMs"    },
+    { id: "spFeedback",   key: "feedbackMs"  },
+    { id: "spWmMin",      key: "wmMinPos"    },
+    { id: "spWmMax",      key: "wmMaxPos"    },
+    { id: "spReverse",    key: "wmReverse"   },
+    { id: "spWmTimeout",  key: "wmTimeoutMs" },
   ];
 
   function loadStaticParams() {
