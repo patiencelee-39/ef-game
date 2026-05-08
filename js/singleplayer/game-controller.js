@@ -117,21 +117,34 @@ var GameController = (function () {
 
   function _initDebugPanel() {
     if (_debugPanel) return;
+    var opacity = 0.85;
+    try {
+      var saved = localStorage.getItem("ef_monitor_opacity");
+      if (saved != null) opacity = parseFloat(saved);
+    } catch (e) { /* ignore */ }
+
     _debugPanel = document.createElement("div");
     _debugPanel.id = "debug-timing-panel";
     _debugPanel.style.cssText =
-      "position:fixed;top:60px;right:8px;z-index:9999;background:rgba(0,0,0,0.85);" +
-      "color:#fff;font-family:monospace;font-size:12px;padding:10px 14px;" +
-      "border-radius:10px;border:1px solid rgba(255,255,255,0.2);min-width:200px;" +
+      "position:absolute;top:8px;left:8px;z-index:9999;" +
+      "background:rgba(0,0,0," + opacity + ");" +
+      "color:#fff;font-family:monospace;font-size:11px;padding:8px 10px;" +
+      "border-radius:8px;border:1px solid rgba(255,255,255,0.2);width:140px;" +
       "pointer-events:none;";
     _debugPanel.innerHTML =
-      '<div style="font-weight:700;margin-bottom:6px;color:#ffd43b;">⏱️ 時間流程監控</div>' +
+      '<div style="font-weight:700;margin-bottom:6px;color:#ffd43b;font-size:10px;">⏱️ 時間流程監控</div>' +
       '<div id="dbgISI">⏱️ 題目間隔: —</div>' +
       '<div id="dbgStim">📷 圖片顯示: —</div>' +
       '<div id="dbgGrace">⏳ 額外反應: —</div>' +
       '<div id="dbgFeedback">💬 對錯回饋: —</div>' +
       '<div style="margin-top:6px;border-top:1px solid rgba(255,255,255,0.15);padding-top:6px;line-height:1.6;" id="dbgParams"></div>';
-    document.body.appendChild(_debugPanel);
+
+    var container = document.getElementById("stimulusContainer");
+    if (container) {
+      container.appendChild(_debugPanel);
+    } else {
+      document.body.appendChild(_debugPanel);
+    }
 
     _debugInterval = setInterval(function () {
       if (!_debugPhase || !_debugPhaseStart) return;

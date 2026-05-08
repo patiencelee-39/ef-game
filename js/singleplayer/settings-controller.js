@@ -289,6 +289,13 @@
         el.value = saved[f.key] != null ? saved[f.key] : SP_DEFAULTS[f.key];
       }
     });
+
+    // 監控面板透明度（獨立儲存）
+    var opEl = document.getElementById("spMonitorOpacity");
+    if (opEl) {
+      var savedOp = localStorage.getItem("ef_monitor_opacity");
+      opEl.value = savedOp != null ? Math.round(parseFloat(savedOp) * 100) : 85;
+    }
   }
 
   function saveStaticParams() {
@@ -323,17 +330,31 @@
     try {
       localStorage.setItem(SP_KEY, JSON.stringify(data));
     } catch (e) { /* ignore */ }
+
+    // 監控面板透明度（獨立儲存，0~1）
+    var opEl = document.getElementById("spMonitorOpacity");
+    if (opEl) {
+      var opVal = parseInt(opEl.value, 10);
+      if (isNaN(opVal) || opVal < 0) opVal = 0;
+      if (opVal > 100) opVal = 100;
+      opEl.value = opVal;
+      localStorage.setItem("ef_monitor_opacity", (opVal / 100).toString());
+    }
   }
 
   function resetStaticParams() {
     try {
       localStorage.removeItem(SP_KEY);
+      localStorage.removeItem("ef_monitor_opacity");
     } catch (e) { /* ignore */ }
 
     SP_FIELDS.forEach(function (f) {
       var el = document.getElementById(f.id);
       if (el) el.value = SP_DEFAULTS[f.key];
     });
+
+    var opEl = document.getElementById("spMonitorOpacity");
+    if (opEl) opEl.value = 85;
   }
 
   // =========================================
