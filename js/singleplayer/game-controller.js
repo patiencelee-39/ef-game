@@ -1324,12 +1324,10 @@ var GameController = (function () {
       _stimShownAt = Date.now();
       _responded = false;
 
-      // 刺激物到期 → 隱藏刺激物，但 Go 題給予寬限期
+      // 刺激物到期 → Go 題給予寬限期，NoGo 題直接判定
+      // 刺激物保持顯示，回饋疊加在上面（nextTrial 開頭才清除）
       _stimTimerId = setTimeout(function () {
         if (_responded || !_isPlaying) return;
-
-        // 隱藏刺激物
-        TrialRenderer.clear(_stimEls());
 
         if (question.isGo) {
           // Go 題：進入寬限期，按鈕保持可用
