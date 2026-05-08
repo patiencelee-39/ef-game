@@ -179,14 +179,13 @@ var FirestoreLeaderboard = (function () {
       uploadedAt: firebase.firestore.FieldValue.serverTimestamp(),
     };
 
-    // 用 uid 當 document ID → 同一用戶重複上傳會覆蓋
+    // 每次上傳都新增一筆（不覆蓋），用 .add() 自動產生 document ID
     return db
       .collection("classLeaderboards")
       .doc(boardId)
       .collection("entries")
-      .doc(user.uid)
-      .set(entryData, { merge: true })
-      .then(function () {
+      .add(entryData)
+      .then(function (docRef) {
         // 更新看板的 updatedAt
         db.collection("classLeaderboards")
           .doc(boardId)
@@ -198,7 +197,62 @@ var FirestoreLeaderboard = (function () {
           });
 
         Logger.info("✅ 成績已上傳：" + entryData.nickname + " → " + boardId);
-        return user.uid;
+
+        // 自動修剪：保留最新 1000 筆，超出的刪除
+        _trimClassBoard(boardId);
+
+        return docRef.id;
+      });
+  }
+
+  /**
+   * 修剪班級看板：最多保留 1000 筆，超出的依上傳時間刪除最舊的
+   * @param {string} boardId
+   * @returns {Promise}
+   */
+  function _trimClassBoard(boardId) {
+    var db = _getFirestore();
+    if (!db) return Promise.resolve();
+
+    var MAX_ENTRIES = 1000;
+
+    return db
+      .collection("classLeaderboards")
+      .doc(boardId)
+      .collection("entries")
+      .orderBy("uploadedAt", "desc")
+      .get()
+      .then(function (snapshot) {
+        if (snapshot.size <= MAX_ENTRIES) return;
+
+        // 只刪除超出 1000 筆的部分（最舊的）
+        var docsToDelete = [];
+        var count = 0;
+        snapshot.forEach(function (doc) {
+          count++;
+          if (count > MAX_ENTRIES) {
+            docsToDelete.push(doc.ref);
+          }
+        });
+
+        if (docsToDelete.length === 0) return;
+
+        var batch = db.batch();
+        docsToDelete.forEach(function (ref) {
+          batch.delete(ref);
+        });
+        return batch.commit().then(function () {
+          Logger.info(
+            "🧹 班級看板已修剪：刪除 " +
+              docsToDelete.length +
+              " 筆最舊資料，保留最新 " +
+              MAX_ENTRIES +
+              " 筆",
+          );
+        });
+      })
+      .catch(function (e) {
+        Logger.warn("班級看板修剪失敗：" + e.message);
       });
   }
 
@@ -220,6 +274,7 @@ var FirestoreLeaderboard = (function () {
       .doc(boardId)
       .collection("entries")
       .orderBy("score", "desc")
+      .limit(1000)
       .onSnapshot(
         function (snapshot) {
           var entries = [];

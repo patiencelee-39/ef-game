@@ -58,27 +58,7 @@ var ResultUpload = (function () {
         .then(function (board) {
           if (!board) throw new Error("找不到此代碼對應的看板");
           _boardId = board.boardId;
-          // 查詢是否已有前一筆資料
-          return FirestoreLeaderboard.getMyClassEntry(_boardId);
-        })
-        .then(function (existing) {
-          if (existing) {
-            // 有舊資料 → 彈出比較視窗
-            var newEntry = opts.getEntry();
-            var html = _buildClassCompareHtml(existing, newEntry);
-            return GameModal.confirm("⚠️ 你已有排行榜紀錄", html, {
-              icon: "📊",
-              rawHtml: true,
-            });
-          }
-          return true; // 沒有舊資料，直接上傳
-        })
-        .then(function (ok) {
-          if (!ok) {
-            // 使用者選擇不覆蓋
-            _showStatus(opts.statusMsg, "ℹ️ 已取消上傳", "info");
-            return "cancelled";
-          }
+          // 不再檢查是否已有舊紀錄，直接上傳（每次都新增）
           opts.codeSubmit.textContent = "上傳中…";
           var entry = opts.getEntry();
           return FirestoreLeaderboard.uploadToClassBoard(_boardId, entry);

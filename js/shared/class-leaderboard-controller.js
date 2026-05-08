@@ -255,7 +255,7 @@
           showTime: true,
           showGameEndTime: true,
           highlightUid: uid,
-          pageSize: 10,
+          pageSize: 50,
           onDelete: _isOwner
             ? function (entryId) {
                 FirestoreLeaderboard.deleteClassEntry(boardId, entryId)
