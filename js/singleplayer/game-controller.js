@@ -1324,23 +1324,18 @@ var GameController = (function () {
       _stimShownAt = Date.now();
       _responded = false;
 
-      // 刺激物到期 → Go 題給予寬限期，NoGo 題直接判定
+      // 刺激物到期 → Go/NoGo 流程完全對稱：都進入寬限期
       // 刺激物保持顯示，回饋疊加在上面（nextTrial 開頭才清除）
       _stimTimerId = setTimeout(function () {
         if (_responded || !_isPlaying) return;
 
-        if (question.isGo) {
-          // Go 題：進入寬限期，按鈕保持可用
-          var graceMs = _tp.responseGraceMs || 1000;
-          _graceTimerId = setTimeout(function () {
-            if (!_responded && _isPlaying) {
-              onTimeout(question);
-            }
-          }, graceMs);
-        } else {
-          // NoGo 題：刺激物到期即判定
-          onTimeout(question);
-        }
+        // Go 和 NoGo 都有相同的寬限期，確保時間流程對稱
+        var graceMs = _tp.responseGraceMs || 1000;
+        _graceTimerId = setTimeout(function () {
+          if (!_responded && _isPlaying) {
+            onTimeout(question);
+          }
+        }, graceMs);
       }, _tp.stimulusDurationMs);
     }, isiMs);
   }
