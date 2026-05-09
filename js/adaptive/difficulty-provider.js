@@ -66,22 +66,11 @@ var DifficultyProvider = (function () {
       } catch (e) { /* ignore */ }
 
       return {
-        /** 刺激物顯示時間（ms） */
-        stimulusDurationMs: (custom && custom.stimulusMs) || timing.STIMULUS_DURATION_MS || 2000,
-
-        /** 刺激物消失後的額外回應寬限期（ms） */
-        responseGraceMs: timing.RESPONSE_GRACE_MS || 1000,
-
-        /** ISI 最小值（ms） */
-        isiMinMs: (custom && custom.isiMinMs) || timing.ISI_MIN_MS || 800,
-
-        /** ISI 最大值（ms） */
-        isiMaxMs: (custom && custom.isiMaxMs) || timing.ISI_MAX_MS || 1200,
-
-        /** 回饋顯示時間（ms） */
-        feedbackDurationMs: (custom && custom.feedbackMs) || timing.FEEDBACK_DURATION_MS || 800,
-
-        /** 倒數秒數 */
+        stimulusDurationMs: (custom && custom.stimulusMs != null) ? custom.stimulusMs : (timing.STIMULUS_DURATION_MS || 2000),
+        responseGraceMs: (custom && custom.graceMs != null) ? custom.graceMs : (timing.RESPONSE_GRACE_MS || 500),
+        isiMinMs: (custom && custom.isiMinMs != null) ? custom.isiMinMs : (timing.ISI_MIN_MS || 800),
+        isiMaxMs: (custom && custom.isiMaxMs != null) ? custom.isiMaxMs : (timing.ISI_MAX_MS || 1200),
+        feedbackDurationMs: (custom && custom.feedbackMs != null) ? custom.feedbackMs : (timing.FEEDBACK_DURATION_MS || 800),
         countdownSeconds: timing.COUNTDOWN_SECONDS || 3,
       };
     },
@@ -198,7 +187,7 @@ var DifficultyProvider = (function () {
         highlightIntervalMs: wm.HIGHLIGHT_INTERVAL_MS || 400,
 
         /** 作答超時（ms） */
-        responseTimeoutMs: wm.RESPONSE_TIMEOUT_MS || 60000,
+        responseTimeoutMs: (custom && custom.wmTimeoutMs != null) ? custom.wmTimeoutMs : (wm.RESPONSE_TIMEOUT_MS || 60000),
       };
     },
 

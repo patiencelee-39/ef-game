@@ -179,14 +179,13 @@ var FirestoreLeaderboard = (function () {
       uploadedAt: firebase.firestore.FieldValue.serverTimestamp(),
     };
 
-    // 用 uid 當 document ID → 同一用戶重複上傳會覆蓋
+    // 每次上傳都新增一筆（不覆蓋），用 .add() 自動產生 document ID
     return db
       .collection("classLeaderboards")
       .doc(boardId)
       .collection("entries")
-      .doc(user.uid)
-      .set(entryData, { merge: true })
-      .then(function () {
+      .add(entryData)
+      .then(function (docRef) {
         // 更新看板的 updatedAt
         db.collection("classLeaderboards")
           .doc(boardId)
@@ -198,7 +197,62 @@ var FirestoreLeaderboard = (function () {
           });
 
         Logger.info("✅ 成績已上傳：" + entryData.nickname + " → " + boardId);
-        return user.uid;
+
+        // 自動修剪：保留最新 1000 筆，超出的刪除
+        _trimClassBoard(boardId);
+
+        return docRef.id;
+      });
+  }
+
+  /**
+   * 修剪班級看板：最多保留 1000 筆，超出的依上傳時間刪除最舊的
+   * @param {string} boardId
+   * @returns {Promise}
+   */
+  function _trimClassBoard(boardId) {
+    var db = _getFirestore();
+    if (!db) return Promise.resolve();
+
+    var MAX_ENTRIES = 1000;
+
+    return db
+      .collection("classLeaderboards")
+      .doc(boardId)
+      .collection("entries")
+      .orderBy("uploadedAt", "desc")
+      .get()
+      .then(function (snapshot) {
+        if (snapshot.size <= MAX_ENTRIES) return;
+
+        // 只刪除超出 1000 筆的部分（最舊的）
+        var docsToDelete = [];
+        var count = 0;
+        snapshot.forEach(function (doc) {
+          count++;
+          if (count > MAX_ENTRIES) {
+            docsToDelete.push(doc.ref);
+          }
+        });
+
+        if (docsToDelete.length === 0) return;
+
+        var batch = db.batch();
+        docsToDelete.forEach(function (ref) {
+          batch.delete(ref);
+        });
+        return batch.commit().then(function () {
+          Logger.info(
+            "🧹 班級看板已修剪：刪除 " +
+              docsToDelete.length +
+              " 筆最舊資料，保留最新 " +
+              MAX_ENTRIES +
+              " 筆",
+          );
+        });
+      })
+      .catch(function (e) {
+        Logger.warn("班級看板修剪失敗：" + e.message);
       });
   }
 
@@ -220,6 +274,7 @@ var FirestoreLeaderboard = (function () {
       .doc(boardId)
       .collection("entries")
       .orderBy("score", "desc")
+      .limit(1000)
       .onSnapshot(
         function (snapshot) {
           var entries = [];
@@ -487,77 +542,65 @@ var FirestoreLeaderboard = (function () {
     if (data.hasWM != null) uploadData.hasWM = data.hasWM;
     if (data.gameEndTime) uploadData.gameEndTime = data.gameEndTime;
 
+    // 每次上傳都新增一筆（不覆蓋）
     return db
       .collection("worldLeaderboard")
-      .doc(docId)
-      .set(uploadData, { merge: true })
-      .then(function () {
+      .add(uploadData)
+      .then(function (docRef) {
         var label = data.fieldId
           ? uploadData.nickname + " [" + data.fieldId + "/" + data.ruleId + "]"
           : uploadData.nickname;
-        Logger.info("✅ 世界排行榜已更新：" + label);
+        Logger.info("✅ 世界排行榜已新增：" + label);
 
-        // 上傳後自動修剪至前 10 名
-        return _trimWorldToTop10();
+        // 上傳後自動修剪
+        return _trimWorldLeaderboard();
       });
   }
 
   /**
-   * 修剪世界排行榜：每個規則（fieldId + ruleId）各自保留前 10 名
-   * 沒有 fieldId/ruleId 的舊紀錄視為同一組
+   * 修剪世界排行榜：最多保留 1000 筆，超出的依時間刪除最舊的
    * @returns {Promise}
    */
-  function _trimWorldToTop10() {
+  function _trimWorldLeaderboard() {
     var db = _getFirestore();
     if (!db) return Promise.resolve();
 
-    var TOP_N = 10;
+    var MAX_ENTRIES = 1000;
 
     return db
       .collection("worldLeaderboard")
-      .orderBy("bestScore", "desc")
+      .orderBy("updatedAt", "desc")
       .get()
       .then(function (snapshot) {
-        // 按 fieldId+ruleId 分組
-        var groups = {}; // key → [docRef, ...]
-        snapshot.forEach(function (doc) {
-          var d = doc.data();
-          var key = (d.fieldId || "_none") + "|" + (d.ruleId || "_none");
-          if (!groups[key]) groups[key] = [];
-          groups[key].push(doc.ref);
-        });
+        if (snapshot.size <= MAX_ENTRIES) return;
 
-        // 每組只保留前 TOP_N 筆（已按 bestScore desc 排序）
         var docsToDelete = [];
-        Object.keys(groups).forEach(function (key) {
-          var refs = groups[key];
-          if (refs.length > TOP_N) {
-            for (var i = TOP_N; i < refs.length; i++) {
-              docsToDelete.push(refs[i]);
-            }
+        var count = 0;
+        snapshot.forEach(function (doc) {
+          count++;
+          if (count > MAX_ENTRIES) {
+            docsToDelete.push(doc.ref);
           }
         });
 
         if (docsToDelete.length === 0) return;
 
-        // Firestore batch 每次最多 500 筆
         var batch = db.batch();
         docsToDelete.forEach(function (ref) {
           batch.delete(ref);
         });
         return batch.commit().then(function () {
           Logger.info(
-            "🧹 排行榜已修剪：刪除 " +
+            "🧹 世界排行榜已修剪：刪除 " +
               docsToDelete.length +
-              " 筆排名外資料，每規則保留前 " +
-              TOP_N +
-              " 名",
+              " 筆最舊資料，保留最新 " +
+              MAX_ENTRIES +
+              " 筆",
           );
         });
       })
       .catch(function (e) {
-        // 修剪失敗不影響主流程
-        Logger.warn("排行榜修剪失敗：" + e.message);
+        Logger.warn("世界排行榜修剪失敗：" + e.message);
       });
   }
 
@@ -577,8 +620,8 @@ var FirestoreLeaderboard = (function () {
 
     // 客戶端篩選比較安全（避免複合索引問題）
     return query
-      .orderBy("bestScore", "desc")
-      .limit(limit || 200)
+      .orderBy("updatedAt", "desc")
+      .limit(limit || 1000)
       .get()
       .then(function (snapshot) {
         var entries = [];
@@ -659,7 +702,7 @@ var FirestoreLeaderboard = (function () {
     getWorldLeaderboard: getWorldLeaderboard,
     getMyWorldEntries: getMyWorldEntries,
     deleteMyWorldEntry: deleteMyWorldEntry,
-    trimWorldToTop10: _trimWorldToTop10,
+    trimWorldLeaderboard: _trimWorldLeaderboard,
 
     // 工具
     generateCode: _generateCode,

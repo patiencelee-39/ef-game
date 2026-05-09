@@ -361,14 +361,34 @@
       .get()
       .then(function (snapshot) {
         _boards = [];
+        var countPromises = [];
+
         snapshot.forEach(function (doc) {
           var data = doc.data();
           data.boardId = doc.id;
           _boards.push(data);
+
+          // 直接查詢 entries 子集合的實際筆數
+          var p = db
+            .collection("classLeaderboards")
+            .doc(doc.id)
+            .collection("entries")
+            .get()
+            .then(function (entriesSnap) {
+              data.entryCount = entriesSnap.size;
+            })
+            .catch(function () {
+              data.entryCount = 0;
+            });
+          countPromises.push(p);
         });
-        renderBoards();
-        dom.boardCount.textContent = _boards.length + " 筆";
-        logMsg("班級看板載入完成：" + _boards.length + " 筆", "ok");
+
+        // 等所有計數都完成後再渲染
+        return Promise.all(countPromises).then(function () {
+          renderBoards();
+          dom.boardCount.textContent = _boards.length + " 筆";
+          logMsg("班級看板載入完成：" + _boards.length + " 筆", "ok");
+        });
       })
       .catch(function (err) {
         dom.boardList.innerHTML =

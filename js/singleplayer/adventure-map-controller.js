@@ -48,20 +48,20 @@ function _alignOverlay() {
 
 var POINT_POSITIONS = {
   mouse: [
-    { left: "16%", top: "58%" },  // ① 左下紫色房子旁
-    { left: "35%", top: "52%" },  // ② 蘑菇旁
-    { left: "74%", top: "85%" },  // ③ 右下紅屋頂房子旁
-    { left: "68%", top: "45%" },  // ④ 右中綠屋頂房子旁
-    { left: "52%", top: "16%" },  // ⑤ 上中粉紅房子旁
-    { left: "22%", top: "24%" },  // ⑥ 左上鳥巢金蛋旁
+    { left: "12%", top: "82%" },  // ① 城市（City，左下）
+    { left: "45%", top: "85%" },  // ② 洞穴（Caves，下方偏中）
+    { left: "55%", top: "55%" },  // ③ 森林（Forest，中間）
+    { left: "80%", top: "48%" },  // ④ 村莊（Village，右邊）
+    { left: "48%", top: "25%" },  // ⑤ 村莊（Village，上方偏中）
+    { left: "15%", top: "22%" },  // ⑥ 首都（Capital，左上）
   ],
   fishing: [
-    { left: "52%", top: "83%" },  // ① 下方中間紅綠蛋旁
-    { left: "87%", top: "85%" },  // ② 右下黃蛋旁
-    { left: "35%", top: "45%" },  // ③ 左中紫蛋旁
-    { left: "15%",  top: "12%" },  // ④ 左上角綠蛋旁
-    { left: "42%", top: "20%" },  // ⑤ 上中偏左綠紅蛋旁
-    { left: "75%", top: "39%" },  // ⑥ 右中偏上籃子旁
+    { left: "75%", top: "82%" },  // ① 小鎮（Town，右下）
+    { left: "65%", top: "50%" },  // ② 港口（Port，右中）
+    { left: "30%", top: "55%" },  // ③ 港口（Port，左中）
+    { left: "50%", top: "42%" },  // ④ 帆船（中間海上）
+    { left: "10%", top: "12%" },  // ⑤ 村莊（Village，左上）
+    { left: "50%", top: "12%" },  // ⑥ 山脈（Mountains，上方）
   ],
 };
 
@@ -472,8 +472,8 @@ function switchMap(mapIndex) {
   // 切換地圖背景 SVG
   var mapBg = document.getElementById("map-bg");
   var MAP_SVG_FILES = [
-    "../images/adventure-map.svg", // map 0: 小老鼠
-    "../images/adventure-map2.svg", // map 1: 釣魚
+    "../images/小老鼠冒險地圖.svg", // map 0: 小老鼠
+    "../images/釣魚冒險地圖.svg",   // map 1: 釣魚
   ];
   if (mapBg && MAP_SVG_FILES[mapIndex]) {
     mapBg.src = MAP_SVG_FILES[mapIndex];
@@ -556,6 +556,18 @@ function renderMap(mapIndex) {
     }
 
     el.appendChild(circle);
+
+    // WM 圖示（有工作記憶測驗的關卡）
+    if (point.hasWM) {
+      var wmIcon = document.createElement("img");
+      wmIcon.src = "../images/brain1.svg";
+      wmIcon.className = "point-wm-icon";
+      wmIcon.setAttribute("aria-hidden", "true");
+      wmIcon.alt = "";
+      wmIcon.style.cssText =
+        "position:absolute;top:-6px;right:-6px;width:20px;height:20px;pointer-events:none;";
+      el.appendChild(wmIcon);
+    }
 
     // 標籤
     var label = document.createElement("div");

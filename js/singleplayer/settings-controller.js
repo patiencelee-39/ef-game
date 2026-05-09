@@ -30,6 +30,7 @@
       localStorage.getItem("ef_engine_choice") || "simple"
     );
     loadStaticParams();
+    loadMonitorOpacity();
     loadThemeSettings();
     bindEvents();
   }
@@ -155,29 +156,50 @@
 
   /** 讀取 localStorage 存儲的難度等級 */
   function getStoredLevel() {
-    var lvStr = localStorage.getItem("ef_adaptive_level");
-    return lvStr ? parseInt(lvStr, 10) : 3;
+    try {
+      var raw = localStorage.getItem("ef_adaptive_level");
+      if (!raw) return 5;
+      var data = JSON.parse(raw);
+      var level = Number(data.level);
+      if (level >= 1 && level <= 10) return level;
+    } catch (e) { /* ignore */ }
+    return 5;
   }
 
-  /** 簡易引擎的時間參數表 */
-  var SIMPLE_TIMING = {
-    1: { stimulus: 3000, isiMin: 1000, isiMax: 1500, feedback: 1200 },
-    2: { stimulus: 2500, isiMin: 900, isiMax: 1300, feedback: 1000 },
-    3: { stimulus: 2000, isiMin: 800, isiMax: 1200, feedback: 800 },
-    4: { stimulus: 1500, isiMin: 600, isiMax: 1000, feedback: 600 },
-    5: { stimulus: 1200, isiMin: 500, isiMax: 800, feedback: 500 },
-  };
+  /**
+   * 從引擎取得參數表（Single Source of Truth）
+   * 回傳格式轉換成 UI 用的 key 名稱
+   */
+  function _getEngineLevelData() {
+    if (typeof SimpleAdaptiveEngine === "undefined" || !SimpleAdaptiveEngine.getAllLevelParams) {
+      return null;
+    }
+    var raw = SimpleAdaptiveEngine.getAllLevelParams();
+    var timing = {};
+    var wm = {};
+    for (var lv in raw.timing) {
+      var t = raw.timing[lv];
+      timing[lv] = {
+        stimulus: t.stimulusDurationMs,
+        grace: t.responseGraceMs,
+        isiMin: t.isiMinMs,
+        isiMax: t.isiMaxMs,
+        feedback: t.feedbackDurationMs,
+      };
+    }
+    for (var lv2 in raw.wm) {
+      var w = raw.wm[lv2];
+      wm[lv2] = {
+        minPos: w.minPositions,
+        maxPos: w.maxPositions,
+        reverse: w.reverseProbability,
+        timeout: w.responseTimeoutMs,
+      };
+    }
+    return { timing: timing, wm: wm };
+  }
 
-  /** 簡易引擎的工作記憶參數表 */
-  var SIMPLE_WM = {
-    1: { minPos: 2, maxPos: 3, highlightMs: 1000, reverse: 0.5 },
-    2: { minPos: 2, maxPos: 4, highlightMs: 900, reverse: 0.6 },
-    3: { minPos: 2, maxPos: 6, highlightMs: 800, reverse: 0.7 },
-    4: { minPos: 3, maxPos: 6, highlightMs: 700, reverse: 0.8 },
-    5: { minPos: 3, maxPos: 6, highlightMs: 600, reverse: 0.9 },
-  };
-
-  /** 渲染動態評量詳細面板 */
+  /** 渲染動態詳細面板 */
   function renderEngineDetailPanel(engine) {
     var panel = document.getElementById("engineDetailPanel");
     var staticPanel = document.getElementById("staticDetailPanel");
@@ -187,7 +209,7 @@
       staticPanel.style.display = (engine === "static") ? "" : "none";
     }
 
-    // 動態評量面板
+    // 動態面板
     if (!panel) return;
     if (engine !== "simple") {
       panel.style.display = "none";
@@ -195,27 +217,58 @@
     }
     panel.style.display = "";
 
-    var lv = getStoredLevel();
-    var t = SIMPLE_TIMING[lv];
-    var w = SIMPLE_WM[lv];
-
-    // 星星
-    var stars = "";
-    for (var i = 1; i <= 5; i++) {
-      stars += i <= lv ? "⭐" : "☆";
+    // 更新規則說明文字
+    var ruleText = document.getElementById("edRuleText");
+    if (ruleText && typeof SimpleAdaptiveEngine !== "undefined") {
+      var streak = SimpleAdaptiveEngine.getStreakThreshold();
+      ruleText.textContent = "※ 連對 " + streak +
+        " 題升一級，連錯 " + streak +
+        " 題降一級（Level " + SimpleAdaptiveEngine.MIN_LEVEL + "～" +
+        SimpleAdaptiveEngine.MAX_LEVEL + "）";
     }
-    document.getElementById("edLevelStars").textContent = stars;
-    document.getElementById("edLevelTag").textContent = "Level " + lv;
 
-    // 進度條百分比（L1=0%, L5=100%）
-    var pct = ((lv - 1) / 4) * 100;
+    // streak threshold 從引擎抓值
+    var streakInput = document.getElementById("edStreakInput");
+    if (streakInput && typeof SimpleAdaptiveEngine !== "undefined") {
+      streakInput.value = SimpleAdaptiveEngine.getStreakThreshold();
+      streakInput.onchange = function () {
+        var val = parseInt(streakInput.value, 10);
+        if (isNaN(val) || val < 1) val = 1;
+        if (val > 10) val = 10;
+        streakInput.value = val;
+        SimpleAdaptiveEngine.setStreakThreshold(val);
+        showToast("🎯 連續 " + val + " 題觸發升/降級");
+        // 重新渲染（更新規則文字）
+        renderEngineDetailPanel("simple");
+      };
+    }
+
+    var lv = getStoredLevel();
+    var data = _getEngineLevelData();
+    if (!data) return;
+    var t = data.timing[lv];
+    var w = data.wm[lv];
+    if (!t || !w) return;
+
+    // 等級顯示（改用數字而非星星，10顆太多）
+    document.getElementById("edLevelStars").textContent = "Level " + lv + " / 10";
+    document.getElementById("edLevelTag").textContent = "";
+
+    // 進度條百分比（L1=0%, L10=100%）
+    var pct = ((lv - 1) / 9) * 100;
 
     document.getElementById("edBarStimulus").style.width = pct + "%";
     document.getElementById("edValStimulus").textContent = (t.stimulus / 1000).toFixed(1) + " 秒";
 
+    document.getElementById("edBarGrace").style.width = pct + "%";
+    document.getElementById("edValGrace").textContent = (t.grace / 1000).toFixed(1) + " 秒";
+
     document.getElementById("edBarIsi").style.width = pct + "%";
     document.getElementById("edValIsi").textContent =
       (t.isiMin / 1000).toFixed(1) + "～" + (t.isiMax / 1000).toFixed(1) + " 秒";
+
+    document.getElementById("edBarFeedback").style.width = pct + "%";
+    document.getElementById("edValFeedback").textContent = (t.feedback / 1000).toFixed(1) + " 秒";
 
     document.getElementById("edBarWmPos").style.width = pct + "%";
     document.getElementById("edValWmPos").textContent = w.minPos + "～" + w.maxPos + " 個";
@@ -223,26 +276,91 @@
     document.getElementById("edBarReverse").style.width = pct + "%";
     document.getElementById("edValReverse").textContent = Math.round(w.reverse * 100) + "%";
 
-    // 完整參數表的當前等級高亮
-    var table = panel.querySelector(".engine-detail-table");
-    if (table) {
-      var rows = table.querySelectorAll("tbody tr");
-      var ths = table.querySelectorAll("thead th");
-      ths.forEach(function (th, idx) {
-        if (idx >= 1) {
-          th.style.color = (idx === lv) ? "#c39bd3" : "";
-          th.style.fontWeight = (idx === lv) ? "900" : "";
-        }
-      });
-      rows.forEach(function (row) {
-        var cells = row.querySelectorAll("td");
-        cells.forEach(function (cell, idx) {
+    document.getElementById("edBarTimeout").style.width = pct + "%";
+    document.getElementById("edValTimeout").textContent = (w.timeout / 1000).toFixed(0) + " 秒";
+
+    // 動態生成完整參數表格
+    var tableWrap = document.getElementById("edTableWrap");
+    if (tableWrap) {
+      var maxLv = SimpleAdaptiveEngine.MAX_LEVEL || 10;
+
+      // 表頭
+      var html = '<table class="engine-detail-table"><thead><tr><th></th>';
+      for (var i = 1; i <= maxLv; i++) {
+        html += "<th>L" + i + "</th>";
+      }
+      html += "</tr></thead><tbody>";
+
+      // 📷 圖片顯示
+      html += "<tr><td>📷 圖片</td>";
+      for (var i = 1; i <= maxLv; i++) {
+        html += "<td>" + (data.timing[i].stimulus / 1000).toFixed(1) + "s</td>";
+      }
+      html += "</tr>";
+
+      // ⏳ 額外反應
+      html += "<tr><td>⏳ 額外反應</td>";
+      for (var i = 1; i <= maxLv; i++) {
+        html += "<td>" + (data.timing[i].grace / 1000).toFixed(2).replace(/0$/, "") + "s</td>";
+      }
+      html += "</tr>";
+
+      // ⏱️ 間隔
+      html += "<tr><td>⏱️ 間隔</td>";
+      for (var i = 1; i <= maxLv; i++) {
+        html += "<td>" + (data.timing[i].isiMin / 1000).toFixed(1) + "～" + (data.timing[i].isiMax / 1000).toFixed(1) + "s</td>";
+      }
+      html += "</tr>";
+
+      // 💬 提示
+      html += "<tr><td>💬 提示</td>";
+      for (var i = 1; i <= maxLv; i++) {
+        html += "<td>" + (data.timing[i].feedback / 1000).toFixed(1) + "s</td>";
+      }
+      html += "</tr>";
+
+      // 🧠 位置
+      html += "<tr><td>🧠 位置</td>";
+      for (var i = 1; i <= maxLv; i++) {
+        html += "<td>" + data.wm[i].minPos + "～" + data.wm[i].maxPos + "</td>";
+      }
+      html += "</tr>";
+
+      // 🔄 逆向
+      html += "<tr><td>🔄 逆向</td>";
+      for (var i = 1; i <= maxLv; i++) {
+        html += "<td>" + Math.round(data.wm[i].reverse * 100) + "%</td>";
+      }
+      html += "</tr>";
+
+      // ⏰ WM作答
+      html += "<tr><td>⏰ WM作答</td>";
+      for (var i = 1; i <= maxLv; i++) {
+        html += "<td>" + (data.wm[i].timeout / 1000).toFixed(0) + "s</td>";
+      }
+      html += "</tr>";
+
+      html += "</tbody></table>";
+      tableWrap.innerHTML = html;
+
+      // 當前等級高亮
+      var table = tableWrap.querySelector("table");
+      if (table) {
+        table.querySelectorAll("thead th").forEach(function (th, idx) {
           if (idx >= 1) {
-            cell.style.color = (idx === lv) ? "#c39bd3" : "";
-            cell.style.fontWeight = (idx === lv) ? "700" : "";
+            th.style.color = (idx === lv) ? "#c39bd3" : "";
+            th.style.fontWeight = (idx === lv) ? "900" : "";
           }
         });
-      });
+        table.querySelectorAll("tbody tr").forEach(function (row) {
+          row.querySelectorAll("td").forEach(function (cell, idx) {
+            if (idx >= 1) {
+              cell.style.color = (idx === lv) ? "#c39bd3" : "";
+              cell.style.fontWeight = (idx === lv) ? "700" : "";
+            }
+          });
+        });
+      }
     }
   }
 
@@ -254,22 +372,26 @@
 
   var SP_DEFAULTS = {
     stimulusMs: 2000,
+    graceMs: 1000,
     isiMinMs: 800,
     isiMaxMs: 1200,
     feedbackMs: 800,
     wmMinPos: 2,
-    wmMaxPos: 6,
-    wmReverse: 50,
+    wmMaxPos: 4,
+    wmReverse: 30,
+    wmTimeoutMs: 60000,
   };
 
   var SP_FIELDS = [
-    { id: "spStimulus", key: "stimulusMs" },
-    { id: "spIsiMin",   key: "isiMinMs"   },
-    { id: "spIsiMax",   key: "isiMaxMs"   },
-    { id: "spFeedback", key: "feedbackMs" },
-    { id: "spWmMin",    key: "wmMinPos"   },
-    { id: "spWmMax",    key: "wmMaxPos"   },
-    { id: "spReverse",  key: "wmReverse"  },
+    { id: "spStimulus",   key: "stimulusMs"  },
+    { id: "spGrace",      key: "graceMs"     },
+    { id: "spIsiMin",     key: "isiMinMs"    },
+    { id: "spIsiMax",     key: "isiMaxMs"    },
+    { id: "spFeedback",   key: "feedbackMs"  },
+    { id: "spWmMin",      key: "wmMinPos"    },
+    { id: "spWmMax",      key: "wmMaxPos"    },
+    { id: "spReverse",    key: "wmReverse"   },
+    { id: "spWmTimeout",  key: "wmTimeoutMs" },
   ];
 
   function loadStaticParams() {
@@ -285,6 +407,7 @@
         el.value = saved[f.key] != null ? saved[f.key] : SP_DEFAULTS[f.key];
       }
     });
+
   }
 
   function saveStaticParams() {
@@ -319,18 +442,59 @@
     try {
       localStorage.setItem(SP_KEY, JSON.stringify(data));
     } catch (e) { /* ignore */ }
+
   }
 
   function resetStaticParams() {
     try {
       localStorage.removeItem(SP_KEY);
+      localStorage.removeItem("ef_adaptive_streak");
     } catch (e) { /* ignore */ }
 
     SP_FIELDS.forEach(function (f) {
       var el = document.getElementById(f.id);
       if (el) el.value = SP_DEFAULTS[f.key];
     });
+
+    // 重設 streak threshold 回預設值 2
+    if (typeof SimpleAdaptiveEngine !== "undefined" && SimpleAdaptiveEngine.setStreakThreshold) {
+      SimpleAdaptiveEngine.setStreakThreshold(2);
+    }
+    var streakInput = document.getElementById("edStreakInput");
+    if (streakInput) streakInput.value = 2;
   }
+
+  // =========================================
+  // ⏱️ 監控面板設定（開關 + 透明度，獨立於難度參數）
+  // =========================================
+  function loadMonitorOpacity() {
+    // 開關
+    var toggle = document.getElementById("monitorToggle");
+    if (toggle) {
+      var enabled = localStorage.getItem("ef_monitor_enabled");
+      toggle.checked = enabled !== "false";
+      toggle.addEventListener("change", function () {
+        localStorage.setItem("ef_monitor_enabled", toggle.checked ? "true" : "false");
+        showToast(toggle.checked ? "⏱️ 監控面板已開啟" : "⏱️ 監控面板已關閉");
+      });
+    }
+
+    // 透明度
+    var el = document.getElementById("spMonitorOpacity");
+    if (!el) return;
+    var saved = localStorage.getItem("ef_monitor_opacity");
+    el.value = saved != null ? Math.round(parseFloat(saved) * 100) : 30;
+  }
+
+  window.saveMonitorOpacity = function (val) {
+    var v = parseInt(val, 10);
+    if (isNaN(v) || v < 0) v = 0;
+    if (v > 100) v = 100;
+    var el = document.getElementById("spMonitorOpacity");
+    if (el) el.value = v;
+    localStorage.setItem("ef_monitor_opacity", (v / 100).toString());
+    showToast("👁️ 監控面板透明度已儲存：" + v + "%");
+  };
 
   // =========================================
   // 🎨 配色主題
@@ -508,7 +672,7 @@
     if (btnClearCache)
       btnClearCache.addEventListener("click", handleClearCache);
 
-    // --- 動態評量完整參數表展開 ---
+    // --- 動態完整參數表展開 ---
     var edToggle = document.getElementById("edToggleTable");
     var edTableWrap = document.getElementById("edTableWrap");
     if (edToggle && edTableWrap) {

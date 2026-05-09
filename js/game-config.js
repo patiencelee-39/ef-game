@@ -100,7 +100,7 @@ const GAME_CONFIG = {
    *  ⚠️ 請勿修改：MIN_COUNT 不能大於 MAX_COUNT
    * ──────────────────────────────────────────────────────── */
   QUESTIONS: {
-    DEFAULT_COUNT: 50, // ← 教師可改：每場基本題數（50題）
+    DEFAULT_COUNT: 40, // ← 教師可改：每場基本題數（40題）
     MIXED_MULTIPLIER: 1, // ← 混合規則不再額外倍增
     MIN_COUNT: 10, // ← 教師可改：最少可選題數
     MAX_COUNT: 100, // ← 教師可改：最多可選題數

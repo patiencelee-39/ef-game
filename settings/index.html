@@ -25,6 +25,7 @@
     <!-- === Scripts === -->
     <script defer src="../js/game-config.js"></script>
     <script defer src="../js/utils/logger.js"></script>
+    <script defer src="../js/adaptive/simple-adaptive-engine.js"></script>
     <script defer src="../js/utils/storage.js"></script>
     <script defer src="../js/shared/audio-player.js"></script>
     <script defer src="../js/shared/navbar.js"></script>
@@ -105,19 +106,37 @@
         <div class="settings-item">
           <span class="settings-item__label">📝 每回合題數</span>
           <div class="count-input-row" id="countSelector">
-            <input
+                        <input
               type="number"
               class="count-input"
               id="countInput"
               min="10"
               max="100"
               step="1"
-              value="50"
+              value="40"
               aria-label="每回合題數"
               onchange="updateQuestionCount(this.value)"
             />
-            <span class="count-value" id="count-value">50</span>
+            <span class="count-value" id="count-value">40</span>
             <span style="color:rgba(255,255,255,0.5);font-size:0.8rem">題（10～100）</span>
+          </div>
+        </div>
+        <!-- 時間流程監控面板 -->
+        <div class="settings-item">
+          <span class="settings-item__label">⏱️ 時間流程監控面板</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="monitorToggle" checked aria-label="監控面板開關" />
+            <span class="toggle-switch__track"></span>
+          </label>
+        </div>
+        <div class="settings-item">
+          <span class="settings-item__label">👁️ 時間流程監控面板透明度</span>
+          <div class="count-input-row">
+            <input type="number" class="count-input" id="spMonitorOpacity"
+              min="0" max="100" step="5" value="30"
+              aria-label="時間流程監控面板透明度"
+              onchange="saveMonitorOpacity(this.value)" />
+            <span style="color:rgba(255,255,255,0.5);font-size:0.8rem">%（0=全透明, 100=不透明）</span>
           </div>
         </div>
         <!-- 難度調整模式 -->
@@ -125,13 +144,13 @@
           <span class="settings-item__label">🧠 難度調整模式</span>
           <div class="engine-selector" id="engineSelector">
             <button class="engine-btn" data-engine="static" title="固定難度，不隨表現調整">📊 固定</button>
-            <button class="engine-btn active" data-engine="simple" title="連對升級、連錯降級（預設）">🎯 動態評量</button>
+            <button class="engine-btn active" data-engine="simple" title="連對升級、連錯降級（預設）">🎯 動態</button>
             <!-- [隱藏] IRT 引擎功能尚未完善，待未來優化後再開放 -->
             <!-- <button class="engine-btn" data-engine="irt" title="IRT 智慧分析，依能力精準選題">🧠 IRT</button> -->
           </div>
           <p class="settings-item__hint" id="engineHint">
             📊 固定：難度不變，適合標準化測驗<br>
-            🎯 動態評量：連續答對自動升級、連錯降級（推薦）
+            🎯 動態：連續答對自動升級、連錯降級（推薦）
             <!-- [隱藏] IRT 說明，與按鈕同步隱藏 -->
             <!-- <br>🧠 IRT：根據試題反應理論(Item Response Theory)即時估計能力值，智慧選題 -->
           </p>
@@ -143,82 +162,120 @@
             <div class="engine-static-params">
               <div class="engine-param-row">
                 <span class="engine-param-label">📷 圖片顯示時間</span>
+                <span class="engine-param-desc">每張刺激圖片在畫面上停留多久</span>
                 <div class="engine-param-input-group">
                   <input type="number" class="engine-param-input" id="spStimulus"
-                    min="500" max="5000" step="100" value="2000" />
+                    min="0" max="99999" step="100" value="2000" />
                   <span class="engine-param-unit">ms</span>
                 </div>
               </div>
 
               <div class="engine-param-row">
-                <span class="engine-param-label">⏱️  間隔最短</span>
+                <span class="engine-param-label">⏱️ 題目間隔（最短）</span>
+                <span class="engine-param-desc">上一題結束到下一題出現的最短等待時間</span>
                 <div class="engine-param-input-group">
                   <input type="number" class="engine-param-input" id="spIsiMin"
-                    min="300" max="3000" step="100" value="800" />
+                    min="0" max="99999" step="100" value="800" />
                   <span class="engine-param-unit">ms</span>
                 </div>
               </div>
 
               <div class="engine-param-row">
-                <span class="engine-param-label">⏱️  間隔最長</span>
+                <span class="engine-param-label">⏱️ 題目間隔（最長）</span>
+                <span class="engine-param-desc">上一題結束到下一題出現的最長等待時間（隨機取值）</span>
                 <div class="engine-param-input-group">
                   <input type="number" class="engine-param-input" id="spIsiMax"
-                    min="500" max="5000" step="100" value="1200" />
+                    min="0" max="99999" step="100" value="1200" />
                   <span class="engine-param-unit">ms</span>
                 </div>
               </div>
 
               <div class="engine-param-row">
-                <span class="engine-param-label">💬 提示時間</span>
+                <span class="engine-param-label">💬 答對/答錯提示時間</span>
+                <span class="engine-param-desc">顯示「答對✓」或「答錯✗」畫面的持續時間</span>
                 <div class="engine-param-input-group">
                   <input type="number" class="engine-param-input" id="spFeedback"
-                    min="300" max="3000" step="100" value="800" />
+                    min="0" max="99999" step="100" value="800" />
                   <span class="engine-param-unit">ms</span>
                 </div>
               </div>
 
               <div class="engine-param-row">
-                <span class="engine-param-label">🧠 最少記憶位置</span>
+                <span class="engine-param-label">⏳ 圖片消失後額外反應時間</span>
+                <span class="engine-param-desc">圖片消失後，孩子仍可按按鈕的寬限時間</span>
+                <div class="engine-param-input-group">
+                  <input type="number" class="engine-param-input" id="spGrace"
+                    min="0" max="99999" step="100" value="1000" />
+                  <span class="engine-param-unit">ms</span>
+                </div>
+              </div>
+
+              <div class="engine-param-row">
+                <span class="engine-param-label">🧠 工作記憶位置數（最少）</span>
+                <span class="engine-param-desc">記憶遊戲中，最少要記幾個格子的位置</span>
                 <div class="engine-param-input-group">
                   <input type="number" class="engine-param-input" id="spWmMin"
-                    min="2" max="6" step="1" value="2" />
+                    min="0" max="99" step="1" value="2" />
                   <span class="engine-param-unit">個</span>
                 </div>
               </div>
 
               <div class="engine-param-row">
-                <span class="engine-param-label">🧠 最多記憶位置</span>
+                <span class="engine-param-label">🧠 工作記憶位置數（最多）</span>
+                <span class="engine-param-desc">記憶遊戲中，最多要記幾個格子的位置（隨機取值）</span>
                 <div class="engine-param-input-group">
                   <input type="number" class="engine-param-input" id="spWmMax"
-                    min="2" max="9" step="1" value="6" />
+                    min="0" max="99" step="1" value="4" />
                   <span class="engine-param-unit">個</span>
                 </div>
               </div>
 
               <div class="engine-param-row">
-                <span class="engine-param-label">🔄 逆向機率</span>
+                <span class="engine-param-label">🔄 逆向回憶機率</span>
+                <span class="engine-param-desc">記憶遊戲中，要求孩子「倒著回想」的機率</span>
                 <div class="engine-param-input-group">
                   <input type="number" class="engine-param-input" id="spReverse"
-                    min="0" max="100" step="10" value="50" />
+                    min="0" max="100" step="10" value="30" />
                   <span class="engine-param-unit">%</span>
+                </div>
+              </div>
+
+              <div class="engine-param-row">
+                <span class="engine-param-label">⏰ 工作記憶作答時間</span>
+                <span class="engine-param-desc">記憶遊戲中，孩子點選格子的作答時間上限</span>
+                <div class="engine-param-input-group">
+                  <input type="number" class="engine-param-input" id="spWmTimeout"
+                    min="0" max="99999" step="1000" value="60000" />
+                  <span class="engine-param-unit">ms</span>
                 </div>
               </div>
             </div>
 
+            </div>
+
             <button class="engine-param-reset" id="spResetBtn">🔄 恢復預設</button>
-            <p class="engine-detail-rule">※ 修改後下次遊戲生效，預設值等同動態評量 Level 3</p>
+            <p class="engine-detail-rule">※ 修改後下次遊戲生效，固定之預設值等同動態 Level 5</p>
           </div>
 
           <!-- 動態評量詳細面板（選中 simple 時才顯示） -->
           <div class="engine-detail-panel" id="engineDetailPanel" style="display:none">
             <div class="engine-detail-level">
-              目前等級：<span id="edLevelStars">⭐⭐⭐☆☆</span>
-              <span class="engine-detail-level-tag" id="edLevelTag">Level 3</span>
+              目前等級：<span id="edLevelStars">Level 5 / 10</span>
+              <span class="engine-detail-level-tag" id="edLevelTag"></span>
+            </div>
+
+            <div class="engine-detail-streak" style="margin:12px 0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <span style="color:rgba(255,255,255,0.8);font-size:0.9rem;">連對/連錯</span>
+              <input type="number" id="edStreakInput" class="count-input"
+                min="1" max="10" step="1" value="2"
+                style="width:50px;text-align:center;"
+                aria-label="連續題數門檻" />
+              <span style="color:rgba(255,255,255,0.8);font-size:0.9rem;">題 → 升/降一級</span>
             </div>
 
             <div class="engine-detail-bar-group">
               <div class="engine-detail-bar-row">
-                <span class="engine-detail-bar-label">📷 圖片速度</span>
+                <span class="engine-detail-bar-label">📷 圖片顯示</span>
                 <div class="engine-detail-bar-track">
                   <div class="engine-detail-bar-fill" id="edBarStimulus"></div>
                 </div>
@@ -226,7 +283,15 @@
               </div>
 
               <div class="engine-detail-bar-row">
-                <span class="engine-detail-bar-label">⏱️  間隔時間</span>
+                <span class="engine-detail-bar-label">⏳ 額外反應</span>
+                <div class="engine-detail-bar-track">
+                  <div class="engine-detail-bar-fill" id="edBarGrace"></div>
+                </div>
+                <span class="engine-detail-bar-value" id="edValGrace">0.8 秒</span>
+              </div>
+
+              <div class="engine-detail-bar-row">
+                <span class="engine-detail-bar-label">⏱️  題目間隔</span>
                 <div class="engine-detail-bar-track">
                   <div class="engine-detail-bar-fill" id="edBarIsi"></div>
                 </div>
@@ -234,11 +299,19 @@
               </div>
 
               <div class="engine-detail-bar-row">
+                <span class="engine-detail-bar-label">💬 對錯提示</span>
+                <div class="engine-detail-bar-track">
+                  <div class="engine-detail-bar-fill" id="edBarFeedback"></div>
+                </div>
+                <span class="engine-detail-bar-value" id="edValFeedback">0.8 秒</span>
+              </div>
+
+              <div class="engine-detail-bar-row">
                 <span class="engine-detail-bar-label">🧠 記憶位置</span>
                 <div class="engine-detail-bar-track">
                   <div class="engine-detail-bar-fill" id="edBarWmPos"></div>
                 </div>
-                <span class="engine-detail-bar-value" id="edValWmPos">2～6 個</span>
+                <span class="engine-detail-bar-value" id="edValWmPos">2～4 個</span>
               </div>
 
               <div class="engine-detail-bar-row">
@@ -246,30 +319,24 @@
                 <div class="engine-detail-bar-track">
                   <div class="engine-detail-bar-fill" id="edBarReverse"></div>
                 </div>
-                <span class="engine-detail-bar-value" id="edValReverse">70%</span>
+                <span class="engine-detail-bar-value" id="edValReverse">40%</span>
+              </div>
+
+              <div class="engine-detail-bar-row">
+                <span class="engine-detail-bar-label">⏰ WM作答</span>
+                <div class="engine-detail-bar-track">
+                  <div class="engine-detail-bar-fill" id="edBarTimeout"></div>
+                </div>
+                <span class="engine-detail-bar-value" id="edValTimeout">55 秒</span>
               </div>
             </div>
 
-            <p class="engine-detail-rule">※ 連對 2 題升一級，連錯 2 題降一級（Level 1～5）</p>
+            <p class="engine-detail-rule" id="edRuleText">※ 連對 2 題升一級，連錯 2 題降一級</p>
 
             <button class="engine-detail-toggle" id="edToggleTable">▼ 查看完整參數表</button>
 
             <div class="engine-detail-table-wrap" id="edTableWrap" style="display:none">
-              <table class="engine-detail-table">
-                <thead>
-                  <tr>
-                    <th></th><th>L1</th><th>L2</th><th>L3</th><th>L4</th><th>L5</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr><td>📷 圖片</td><td>3.0s</td><td>2.5s</td><td>2.0s</td><td>1.5s</td><td>1.2s</td></tr>
-                  <tr><td>⏱️  間隔</td><td>1.0～1.5s</td><td>0.9～1.3s</td><td>0.8～1.2s</td><td>0.6～1.0s</td><td>0.5～0.8s</td></tr>
-                  <tr><td>💬 提示</td><td>1.2s</td><td>1.0s</td><td>0.8s</td><td>0.6s</td><td>0.5s</td></tr>
-                  <tr><td>🧠 位置</td><td>2～3</td><td>2～4</td><td>2～6</td><td>3～6</td><td>3～6</td></tr>
-                  <tr><td>💡 亮起</td><td>1.0s</td><td>0.9s</td><td>0.8s</td><td>0.7s</td><td>0.6s</td></tr>
-                  <tr><td>🔄 逆向</td><td>50%</td><td>60%</td><td>70%</td><td>80%</td><td>90%</td></tr>
-                </tbody>
-              </table>
+              <!-- 由 JS 從 SimpleAdaptiveEngine.getAllLevelParams() 動態生成 -->
             </div>
           </div>
         </div>
