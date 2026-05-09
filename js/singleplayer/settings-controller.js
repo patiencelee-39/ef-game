@@ -166,33 +166,38 @@
     return 5;
   }
 
-  /** 簡易引擎的時間參數表 */
-  var SIMPLE_TIMING = {
-    1:  { stimulus: 5000, grace: 3000, isiMin: 1500, isiMax: 2000, feedback: 2000 },
-    2:  { stimulus: 4500, grace: 2700, isiMin: 1400, isiMax: 1900, feedback: 1800 },
-    3:  { stimulus: 4000, grace: 2400, isiMin: 1300, isiMax: 1800, feedback: 1600 },
-    4:  { stimulus: 3000, grace: 1500, isiMin: 1000, isiMax: 1400, feedback: 1100 },
-    5:  { stimulus: 2000, grace: 1000, isiMin: 800,  isiMax: 1200, feedback: 800 },
-    6:  { stimulus: 1600, grace: 700,  isiMin: 700,  isiMax: 1000, feedback: 700 },
-    7:  { stimulus: 1200, grace: 500,  isiMin: 600,  isiMax: 900,  feedback: 600 },
-    8:  { stimulus: 900,  grace: 300,  isiMin: 500,  isiMax: 800,  feedback: 500 },
-    9:  { stimulus: 700,  grace: 150,  isiMin: 400,  isiMax: 600,  feedback: 400 },
-    10: { stimulus: 500,  grace: 0,    isiMin: 300,  isiMax: 500,  feedback: 300 },
-  };
-
-  /** 簡易引擎的工作記憶參數表 */
-  var SIMPLE_WM = {
-    1:  { minPos: 2, maxPos: 2, reverse: 0.0, timeout: 120000 },
-    2:  { minPos: 2, maxPos: 2, reverse: 0.0, timeout: 100000 },
-    3:  { minPos: 2, maxPos: 3, reverse: 0.1, timeout: 80000 },
-    4:  { minPos: 2, maxPos: 3, reverse: 0.2, timeout: 70000 },
-    5:  { minPos: 2, maxPos: 4, reverse: 0.3, timeout: 60000 },
-    6:  { minPos: 3, maxPos: 4, reverse: 0.4, timeout: 50000 },
-    7:  { minPos: 3, maxPos: 5, reverse: 0.5, timeout: 40000 },
-    8:  { minPos: 3, maxPos: 5, reverse: 0.7, timeout: 30000 },
-    9:  { minPos: 4, maxPos: 6, reverse: 0.8, timeout: 20000 },
-    10: { minPos: 4, maxPos: 6, reverse: 1.0, timeout: 15000 },
-  };
+  /**
+   * 從引擎取得參數表（Single Source of Truth）
+   * 回傳格式轉換成 UI 用的 key 名稱
+   */
+  function _getEngineLevelData() {
+    if (typeof SimpleAdaptiveEngine === "undefined" || !SimpleAdaptiveEngine.getAllLevelParams) {
+      return null;
+    }
+    var raw = SimpleAdaptiveEngine.getAllLevelParams();
+    var timing = {};
+    var wm = {};
+    for (var lv in raw.timing) {
+      var t = raw.timing[lv];
+      timing[lv] = {
+        stimulus: t.stimulusDurationMs,
+        grace: t.responseGraceMs,
+        isiMin: t.isiMinMs,
+        isiMax: t.isiMaxMs,
+        feedback: t.feedbackDurationMs,
+      };
+    }
+    for (var lv2 in raw.wm) {
+      var w = raw.wm[lv2];
+      wm[lv2] = {
+        minPos: w.minPositions,
+        maxPos: w.maxPositions,
+        reverse: w.reverseProbability,
+        timeout: w.responseTimeoutMs,
+      };
+    }
+    return { timing: timing, wm: wm };
+  }
 
   /** 渲染動態評量詳細面板 */
   function renderEngineDetailPanel(engine) {
@@ -212,9 +217,21 @@
     }
     panel.style.display = "";
 
+    // 更新規則說明文字
+    var ruleText = document.getElementById("edRuleText");
+    if (ruleText) {
+      ruleText.textContent = "※ 連對 " + SimpleAdaptiveEngine.STREAK_THRESHOLD +
+        " 題升一級，連錯 " + SimpleAdaptiveEngine.STREAK_THRESHOLD +
+        " 題降一級（Level " + SimpleAdaptiveEngine.MIN_LEVEL + "～" +
+        SimpleAdaptiveEngine.MAX_LEVEL + "）";
+    }
+
     var lv = getStoredLevel();
-    var t = SIMPLE_TIMING[lv];
-    var w = SIMPLE_WM[lv];
+    var data = _getEngineLevelData();
+    if (!data) return;
+    var t = data.timing[lv];
+    var w = data.wm[lv];
+    if (!t || !w) return;
 
     // 等級顯示（改用數字而非星星，10顆太多）
     document.getElementById("edLevelStars").textContent = "Level " + lv + " / 10";
@@ -245,26 +262,88 @@
     document.getElementById("edBarTimeout").style.width = pct + "%";
     document.getElementById("edValTimeout").textContent = (w.timeout / 1000).toFixed(0) + " 秒";
 
-    // 完整參數表的當前等級高亮
-    var table = panel.querySelector(".engine-detail-table");
-    if (table) {
-      var rows = table.querySelectorAll("tbody tr");
-      var ths = table.querySelectorAll("thead th");
-      ths.forEach(function (th, idx) {
-        if (idx >= 1) {
-          th.style.color = (idx === lv) ? "#c39bd3" : "";
-          th.style.fontWeight = (idx === lv) ? "900" : "";
-        }
-      });
-      rows.forEach(function (row) {
-        var cells = row.querySelectorAll("td");
-        cells.forEach(function (cell, idx) {
+    // 動態生成完整參數表格
+    var tableWrap = document.getElementById("edTableWrap");
+    if (tableWrap) {
+      var maxLv = SimpleAdaptiveEngine.MAX_LEVEL || 10;
+
+      // 表頭
+      var html = '<table class="engine-detail-table"><thead><tr><th></th>';
+      for (var i = 1; i <= maxLv; i++) {
+        html += "<th>L" + i + "</th>";
+      }
+      html += "</tr></thead><tbody>";
+
+      // 📷 圖片顯示
+      html += "<tr><td>📷 圖片</td>";
+      for (var i = 1; i <= maxLv; i++) {
+        html += "<td>" + (data.timing[i].stimulus / 1000).toFixed(1) + "s</td>";
+      }
+      html += "</tr>";
+
+      // ⏳ 額外反應
+      html += "<tr><td>⏳ 額外反應</td>";
+      for (var i = 1; i <= maxLv; i++) {
+        html += "<td>" + (data.timing[i].grace / 1000).toFixed(2).replace(/0$/, "") + "s</td>";
+      }
+      html += "</tr>";
+
+      // ⏱️ 間隔
+      html += "<tr><td>⏱️ 間隔</td>";
+      for (var i = 1; i <= maxLv; i++) {
+        html += "<td>" + (data.timing[i].isiMin / 1000).toFixed(1) + "～" + (data.timing[i].isiMax / 1000).toFixed(1) + "s</td>";
+      }
+      html += "</tr>";
+
+      // 💬 提示
+      html += "<tr><td>💬 提示</td>";
+      for (var i = 1; i <= maxLv; i++) {
+        html += "<td>" + (data.timing[i].feedback / 1000).toFixed(1) + "s</td>";
+      }
+      html += "</tr>";
+
+      // 🧠 位置
+      html += "<tr><td>🧠 位置</td>";
+      for (var i = 1; i <= maxLv; i++) {
+        html += "<td>" + data.wm[i].minPos + "～" + data.wm[i].maxPos + "</td>";
+      }
+      html += "</tr>";
+
+      // 🔄 逆向
+      html += "<tr><td>🔄 逆向</td>";
+      for (var i = 1; i <= maxLv; i++) {
+        html += "<td>" + Math.round(data.wm[i].reverse * 100) + "%</td>";
+      }
+      html += "</tr>";
+
+      // ⏰ WM作答
+      html += "<tr><td>⏰ WM作答</td>";
+      for (var i = 1; i <= maxLv; i++) {
+        html += "<td>" + (data.wm[i].timeout / 1000).toFixed(0) + "s</td>";
+      }
+      html += "</tr>";
+
+      html += "</tbody></table>";
+      tableWrap.innerHTML = html;
+
+      // 當前等級高亮
+      var table = tableWrap.querySelector("table");
+      if (table) {
+        table.querySelectorAll("thead th").forEach(function (th, idx) {
           if (idx >= 1) {
-            cell.style.color = (idx === lv) ? "#c39bd3" : "";
-            cell.style.fontWeight = (idx === lv) ? "700" : "";
+            th.style.color = (idx === lv) ? "#c39bd3" : "";
+            th.style.fontWeight = (idx === lv) ? "900" : "";
           }
         });
-      });
+        table.querySelectorAll("tbody tr").forEach(function (row) {
+          row.querySelectorAll("td").forEach(function (cell, idx) {
+            if (idx >= 1) {
+              cell.style.color = (idx === lv) ? "#c39bd3" : "";
+              cell.style.fontWeight = (idx === lv) ? "700" : "";
+            }
+          });
+        });
+      }
     }
   }
 

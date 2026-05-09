@@ -25,6 +25,7 @@
     <!-- === Scripts === -->
     <script defer src="../js/game-config.js"></script>
     <script defer src="../js/utils/logger.js"></script>
+    <script defer src="../js/adaptive/simple-adaptive-engine.js"></script>
     <script defer src="../js/utils/storage.js"></script>
     <script defer src="../js/shared/audio-player.js"></script>
     <script defer src="../js/shared/navbar.js"></script>
@@ -321,27 +322,12 @@
               </div>
             </div>
 
-            <p class="engine-detail-rule">※ 連對 2 題升一級，連錯 2 題降一級（Level 1～10）</p>
+            <p class="engine-detail-rule" id="edRuleText">※ 連對 2 題升一級，連錯 2 題降一級</p>
 
             <button class="engine-detail-toggle" id="edToggleTable">▼ 查看完整參數表</button>
 
             <div class="engine-detail-table-wrap" id="edTableWrap" style="display:none">
-              <table class="engine-detail-table">
-                <thead>
-                  <tr>
-                    <th></th><th>L1</th><th>L2</th><th>L3</th><th>L4</th><th>L5</th><th>L6</th><th>L7</th><th>L8</th><th>L9</th><th>L10</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr><td>📷 圖片</td><td>5.0s</td><td>4.5s</td><td>4.0s</td><td>3.0s</td><td>2.0s</td><td>1.6s</td><td>1.2s</td><td>0.9s</td><td>0.7s</td><td>0.5s</td></tr>
-                  <tr><td>⏳ 額外反應</td><td>3.0s</td><td>2.7s</td><td>2.4s</td><td>1.5s</td><td>1.0s</td><td>0.7s</td><td>0.5s</td><td>0.3s</td><td>0.15s</td><td>0s</td></tr>
-                  <tr><td>⏱️ 間隔</td><td>1.5～2.0s</td><td>1.4～1.9s</td><td>1.3～1.8s</td><td>1.0～1.4s</td><td>0.8～1.2s</td><td>0.7～1.0s</td><td>0.6～0.9s</td><td>0.5～0.8s</td><td>0.4～0.6s</td><td>0.3～0.5s</td></tr>
-                  <tr><td>💬 提示</td><td>2.0s</td><td>1.8s</td><td>1.6s</td><td>1.1s</td><td>0.8s</td><td>0.7s</td><td>0.6s</td><td>0.5s</td><td>0.4s</td><td>0.3s</td></tr>
-                  <tr><td>🧠 位置</td><td>2～2</td><td>2～2</td><td>2～3</td><td>2～3</td><td>2～4</td><td>3～4</td><td>3～5</td><td>3～5</td><td>4～6</td><td>4～6</td></tr>
-                  <tr><td>🔄 逆向</td><td>0%</td><td>0%</td><td>10%</td><td>20%</td><td>30%</td><td>40%</td><td>50%</td><td>70%</td><td>80%</td><td>100%</td></tr>
-                  <tr><td>⏰ WM作答</td><td>120s</td><td>100s</td><td>80s</td><td>70s</td><td>60s</td><td>50s</td><td>40s</td><td>30s</td><td>20s</td><td>15s</td></tr>
-                </tbody>
-              </table>
+              <!-- 由 JS 從 SimpleAdaptiveEngine.getAllLevelParams() 動態生成 -->
             </div>
           </div>
         </div>
