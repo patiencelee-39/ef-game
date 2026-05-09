@@ -111,6 +111,7 @@ var ModeController = (function () {
       currentComboIndex: 0,
       startedAt: new Date().toISOString(),
       comboResults: [], // 每個 combo 的結果
+      skipGuide: true, // 自由選擇為老手模式，跳過規則動畫說明
     };
 
     _saveSession(session);

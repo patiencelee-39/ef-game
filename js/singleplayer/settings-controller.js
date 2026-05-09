@@ -449,6 +449,7 @@
     try {
       localStorage.removeItem(SP_KEY);
       localStorage.removeItem("ef_adaptive_streak");
+      localStorage.removeItem("ef_adaptive_level");
     } catch (e) { /* ignore */ }
 
     SP_FIELDS.forEach(function (f) {
