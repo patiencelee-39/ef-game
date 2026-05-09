@@ -44,5 +44,10 @@ dist/
 .env
 .env.*
 
+# Firebase 專案綁定 + 含金鑰的檔案（每位教師各自設定）
+.firebaserc
+src/firebase-init.js
+js/firebase-bundle.js
+
 .venv
 _archive

@@ -7,6 +7,9 @@
  *
  * 打包指令：npm run build:firebase
  * 輸出檔案：js/firebase-bundle.js
+ *
+ * ⚠️ 這是範本檔案。請執行 npm run setup 來產生你的
+ *    src/firebase-init.js（含你的 Firebase 金鑰）。
  * ============================================
  */
 
@@ -66,26 +69,24 @@ import {
 } from "firebase/firestore";
 
 // ════════════════════════════════════════
-// Firebase 配置
+// Firebase 配置 — 請替換成你的值
 // ════════════════════════════════════════
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBs9g8H0lL0SYR0FOs2FLkDAJE2bNTB-GE",
-  authDomain: "efgame-634af.firebaseapp.com",
-  databaseURL:
-    "https://efgame-634af-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "efgame-634af",
-  storageBucket: "efgame-634af.firebasestorage.app",
-  messagingSenderId: "681595552501",
-  appId: "1:681595552501:web:a24cb6e02e0c8063e7bbbc",
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT_ID.firebasestorage.app",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID",
 };
 
 // ── 初始化 ──
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const database = getDatabase(app);
-// 🔧 OOM Fix: Firestore 延遲初始化 — 只在實際呼叫 firebase.firestore() 時才建立
-// 避免遊戲頁面載入時啟動 gRPC 連線 + IndexedDB，節省 20-50MB 原生記憶體
+// Firestore 延遲初始化 — 只在實際呼叫時才建立
 let firestore = null;
 function getFirestoreInstance() {
   if (!firestore) firestore = getFirestore(app);
@@ -95,16 +96,9 @@ function getFirestoreInstance() {
 // ════════════════════════════════════════
 // Compat Shim — 讓現有程式碼不用改
 // ════════════════════════════════════════
-// 目標：提供 firebase.database().ref("path") 等 compat 風格 API
-//       底層使用 modular SDK，享受 tree-shaking 優勢
 
-/**
- * 包裝 RTDB Reference 為 compat-like 物件
- * 支援：.ref(), .once(), .on(), .off(), .set(), .update(), .push(), .remove(), .child(), .val()
- */
 function wrapRef(dbRef) {
   const wrapper = {
-    // 讀取
     once(eventType) {
       return get(dbRef).then((snapshot) => wrapSnapshot(snapshot));
     },
@@ -131,8 +125,6 @@ function wrapRef(dbRef) {
     off() {
       off(dbRef);
     },
-
-    // 寫入
     set(data) {
       return set(dbRef, data);
     },
@@ -149,8 +141,6 @@ function wrapRef(dbRef) {
     remove() {
       return remove(dbRef);
     },
-
-    // onDisconnect
     onDisconnect() {
       const disc = rtdbOnDisconnect(dbRef);
       return {
@@ -168,16 +158,12 @@ function wrapRef(dbRef) {
         },
       };
     },
-
-    // 導航
     child(path) {
       return wrapRef(child(dbRef, path));
     },
     ref(path) {
       return wrapRef(ref(database, path));
     },
-
-    // 查詢支援
     orderByChild(childKey) {
       const q = rtdbQuery(dbRef, orderByChild(childKey));
       return wrapRef(q);
@@ -186,8 +172,6 @@ function wrapRef(dbRef) {
       const q = rtdbQuery(dbRef, endAt(value));
       return wrapRef(q);
     },
-
-    // 原始 ref（供內部使用）
     _ref: dbRef,
     key: dbRef.key,
   };
@@ -195,9 +179,6 @@ function wrapRef(dbRef) {
   return wrapper;
 }
 
-/**
- * 包裝 DataSnapshot 為 compat-like 物件
- */
 function wrapSnapshot(snapshot) {
   return {
     val() {
@@ -219,20 +200,12 @@ function wrapSnapshot(snapshot) {
   };
 }
 
-/**
- * 包裝 Database 為 compat-like 物件
- */
 const databaseCompat = {
   ref(path) {
     return wrapRef(ref(database, path));
   },
 };
 
-/**
- * 包裝 Firestore 為 compat-like 物件
- * 支援：.collection(), .doc(), .add(), .set(), .get(), .update(), .delete(),
- *       .where(), .orderBy(), .limit(), .onSnapshot(), .batch()
- */
 function wrapDocRef(docReference) {
   return {
     get() {
@@ -292,7 +265,6 @@ function wrapQuerySnapshot(querySnap) {
 }
 
 function wrapCollectionRef(collRef, existingConstraints) {
-  // 收集鏈式約束
   const constraints = existingConstraints ? [...existingConstraints] : [];
   const baseRef = collRef;
 
@@ -346,7 +318,6 @@ const firestoreCompat = {
     const batch = writeBatch(getFirestoreInstance());
     return {
       delete(docRef) {
-        // 接受原始 ref 或包裝過的
         batch.delete(docRef.ref || docRef);
       },
       set(docRef, data, options) {
@@ -362,9 +333,6 @@ const firestoreCompat = {
   },
 };
 
-/**
- * 包裝 Auth 為 compat-like 物件
- */
 const authCompat = {
   signInAnonymously() {
     return signInAnonymously(auth);
@@ -384,7 +352,6 @@ const authCompat = {
 // 全域匯出 — 保持現有程式碼相容
 // ════════════════════════════════════════
 
-// 1. window.firebaseServices（主要介面）
 window.firebaseServices = {
   database: databaseCompat,
   auth: authCompat,
@@ -392,15 +359,11 @@ window.firebaseServices = {
   config: firebaseConfig,
 };
 
-// 2. window.firebase 命名空間（給直接使用 firebase.xxx 的程式碼）
 window.firebase = {
-  // app 已初始化，提供 apps 陣列讓 firebase.apps.length 檢查通過
   apps: [app],
   initializeApp() {
-    /* 已初始化，no-op */
     return app;
   },
-  // 雙重角色：firebase.auth() 呼叫 + firebase.auth.GoogleAuthProvider 靜態屬性
   auth: Object.assign(
     function () {
       return authCompat;
@@ -451,12 +414,10 @@ authCompat
   });
 
 function startRoomCleanup() {
-  // 抽樣：僅 20% 的客戶端執行清理，避免所有人同時拉取數據
   if (Math.random() > 0.2) {
     console.log("🧹 本次客戶端跳過房間清理（抽樣機制）");
     return;
   }
-  // 隨機延遲 0～30 秒，分散請求壓力
   var delay = Math.floor(Math.random() * 30000);
   setTimeout(function () {
     cleanupExpiredRooms();
@@ -469,7 +430,6 @@ async function cleanupExpiredRooms() {
     const now = Date.now();
     const roomsRef = databaseCompat.ref("rooms");
 
-    // 使用 orderByChild + endAt 精準查詢過期房間，而非拉取全部
     const snapshot = await roomsRef
       .orderByChild("expiresAt")
       .endAt(now)
