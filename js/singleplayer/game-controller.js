@@ -156,7 +156,7 @@ var GameController = (function () {
       var el = document.getElementById("dbg" + _debugPhase);
       if (el) {
         var label = { ISI: "⏱️ 題目間隔", Stim: "📷 圖片顯示", Grace: "⏳ 額外反應", Feedback: "💬 對錯回饋" };
-        el.textContent = (label[_debugPhase] || _debugPhase) + ": " + remaining + "ms";
+        el.textContent = (label[_debugPhase] || _debugPhase) + ": " + (remaining / 1000).toFixed(1) + "s";
         el.style.color = remaining > 0 ? "#51cf66" : "#ffd43b";
       }
     }, 16);
@@ -188,10 +188,10 @@ var GameController = (function () {
       var paramsEl = document.getElementById("dbgParams");
       if (paramsEl) {
         paramsEl.innerHTML =
-          "題目間隔=" + (params.isiMs != null ? params.isiMs : "—") + "ms<br>" +
-          "圖片顯示=" + (params.stimMs != null ? params.stimMs : "—") + "ms<br>" +
-          "額外反應=" + (params.graceMs != null ? params.graceMs : "—") + "ms<br>" +
-          "對錯回饋=" + (params.feedbackMs != null ? params.feedbackMs : "—") + "ms";
+          "題目間隔=" + (params.isiMs != null ? (params.isiMs / 1000).toFixed(1) : "—") + "s<br>" +
+          "圖片顯示=" + (params.stimMs != null ? (params.stimMs / 1000).toFixed(1) : "—") + "s<br>" +
+          "額外反應=" + (params.graceMs != null ? (params.graceMs / 1000).toFixed(1) : "—") + "s<br>" +
+          "對錯回饋=" + (params.feedbackMs != null ? (params.feedbackMs / 1000).toFixed(1) : "—") + "s";
       }
     }
   }

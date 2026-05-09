@@ -168,30 +168,30 @@
 
   /** 簡易引擎的時間參數表 */
   var SIMPLE_TIMING = {
-    1:  { stimulus: 4000, grace: 2000, isiMin: 1200, isiMax: 1800, feedback: 1500 },
-    2:  { stimulus: 3500, grace: 1700, isiMin: 1100, isiMax: 1600, feedback: 1300 },
-    3:  { stimulus: 3000, grace: 1400, isiMin: 1000, isiMax: 1500, feedback: 1200 },
-    4:  { stimulus: 2500, grace: 1100, isiMin: 900,  isiMax: 1300, feedback: 1000 },
-    5:  { stimulus: 2000, grace: 800,  isiMin: 800,  isiMax: 1200, feedback: 800 },
-    6:  { stimulus: 1800, grace: 700,  isiMin: 700,  isiMax: 1100, feedback: 700 },
-    7:  { stimulus: 1500, grace: 600,  isiMin: 600,  isiMax: 1000, feedback: 600 },
-    8:  { stimulus: 1300, grace: 500,  isiMin: 500,  isiMax: 900,  feedback: 500 },
-    9:  { stimulus: 1100, grace: 400,  isiMin: 400,  isiMax: 800,  feedback: 400 },
-    10: { stimulus: 900,  grace: 300,  isiMin: 300,  isiMax: 700,  feedback: 300 },
+    1:  { stimulus: 5000, grace: 3000, isiMin: 1500, isiMax: 2000, feedback: 2000 },
+    2:  { stimulus: 4500, grace: 2700, isiMin: 1400, isiMax: 1900, feedback: 1800 },
+    3:  { stimulus: 4000, grace: 2400, isiMin: 1300, isiMax: 1800, feedback: 1600 },
+    4:  { stimulus: 3000, grace: 1500, isiMin: 1000, isiMax: 1400, feedback: 1100 },
+    5:  { stimulus: 2000, grace: 1000, isiMin: 800,  isiMax: 1200, feedback: 800 },
+    6:  { stimulus: 1600, grace: 700,  isiMin: 700,  isiMax: 1000, feedback: 700 },
+    7:  { stimulus: 1200, grace: 500,  isiMin: 600,  isiMax: 900,  feedback: 600 },
+    8:  { stimulus: 900,  grace: 300,  isiMin: 500,  isiMax: 800,  feedback: 500 },
+    9:  { stimulus: 700,  grace: 150,  isiMin: 400,  isiMax: 600,  feedback: 400 },
+    10: { stimulus: 500,  grace: 0,    isiMin: 300,  isiMax: 500,  feedback: 300 },
   };
 
   /** 簡易引擎的工作記憶參數表 */
   var SIMPLE_WM = {
-    1:  { minPos: 2, maxPos: 2, reverse: 0.0, timeout: 90000 },
-    2:  { minPos: 2, maxPos: 3, reverse: 0.1, timeout: 80000 },
-    3:  { minPos: 2, maxPos: 3, reverse: 0.2, timeout: 70000 },
-    4:  { minPos: 2, maxPos: 4, reverse: 0.3, timeout: 60000 },
-    5:  { minPos: 2, maxPos: 4, reverse: 0.4, timeout: 55000 },
-    6:  { minPos: 2, maxPos: 5, reverse: 0.5, timeout: 50000 },
-    7:  { minPos: 3, maxPos: 5, reverse: 0.6, timeout: 45000 },
-    8:  { minPos: 3, maxPos: 6, reverse: 0.7, timeout: 40000 },
-    9:  { minPos: 3, maxPos: 6, reverse: 0.8, timeout: 35000 },
-    10: { minPos: 4, maxPos: 6, reverse: 0.9, timeout: 30000 },
+    1:  { minPos: 2, maxPos: 2, reverse: 0.0, timeout: 120000 },
+    2:  { minPos: 2, maxPos: 2, reverse: 0.0, timeout: 100000 },
+    3:  { minPos: 2, maxPos: 3, reverse: 0.1, timeout: 80000 },
+    4:  { minPos: 2, maxPos: 3, reverse: 0.2, timeout: 70000 },
+    5:  { minPos: 2, maxPos: 4, reverse: 0.3, timeout: 60000 },
+    6:  { minPos: 3, maxPos: 4, reverse: 0.4, timeout: 50000 },
+    7:  { minPos: 3, maxPos: 5, reverse: 0.5, timeout: 40000 },
+    8:  { minPos: 3, maxPos: 5, reverse: 0.7, timeout: 30000 },
+    9:  { minPos: 4, maxPos: 6, reverse: 0.8, timeout: 20000 },
+    10: { minPos: 4, maxPos: 6, reverse: 1.0, timeout: 15000 },
   };
 
   /** 渲染動態評量詳細面板 */
