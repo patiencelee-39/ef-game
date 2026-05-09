@@ -156,26 +156,42 @@
 
   /** 讀取 localStorage 存儲的難度等級 */
   function getStoredLevel() {
-    var lvStr = localStorage.getItem("ef_adaptive_level");
-    return lvStr ? parseInt(lvStr, 10) : 3;
+    try {
+      var raw = localStorage.getItem("ef_adaptive_level");
+      if (!raw) return 5;
+      var data = JSON.parse(raw);
+      var level = Number(data.level);
+      if (level >= 1 && level <= 10) return level;
+    } catch (e) { /* ignore */ }
+    return 5;
   }
 
   /** 簡易引擎的時間參數表 */
   var SIMPLE_TIMING = {
-    1: { stimulus: 3000, isiMin: 1000, isiMax: 1500, feedback: 1200 },
-    2: { stimulus: 2500, isiMin: 900, isiMax: 1300, feedback: 1000 },
-    3: { stimulus: 2000, isiMin: 800, isiMax: 1200, feedback: 800 },
-    4: { stimulus: 1500, isiMin: 600, isiMax: 1000, feedback: 600 },
-    5: { stimulus: 1200, isiMin: 500, isiMax: 800, feedback: 500 },
+    1:  { stimulus: 4000, grace: 2000, isiMin: 1200, isiMax: 1800, feedback: 1500 },
+    2:  { stimulus: 3500, grace: 1700, isiMin: 1100, isiMax: 1600, feedback: 1300 },
+    3:  { stimulus: 3000, grace: 1400, isiMin: 1000, isiMax: 1500, feedback: 1200 },
+    4:  { stimulus: 2500, grace: 1100, isiMin: 900,  isiMax: 1300, feedback: 1000 },
+    5:  { stimulus: 2000, grace: 800,  isiMin: 800,  isiMax: 1200, feedback: 800 },
+    6:  { stimulus: 1800, grace: 700,  isiMin: 700,  isiMax: 1100, feedback: 700 },
+    7:  { stimulus: 1500, grace: 600,  isiMin: 600,  isiMax: 1000, feedback: 600 },
+    8:  { stimulus: 1300, grace: 500,  isiMin: 500,  isiMax: 900,  feedback: 500 },
+    9:  { stimulus: 1100, grace: 400,  isiMin: 400,  isiMax: 800,  feedback: 400 },
+    10: { stimulus: 900,  grace: 300,  isiMin: 300,  isiMax: 700,  feedback: 300 },
   };
 
   /** 簡易引擎的工作記憶參數表 */
   var SIMPLE_WM = {
-    1: { minPos: 2, maxPos: 3, highlightMs: 1000, reverse: 0.5 },
-    2: { minPos: 2, maxPos: 4, highlightMs: 900, reverse: 0.6 },
-    3: { minPos: 2, maxPos: 6, highlightMs: 800, reverse: 0.7 },
-    4: { minPos: 3, maxPos: 6, highlightMs: 700, reverse: 0.8 },
-    5: { minPos: 3, maxPos: 6, highlightMs: 600, reverse: 0.9 },
+    1:  { minPos: 2, maxPos: 2, reverse: 0.0, timeout: 90000 },
+    2:  { minPos: 2, maxPos: 3, reverse: 0.1, timeout: 80000 },
+    3:  { minPos: 2, maxPos: 3, reverse: 0.2, timeout: 70000 },
+    4:  { minPos: 2, maxPos: 4, reverse: 0.3, timeout: 60000 },
+    5:  { minPos: 2, maxPos: 4, reverse: 0.4, timeout: 55000 },
+    6:  { minPos: 2, maxPos: 5, reverse: 0.5, timeout: 50000 },
+    7:  { minPos: 3, maxPos: 5, reverse: 0.6, timeout: 45000 },
+    8:  { minPos: 3, maxPos: 6, reverse: 0.7, timeout: 40000 },
+    9:  { minPos: 3, maxPos: 6, reverse: 0.8, timeout: 35000 },
+    10: { minPos: 4, maxPos: 6, reverse: 0.9, timeout: 30000 },
   };
 
   /** 渲染動態評量詳細面板 */
@@ -200,29 +216,34 @@
     var t = SIMPLE_TIMING[lv];
     var w = SIMPLE_WM[lv];
 
-    // 星星
-    var stars = "";
-    for (var i = 1; i <= 5; i++) {
-      stars += i <= lv ? "⭐" : "☆";
-    }
-    document.getElementById("edLevelStars").textContent = stars;
-    document.getElementById("edLevelTag").textContent = "Level " + lv;
+    // 等級顯示（改用數字而非星星，10顆太多）
+    document.getElementById("edLevelStars").textContent = "Level " + lv + " / 10";
+    document.getElementById("edLevelTag").textContent = "";
 
-    // 進度條百分比（L1=0%, L5=100%）
-    var pct = ((lv - 1) / 4) * 100;
+    // 進度條百分比（L1=0%, L10=100%）
+    var pct = ((lv - 1) / 9) * 100;
 
     document.getElementById("edBarStimulus").style.width = pct + "%";
     document.getElementById("edValStimulus").textContent = (t.stimulus / 1000).toFixed(1) + " 秒";
 
+    document.getElementById("edBarGrace").style.width = pct + "%";
+    document.getElementById("edValGrace").textContent = (t.grace / 1000).toFixed(1) + " 秒";
+
     document.getElementById("edBarIsi").style.width = pct + "%";
     document.getElementById("edValIsi").textContent =
       (t.isiMin / 1000).toFixed(1) + "～" + (t.isiMax / 1000).toFixed(1) + " 秒";
+
+    document.getElementById("edBarFeedback").style.width = pct + "%";
+    document.getElementById("edValFeedback").textContent = (t.feedback / 1000).toFixed(1) + " 秒";
 
     document.getElementById("edBarWmPos").style.width = pct + "%";
     document.getElementById("edValWmPos").textContent = w.minPos + "～" + w.maxPos + " 個";
 
     document.getElementById("edBarReverse").style.width = pct + "%";
     document.getElementById("edValReverse").textContent = Math.round(w.reverse * 100) + "%";
+
+    document.getElementById("edBarTimeout").style.width = pct + "%";
+    document.getElementById("edValTimeout").textContent = (w.timeout / 1000).toFixed(0) + " 秒";
 
     // 完整參數表的當前等級高亮
     var table = panel.querySelector(".engine-detail-table");

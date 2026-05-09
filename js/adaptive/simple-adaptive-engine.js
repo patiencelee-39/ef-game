@@ -5,32 +5,13 @@
  * 對應：IRT/DA 整合 Phase 5B（簡化版）
  *
  * 規則：
- *   - 連對 2 題 → 難度 +1（上限 5）
+ *   - 連對 2 題 → 難度 +1（上限 10）
  *   - 連錯 2 題 → 難度 −1（下限 1）
- *   - 5 級難度（Level 1 = 最簡單, Level 5 = 最困難）
- *   - 預設 Level 3 = 與 GAME_CONFIG 現有值一致
+ *   - 10 級難度（Level 1 = 最簡單, Level 10 = 最困難）
+ *   - 預設 Level 5 = 與 GAME_CONFIG 現有值一致
  *
- * 調整的參數（時間面）：
- *   ┌────────┬──────────────┬──────────┬──────────┬──────────┬──────────┐
- *   │  Level │ stimulusDur  │ isiMin   │ isiMax   │ feedback │ countdown│
- *   ├────────┼──────────────┼──────────┼──────────┼──────────┼──────────┤
- *   │  1     │ 3000 ms      │ 1000 ms  │ 1500 ms  │ 1200 ms  │ 3 s      │
- *   │  2     │ 2500 ms      │  900 ms  │ 1300 ms  │ 1000 ms  │ 3 s      │
- *   │  3     │ 2000 ms (預設)│ 800 ms  │ 1200 ms  │  800 ms  │ 3 s      │
- *   │  4     │ 1500 ms      │  600 ms  │ 1000 ms  │  600 ms  │ 3 s      │
- *   │  5     │ 1200 ms      │  500 ms  │  800 ms  │  500 ms  │ 3 s      │
- *   └────────┴──────────────┴──────────┴──────────┴──────────┴──────────┘
- *
- * 調整的參數（WM 面）：
- *   ┌────────┬──────────────┬────────────────┬──────────────────┐
- *   │  Level │ minPositions │ maxPositions   │ highlightDur     │
- *   ├────────┼──────────────┼────────────────┼──────────────────┤
- *   │  1     │ 2            │ 3              │ 1000 ms          │
- *   │  2     │ 2            │ 4              │  900 ms          │
- *   │  3     │ 2 (預設)     │ 6 (預設)       │  800 ms (預設)   │
- *   │  4     │ 3            │ 6              │  700 ms          │
- *   │  5     │ 3            │ 6              │  600 ms          │
- *   └────────┴──────────────┴────────────────┴──────────────────┘
+ * 調整的參數：見下方 LEVEL_TIMING（時間面 6 項）及 LEVEL_WM（WM 面 4 項）
+ * Level 5 = 與 GAME_CONFIG 預設值一致
  *
  * 低耦合設計：
  *   - 本檔案不認識 DOM / 遊戲流程 / 任何 HTML
@@ -55,10 +36,10 @@ var SimpleAdaptiveEngine = (function () {
 
   /** 難度範圍 */
   var MIN_LEVEL = 1;
-  var MAX_LEVEL = 5;
+  var MAX_LEVEL = 10;
 
   /** 預設起始難度（= 原本 GAME_CONFIG 的值） */
-  var DEFAULT_LEVEL = 3;
+  var DEFAULT_LEVEL = 5;
 
   // =========================================
   // 5 級參數表
@@ -70,38 +51,83 @@ var SimpleAdaptiveEngine = (function () {
    */
   var LEVEL_TIMING = {
     1: {
+      stimulusDurationMs: 4000,
+      responseGraceMs: 2000,
+      isiMinMs: 1200,
+      isiMaxMs: 1800,
+      feedbackDurationMs: 1500,
+      countdownSeconds: 3,
+    },
+    2: {
+      stimulusDurationMs: 3500,
+      responseGraceMs: 1700,
+      isiMinMs: 1100,
+      isiMaxMs: 1600,
+      feedbackDurationMs: 1300,
+      countdownSeconds: 3,
+    },
+    3: {
       stimulusDurationMs: 3000,
+      responseGraceMs: 1400,
       isiMinMs: 1000,
       isiMaxMs: 1500,
       feedbackDurationMs: 1200,
       countdownSeconds: 3,
     },
-    2: {
+    4: {
       stimulusDurationMs: 2500,
+      responseGraceMs: 1100,
       isiMinMs: 900,
       isiMaxMs: 1300,
       feedbackDurationMs: 1000,
       countdownSeconds: 3,
     },
-    3: {
+    5: {
       stimulusDurationMs: 2000,
+      responseGraceMs: 800,
       isiMinMs: 800,
       isiMaxMs: 1200,
       feedbackDurationMs: 800,
       countdownSeconds: 3,
     },
-    4: {
+    6: {
+      stimulusDurationMs: 1800,
+      responseGraceMs: 700,
+      isiMinMs: 700,
+      isiMaxMs: 1100,
+      feedbackDurationMs: 700,
+      countdownSeconds: 3,
+    },
+    7: {
       stimulusDurationMs: 1500,
+      responseGraceMs: 600,
       isiMinMs: 600,
       isiMaxMs: 1000,
       feedbackDurationMs: 600,
       countdownSeconds: 3,
     },
-    5: {
-      stimulusDurationMs: 1200,
+    8: {
+      stimulusDurationMs: 1300,
+      responseGraceMs: 500,
       isiMinMs: 500,
-      isiMaxMs: 800,
+      isiMaxMs: 900,
       feedbackDurationMs: 500,
+      countdownSeconds: 3,
+    },
+    9: {
+      stimulusDurationMs: 1100,
+      responseGraceMs: 400,
+      isiMinMs: 400,
+      isiMaxMs: 800,
+      feedbackDurationMs: 400,
+      countdownSeconds: 3,
+    },
+    10: {
+      stimulusDurationMs: 900,
+      responseGraceMs: 300,
+      isiMinMs: 300,
+      isiMaxMs: 700,
+      feedbackDurationMs: 300,
       countdownSeconds: 3,
     },
   };
@@ -110,11 +136,16 @@ var SimpleAdaptiveEngine = (function () {
    * 每一級的 WM 參數
    */
   var LEVEL_WM = {
-    1: { minPositions: 2, maxPositions: 3, highlightDurationMs: 1000, reverseProbability: 0.5 },
-    2: { minPositions: 2, maxPositions: 4, highlightDurationMs: 900, reverseProbability: 0.6 },
-    3: { minPositions: 2, maxPositions: 6, highlightDurationMs: 800, reverseProbability: 0.7 },
-    4: { minPositions: 3, maxPositions: 6, highlightDurationMs: 700, reverseProbability: 0.8 },
-    5: { minPositions: 3, maxPositions: 6, highlightDurationMs: 600, reverseProbability: 0.9 },
+    1:  { minPositions: 2, maxPositions: 2, reverseProbability: 0.0, responseTimeoutMs: 90000 },
+    2:  { minPositions: 2, maxPositions: 3, reverseProbability: 0.1, responseTimeoutMs: 80000 },
+    3:  { minPositions: 2, maxPositions: 3, reverseProbability: 0.2, responseTimeoutMs: 70000 },
+    4:  { minPositions: 2, maxPositions: 4, reverseProbability: 0.3, responseTimeoutMs: 60000 },
+    5:  { minPositions: 2, maxPositions: 4, reverseProbability: 0.4, responseTimeoutMs: 55000 },
+    6:  { minPositions: 2, maxPositions: 5, reverseProbability: 0.5, responseTimeoutMs: 50000 },
+    7:  { minPositions: 3, maxPositions: 5, reverseProbability: 0.6, responseTimeoutMs: 45000 },
+    8:  { minPositions: 3, maxPositions: 6, reverseProbability: 0.7, responseTimeoutMs: 40000 },
+    9:  { minPositions: 3, maxPositions: 6, reverseProbability: 0.8, responseTimeoutMs: 35000 },
+    10: { minPositions: 4, maxPositions: 6, reverseProbability: 0.9, responseTimeoutMs: 30000 },
   };
 
   // =========================================
@@ -242,7 +273,7 @@ var SimpleAdaptiveEngine = (function () {
       // 淺拷貝以防外部修改
       return {
         stimulusDurationMs: params.stimulusDurationMs,
-        responseGraceMs: timing.RESPONSE_GRACE_MS || 1000,
+        responseGraceMs: params.responseGraceMs,
         isiMinMs: params.isiMinMs,
         isiMaxMs: params.isiMaxMs,
         feedbackDurationMs: params.feedbackDurationMs,
@@ -321,10 +352,10 @@ var SimpleAdaptiveEngine = (function () {
       return {
         positions: positions,
         direction: direction,
-        reverseProbability: lvl.reverseProbability || wm.REVERSE_PROBABILITY || 0.5,
-        highlightDurationMs: lvl.highlightDurationMs,
+        reverseProbability: lvl.reverseProbability,
+        highlightDurationMs: wm.HIGHLIGHT_DURATION_MS || 800,
         highlightIntervalMs: wm.HIGHLIGHT_INTERVAL_MS || 400,
-        responseTimeoutMs: wm.RESPONSE_TIMEOUT_MS || 60000,
+        responseTimeoutMs: lvl.responseTimeoutMs,
       };
     },
 

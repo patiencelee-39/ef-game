@@ -22,7 +22,7 @@ const ADVENTURE_MAPS = [
         rule: "rule1",
         hasWM: false,
         questionsCount: 12,
-        label: "① 規則一",
+        label: "① 城市",
       },
       {
         id: "mouse_r1_wm",
@@ -30,7 +30,7 @@ const ADVENTURE_MAPS = [
         rule: "rule1",
         hasWM: true,
         questionsCount: 12,
-        label: "② 規則一 + 🧠WM",
+        label: "② 洞穴",
       },
       {
         id: "mouse_r2",
@@ -38,7 +38,7 @@ const ADVENTURE_MAPS = [
         rule: "rule2",
         hasWM: false,
         questionsCount: 12,
-        label: "③ 規則二",
+        label: "③ 森林",
       },
       {
         id: "mouse_r2_wm",
@@ -46,7 +46,7 @@ const ADVENTURE_MAPS = [
         rule: "rule2",
         hasWM: true,
         questionsCount: 12,
-        label: "④ 規則二 + 🧠WM",
+        label: "④ 村莊",
       },
       {
         id: "mouse_mixed",
@@ -54,7 +54,7 @@ const ADVENTURE_MAPS = [
         rule: "mixed",
         hasWM: false,
         questionsCount: 12,
-        label: "⑤ 混合規則",
+        label: "⑤ 村莊",
       },
       {
         id: "mouse_mixed_wm",
@@ -62,7 +62,7 @@ const ADVENTURE_MAPS = [
         rule: "mixed",
         hasWM: true,
         questionsCount: 12,
-        label: "⑥ 混合規則 + 🧠WM",
+        label: "⑥ 首都",
       },
     ],
   },
@@ -78,7 +78,7 @@ const ADVENTURE_MAPS = [
         rule: "rule1",
         hasWM: false,
         questionsCount: 12,
-        label: "⑦ 規則一",
+        label: "⑦ 小鎮",
       },
       {
         id: "fishing_r1_wm",
@@ -86,7 +86,7 @@ const ADVENTURE_MAPS = [
         rule: "rule1",
         hasWM: true,
         questionsCount: 12,
-        label: "⑧ 規則一 + 🧠WM",
+        label: "⑧ 港口",
       },
       {
         id: "fishing_r2",
@@ -94,7 +94,7 @@ const ADVENTURE_MAPS = [
         rule: "rule2",
         hasWM: false,
         questionsCount: 12,
-        label: "⑨ 規則二",
+        label: "⑨ 港口",
       },
       {
         id: "fishing_r2_wm",
@@ -102,7 +102,7 @@ const ADVENTURE_MAPS = [
         rule: "rule2",
         hasWM: true,
         questionsCount: 12,
-        label: "⑩ 規則二 + 🧠WM",
+        label: "⑩ 帆船",
       },
       {
         id: "fishing_mixed",
@@ -110,7 +110,7 @@ const ADVENTURE_MAPS = [
         rule: "mixed",
         hasWM: false,
         questionsCount: 12,
-        label: "⑪ 混合規則",
+        label: "⑪ 村莊",
       },
       {
         id: "fishing_mixed_wm",
@@ -118,7 +118,7 @@ const ADVENTURE_MAPS = [
         rule: "mixed",
         hasWM: true,
         questionsCount: 12,
-        label: "⑫ 混合規則 + 🧠WM",
+        label: "⑫ 山脈",
       },
     ],
   },
