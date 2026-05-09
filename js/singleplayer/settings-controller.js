@@ -372,13 +372,13 @@
 
   var SP_DEFAULTS = {
     stimulusMs: 2000,
-    graceMs: 500,
+    graceMs: 1000,
     isiMinMs: 800,
     isiMaxMs: 1200,
     feedbackMs: 800,
     wmMinPos: 2,
-    wmMaxPos: 6,
-    wmReverse: 50,
+    wmMaxPos: 4,
+    wmReverse: 30,
     wmTimeoutMs: 60000,
   };
 
@@ -448,6 +448,7 @@
   function resetStaticParams() {
     try {
       localStorage.removeItem(SP_KEY);
+      localStorage.removeItem("ef_adaptive_streak");
     } catch (e) { /* ignore */ }
 
     SP_FIELDS.forEach(function (f) {
@@ -455,6 +456,12 @@
       if (el) el.value = SP_DEFAULTS[f.key];
     });
 
+    // 重設 streak threshold 回預設值 2
+    if (typeof SimpleAdaptiveEngine !== "undefined" && SimpleAdaptiveEngine.setStreakThreshold) {
+      SimpleAdaptiveEngine.setStreakThreshold(2);
+    }
+    var streakInput = document.getElementById("edStreakInput");
+    if (streakInput) streakInput.value = 2;
   }
 
   // =========================================
