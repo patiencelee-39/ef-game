@@ -120,7 +120,7 @@ var GameController = (function () {
     var enabled = localStorage.getItem("ef_monitor_enabled");
     if (enabled === "false") return;
 
-    var opacity = 0.85;
+    var opacity = 0.30;
     try {
       var saved = localStorage.getItem("ef_monitor_opacity");
       if (saved != null) opacity = parseFloat(saved);

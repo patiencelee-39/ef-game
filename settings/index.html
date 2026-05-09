@@ -130,11 +130,11 @@
           </label>
         </div>
         <div class="settings-item">
-          <span class="settings-item__label">👁️ 監控面板透明度</span>
+          <span class="settings-item__label">👁️ 時間流程監控面板透明度</span>
           <div class="count-input-row">
             <input type="number" class="count-input" id="spMonitorOpacity"
-              min="0" max="100" step="5" value="85"
-              aria-label="監控面板透明度"
+              min="0" max="100" step="5" value="30"
+              aria-label="時間流程監控面板透明度"
               onchange="saveMonitorOpacity(this.value)" />
             <span style="color:rgba(255,255,255,0.5);font-size:0.8rem">%（0=全透明, 100=不透明）</span>
           </div>
@@ -144,13 +144,13 @@
           <span class="settings-item__label">🧠 難度調整模式</span>
           <div class="engine-selector" id="engineSelector">
             <button class="engine-btn" data-engine="static" title="固定難度，不隨表現調整">📊 固定</button>
-            <button class="engine-btn active" data-engine="simple" title="連對升級、連錯降級（預設）">🎯 動態評量</button>
+            <button class="engine-btn active" data-engine="simple" title="連對升級、連錯降級（預設）">🎯 動態</button>
             <!-- [隱藏] IRT 引擎功能尚未完善，待未來優化後再開放 -->
             <!-- <button class="engine-btn" data-engine="irt" title="IRT 智慧分析，依能力精準選題">🧠 IRT</button> -->
           </div>
           <p class="settings-item__hint" id="engineHint">
             📊 固定：難度不變，適合標準化測驗<br>
-            🎯 動態評量：連續答對自動升級、連錯降級（推薦）
+            🎯 動態：連續答對自動升級、連錯降級（推薦）
             <!-- [隱藏] IRT 說明，與按鈕同步隱藏 -->
             <!-- <br>🧠 IRT：根據試題反應理論(Item Response Theory)即時估計能力值，智慧選題 -->
           </p>
@@ -262,6 +262,15 @@
             <div class="engine-detail-level">
               目前等級：<span id="edLevelStars">Level 5 / 10</span>
               <span class="engine-detail-level-tag" id="edLevelTag"></span>
+            </div>
+
+            <div class="engine-detail-streak" style="margin:12px 0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <span style="color:rgba(255,255,255,0.8);font-size:0.9rem;">連對/連錯</span>
+              <input type="number" id="edStreakInput" class="count-input"
+                min="1" max="10" step="1" value="2"
+                style="width:50px;text-align:center;"
+                aria-label="連續題數門檻" />
+              <span style="color:rgba(255,255,255,0.8);font-size:0.9rem;">題 → 升/降一級</span>
             </div>
 
             <div class="engine-detail-bar-group">

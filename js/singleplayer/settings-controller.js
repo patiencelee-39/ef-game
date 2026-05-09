@@ -199,7 +199,7 @@
     return { timing: timing, wm: wm };
   }
 
-  /** 渲染動態評量詳細面板 */
+  /** 渲染動態詳細面板 */
   function renderEngineDetailPanel(engine) {
     var panel = document.getElementById("engineDetailPanel");
     var staticPanel = document.getElementById("staticDetailPanel");
@@ -209,7 +209,7 @@
       staticPanel.style.display = (engine === "static") ? "" : "none";
     }
 
-    // 動態評量面板
+    // 動態面板
     if (!panel) return;
     if (engine !== "simple") {
       panel.style.display = "none";
@@ -219,11 +219,28 @@
 
     // 更新規則說明文字
     var ruleText = document.getElementById("edRuleText");
-    if (ruleText) {
-      ruleText.textContent = "※ 連對 " + SimpleAdaptiveEngine.STREAK_THRESHOLD +
-        " 題升一級，連錯 " + SimpleAdaptiveEngine.STREAK_THRESHOLD +
+    if (ruleText && typeof SimpleAdaptiveEngine !== "undefined") {
+      var streak = SimpleAdaptiveEngine.getStreakThreshold();
+      ruleText.textContent = "※ 連對 " + streak +
+        " 題升一級，連錯 " + streak +
         " 題降一級（Level " + SimpleAdaptiveEngine.MIN_LEVEL + "～" +
         SimpleAdaptiveEngine.MAX_LEVEL + "）";
+    }
+
+    // streak threshold 從引擎抓值
+    var streakInput = document.getElementById("edStreakInput");
+    if (streakInput && typeof SimpleAdaptiveEngine !== "undefined") {
+      streakInput.value = SimpleAdaptiveEngine.getStreakThreshold();
+      streakInput.onchange = function () {
+        var val = parseInt(streakInput.value, 10);
+        if (isNaN(val) || val < 1) val = 1;
+        if (val > 10) val = 10;
+        streakInput.value = val;
+        SimpleAdaptiveEngine.setStreakThreshold(val);
+        showToast("🎯 連續 " + val + " 題觸發升/降級");
+        // 重新渲染（更新規則文字）
+        renderEngineDetailPanel("simple");
+      };
     }
 
     var lv = getStoredLevel();
@@ -459,7 +476,7 @@
     var el = document.getElementById("spMonitorOpacity");
     if (!el) return;
     var saved = localStorage.getItem("ef_monitor_opacity");
-    el.value = saved != null ? Math.round(parseFloat(saved) * 100) : 85;
+    el.value = saved != null ? Math.round(parseFloat(saved) * 100) : 30;
   }
 
   window.saveMonitorOpacity = function (val) {
@@ -648,7 +665,7 @@
     if (btnClearCache)
       btnClearCache.addEventListener("click", handleClearCache);
 
-    // --- 動態評量完整參數表展開 ---
+    // --- 動態完整參數表展開 ---
     var edToggle = document.getElementById("edToggleTable");
     var edTableWrap = document.getElementById("edTableWrap");
     if (edToggle && edTableWrap) {

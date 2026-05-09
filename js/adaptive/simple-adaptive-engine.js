@@ -31,8 +31,22 @@ var SimpleAdaptiveEngine = (function () {
 
   var ENGINE_NAME = "SimpleAdaptiveEngine";
 
-  /** 連續答對/答錯幾題觸發難度變化 */
+  /** 連續答對/答錯幾題觸發難度變化（可由玩家設定） */
   var STREAK_THRESHOLD = 2;
+  var STREAK_STORAGE_KEY = "ef_adaptive_streak";
+
+  function _loadStreak() {
+    try {
+      var val = localStorage.getItem(STREAK_STORAGE_KEY);
+      if (val != null) {
+        var n = parseInt(val, 10);
+        if (n >= 1 && n <= 10) return n;
+      }
+    } catch (e) { /* ignore */ }
+    return 2;
+  }
+
+  STREAK_THRESHOLD = _loadStreak();
 
   /** 難度範圍 */
   var MIN_LEVEL = 1;
@@ -412,6 +426,7 @@ var SimpleAdaptiveEngine = (function () {
      */
     reset: function () {
       _level = _loadLevel();
+      STREAK_THRESHOLD = _loadStreak();
       _consecutiveCorrect = 0;
       _consecutiveIncorrect = 0;
       _levelHistory = [];
@@ -468,10 +483,28 @@ var SimpleAdaptiveEngine = (function () {
     },
 
     /** 常數匯出（供外部參考） */
-    STREAK_THRESHOLD: STREAK_THRESHOLD,
+    get STREAK_THRESHOLD() { return STREAK_THRESHOLD; },
     MIN_LEVEL: MIN_LEVEL,
     MAX_LEVEL: MAX_LEVEL,
     DEFAULT_LEVEL: DEFAULT_LEVEL,
+
+    /**
+     * 設定連對/連錯觸發門檻
+     * @param {number} n - 1~10
+     */
+    setStreakThreshold: function (n) {
+      var val = parseInt(n, 10);
+      if (isNaN(val) || val < 1) val = 1;
+      if (val > 10) val = 10;
+      STREAK_THRESHOLD = val;
+      try {
+        localStorage.setItem(STREAK_STORAGE_KEY, String(val));
+      } catch (e) { /* ignore */ }
+    },
+
+    getStreakThreshold: function () {
+      return STREAK_THRESHOLD;
+    },
   };
 })();
 

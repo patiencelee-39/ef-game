@@ -557,6 +557,18 @@ function renderMap(mapIndex) {
 
     el.appendChild(circle);
 
+    // WM 圖示（有工作記憶測驗的關卡）
+    if (point.hasWM) {
+      var wmIcon = document.createElement("img");
+      wmIcon.src = "../images/brain1.svg";
+      wmIcon.className = "point-wm-icon";
+      wmIcon.setAttribute("aria-hidden", "true");
+      wmIcon.alt = "";
+      wmIcon.style.cssText =
+        "position:absolute;top:-6px;right:-6px;width:20px;height:20px;pointer-events:none;";
+      el.appendChild(wmIcon);
+    }
+
     // 標籤
     var label = document.createElement("div");
     label.className = "point-label";
