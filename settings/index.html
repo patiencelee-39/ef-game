@@ -161,7 +161,7 @@
 
             <div class="engine-static-params">
               <div class="engine-param-row">
-                <span class="engine-param-label">📷 圖片顯示時間</span>
+                <span class="engine-param-label" data-param-key="stimulus"></span>
                 <span class="engine-param-desc">每張刺激圖片在畫面上停留多久</span>
                 <div class="engine-param-input-group">
                   <input type="number" class="engine-param-input" id="spStimulus"
@@ -171,7 +171,7 @@
               </div>
 
               <div class="engine-param-row">
-                <span class="engine-param-label">💬 對錯反饋時間</span>
+                <span class="engine-param-label" data-param-key="feedback"></span>
                 <span class="engine-param-desc">顯示「答對✓」或「答錯✗」畫面的持續時間</span>
                 <div class="engine-param-input-group">
                   <input type="number" class="engine-param-input" id="spFeedback"
@@ -181,7 +181,7 @@
               </div>
 
               <div class="engine-param-row">
-                <span class="engine-param-label">⏱️ 題目間隔（最短）</span>
+                <span class="engine-param-label" data-param-key="isi"></span>
                 <span class="engine-param-desc">上一題結束到下一題出現的最短等待時間</span>
                 <div class="engine-param-input-group">
                   <input type="number" class="engine-param-input" id="spIsiMin"
@@ -191,7 +191,7 @@
               </div>
 
               <div class="engine-param-row">
-                <span class="engine-param-label">⏱️ 題目間隔（最長）</span>
+                <span class="engine-param-label" data-param-key="isi"></span>
                 <span class="engine-param-desc">上一題結束到下一題出現的最長等待時間（隨機取值）</span>
                 <div class="engine-param-input-group">
                   <input type="number" class="engine-param-input" id="spIsiMax"
@@ -201,7 +201,7 @@
               </div>
 
               <div class="engine-param-row">
-                <span class="engine-param-label">⏳ 圖片消失後額外反應時間</span>
+                <span class="engine-param-label" data-param-key="grace"></span>
                 <span class="engine-param-desc">圖片消失後，孩子仍可按按鈕的寬限時間</span>
                 <div class="engine-param-input-group">
                   <input type="number" class="engine-param-input" id="spGrace"
@@ -211,7 +211,7 @@
               </div>
 
               <div class="engine-param-row">
-                <span class="engine-param-label">🎯 Go/No-Go 比例</span>
+                <span class="engine-param-label" data-param-key="goRatio"></span>
                 <span class="engine-param-desc">有多少機率出現「Go」題目（其餘為「No-Go」）</span>
                 <div class="engine-param-input-group">
                   <input type="number" class="engine-param-input" id="spGoRatio"
@@ -221,7 +221,7 @@
               </div>
 
               <div class="engine-param-row">
-                <span class="engine-param-label">🧠 WM廣度（最少）</span>
+                <span class="engine-param-label" data-param-key="wmPos"></span>
                 <span class="engine-param-desc">記憶遊戲中，最少要記幾個格子的位置</span>
                 <div class="engine-param-input-group">
                   <input type="number" class="engine-param-input" id="spWmMin"
@@ -231,7 +231,7 @@
               </div>
 
               <div class="engine-param-row">
-                <span class="engine-param-label">🧠 WM廣度（最多）</span>
+                <span class="engine-param-label" data-param-key="wmPos"></span>
                 <span class="engine-param-desc">記憶遊戲中，最多要記幾個格子的位置（隨機取值）</span>
                 <div class="engine-param-input-group">
                   <input type="number" class="engine-param-input" id="spWmMax"
@@ -241,7 +241,7 @@
               </div>
 
               <div class="engine-param-row">
-                <span class="engine-param-label">🔄 逆向回憶機率</span>
+                <span class="engine-param-label" data-param-key="reverse"></span>
                 <span class="engine-param-desc">記憶遊戲中，要求孩子「倒著回想」的機率</span>
                 <div class="engine-param-input-group">
                   <input type="number" class="engine-param-input" id="spReverse"
@@ -283,7 +283,7 @@
 
             <div class="engine-detail-bar-group">
               <div class="engine-detail-bar-row">
-                <span class="engine-detail-bar-label">📷 圖片顯示</span>
+                <span class="engine-detail-bar-label" data-param-key="stimulus"></span>
                 <div class="engine-detail-bar-track">
                   <div class="engine-detail-bar-fill" id="edBarStimulus"></div>
                 </div>
@@ -291,7 +291,7 @@
               </div>
 
               <div class="engine-detail-bar-row">
-                <span class="engine-detail-bar-label">⏳ 額外反應</span>
+                <span class="engine-detail-bar-label" data-param-key="grace"></span>
                 <div class="engine-detail-bar-track">
                   <div class="engine-detail-bar-fill" id="edBarGrace"></div>
                 </div>
@@ -299,7 +299,7 @@
               </div>
 
               <div class="engine-detail-bar-row">
-                <span class="engine-detail-bar-label">⏱️  題目間隔</span>
+                <span class="engine-detail-bar-label" data-param-key="isi"></span>
                 <div class="engine-detail-bar-track">
                   <div class="engine-detail-bar-fill" id="edBarIsi"></div>
                 </div>
@@ -307,7 +307,7 @@
               </div>
 
               <div class="engine-detail-bar-row">
-                <span class="engine-detail-bar-label">💬 對錯反饋</span>
+                <span class="engine-detail-bar-label" data-param-key="feedback"></span>
                 <div class="engine-detail-bar-track">
                   <div class="engine-detail-bar-fill" id="edBarFeedback"></div>
                 </div>
@@ -315,7 +315,7 @@
               </div>
 
               <div class="engine-detail-bar-row">
-                <span class="engine-detail-bar-label">🎯 Go 比例</span>
+                <span class="engine-detail-bar-label" data-param-key="goRatio"></span>
                 <div class="engine-detail-bar-track">
                   <div class="engine-detail-bar-fill" id="edBarGoRatio"></div>
                 </div>
@@ -323,7 +323,7 @@
               </div>
 
               <div class="engine-detail-bar-row">
-                <span class="engine-detail-bar-label">🧠 WM廣度</span>
+                <span class="engine-detail-bar-label" data-param-key="wmPos"></span>
                 <div class="engine-detail-bar-track">
                   <div class="engine-detail-bar-fill" id="edBarWmPos"></div>
                 </div>
@@ -331,7 +331,7 @@
               </div>
 
               <div class="engine-detail-bar-row">
-                <span class="engine-detail-bar-label">🔄 逆向機率</span>
+                <span class="engine-detail-bar-label" data-param-key="reverse"></span>
                 <div class="engine-detail-bar-track">
                   <div class="engine-detail-bar-fill" id="edBarReverse"></div>
                 </div>

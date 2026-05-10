@@ -20,6 +20,18 @@
   var importFileInput = document.getElementById("importFileInput");
   var toast = document.getElementById("toast");
 
+  // ----- 參數標籤常數（改一處，處處同步） -----
+  var PARAM_LABELS = {
+    stimulus:  "📷 圖片呈現",
+    feedback:  "💬 反饋時間",
+    isi:       "⏱️ 試題間隔",
+    grace:     "⏳ 額外反應時間",
+    goRatio:   "🎯 Go比例",
+    wmPos:     "🧠 WM廣度",
+    reverse:   "🔄 逆向機率",
+    wmTimeout: "⏰ WM作答時間"
+  };
+
   // ----- 初始化 -----
   function init() {
     loadPlayerInfo();
@@ -211,6 +223,14 @@
     // 固定模式面板
     if (staticPanel) {
       staticPanel.style.display = (engine === "static") ? "" : "none";
+      
+      // 填入固定模式的 data-param-key（改一處，處處同步）
+      if (engine === "static") {
+        staticPanel.querySelectorAll("[data-param-key]").forEach(function(el) {
+          var key = el.getAttribute("data-param-key");
+          el.textContent = PARAM_LABELS[key] || "";
+        });
+      }
     }
 
     // 動態面板
@@ -220,6 +240,12 @@
       return;
     }
     panel.style.display = "";
+
+    // 填入 data-param-key 的文字標籤（改一處，處處同步）
+    panel.querySelectorAll("[data-param-key]").forEach(function(el) {
+      var key = el.getAttribute("data-param-key");
+      el.textContent = PARAM_LABELS[key] || "";
+    });
 
     // 更新規則說明文字
     var ruleText = document.getElementById("edRuleText");
@@ -301,49 +327,49 @@
       html += "</tr></thead><tbody>";
 
       // 📷 圖片呈現
-      html += "<tr><td>📷 圖片呈現</td>";
+      html += "<tr><td>" + PARAM_LABELS.stimulus + "</td>";
       for (var i = 1; i <= maxLv; i++) {
         html += "<td>" + (data.timing[i].stimulus / 1000).toFixed(1) + "s</td>";
       }
       html += "</tr>";
 
       // 🎯 Go 比例
-      html += "<tr><td>🎯 Go比例</td>";
+      html += "<tr><td>" + PARAM_LABELS.goRatio + "</td>";
       for (var i = 1; i <= maxLv; i++) {
         html += "<td>" + Math.round(data.timing[i].goRatio * 100) + "%</td>";
       }
       html += "</tr>";
 
       // ⏳ 額外反應時間
-      html += "<tr><td>⏳ 額外反應時間</td>";
+      html += "<tr><td>" + PARAM_LABELS.grace + "</td>";
       for (var i = 1; i <= maxLv; i++) {
         html += "<td>" + (data.timing[i].grace / 1000).toFixed(2).replace(/0$/, "") + "s</td>";
       }
       html += "</tr>";
 
       // ⏱️ 試題間隔
-      html += "<tr><td>⏱️ 試題間隔</td>";
+      html += "<tr><td>" + PARAM_LABELS.isi + "</td>";
       for (var i = 1; i <= maxLv; i++) {
         html += "<td>" + (data.timing[i].isiMin / 1000).toFixed(1) + "～" + (data.timing[i].isiMax / 1000).toFixed(1) + "s</td>";
       }
       html += "</tr>";
 
       // 💬 反饋時間
-      html += "<tr><td>💬 反饋時間</td>";
+      html += "<tr><td>" + PARAM_LABELS.feedback + "</td>";
       for (var i = 1; i <= maxLv; i++) {
         html += "<td>" + (data.timing[i].feedback / 1000).toFixed(1) + "s</td>";
       }
       html += "</tr>";
 
       // 🧠 WM廣度
-      html += "<tr><td>🧠 WM廣度</td>";
+      html += "<tr><td>" + PARAM_LABELS.wmPos + "</td>";
       for (var i = 1; i <= maxLv; i++) {
         html += "<td>" + data.wm[i].minPos + "～" + data.wm[i].maxPos + "</td>";
       }
       html += "</tr>";
 
       // 🔄 逆向
-      html += "<tr><td>🔄 逆向</td>";
+      html += "<tr><td>" + PARAM_LABELS.reverse + "</td>";
       for (var i = 1; i <= maxLv; i++) {
         html += "<td>" + Math.round(data.wm[i].reverse * 100) + "%</td>";
       }

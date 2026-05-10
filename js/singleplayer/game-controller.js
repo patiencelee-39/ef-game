@@ -149,6 +149,9 @@ var GameController = (function () {
       document.body.appendChild(_debugPanel);
     }
 
+    // 防止 interval 重複堆疊
+    if (_debugInterval) clearInterval(_debugInterval);
+
     _debugInterval = setInterval(function () {
       if (!_debugPhase || !_debugPhaseStart) return;
       var elapsed = Date.now() - _debugPhaseStart;
@@ -195,13 +198,17 @@ var GameController = (function () {
       }
     }
 
-    // 顯示當前等級（僅動態模式）
+    // 顯示當前等級（固定模式顯示「固定」，動態模式顯示 Lv.X）
     var levelEl = document.getElementById("dbgLevel");
     if (levelEl) {
       var engineName = typeof DifficultyProvider !== "undefined" ?
         DifficultyProvider.getEngineName() : "";
-      if (engineName !== "StaticEngine" && typeof SimpleAdaptiveEngine !== "undefined") {
+      if (engineName === "StaticEngine") {
+        levelEl.textContent = "固定";
+        levelEl.style.color = "#74b9ff";
+      } else if (typeof SimpleAdaptiveEngine !== "undefined") {
         levelEl.textContent = "Lv." + SimpleAdaptiveEngine.getCurrentLevel();
+        levelEl.style.color = "#51cf66";
       } else {
         levelEl.textContent = "";
       }
@@ -1832,7 +1839,7 @@ var GameController = (function () {
         _allComboResults.push({
           combo: combo,
           result: fsResult,
-          trialDetails: _trialResults,
+          trialCount: _trialResults.length,  // 只存摘要，不存完整 trial 資料以節省記憶體
         });
 
         // 推進 combo 索引
@@ -1870,6 +1877,7 @@ var GameController = (function () {
 
   function showComboTransition(nextCombo) {
     var ctr = dom.comboTransCtr;
+    ctr.innerHTML = "";  // 防止舊 DOM 累積
     ctr.classList.remove("hidden");
 
     var xhr = new XMLHttpRequest();
@@ -2144,6 +2152,11 @@ var GameController = (function () {
 
   /** 啟動指定 combo 的規則動畫 → WM 提示 → 練習 → 正式 */
   function startCombo() {
+    // 清除前一個 combo 的 WM 狀態
+    if (typeof WorkingMemory !== "undefined" && WorkingMemory.destroy) {
+      WorkingMemory.destroy();
+    }
+
     if (_comboIndex >= _combos.length) {
       ModeController.goToResult({
         mode: _mode,
