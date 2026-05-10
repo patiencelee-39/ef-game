@@ -270,6 +270,11 @@
     document.getElementById("edBarFeedback").style.width = pct + "%";
     document.getElementById("edValFeedback").textContent = (t.feedback / 1000).toFixed(1) + " 秒";
 
+    document.getElementById("edBarGoRatio").style.width = pct + "%";
+    if (t.goRatio != null) {
+      document.getElementById("edValGoRatio").textContent = Math.round(t.goRatio * 100) + "%";
+    }
+
     document.getElementById("edBarWmPos").style.width = pct + "%";
     document.getElementById("edValWmPos").textContent = w.minPos + "～" + w.maxPos + " 個";
 
@@ -376,6 +381,7 @@
     isiMinMs: 800,
     isiMaxMs: 1200,
     feedbackMs: 800,
+    goRatio: 75,
     wmMinPos: 2,
     wmMaxPos: 4,
     wmReverse: 30,
@@ -384,10 +390,11 @@
 
   var SP_FIELDS = [
     { id: "spStimulus",   key: "stimulusMs"  },
+    { id: "spFeedback",   key: "feedbackMs"  },
+    { id: "spGoRatio",    key: "goRatio"     },
     { id: "spGrace",      key: "graceMs"     },
     { id: "spIsiMin",     key: "isiMinMs"    },
     { id: "spIsiMax",     key: "isiMaxMs"    },
-    { id: "spFeedback",   key: "feedbackMs"  },
     { id: "spWmMin",      key: "wmMinPos"    },
     { id: "spWmMax",      key: "wmMaxPos"    },
     { id: "spReverse",    key: "wmReverse"   },

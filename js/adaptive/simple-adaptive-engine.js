@@ -71,6 +71,7 @@ var SimpleAdaptiveEngine = (function () {
       isiMaxMs: 2000,
       feedbackDurationMs: 2000,
       countdownSeconds: 3,
+      goRatio: 0.85,
     },
     2: {
       stimulusDurationMs: 4500,
@@ -79,6 +80,7 @@ var SimpleAdaptiveEngine = (function () {
       isiMaxMs: 1900,
       feedbackDurationMs: 1800,
       countdownSeconds: 3,
+      goRatio: 0.80,
     },
     3: {
       stimulusDurationMs: 4000,
@@ -87,6 +89,7 @@ var SimpleAdaptiveEngine = (function () {
       isiMaxMs: 1800,
       feedbackDurationMs: 1600,
       countdownSeconds: 3,
+      goRatio: 0.80,
     },
     4: {
       stimulusDurationMs: 3000,
@@ -95,6 +98,7 @@ var SimpleAdaptiveEngine = (function () {
       isiMaxMs: 1400,
       feedbackDurationMs: 1100,
       countdownSeconds: 3,
+      goRatio: 0.75,
     },
     5: {
       stimulusDurationMs: 2000,
@@ -103,6 +107,7 @@ var SimpleAdaptiveEngine = (function () {
       isiMaxMs: 1200,
       feedbackDurationMs: 800,
       countdownSeconds: 3,
+      goRatio: 0.75,
     },
     6: {
       stimulusDurationMs: 1600,
@@ -111,6 +116,7 @@ var SimpleAdaptiveEngine = (function () {
       isiMaxMs: 1000,
       feedbackDurationMs: 700,
       countdownSeconds: 3,
+      goRatio: 0.70,
     },
     7: {
       stimulusDurationMs: 1200,
@@ -119,6 +125,7 @@ var SimpleAdaptiveEngine = (function () {
       isiMaxMs: 900,
       feedbackDurationMs: 600,
       countdownSeconds: 3,
+      goRatio: 0.65,
     },
     8: {
       stimulusDurationMs: 900,
@@ -127,6 +134,7 @@ var SimpleAdaptiveEngine = (function () {
       isiMaxMs: 800,
       feedbackDurationMs: 500,
       countdownSeconds: 3,
+      goRatio: 0.60,
     },
     9: {
       stimulusDurationMs: 700,
@@ -135,6 +143,7 @@ var SimpleAdaptiveEngine = (function () {
       isiMaxMs: 600,
       feedbackDurationMs: 400,
       countdownSeconds: 3,
+      goRatio: 0.55,
     },
     10: {
       stimulusDurationMs: 500,
@@ -143,6 +152,7 @@ var SimpleAdaptiveEngine = (function () {
       isiMaxMs: 500,
       feedbackDurationMs: 300,
       countdownSeconds: 3,
+      goRatio: 0.50,
     },
   };
 
@@ -319,7 +329,8 @@ var SimpleAdaptiveEngine = (function () {
       if (context.isPractice) {
         goRatio = ratios.PRACTICE_GO || 0.5;
       } else {
-        goRatio = field.goRatio || 0.75;
+        var lvl = LEVEL_TIMING[_level] || LEVEL_TIMING[DEFAULT_LEVEL];
+        goRatio = lvl.goRatio || 0.75;
       }
 
       var contextARatio;

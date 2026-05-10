@@ -135,11 +135,11 @@ var GameController = (function () {
       "border-radius:8px;border:1px solid rgba(255,255,255,0.2);width:140px;" +
       "pointer-events:none;";
     _debugPanel.innerHTML =
-      '<div style="font-weight:700;margin-bottom:6px;color:#ffd43b;font-size:10px;">⏱️ 時間流程監控</div>' +
-      '<div id="dbgISI">⏱️ 題目間隔: —</div>' +
+      '<div style="font-weight:700;margin-bottom:6px;color:#ffd43b;font-size:10px;">⏱️ 時間流程監控 <span id="dbgLevel" style="color:#51cf66;"></span></div>' +
       '<div id="dbgStim">📷 圖片顯示: —</div>' +
+      '<div id="dbgFeedback">💬 對錯反饋: —</div>' +
+      '<div id="dbgISI">⏱️ 題目間隔: —</div>' +
       '<div id="dbgGrace">⏳ 額外反應: —</div>' +
-      '<div id="dbgFeedback">💬 對錯回饋: —</div>' +
       '<div style="margin-top:6px;border-top:1px solid rgba(255,255,255,0.15);padding-top:6px;line-height:1.6;" id="dbgParams"></div>';
 
     var container = document.getElementById("stimulusContainer");
@@ -155,7 +155,7 @@ var GameController = (function () {
       var remaining = Math.max(0, _debugPhaseDuration - elapsed);
       var el = document.getElementById("dbg" + _debugPhase);
       if (el) {
-        var label = { ISI: "⏱️ 題目間隔", Stim: "📷 圖片顯示", Grace: "⏳ 額外反應", Feedback: "💬 對錯回饋" };
+        var label = { Stim: "📷 圖片顯示", Feedback: "💬 對錯反饋", ISI: "⏱️ 題目間隔", Grace: "⏳ 額外反應" };
         el.textContent = (label[_debugPhase] || _debugPhase) + ": " + (remaining / 1000).toFixed(1) + "s";
         el.style.color = remaining > 0 ? "#51cf66" : "#ffd43b";
       }
@@ -168,8 +168,8 @@ var GameController = (function () {
     _debugPhaseDuration = durationMs;
 
     // 標記已完成的階段
-    var phases = ["ISI", "Stim", "Grace", "Feedback"];
-    var labels = { ISI: "⏱️ 題目間隔", Stim: "📷 圖片顯示", Grace: "⏳ 額外反應", Feedback: "💬 對錯回饋" };
+    var phases = ["Stim", "Feedback", "ISI", "Grace"];
+    var labels = { Stim: "📷 圖片顯示", Feedback: "💬 對錯反饋", ISI: "⏱️ 題目間隔", Grace: "⏳ 額外反應" };
     var idx = phases.indexOf(phase);
     for (var i = 0; i < phases.length; i++) {
       var el = document.getElementById("dbg" + phases[i]);
@@ -188,17 +188,29 @@ var GameController = (function () {
       var paramsEl = document.getElementById("dbgParams");
       if (paramsEl) {
         paramsEl.innerHTML =
-          "題目間隔=" + (params.isiMs != null ? (params.isiMs / 1000).toFixed(1) : "—") + "s<br>" +
           "圖片顯示=" + (params.stimMs != null ? (params.stimMs / 1000).toFixed(1) : "—") + "s<br>" +
-          "額外反應=" + (params.graceMs != null ? (params.graceMs / 1000).toFixed(1) : "—") + "s<br>" +
-          "對錯回饋=" + (params.feedbackMs != null ? (params.feedbackMs / 1000).toFixed(1) : "—") + "s";
+          "對錯反饋=" + (params.feedbackMs != null ? (params.feedbackMs / 1000).toFixed(1) : "—") + "s<br>" +
+          "題目間隔=" + (params.isiMs != null ? (params.isiMs / 1000).toFixed(1) : "—") + "s<br>" +
+          "額外反應=" + (params.graceMs != null ? (params.graceMs / 1000).toFixed(1) : "—") + "s";
+      }
+    }
+
+    // 顯示當前等級（僅動態模式）
+    var levelEl = document.getElementById("dbgLevel");
+    if (levelEl) {
+      var engineName = typeof DifficultyProvider !== "undefined" ?
+        DifficultyProvider.getEngineName() : "";
+      if (engineName !== "StaticEngine" && typeof SimpleAdaptiveEngine !== "undefined") {
+        levelEl.textContent = "Lv." + SimpleAdaptiveEngine.getCurrentLevel();
+      } else {
+        levelEl.textContent = "";
       }
     }
   }
 
   function _debugReset() {
-    var phases = ["ISI", "Stim", "Grace", "Feedback"];
-    var labels = { ISI: "⏱️ 題目間隔", Stim: "📷 圖片顯示", Grace: "⏳ 額外反應", Feedback: "💬 對錯回饋" };
+    var phases = ["Stim", "Feedback", "ISI", "Grace"];
+    var labels = { Stim: "📷 圖片顯示", Feedback: "💬 對錯反饋", ISI: "⏱️ 題目間隔", Grace: "⏳ 額外反應" };
     for (var i = 0; i < phases.length; i++) {
       var el = document.getElementById("dbg" + phases[i]);
       if (el) {
@@ -1357,6 +1369,7 @@ var GameController = (function () {
 
   /** 執行下一道試驗（ISI → 刺激物 → 等待回應 → 回饋） */
   function nextTrial() {
+    if (_debugPanel) _debugPanel.style.display = "";
     if (_trialIndex >= _questions.length) {
       endCombo();
       return;
@@ -1591,6 +1604,7 @@ var GameController = (function () {
 
   /** 啟動 WM 測驗（§3.4, Flow-12） */
   function startWMTest(combo) {
+    if (_debugPanel) _debugPanel.style.display = "none";
     dom.wmContainer.classList.remove("hidden");
 
     // 讀取歷史最快完成時間（personalBest）
