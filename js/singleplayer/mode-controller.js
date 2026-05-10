@@ -300,7 +300,11 @@ var ModeController = (function () {
 
     // 儲存結果
     if (!session.comboResults) session.comboResults = [];
-    session.comboResults.push(comboResult);
+    // 只存精簡摘要到 sessionStorage，避免重複序列化大物件
+    session.comboResults.push({
+      comboResult: comboResult.comboResult || comboResult,
+      savedAt: Date.now(),
+    });
 
     var nextIndex = session.currentComboIndex + 1;
 

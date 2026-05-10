@@ -165,6 +165,13 @@ var GameController = (function () {
     }, 16);
   }
 
+  function _cleanupDebugInterval() {
+    if (_debugInterval) {
+      clearInterval(_debugInterval);
+      _debugInterval = null;
+    }
+  }
+
   function _debugSetPhase(phase, durationMs, params) {
     _debugPhase = phase;
     _debugPhaseStart = Date.now();
@@ -1820,6 +1827,7 @@ var GameController = (function () {
           });
         }
 
+        _cleanupDebugInterval();
         ModeController.goToResult({
           mode: "adventure",
           comboResult: advResult,
@@ -1839,7 +1847,8 @@ var GameController = (function () {
         _allComboResults.push({
           combo: combo,
           result: fsResult,
-          trialCount: _trialResults.length,  // 只存摘要，不存完整 trial 資料以節省記憶體
+          trialCount: _trialResults.length,
+          trialDetails: _trialResults.slice(),  // 淺拷貝供結算頁 SDT 計算
         });
 
         // 推進 combo 索引
@@ -1856,6 +1865,7 @@ var GameController = (function () {
             message: "🎉 全部組合完成！",
             type: "allComplete",
           });
+          _cleanupDebugInterval();
           ModeController.goToResult({
             mode: "free-select",
             allComboResults: _allComboResults,
@@ -1867,6 +1877,7 @@ var GameController = (function () {
       GameModal.alert("結算錯誤", "結算過程發生錯誤，將返回地圖", {
         icon: "❌",
       }).then(function () {
+        _cleanupDebugInterval();
         ModeController.goToAdventureMap(_session ? _session.mapIndex : 0);
       });
     }
@@ -2368,6 +2379,7 @@ var GameController = (function () {
     dom.btnExitConfirm.addEventListener("click", function () {
       _isPlaying = false;
       hideExitConfirm();
+      _cleanupDebugInterval();
       if (_exitAction === "quit") {
         // 從暫停選單結束
         if (_mode === "adventure") ModeController.goToAdventureMap(_session ? _session.mapIndex : 0);
@@ -2388,6 +2400,7 @@ var GameController = (function () {
       if (_isPlaying) {
         showExitConfirm("back");
       } else {
+        _cleanupDebugInterval();
         if (_mode === "adventure") ModeController.goToAdventureMap(_session ? _session.mapIndex : 0);
         else ModeController.goToFreeSelect();
       }
