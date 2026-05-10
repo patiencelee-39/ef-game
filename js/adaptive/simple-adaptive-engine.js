@@ -244,10 +244,12 @@ var SimpleAdaptiveEngine = (function () {
       _level = _clamp(_level + 1, MIN_LEVEL, MAX_LEVEL);
       _consecutiveCorrect = 0;
       _consecutiveIncorrect = 0;
+      Logger.info("[SimpleAdaptiveEngine] No-Go 試題：連對 " + STREAK_THRESHOLD + " 題，升至 Level " + _level);
     } else if (_consecutiveIncorrect >= STREAK_THRESHOLD) {
       _level = _clamp(_level - 1, MIN_LEVEL, MAX_LEVEL);
       _consecutiveCorrect = 0;
       _consecutiveIncorrect = 0;
+      Logger.info("[SimpleAdaptiveEngine] No-Go 試題：連錯 " + STREAK_THRESHOLD + " 題，降至 Level " + _level);
     }
 
     if (_level !== oldLevel) {
@@ -403,6 +405,9 @@ var SimpleAdaptiveEngine = (function () {
      * @param {boolean} trialResult.isCorrect
      */
     onTrialComplete: function (trialResult) {
+      // 只計 No-Go 試題，Go 試題完全忽略（不影響連續計數）
+      if (trialResult.isGo) return;
+
       if (trialResult.isCorrect) {
         _consecutiveCorrect++;
         _consecutiveIncorrect = 0;

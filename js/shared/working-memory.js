@@ -66,27 +66,27 @@ var WM_DEFAULTS = {
 var TOGGLE_STATES = {
   mouse: [
     { key: "unknown", img: null, contextImg: null, label: "未選擇" },
-    { key: "cheese", img: "stimuli/cheese.svg", contextImg: null, label: "起司" },
-    { key: "cat", img: "stimuli/cat.svg", contextImg: null, label: "貓咪" },
+    { key: "cheese", img: "../stimuli/cheese.svg", contextImg: null, label: "起司" },
+    { key: "cat", img: "../stimuli/cat.svg", contextImg: null, label: "貓咪" },
   ],
   fishing: [
     { key: "unknown", img: null, contextImg: null, label: "未選擇" },
-    { key: "fish", img: "stimuli/fish.svg", contextImg: null, label: "小魚" },
-    { key: "shark", img: "stimuli/shark.svg", contextImg: null, label: "鯊魚" },
+    { key: "fish", img: "../stimuli/fish.svg", contextImg: null, label: "小魚" },
+    { key: "shark", img: "../stimuli/shark.svg", contextImg: null, label: "鯊魚" },
   ],
   mouse_mixed: [
     { key: "unknown", img: null, contextImg: null, label: "未選擇" },
-    { key: "cheese_person", img: "stimuli/cheese.svg", contextImg: "stimuli/person.svg", label: "起司＋有人" },
-    { key: "cheese_noperson", img: "stimuli/cheese.svg", contextImg: null, label: "起司＋沒人" },
-    { key: "cat_person", img: "stimuli/cat.svg", contextImg: "stimuli/person.svg", label: "貓＋有人" },
-    { key: "cat_noperson", img: "stimuli/cat.svg", contextImg: null, label: "貓＋沒人" },
+    { key: "cheese_person", img: "../stimuli/cheese.svg", contextImg: "../stimuli/person.svg", label: "起司＋有人" },
+    { key: "cheese_noperson", img: "../stimuli/cheese.svg", contextImg: null, label: "起司＋沒人" },
+    { key: "cat_person", img: "../stimuli/cat.svg", contextImg: "../stimuli/person.svg", label: "貓＋有人" },
+    { key: "cat_noperson", img: "../stimuli/cat.svg", contextImg: null, label: "貓＋沒人" },
   ],
   fishing_mixed: [
     { key: "unknown", img: null, contextImg: null, label: "未選擇" },
-    { key: "fish_sun", img: "stimuli/fish.svg", contextImg: "stimuli/sun.svg", label: "魚＋白天" },
-    { key: "fish_moon", img: "stimuli/fish.svg", contextImg: "stimuli/moon.svg", label: "魚＋晚上" },
-    { key: "shark_sun", img: "stimuli/shark.svg", contextImg: "stimuli/sun.svg", label: "鯊魚＋白天" },
-    { key: "shark_moon", img: "stimuli/shark.svg", contextImg: "stimuli/moon.svg", label: "鯊魚＋晚上" },
+    { key: "fish_sun", img: "../stimuli/fish.svg", contextImg: "../stimuli/sun.svg", label: "魚＋白天" },
+    { key: "fish_moon", img: "../stimuli/fish.svg", contextImg: "../stimuli/moon.svg", label: "魚＋晚上" },
+    { key: "shark_sun", img: "../stimuli/shark.svg", contextImg: "../stimuli/sun.svg", label: "鯊魚＋白天" },
+    { key: "shark_moon", img: "../stimuli/shark.svg", contextImg: "../stimuli/moon.svg", label: "鯊魚＋晚上" },
   ],
 };
 
@@ -481,10 +481,10 @@ function _highlightPractice(sequence, fieldId, gridEl) {
   var buttons = gridEl.querySelectorAll(".wm-position-btn");
   var toggleStates = TOGGLE_STATES[fieldId] || TOGGLE_STATES.mouse;
 
-  // 建立 stimKey → emoji 對照
-  var keyToEmoji = {};
+  // 建立 stimKey → state 對照
+  var keyToState = {};
   for (var t = 0; t < toggleStates.length; t++) {
-    keyToEmoji[toggleStates[t].key] = toggleStates[t].emoji;
+    keyToState[toggleStates[t].key] = toggleStates[t];
   }
 
   return new Promise(function (resolve) {
@@ -500,7 +500,8 @@ function _highlightPractice(sequence, fieldId, gridEl) {
 
       if (buttons[i]) {
         buttons[i].classList.add("wm-highlight");
-        buttons[i].textContent = keyToEmoji[stimKey] || "❓";
+        var state = keyToState[stimKey] || toggleStates[0];
+        _renderBtnContent(buttons[i], state);
         buttons[i].setAttribute("data-stim", stimKey);
 
         if (typeof AudioPlayer !== "undefined" && AudioPlayer.playSfx) {
@@ -546,6 +547,28 @@ function _renderBtnContent(btn, state) {
   }
 
   btn.innerHTML = html;
+}
+
+/**
+ * 生成比對用的小型 SVG <img> HTML（比按鈕小，適合行內顯示）
+ * @param {string} key - stimKey
+ * @param {string} fieldId - 'mouse' | 'fishing'
+ * @param {string} ruleId - 'single' | 'mixed'
+ * @returns {string} HTML 字串或 "❓"
+ */
+function _stimKeyToHtml(key, fieldId, ruleId) {
+  var stateKey = (ruleId === "mixed") ? fieldId + "_mixed" : fieldId;
+  var states = TOGGLE_STATES[stateKey] || TOGGLE_STATES[fieldId] || TOGGLE_STATES.mouse;
+  var state = null;
+  for (var i = 0; i < states.length; i++) {
+    if (states[i].key === key) { state = states[i]; break; }
+  }
+  if (!state || !state.img) return "❓";
+  var html = '<img src="' + state.img + '" style="width:24px;height:24px;vertical-align:middle;" alt="' + state.label + '">';
+  if (state.contextImg) {
+    html += '<img src="' + state.contextImg + '" style="width:16px;height:16px;vertical-align:middle;margin-left:2px;opacity:0.8;" alt="">';
+  }
+  return html;
 }
 
 /**
@@ -860,10 +883,7 @@ var WorkingMemory = {
                   resultEl.style.display = "";
   
                   var toggleStates = TOGGLE_STATES[fieldId] || TOGGLE_STATES.mouse;
-                  var stimKeyToEmoji = {};
-                  for (var si = 0; si < toggleStates.length; si++) {
-                    stimKeyToEmoji[toggleStates[si].key] = toggleStates[si].emoji;
-                  }
+                  
   
                   var timeoutHeader =
                     "<div class='wm-result-summary'>" +
@@ -884,14 +904,14 @@ var WorkingMemory = {
                     compHtml += "<div class='wm-comparison-row'><div class='wm-comparison-label'>正確答案：</div><div class='wm-comparison-items'>";
                     for (var ci = 0; ci < wmScore.details.length; ci++) {
                       var d = wmScore.details[ci];
-                      compHtml += "<div class='wm-comparison-item'><span style='color:#ffd700;'>" + d.position + ":</span> <span>" + (stimKeyToEmoji[d.expected] || "❓") + "</span></div>";
+                      compHtml += "<div class='wm-comparison-item'><span style='color:#ffd700;'>" + d.position + ":</span> <span>" + (_stimKeyToHtml(d.expected, fieldId, ruleId)) + "</span></div>";
                     }
                     compHtml += "</div></div>";
                     compHtml += "<div class='wm-comparison-row'><div class='wm-comparison-label'>你的答案：</div><div class='wm-comparison-items'>";
                     for (var pi = 0; pi < wmScore.details.length; pi++) {
                       var dp = wmScore.details[pi];
                       var itemClass = dp.correct ? "wm-comparison-item correct" : "wm-comparison-item incorrect";
-                      compHtml += "<div class='" + itemClass + "'><span style='color:#ffd700;'>" + dp.position + ":</span> <span>" + (stimKeyToEmoji[dp.actual] || "❓") + "</span></div>";
+                      compHtml += "<div class='" + itemClass + "'><span style='color:#ffd700;'>" + dp.position + ":</span> <span>" + (_stimKeyToHtml(dp.actual, fieldId, ruleId)) + "</span></div>";
                     }
                     compHtml += "</div></div></div>";
   
@@ -1044,10 +1064,7 @@ var WorkingMemory = {
                   // 取得刺激物 emoji 映射
                   var toggleStates =
                     TOGGLE_STATES[fieldId] || TOGGLE_STATES.mouse;
-                  var stimKeyToEmoji = {};
-                  for (var si = 0; si < toggleStates.length; si++) {
-                    stimKeyToEmoji[toggleStates[si].key] = toggleStates[si].emoji;
-                  }
+                  
   
                   if (wmScore.allCorrect) {
                     // ✅ 全對
@@ -1088,7 +1105,7 @@ var WorkingMemory = {
                     compHtml += "<div class='wm-comparison-items'>";
                     for (var ci = 0; ci < wmScore.details.length; ci++) {
                       var d = wmScore.details[ci];
-                      var expectedEmoji = stimKeyToEmoji[d.expected] || "❓";
+                      var expectedEmoji = _stimKeyToHtml(d.expected, fieldId, ruleId);
                       compHtml +=
                         "<div class='wm-comparison-item'>" +
                         "<span style='color:#ffd700;'>" +
@@ -1107,7 +1124,7 @@ var WorkingMemory = {
                     compHtml += "<div class='wm-comparison-items'>";
                     for (var pi = 0; pi < wmScore.details.length; pi++) {
                       var dp = wmScore.details[pi];
-                      var actualEmoji = stimKeyToEmoji[dp.actual] || "❓";
+                      var actualEmoji = _stimKeyToHtml(dp.actual, fieldId, ruleId);
                       var itemClass = dp.correct
                         ? "wm-comparison-item correct"
                         : "wm-comparison-item incorrect";
@@ -1321,10 +1338,7 @@ var WorkingMemory = {
     // 建立答案比對 HTML
     function buildComparisonHtml(details) {
       var toggleStates = TOGGLE_STATES[fieldId] || TOGGLE_STATES.mouse;
-      var stimKeyToEmoji = {};
-      for (var si = 0; si < toggleStates.length; si++) {
-        stimKeyToEmoji[toggleStates[si].key] = toggleStates[si].emoji;
-      }
+      
 
       var html = "<div class='wm-comparison'>";
       html +=
@@ -1334,7 +1348,7 @@ var WorkingMemory = {
           "<div class='wm-comparison-item'><span style='color:#ffd700;'>" +
           details[ci].position +
           ":</span> <span>" +
-          (stimKeyToEmoji[details[ci].expected] || "❓") +
+          (_stimKeyToHtml(details[ci].expected, fieldId, ruleId)) +
           "</span></div>";
       }
       html += "</div></div>";
@@ -1348,7 +1362,7 @@ var WorkingMemory = {
           "<div class='" + cls + "'><span style='color:#ffd700;'>" +
           details[pi].position +
           ":</span> <span>" +
-          (stimKeyToEmoji[details[pi].actual] || "❓") +
+          (_stimKeyToHtml(details[pi].actual, fieldId, ruleId)) +
           "</span></div>";
       }
       html += "</div></div></div>";

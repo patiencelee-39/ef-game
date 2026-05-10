@@ -225,7 +225,7 @@
     var ruleText = document.getElementById("edRuleText");
     if (ruleText && typeof SimpleAdaptiveEngine !== "undefined") {
       var streak = SimpleAdaptiveEngine.getStreakThreshold();
-      ruleText.textContent = "※ 連對 " + streak +
+      ruleText.textContent = "※ 只計 No-Go 試題，連對 " + streak +
         " 題升一級，連錯 " + streak +
         " 題降一級（Level " + SimpleAdaptiveEngine.MIN_LEVEL + "～" +
         SimpleAdaptiveEngine.MAX_LEVEL + "）";
@@ -300,8 +300,8 @@
       }
       html += "</tr></thead><tbody>";
 
-      // 📷 圖片顯示
-      html += "<tr><td>📷 圖片</td>";
+      // 📷 圖片呈現
+      html += "<tr><td>📷 圖片呈現</td>";
       for (var i = 1; i <= maxLv; i++) {
         html += "<td>" + (data.timing[i].stimulus / 1000).toFixed(1) + "s</td>";
       }
@@ -314,29 +314,29 @@
       }
       html += "</tr>";
 
-      // ⏳ 額外反應
-      html += "<tr><td>⏳ 額外反應</td>";
+      // ⏳ 額外反應時間
+      html += "<tr><td>⏳ 額外反應時間</td>";
       for (var i = 1; i <= maxLv; i++) {
         html += "<td>" + (data.timing[i].grace / 1000).toFixed(2).replace(/0$/, "") + "s</td>";
       }
       html += "</tr>";
 
-      // ⏱️ 間隔
-      html += "<tr><td>⏱️ 間隔</td>";
+      // ⏱️ 試題間隔
+      html += "<tr><td>⏱️ 試題間隔</td>";
       for (var i = 1; i <= maxLv; i++) {
         html += "<td>" + (data.timing[i].isiMin / 1000).toFixed(1) + "～" + (data.timing[i].isiMax / 1000).toFixed(1) + "s</td>";
       }
       html += "</tr>";
 
-      // 💬 提示
-      html += "<tr><td>💬 提示</td>";
+      // 💬 反饋時間
+      html += "<tr><td>💬 反饋時間</td>";
       for (var i = 1; i <= maxLv; i++) {
         html += "<td>" + (data.timing[i].feedback / 1000).toFixed(1) + "s</td>";
       }
       html += "</tr>";
 
-      // 🧠 位置
-      html += "<tr><td>🧠 位置</td>";
+      // 🧠 WM廣度
+      html += "<tr><td>🧠 WM廣度</td>";
       for (var i = 1; i <= maxLv; i++) {
         html += "<td>" + data.wm[i].minPos + "～" + data.wm[i].maxPos + "</td>";
       }
