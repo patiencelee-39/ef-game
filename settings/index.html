@@ -241,22 +241,22 @@
               </div>
 
               <div class="engine-param-row">
+                <span class="engine-param-label" data-param-key="wmTimeout"></span>
+                <span class="engine-param-desc">記憶遊戲中，孩子點選格子的作答時間上限</span>
+                <div class="engine-param-input-group">
+                  <input type="number" class="engine-param-input" id="spWmTimeout"
+                    min="0" max="99999" step="1000" value="60000" />
+                  <span class="engine-param-unit">ms</span>
+                </div>
+              </div>
+
+              <div class="engine-param-row">
                 <span class="engine-param-label" data-param-key="reverse"></span>
                 <span class="engine-param-desc">記憶遊戲中，要求孩子「倒著回想」的機率</span>
                 <div class="engine-param-input-group">
                   <input type="number" class="engine-param-input" id="spReverse"
                     min="0" max="100" step="10" value="30" />
                   <span class="engine-param-unit">%</span>
-                </div>
-              </div>
-
-              <div class="engine-param-row">
-                <span class="engine-param-label">⏰ 工作記憶作答時間</span>
-                <span class="engine-param-desc">記憶遊戲中，孩子點選格子的作答時間上限</span>
-                <div class="engine-param-input-group">
-                  <input type="number" class="engine-param-input" id="spWmTimeout"
-                    min="0" max="99999" step="1000" value="60000" />
-                  <span class="engine-param-unit">ms</span>
                 </div>
               </div>
             </div>
@@ -291,11 +291,11 @@
               </div>
 
               <div class="engine-detail-bar-row">
-                <span class="engine-detail-bar-label" data-param-key="grace"></span>
+                <span class="engine-detail-bar-label" data-param-key="feedback"></span>
                 <div class="engine-detail-bar-track">
-                  <div class="engine-detail-bar-fill" id="edBarGrace"></div>
+                  <div class="engine-detail-bar-fill" id="edBarFeedback"></div>
                 </div>
-                <span class="engine-detail-bar-value" id="edValGrace">0.8 秒</span>
+                <span class="engine-detail-bar-value" id="edValFeedback">0.8 秒</span>
               </div>
 
               <div class="engine-detail-bar-row">
@@ -307,11 +307,11 @@
               </div>
 
               <div class="engine-detail-bar-row">
-                <span class="engine-detail-bar-label" data-param-key="feedback"></span>
+                <span class="engine-detail-bar-label" data-param-key="grace"></span>
                 <div class="engine-detail-bar-track">
-                  <div class="engine-detail-bar-fill" id="edBarFeedback"></div>
+                  <div class="engine-detail-bar-fill" id="edBarGrace"></div>
                 </div>
-                <span class="engine-detail-bar-value" id="edValFeedback">0.8 秒</span>
+                <span class="engine-detail-bar-value" id="edValGrace">0.8 秒</span>
               </div>
 
               <div class="engine-detail-bar-row">
@@ -331,18 +331,20 @@
               </div>
 
               <div class="engine-detail-bar-row">
+                <span class="engine-detail-bar-label" data-param-key="wmTimeout"></span>
+                <div class="engine-detail-bar-track">
+                  <div class="engine-detail-bar-fill" id="edBarTimeout"></div>
+                </div>
+                <span class="engine-detail-bar-value" id="edValTimeout">60 秒</span>
+              </div>
+
+              <div class="engine-detail-bar-row">
                 <span class="engine-detail-bar-label" data-param-key="reverse"></span>
                 <div class="engine-detail-bar-track">
                   <div class="engine-detail-bar-fill" id="edBarReverse"></div>
                 </div>
                 <span class="engine-detail-bar-value" id="edValReverse">40%</span>
               </div>
-
-              <div class="engine-detail-bar-row">
-                <span class="engine-detail-bar-label">⏰ WM作答</span>
-                <div class="engine-detail-bar-track">
-                  <div class="engine-detail-bar-fill" id="edBarTimeout"></div>
-                </div>
                 <span class="engine-detail-bar-value" id="edValTimeout">55 秒</span>
               </div>
             </div>

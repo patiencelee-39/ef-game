@@ -290,15 +290,15 @@
     document.getElementById("edBarStimulus").style.width = pct + "%";
     document.getElementById("edValStimulus").textContent = (t.stimulus / 1000).toFixed(1) + " 秒";
 
-    document.getElementById("edBarGrace").style.width = pct + "%";
-    document.getElementById("edValGrace").textContent = (t.grace / 1000).toFixed(1) + " 秒";
+    document.getElementById("edBarFeedback").style.width = pct + "%";
+    document.getElementById("edValFeedback").textContent = (t.feedback / 1000).toFixed(1) + " 秒";
 
     document.getElementById("edBarIsi").style.width = pct + "%";
     document.getElementById("edValIsi").textContent =
       (t.isiMin / 1000).toFixed(1) + "～" + (t.isiMax / 1000).toFixed(1) + " 秒";
 
-    document.getElementById("edBarFeedback").style.width = pct + "%";
-    document.getElementById("edValFeedback").textContent = (t.feedback / 1000).toFixed(1) + " 秒";
+    document.getElementById("edBarGrace").style.width = pct + "%";
+    document.getElementById("edValGrace").textContent = (t.grace / 1000).toFixed(1) + " 秒";
 
     var goBar = document.getElementById("edBarGoRatio");
     var goVal = document.getElementById("edValGoRatio");
@@ -308,11 +308,11 @@
     document.getElementById("edBarWmPos").style.width = pct + "%";
     document.getElementById("edValWmPos").textContent = w.minPos + "～" + w.maxPos + " 個";
 
-    document.getElementById("edBarReverse").style.width = pct + "%";
-    document.getElementById("edValReverse").textContent = Math.round(w.reverse * 100) + "%";
-
     document.getElementById("edBarTimeout").style.width = pct + "%";
     document.getElementById("edValTimeout").textContent = (w.timeout / 1000).toFixed(0) + " 秒";
+
+    document.getElementById("edBarReverse").style.width = pct + "%";
+    document.getElementById("edValReverse").textContent = Math.round(w.reverse * 100) + "%";
 
     // 動態生成完整參數表格
     var tableWrap = document.getElementById("edTableWrap");
@@ -333,17 +333,10 @@
       }
       html += "</tr>";
 
-      // 🎯 Go 比例
-      html += "<tr><td>" + PARAM_LABELS.goRatio + "</td>";
+      // 💬 反饋時間
+      html += "<tr><td>" + PARAM_LABELS.feedback + "</td>";
       for (var i = 1; i <= maxLv; i++) {
-        html += "<td>" + Math.round(data.timing[i].goRatio * 100) + "%</td>";
-      }
-      html += "</tr>";
-
-      // ⏳ 額外反應時間
-      html += "<tr><td>" + PARAM_LABELS.grace + "</td>";
-      for (var i = 1; i <= maxLv; i++) {
-        html += "<td>" + (data.timing[i].grace / 1000).toFixed(2).replace(/0$/, "") + "s</td>";
+        html += "<td>" + (data.timing[i].feedback / 1000).toFixed(1) + "s</td>";
       }
       html += "</tr>";
 
@@ -354,10 +347,17 @@
       }
       html += "</tr>";
 
-      // 💬 反饋時間
-      html += "<tr><td>" + PARAM_LABELS.feedback + "</td>";
+      // ⏳ 額外反應時間
+      html += "<tr><td>" + PARAM_LABELS.grace + "</td>";
       for (var i = 1; i <= maxLv; i++) {
-        html += "<td>" + (data.timing[i].feedback / 1000).toFixed(1) + "s</td>";
+        html += "<td>" + (data.timing[i].grace / 1000).toFixed(2).replace(/0$/, "") + "s</td>";
+      }
+      html += "</tr>";
+
+      // 🎯 Go 比例
+      html += "<tr><td>" + PARAM_LABELS.goRatio + "</td>";
+      for (var i = 1; i <= maxLv; i++) {
+        html += "<td>" + Math.round(data.timing[i].goRatio * 100) + "%</td>";
       }
       html += "</tr>";
 
@@ -368,17 +368,17 @@
       }
       html += "</tr>";
 
-      // 🔄 逆向
-      html += "<tr><td>" + PARAM_LABELS.reverse + "</td>";
+      // ⏰ WM作答
+      html += "<tr><td>" + PARAM_LABELS.wmTimeout + "</td>";
       for (var i = 1; i <= maxLv; i++) {
-        html += "<td>" + Math.round(data.wm[i].reverse * 100) + "%</td>";
+        html += "<td>" + (data.wm[i].timeout / 1000).toFixed(0) + "s</td>";
       }
       html += "</tr>";
 
-      // ⏰ WM作答
-      html += "<tr><td>⏰ WM作答</td>";
+      // 🔄 逆向機率
+      html += "<tr><td>" + PARAM_LABELS.reverse + "</td>";
       for (var i = 1; i <= maxLv; i++) {
-        html += "<td>" + (data.wm[i].timeout / 1000).toFixed(0) + "s</td>";
+        html += "<td>" + Math.round(data.wm[i].reverse * 100) + "%</td>";
       }
       html += "</tr>";
 
