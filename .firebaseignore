@@ -1,0 +1,50 @@
+# Firebase Deploy 忽略清單
+# （此檔案存在時，Firebase CLI 不再讀取 .gitignore）
+
+# 系統檔案
+.DS_Store
+Thumbs.db
+.Rhistory
+Icon
+Icon?
+
+# 開發工具 / 不需要部署的目錄
+node_modules/
+.firebase/
+.venv/
+_archive/
+dist/
+src/
+scripts/
+
+# 開發設定檔
+firebase.json
+database.rules.json
+firestore.rules
+firestore.indexes.json
+vite.config.js
+package.json
+package-lock.json
+.gitignore
+.firebaseignore
+.firebaserc
+.firebaserc.example
+
+# 文件（不需要放到網站上）
+docs/
+**/*.md
+**/*.pdf
+
+# 開發用檔案
+**/*.py
+**/*.sh
+**/*.wav
+**/Icon?
+test-*.html
+test-*.js
+
+# 報告/備份
+*REPORT*.md
+*COMPLETION*.md
+*SUMMARY*.md
+*.backup
