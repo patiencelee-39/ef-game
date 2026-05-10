@@ -71,7 +71,7 @@ var SimpleAdaptiveEngine = (function () {
       isiMaxMs: 2000,
       feedbackDurationMs: 2000,
       countdownSeconds: 3,
-      goRatio: 0.89,
+      goRatio: 0.70,
     },
     2: {
       stimulusDurationMs: 4500,
@@ -80,7 +80,7 @@ var SimpleAdaptiveEngine = (function () {
       isiMaxMs: 1900,
       feedbackDurationMs: 1800,
       countdownSeconds: 3,
-      goRatio: 0.87,
+      goRatio: 0.72,
     },
     3: {
       stimulusDurationMs: 4000,
@@ -89,7 +89,7 @@ var SimpleAdaptiveEngine = (function () {
       isiMaxMs: 1800,
       feedbackDurationMs: 1600,
       countdownSeconds: 3,
-      goRatio: 0.85,
+      goRatio: 0.74,
     },
     4: {
       stimulusDurationMs: 3000,
@@ -98,7 +98,7 @@ var SimpleAdaptiveEngine = (function () {
       isiMaxMs: 1400,
       feedbackDurationMs: 1100,
       countdownSeconds: 3,
-      goRatio: 0.83,
+      goRatio: 0.76,
     },
     5: {
       stimulusDurationMs: 2000,
@@ -107,7 +107,7 @@ var SimpleAdaptiveEngine = (function () {
       isiMaxMs: 1200,
       feedbackDurationMs: 800,
       countdownSeconds: 3,
-      goRatio: 0.80,
+      goRatio: 0.78,
     },
     6: {
       stimulusDurationMs: 1600,
@@ -116,7 +116,7 @@ var SimpleAdaptiveEngine = (function () {
       isiMaxMs: 1000,
       feedbackDurationMs: 700,
       countdownSeconds: 3,
-      goRatio: 0.78,
+      goRatio: 0.80,
     },
     7: {
       stimulusDurationMs: 1200,
@@ -125,7 +125,7 @@ var SimpleAdaptiveEngine = (function () {
       isiMaxMs: 900,
       feedbackDurationMs: 600,
       countdownSeconds: 3,
-      goRatio: 0.75,
+      goRatio: 0.82,
     },
     8: {
       stimulusDurationMs: 900,
@@ -134,7 +134,7 @@ var SimpleAdaptiveEngine = (function () {
       isiMaxMs: 800,
       feedbackDurationMs: 500,
       countdownSeconds: 3,
-      goRatio: 0.73,
+      goRatio: 0.85,
     },
     9: {
       stimulusDurationMs: 700,
@@ -143,7 +143,7 @@ var SimpleAdaptiveEngine = (function () {
       isiMaxMs: 600,
       feedbackDurationMs: 400,
       countdownSeconds: 3,
-      goRatio: 0.71,
+      goRatio: 0.87,
     },
     10: {
       stimulusDurationMs: 500,
@@ -152,7 +152,7 @@ var SimpleAdaptiveEngine = (function () {
       isiMaxMs: 500,
       feedbackDurationMs: 300,
       countdownSeconds: 3,
-      goRatio: 0.70,
+      goRatio: 0.89,
     },
   };
 
