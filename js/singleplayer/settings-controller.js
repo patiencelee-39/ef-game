@@ -270,10 +270,10 @@
     document.getElementById("edBarFeedback").style.width = pct + "%";
     document.getElementById("edValFeedback").textContent = (t.feedback / 1000).toFixed(1) + " 秒";
 
-    document.getElementById("edBarGoRatio").style.width = pct + "%";
-    if (t.goRatio != null) {
-      document.getElementById("edValGoRatio").textContent = Math.round(t.goRatio * 100) + "%";
-    }
+    var goBar = document.getElementById("edBarGoRatio");
+    var goVal = document.getElementById("edValGoRatio");
+    if (goBar) goBar.style.width = pct + "%";
+    if (goVal && t.goRatio != null) goVal.textContent = Math.round(t.goRatio * 100) + "%";
 
     document.getElementById("edBarWmPos").style.width = pct + "%";
     document.getElementById("edValWmPos").textContent = w.minPos + "～" + w.maxPos + " 個";
