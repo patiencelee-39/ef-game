@@ -130,3 +130,36 @@
 .flex-1 {
   flex: 1;
 }
+
+/* 參數預覽表格樣式 */
+.preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.preview-table tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.preview-table td {
+  padding: 6px 8px;
+}
+
+.preview-table td:first-child {
+  font-weight: 600;
+  width: 40%;
+  color: var(--text-primary, rgba(255, 255, 255, 0.9));
+}
+
+.preview-table td:last-child {
+  text-align: right;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.7));
+}
+
+.hint-text {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 8px;
+  margin-bottom: 0;
+}

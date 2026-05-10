@@ -51,6 +51,7 @@ var GameController = (function () {
   var _roomCountdownSeconds = null;
   var _displaySettings = {};
   var _isPaused = false;
+  var _roomGameParams = null;  // 多人模式：房間的統一遊戲參數
   var _isiTimerId = null;
   var _stimTimerId = null;
   var _graceTimerId = null;
@@ -108,7 +109,20 @@ var GameController = (function () {
         (typeof GAME_CONFIG !== "undefined"
           ? GAME_CONFIG.QUESTIONS.DEFAULT_COUNT
           : 10);
+      
+      // 若有房間參數，則臨時覆蓋 Go 比例
+      var originalGoRatio = null;
+      if (_roomGameParams && GAME_CONFIG && GAME_CONFIG.FIELDS && GAME_CONFIG.FIELDS[combo.fieldId]) {
+        originalGoRatio = GAME_CONFIG.FIELDS[combo.fieldId].goRatio;
+        GAME_CONFIG.FIELDS[combo.fieldId].goRatio = _roomGameParams.goRatio / 100; // 轉為 0~1 小數
+      }
+      
       _questions = generateQuestions(combo.fieldId, combo.ruleId, count);
+      
+      // 恢復原 Go 比例
+      if (originalGoRatio !== null && GAME_CONFIG.FIELDS[combo.fieldId]) {
+        GAME_CONFIG.FIELDS[combo.fieldId].goRatio = originalGoRatio;
+      }
     }
 
     // 防呆：題目生成失敗
@@ -242,10 +256,22 @@ var GameController = (function () {
     _isPlaying = true;
     dom.btnSpace.disabled = true;
 
-    var _dp = DifficultyProvider.getTrialParams({
-      fieldId: combo.fieldId,
-      ruleId: combo.ruleId,
-    });
+    var _dp;
+    if (_roomGameParams) {
+      _dp = {
+        stimulusDurationMs: _roomGameParams.stimulusMs,
+        responseGraceMs: _roomGameParams.graceMs,
+        isiMinMs: _roomGameParams.isiMinMs,
+        isiMaxMs: _roomGameParams.isiMaxMs,
+        feedbackDurationMs: _roomGameParams.feedbackMs,
+        countdownSeconds: 3,
+      };
+    } else {
+      _dp = DifficultyProvider.getTrialParams({
+        fieldId: combo.fieldId,
+        ruleId: combo.ruleId,
+      });
+    }
     Countdown.start({
       container: dom.gameContainer,
       seconds: _roomCountdownSeconds || _dp.countdownSeconds,
@@ -270,13 +296,24 @@ var GameController = (function () {
     dom.progressBar.style.width = progressPct + "%";
     dom.progressBar.parentElement.setAttribute("aria-valuenow", progressPct);
 
-    var _tp = DifficultyProvider.getTrialParams({
-      fieldId: combo.fieldId,
-      ruleId: combo.ruleId,
-      trialIndex: _trialIndex,
-      totalTrials: _questions.length,
-      history: _trialResults,
-    });
+    var _tp;
+    if (_roomGameParams) {
+      _tp = {
+        stimulusDurationMs: _roomGameParams.stimulusMs,
+        responseGraceMs: _roomGameParams.graceMs,
+        isiMinMs: _roomGameParams.isiMinMs,
+        isiMaxMs: _roomGameParams.isiMaxMs,
+        feedbackDurationMs: _roomGameParams.feedbackMs,
+      };
+    } else {
+      _tp = DifficultyProvider.getTrialParams({
+        fieldId: combo.fieldId,
+        ruleId: combo.ruleId,
+        trialIndex: _trialIndex,
+        totalTrials: _questions.length,
+        history: _trialResults,
+      });
+    }
 
     var isiMs =
       _trialIndex === 0
@@ -493,21 +530,47 @@ var GameController = (function () {
     })
       .then(function () {
         // 新增：取得當前難度的 WM 參數
-        var _wmDiffParams = DifficultyProvider.getWMParams({
-          fieldId: combo.fieldId,
-          ruleId: combo.ruleId,
-          ruleQuestionCount: _questions.length,
-        });
-
         var wmPreset = combo.workingMemoryTest || {};
+        
+        var wmParams;
+        if (_roomGameParams) {
+          // 使用房間的統一 WM 參數
+          var ruleCount = _questions.length || 6;
+          var maxP = Math.min(ruleCount, _roomGameParams.wmMaxPos);
+          var minP = _roomGameParams.wmMinPos;
+          if (maxP < minP) maxP = minP;
+          var positions = wmPreset.positions || Math.floor(Math.random() * (maxP - minP + 1)) + minP;
+          var direction = wmPreset.direction || (Math.random() < (_roomGameParams.wmReverse / 100) ? "reverse" : "forward");
+          
+          wmParams = {
+            positions: positions,
+            direction: direction,
+            reverseProbability: _roomGameParams.wmReverse / 100,
+            responseTimeoutMs: _roomGameParams.wmTimeoutMs,
+          };
+        } else {
+          var _wmDiffParams = DifficultyProvider.getWMParams({
+            fieldId: combo.fieldId,
+            ruleId: combo.ruleId,
+            ruleQuestionCount: _questions.length,
+          });
+          
+          wmParams = {
+            positions: wmPreset.positions || _wmDiffParams.positions,
+            direction: wmPreset.direction || _wmDiffParams.direction,
+            reverseProbability: _wmDiffParams.reverseProbability,
+          };
+        }
+
         return WorkingMemory.start({
           fieldId: combo.fieldId,
           ruleId: combo.ruleId,
           questions: _questions,
           personalBest: null, // MP 不使用 ProgressTracker，無 personalBest
-          direction: wmPreset.direction,
-          positions: wmPreset.positions,
-          reverseProbability: _wmDiffParams.reverseProbability,
+          direction: wmParams.direction,
+          positions: wmParams.positions,
+          reverseProbability: wmParams.reverseProbability,
+          responseTimeoutMs: wmParams.responseTimeoutMs,
           onResult: function (wmScore) {
             WorkingMemory.hide();
             dom.wmContainer.classList.add("hidden");
@@ -1077,6 +1140,12 @@ var GameController = (function () {
 
       // 讀取顯示設定
       _displaySettings = roomData.displaySettings || {};
+
+      // 讀取房間的統一遊戲參數（多人模式用房主的固定模式參數）
+      _roomGameParams = roomData.gameParams || null;
+      if (_roomGameParams) {
+        Logger.info("[GameController] 已讀取房間遊戲參數:", _roomGameParams);
+      }
 
       // ── 接力 / 隊伍對抗模式偵測 ──
       _isRelayMode = roomData.gameMode === "relay";

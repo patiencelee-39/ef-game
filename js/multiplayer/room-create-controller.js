@@ -425,4 +425,49 @@ function initGameModeSelector() {
       maxPlayersValue.textContent = maxPlayersSlider.value + " 人";
     });
   }
+
+  // 渲染本場難度參數預覽
+  renderParamPreview();
+}
+
+/**
+ * 渲染房間難度參數預覽表
+ */
+function renderParamPreview() {
+  const SP_DEFAULTS = {
+    stimulusMs: 2000,
+    graceMs: 1000,
+    isiMinMs: 800,
+    isiMaxMs: 1200,
+    feedbackMs: 800,
+    goRatio: 80,
+    wmMinPos: 2,
+    wmMaxPos: 4,
+    wmReverse: 30,
+    wmTimeoutMs: 60000,
+  };
+
+  let params = {};
+  try {
+    const raw = localStorage.getItem("ef_static_params");
+    if (raw) params = JSON.parse(raw);
+  } catch (e) {
+    /* ignore */
+  }
+
+  const html = '<table style="width:100%;border-collapse:collapse;font-size:0.9rem;">'
+    + '<tr style="border-bottom:1px solid rgba(255,255,255,0.1);"><td style="padding:6px 8px;font-weight:600;width:40%;">圖片顯示</td><td style="padding:6px 8px;">' + (params.stimulusMs || SP_DEFAULTS.stimulusMs) + ' ms</td></tr>'
+    + '<tr style="border-bottom:1px solid rgba(255,255,255,0.1);"><td style="padding:6px 8px;font-weight:600;width:40%;">對錯反饋</td><td style="padding:6px 8px;">' + (params.feedbackMs || SP_DEFAULTS.feedbackMs) + ' ms</td></tr>'
+    + '<tr style="border-bottom:1px solid rgba(255,255,255,0.1);"><td style="padding:6px 8px;font-weight:600;width:40%;">題目間隔</td><td style="padding:6px 8px;">' + (params.isiMinMs || SP_DEFAULTS.isiMinMs) + '~' + (params.isiMaxMs || SP_DEFAULTS.isiMaxMs) + ' ms</td></tr>'
+    + '<tr style="border-bottom:1px solid rgba(255,255,255,0.1);"><td style="padding:6px 8px;font-weight:600;width:40%;">額外反應</td><td style="padding:6px 8px;">' + (params.graceMs || SP_DEFAULTS.graceMs) + ' ms</td></tr>'
+    + '<tr style="border-bottom:1px solid rgba(255,255,255,0.1);"><td style="padding:6px 8px;font-weight:600;width:40%;">Go比例</td><td style="padding:6px 8px;">' + (params.goRatio || SP_DEFAULTS.goRatio) + '%</td></tr>'
+    + '<tr style="border-bottom:1px solid rgba(255,255,255,0.1);"><td style="padding:6px 8px;font-weight:600;width:40%;">WM廣度</td><td style="padding:6px 8px;">' + (params.wmMinPos || SP_DEFAULTS.wmMinPos) + '~' + (params.wmMaxPos || SP_DEFAULTS.wmMaxPos) + ' 格</td></tr>'
+    + '<tr style="border-bottom:1px solid rgba(255,255,255,0.1);"><td style="padding:6px 8px;font-weight:600;width:40%;">WM作答時限</td><td style="padding:6px 8px;">' + ((params.wmTimeoutMs || SP_DEFAULTS.wmTimeoutMs) / 1000).toFixed(0) + ' 秒</td></tr>'
+    + '<tr><td style="padding:6px 8px;font-weight:600;width:40%;">逆序機率</td><td style="padding:6px 8px;">' + (params.wmReverse || SP_DEFAULTS.wmReverse) + '%</td></tr>'
+    + '</table>';
+
+  const paramPreview = document.getElementById("paramPreview");
+  if (paramPreview) {
+    paramPreview.innerHTML = html;
+  }
 }

@@ -105,6 +105,9 @@ class RoomManager {
               },
             }
           : {},
+
+        // ── 多人模式統一參數（從房主的固定模式設定讀取） ──
+        gameParams: this._extractGameParams(),
       };
 
       // 寫入 Firebase
@@ -125,6 +128,50 @@ class RoomManager {
       Logger.error("❌ 建立房間失敗:", error);
       throw error;
     }
+  }
+
+  /**
+   * 提取房主的固定模式參數
+   * @returns {Object} gameParams 物件
+   */
+  _extractGameParams() {
+    const SP_DEFAULTS = {
+      stimulusMs: 2000,
+      graceMs: 1000,
+      isiMinMs: 800,
+      isiMaxMs: 1200,
+      feedbackMs: 800,
+      goRatio: 80,
+      wmMinPos: 2,
+      wmMaxPos: 4,
+      wmReverse: 30,
+      wmTimeoutMs: 60000,
+    };
+
+    let hostParams = {};
+    try {
+      const raw = localStorage.getItem("ef_static_params");
+      if (raw) hostParams = JSON.parse(raw);
+    } catch (e) {
+      Logger.warn("[RoomManager] 讀取房主參數失敗，使用預設值");
+    }
+
+    // 合併：有自訂用自訂，沒有用預設
+    const gameParams = {
+      stimulusMs:  hostParams.stimulusMs  != null ? hostParams.stimulusMs  : SP_DEFAULTS.stimulusMs,
+      graceMs:     hostParams.graceMs     != null ? hostParams.graceMs     : SP_DEFAULTS.graceMs,
+      isiMinMs:    hostParams.isiMinMs    != null ? hostParams.isiMinMs    : SP_DEFAULTS.isiMinMs,
+      isiMaxMs:    hostParams.isiMaxMs    != null ? hostParams.isiMaxMs    : SP_DEFAULTS.isiMaxMs,
+      feedbackMs:  hostParams.feedbackMs  != null ? hostParams.feedbackMs  : SP_DEFAULTS.feedbackMs,
+      goRatio:     hostParams.goRatio     != null ? hostParams.goRatio     : SP_DEFAULTS.goRatio,
+      wmMinPos:    hostParams.wmMinPos    != null ? hostParams.wmMinPos    : SP_DEFAULTS.wmMinPos,
+      wmMaxPos:    hostParams.wmMaxPos    != null ? hostParams.wmMaxPos    : SP_DEFAULTS.wmMaxPos,
+      wmReverse:   hostParams.wmReverse   != null ? hostParams.wmReverse   : SP_DEFAULTS.wmReverse,
+      wmTimeoutMs: hostParams.wmTimeoutMs != null ? hostParams.wmTimeoutMs : SP_DEFAULTS.wmTimeoutMs,
+    };
+
+    Logger.debug("[RoomManager] gameParams 已提取:", gameParams);
+    return gameParams;
   }
 
   /**

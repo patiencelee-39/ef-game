@@ -1843,9 +1843,9 @@ var GameController = (function () {
         });
 
         // 推進 combo 索引
+        // 注：不傳遞 trialDetails 以避免 sessionStorage 記憶洩漏（類似多人模式的修復）
         var advance = ModeController.advanceToNextCombo({
           comboResult: fsResult,
-          trialDetails: _trialResults,
         });
 
         if (advance.hasNext) {
