@@ -126,12 +126,15 @@
   // 🎯 遊戲設定
   // =========================================
   function loadGameSettings() {
+    var def = (typeof GAME_CONFIG !== "undefined") ? GAME_CONFIG.QUESTIONS.DEFAULT_COUNT : 40;
     var count =
       typeof getQuestionCountPreference === "function"
         ? getQuestionCountPreference()
-        : 50;
+        : def;
     var input = document.getElementById("countInput");
     if (input) input.value = count;
+    var display = document.getElementById("count-value");
+    if (display) display.textContent = count;
   }
 
   // =========================================
@@ -185,6 +188,7 @@
         isiMin: t.isiMinMs,
         isiMax: t.isiMaxMs,
         feedback: t.feedbackDurationMs,
+        goRatio: t.goRatio,
       };
     }
     for (var lv2 in raw.wm) {
@@ -303,6 +307,13 @@
       }
       html += "</tr>";
 
+      // 🎯 Go 比例
+      html += "<tr><td>🎯 Go比例</td>";
+      for (var i = 1; i <= maxLv; i++) {
+        html += "<td>" + Math.round(data.timing[i].goRatio * 100) + "%</td>";
+      }
+      html += "</tr>";
+
       // ⏳ 額外反應
       html += "<tr><td>⏳ 額外反應</td>";
       for (var i = 1; i <= maxLv; i++) {
@@ -381,7 +392,7 @@
     isiMinMs: 800,
     isiMaxMs: 1200,
     feedbackMs: 800,
-    goRatio: 75,
+    goRatio: 80,
     wmMinPos: 2,
     wmMaxPos: 4,
     wmReverse: 30,
@@ -627,9 +638,9 @@
           );
         });
         var names = {
-          static: "📊 固定難度",
-          simple: "🎯 簡易自適應",
-          irt: "🧠 IRT 智慧調整",
+          static: "📊 固定",
+          simple: "🎯 動態",
+          irt: "🧠 IRT",
         };
         showToast(
           "已切換為「" + (names[engine] || engine) + "」，下次遊戲生效",

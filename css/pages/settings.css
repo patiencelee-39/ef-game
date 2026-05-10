@@ -442,13 +442,12 @@ body {
   font-size: 0.85rem;
   text-align: center;
   outline: none;
-  -moz-appearance: textfield;
+  -moz-appearance: auto;
 }
 
 .engine-param-input::-webkit-inner-spin-button,
 .engine-param-input::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
+  -webkit-appearance: auto;
 }
 
 .engine-param-input:focus {

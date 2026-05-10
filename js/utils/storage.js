@@ -610,7 +610,7 @@ function saveStimuliPackPreference(packId) {
  */
 function getQuestionCountPreference() {
   var profile = getPlayerProfile();
-  var def = (typeof GAME_CONFIG !== "undefined") ? GAME_CONFIG.QUESTIONS.DEFAULT_COUNT : 50;
+  var def = (typeof GAME_CONFIG !== "undefined") ? GAME_CONFIG.QUESTIONS.DEFAULT_COUNT : 40;
   if (!profile || !profile.questionCountPrefs) return def;
   return profile.questionCountPrefs.ruleQuestionCount || def;
 }
