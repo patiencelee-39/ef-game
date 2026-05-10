@@ -23,7 +23,7 @@
   // ----- 參數標籤常數（改一處，處處同步） -----
   var PARAM_LABELS = {
     stimulus:  "📷 圖片呈現",
-    feedback:  "💬 反饋時間",
+    feedback:  "💬 對錯反饋",
     isi:       "⏱️ 試題間隔",
     grace:     "⏳ 額外反應時間",
     goRatio:   "🎯 Go比例",
