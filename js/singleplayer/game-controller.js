@@ -135,7 +135,8 @@ var GameController = (function () {
       "border-radius:8px;border:1px solid rgba(255,255,255,0.2);width:140px;" +
       "pointer-events:none;";
     _debugPanel.innerHTML =
-      '<div style="font-weight:700;margin-bottom:6px;color:#ffd43b;font-size:10px;">⏱️ 時間流程監控 <span id="dbgLevel" style="color:#51cf66;"></span></div>' +
+      '<div style="font-weight:700;margin-bottom:2px;color:#ffd43b;font-size:10px;">⏱️ 時間流程監控</div>' +
+      '<div style="margin-bottom:6px;font-weight:700;font-size:10px;" id="dbgLevel"></div>' +
       '<div id="dbgStim">📷 圖片顯示: —</div>' +
       '<div id="dbgFeedback">💬 對錯反饋: —</div>' +
       '<div id="dbgISI">⏱️ 題目間隔: —</div>' +
