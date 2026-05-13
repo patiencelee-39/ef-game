@@ -462,8 +462,12 @@
         var val = parseInt(el.value, 10);
         var min = parseInt(el.min, 10);
         var max = parseInt(el.max, 10);
-        if (isNaN(val) || val < min) val = min;
-        if (val > max) val = max;
+        var clamped = false;
+        if (isNaN(val) || val < min) { val = min; clamped = true; }
+        if (val > max) { val = max; clamped = true; }
+        if (clamped && f.key === "goRatio") {
+          Toast.show("Go 比例需介於 70%~89% 之間（文獻建議的有效訓練範圍），已自動調整為 " + val + "%", "warning");
+        }
         el.value = val;
         data[f.key] = val;
       }
