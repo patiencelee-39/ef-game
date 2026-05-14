@@ -552,8 +552,9 @@ var FirestoreLeaderboard = (function () {
           : uploadData.nickname;
         Logger.info("✅ 世界排行榜已新增：" + label);
 
-        // 上傳後自動修剪
-        return _trimWorldLeaderboard();
+        // 裁剪已改為手動操作（admin 工具的「✂️  修剪」按鈕）
+        // 原因：Firestore rules 已限制只能刪除自己的資料，前端無權裁剪他人紀錄
+        return Promise.resolve();
       });
   }
 

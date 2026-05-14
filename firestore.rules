@@ -9,6 +9,30 @@ rules_version = '2';
 //   1. 📋 班級排行榜（classLeaderboards）— 持久化，老師不刪就一直在
 //   2. 🌐 世界排行榜（worldLeaderboard）— 匿名上傳，覆蓋或過期刪除
 // ====================================
+//
+// ┌─────────────────────────────────────────────────────────────┐
+// │ 🔑 管理員 UID 設定                                          │
+// │                                                             │
+// │ 下方的 ADMIN_UID 是「允許刪除任何人資料」的管理員帳號。      │
+// │                                                             │
+// │ ★ 什麼時候需要改？                                          │
+// │   - 你清除了瀏覽器資料（Cookie/localStorage）               │
+// │   - 你換了電腦或瀏覽器                                      │
+// │   - 你看到 admin 工具「刪除」按鈕出現「權限不足」錯誤       │
+// │                                                             │
+// │ ★ 怎麼改？                                                  │
+// │   1. 打開 admin 工具頁面（tools/admin.html）                │
+// │   2. 頁面上方「🔑 管理員身份」區域會顯示你的完整 UID        │
+// │   3. 點「📋 複製」按鈕複製 UID                              │
+// │   4. 回到這個檔案，找到下方寫著 ADMIN_UID 的那一行          │
+// │   5. 把引號裡面的內容換成你剛複製的 UID                     │
+// │   6. 在終端機執行：firebase deploy                          │
+// │   7. 重新整理 admin 頁面，完成！                            │
+// │                                                             │
+// │ ★ Fork 的教師：                                             │
+// │   你第一次部署時就要改這個值，換成你自己的 UID。            │
+// │   查看方式同上（打開你自己部署的 tools/admin.html）。        │
+// └─────────────────────────────────────────────────────────────┘
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -79,8 +103,12 @@ service cloud.firestore {
         )
         && request.resource.data.keys().size() <= 25;
 
-      // ✅ 已驗證用戶可刪除（排行榜循全剪裁用，僅保留前 10 名）
-      allow delete: if request.auth != null;
+      // ✅ 刪除：本人刪自己的資料，或管理員可刪任何人的
+      //         ↓↓↓ ADMIN_UID：換成你的 UID（查看方式見檔案頂部說明）↓↓↓
+      allow delete: if request.auth != null
+        && (resource.data.uid == request.auth.uid
+            || request.auth.uid == "在此貼上你的UID");
+      //         ↑↑↑ 把「在此貼上你的UID」換成你的管理員 UID ↑↑↑
     }
 
     // ─────────────────────────────────

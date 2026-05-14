@@ -101,6 +101,29 @@
     dom.btnClearSession.addEventListener("click", clearSessionStorage);
     dom.btnClearSwCache.addEventListener("click", clearSwCache);
     dom.btnClearAll.addEventListener("click", clearAllCaches);
+
+    // 複製 UID 按鈕
+    var btnCopyUid = document.getElementById("btnCopyUid");
+    if (btnCopyUid) {
+      btnCopyUid.addEventListener("click", function() {
+        var uid = document.getElementById("adminUidValue").textContent;
+        if (!uid || uid === "載入中…") return;
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(uid).then(function() {
+            btnCopyUid.textContent = "✅ 已複製！";
+            setTimeout(function() { btnCopyUid.textContent = "📋 複製"; }, 2000);
+          });
+        } else {
+          prompt("請手動複製以下 UID：", uid);
+        }
+      });
+    }
+
+    // 重新整理概覽按鈕
+    var btnRefreshOverview = document.getElementById("btnRefreshOverview");
+    if (btnRefreshOverview) {
+      btnRefreshOverview.addEventListener("click", loadOverview);
+    }
   }
 
   function waitForAuth() {
@@ -119,10 +142,15 @@
         dom.authStatus.innerHTML = "✅ 已登入：<strong>" + label + "</strong>";
         logMsg("已登入：" + user.uid, "ok");
 
+        // 顯示管理員 UID
+        var uidEl = document.getElementById("adminUidValue");
+        if (uidEl) uidEl.textContent = user.uid;
+
         // 自動載入所有資料
         loadRooms();
         loadBoards();
         loadWorldEntries();
+        loadOverview();
       } else {
         dom.authStatus.textContent = "⏳ 等待登入…";
       }
@@ -985,6 +1013,74 @@
     updateBoardSelection: updateBoardSelection,
     updateWorldSelection: updateWorldSelection,
   };
+
+  // ═══════════════════════════════════
+  // 📊 資料庫概覽
+  // ═══════════════════════════════════
+
+  function loadOverview() {
+    var container = document.getElementById("dbOverview");
+    if (!container) return;
+    container.innerHTML = '<div class="db-overview-loading">查詢中…</div>';
+
+    var db = firebase.firestore();
+    var rtdb = firebase.database();
+
+    var results = {
+      rooms: "—",
+      classBoards: "—",
+      classEntries: "—",
+      worldEntries: "—",
+    };
+
+    var roomsPromise = rtdb.ref("rooms").once("value").then(function(snap) {
+      results.rooms = snap.exists() ? snap.numChildren() : 0;
+    }).catch(function() { results.rooms = "讀取失敗"; });
+
+    var boardsPromise = db.collection("classLeaderboards").get().then(function(snap) {
+      results.classBoards = snap.size;
+      var entryPromises = [];
+      snap.forEach(function(doc) {
+        entryPromises.push(
+          db.collection("classLeaderboards").doc(doc.id).collection("entries").get()
+        );
+      });
+      return Promise.all(entryPromises);
+    }).then(function(entrySnaps) {
+      var total = 0;
+      entrySnaps.forEach(function(s) { total += s.size; });
+      results.classEntries = total;
+    }).catch(function() { results.classBoards = "讀取失敗"; });
+
+    var worldPromise = db.collection("worldLeaderboard").get().then(function(snap) {
+      results.worldEntries = snap.size;
+    }).catch(function() { results.worldEntries = "讀取失敗"; });
+
+    Promise.all([roomsPromise, boardsPromise, worldPromise]).then(function() {
+      container.innerHTML =
+        '<div class="db-overview-grid">' +
+          _overviewItem("🏠", "多人房間（RTDB）", results.rooms, "筆") +
+          _overviewItem("📚", "班級看板", results.classBoards, "個") +
+          _overviewItem("📝", "班級排行榜紀錄", results.classEntries, "筆") +
+          _overviewItem("🌍", "世界排行榜紀錄", results.worldEntries, "筆") +
+        '</div>';
+    });
+  }
+
+  function _overviewItem(icon, label, count, unit) {
+    var countStr = (typeof count === "number") ? count.toLocaleString() : count;
+    var statusClass = "";
+    if (typeof count === "number") {
+      if (count > 10000) statusClass = "status-warn";
+      else if (count > 5000) statusClass = "status-caution";
+      else statusClass = "status-ok";
+    }
+    return '<div class="db-overview-item">' +
+      '<span class="db-overview-icon">' + icon + '</span>' +
+      '<span class="db-overview-label">' + label + '</span>' +
+      '<span class="db-overview-count ' + statusClass + '">' + countStr + ' ' + unit + '</span>' +
+    '</div>';
+  }
 
   // ── 啟動 ──
   if (document.readyState === "loading") {
