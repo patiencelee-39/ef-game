@@ -385,6 +385,48 @@
       .usage-hint-content ol { padding-left: 1.5em; margin: 6px 0; }
       .usage-hint-content li { margin-bottom: 4px; }
       .usage-hint-content a { color: #64b5f6; }
+
+      /* 編號 */
+      .entry-num {
+        display: inline-block;
+        min-width: 28px;
+        font-size: 0.7rem;
+        color: #888;
+        font-weight: 400;
+      }
+
+      /* 範圍刪除 */
+      .trim-range-box {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+        padding: 10px 0;
+      }
+      .trim-label {
+        font-size: 0.82rem;
+        color: #aaa;
+        white-space: nowrap;
+      }
+      .trim-input {
+        width: 60px;
+        padding: 6px 8px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        background: rgba(0, 0, 0, 0.3);
+        color: #fff;
+        font-size: 0.85rem;
+        text-align: center;
+      }
+      .trim-input:focus {
+        outline: none;
+        border-color: rgba(255, 180, 50, 0.5);
+      }
+      .trim-hint {
+        font-size: 0.75rem;
+        margin-top: 4px;
+        min-height: 1.2em;
+      }
     </style>
   </head>
   <body>
@@ -532,17 +574,21 @@ rel="noopener">Firebase Console</a></li>
           <button class="btn-action btn-danger" id="btnDeleteAllWorld">
             💣 清空世界排行榜
           </button>
-          <button
-            class="btn-action btn-refresh"
-            id="btnTrimWorld"
-            style="
-              background: rgba(255, 180, 50, 0.15);
-              border-color: rgba(255, 180, 50, 0.3);
-              color: #ffb432;
-            "
-          >
-            ✂️ 修剪至前 10 名
-          </button>
+          <div class="trim-range-box" id="trimRangeBox">
+            <span class="trim-label">✂️ 範圍刪除：第</span>
+            <input type="number" class="trim-input" id="trimFrom" min="1" value="11" />
+            <span class="trim-label">筆 到 第</span>
+            <input type="number" class="trim-input" id="trimTo" min="1" value="20" />
+            <span class="trim-label">筆</span>
+            <button
+              class="btn-action btn-danger"
+              id="btnTrimRange"
+              style="margin-left: 8px; flex: none; min-width: auto; padding: 8px 14px;"
+            >
+              🗑️ 刪除此範圍
+            </button>
+          </div>
+          <div class="trim-hint" id="trimHint"></div>
         </div>
       </div>
 

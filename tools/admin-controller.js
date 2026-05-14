@@ -69,7 +69,10 @@
       "btnDeleteSelectedWorld",
     );
     dom.btnDeleteAllWorld = document.getElementById("btnDeleteAllWorld");
-    dom.btnTrimWorld = document.getElementById("btnTrimWorld");
+    dom.btnTrimRange = document.getElementById("btnTrimRange");
+    dom.trimFrom = document.getElementById("trimFrom");
+    dom.trimTo = document.getElementById("trimTo");
+    dom.trimHint = document.getElementById("trimHint");
 
     // 本機快取清除
     dom.btnClearLocal = document.getElementById("btnClearLocal");
@@ -94,7 +97,10 @@
     dom.btnRefreshWorld.addEventListener("click", loadWorldEntries);
     dom.btnDeleteSelectedWorld.addEventListener("click", deleteSelectedWorld);
     dom.btnDeleteAllWorld.addEventListener("click", deleteAllWorld);
-    dom.btnTrimWorld.addEventListener("click", trimWorldToTop10);
+    dom.btnTrimRange.addEventListener("click", trimRange);
+    // 輸入時即時提示將刪除幾筆
+    dom.trimFrom.addEventListener("input", updateTrimHint);
+    dom.trimTo.addEventListener("input", updateTrimHint);
 
     // 本機快取清除
     dom.btnClearLocal.addEventListener("click", clearLocalStorage);
@@ -718,7 +724,7 @@
         idx +
         '" onchange="AdminTool.updateWorldSelection()">' +
         '<div class="info">' +
-        '<div class="name">🌍 ' +
+        '<div class="name"><span class="entry-num">#' + (idx + 1) + '</span> 🌍 ' +
         (entry.nickname || "匿名") +
         " — " +
         (entry.bestScore || 0) +
@@ -882,23 +888,94 @@
   // ✂️ 世界排行榜修剪至前 10 名
   // ────────────────────────────────────
 
-  function trimWorldToTop10() {
-    if (
-      typeof FirestoreLeaderboard === "undefined" ||
-      !FirestoreLeaderboard.trimWorldToTop10
-    ) {
-      logMsg("FirestoreLeaderboard.trimWorldToTop10 不可用", "err");
+  function updateTrimHint() {
+    var from = parseInt(dom.trimFrom.value, 10);
+    var to = parseInt(dom.trimTo.value, 10);
+    var total = _worldEntries.length;
+
+    if (isNaN(from) || isNaN(to) || from < 1 || to < 1) {
+      dom.trimHint.textContent = "";
       return;
     }
-    logMsg("✂️ 開始修剪世界排行榜至前 10 名…", "info");
-    FirestoreLeaderboard.trimWorldToTop10()
-      .then(function () {
-        logMsg("✅ 世界排行榜修剪完成（僅保留前 10 名）", "ok");
-        loadWorldEntries(); // 重新整理列表
-      })
-      .catch(function (e) {
-        logMsg("❌ 修剪失敗：" + e.message, "err");
+    if (from > to) {
+      dom.trimHint.textContent = "⚠️ 起始筆數不能大於結束筆數";
+      dom.trimHint.style.color = "#ff6b6b";
+      return;
+    }
+    if (from > total) {
+      dom.trimHint.textContent = "⚠️ 目前只有 " + total + " 筆資料";
+      dom.trimHint.style.color = "#ff6b6b";
+      return;
+    }
+
+    var actualTo = Math.min(to, total);
+    var count = actualTo - from + 1;
+    dom.trimHint.textContent = "將刪除 #" + from + "~#" + actualTo + "，共 " + count + " 筆（目前共 " + total + " 筆）";
+    dom.trimHint.style.color = "#ffb74d";
+  }
+
+  function trimRange() {
+    var from = parseInt(dom.trimFrom.value, 10);
+    var to = parseInt(dom.trimTo.value, 10);
+    var total = _worldEntries.length;
+
+    if (isNaN(from) || isNaN(to) || from < 1 || to < 1) {
+      logMsg("❌ 請輸入有效的範圍數字", "err");
+      return;
+    }
+    if (from > to) {
+      logMsg("❌ 起始筆數不能大於結束筆數", "err");
+      return;
+    }
+    if (from > total) {
+      logMsg("❌ 目前只有 " + total + " 筆資料，無法從第 " + from + " 筆開始刪除", "err");
+      return;
+    }
+
+    var actualTo = Math.min(to, total);
+    var count = actualTo - from + 1;
+
+    if (!confirm("確定刪除第 " + from + " 筆到第 " + actualTo + " 筆？\n\n共 " + count + " 筆紀錄將被刪除，此操作不可復原。")) {
+      return;
+    }
+
+    logMsg("✂️ 開始刪除第 " + from + "~" + actualTo + " 筆（共 " + count + " 筆）…", "info");
+
+    // 從後往前刪，避免索引偏移
+    var indices = [];
+    for (var i = actualTo - 1; i >= from - 1; i--) {
+      indices.push(i);
+    }
+
+    var chain = Promise.resolve();
+    var successCount = 0;
+    var failCount = 0;
+
+    indices.forEach(function(idx) {
+      chain = chain.then(function() {
+        var entry = _worldEntries[idx];
+        if (!entry) return Promise.resolve();
+        return firebase.firestore()
+          .collection("worldLeaderboard")
+          .doc(entry.docId)
+          .delete()
+          .then(function() {
+            _worldEntries.splice(idx, 1);
+            successCount++;
+          })
+          .catch(function(err) {
+            failCount++;
+            logMsg("❌ #" + (idx + 1) + " " + entry.nickname + "：" + err.message, "err");
+          });
       });
+    });
+
+    chain.then(function() {
+      renderWorldEntries();
+      dom.worldCount.textContent = _worldEntries.length + " 筆";
+      updateTrimHint();
+      logMsg("✅ 範圍刪除完成：成功 " + successCount + " 筆" + (failCount > 0 ? "，失敗 " + failCount + " 筆" : ""), "ok");
+    });
   }
 
   // ────────────────────────────────────
