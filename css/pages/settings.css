@@ -713,3 +713,34 @@ body {
   color: var(--text-warning, #e67e22);
   margin-top: 2px;
 }
+
+.engine-param-ref {
+  margin-top: 4px;
+  font-size: 0.7rem;
+}
+
+.engine-param-ref summary {
+  cursor: pointer;
+  color: var(--text-muted, #888);
+  user-select: none;
+}
+
+.engine-param-ref summary:hover {
+  color: var(--text-primary, #333);
+}
+
+.engine-param-ref .ref-list {
+  margin: 4px 0 0 0;
+  padding-left: 1.2em;
+  color: var(--text-muted, #666);
+  line-height: 1.5;
+}
+
+.engine-param-ref .ref-list li {
+  margin-bottom: 6px;
+}
+
+.engine-param-ref .ref-list a {
+  color: var(--accent-blue, #4a9eff);
+  word-break: break-all;
+}

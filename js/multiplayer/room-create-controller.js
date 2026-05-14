@@ -281,6 +281,45 @@ function initGameModeSelector() {
 
   if (!selector) return;
 
+  // ┌─────────────────────────────────────────────────────────┐
+  // │ 🔒 開發中鎖定（隊伍對抗 & 接力賽）                           │
+  // │                                                         │
+  // │ ★ 功能完成後如何解鎖：                                     │
+  // │   1. 找到這一行「// ┌──」                                 │
+  // │   2. 找到下方的「// └──」                                 │
+  // │   3. 把這兩行之間的所有東西（包含這兩行本身）全部刪除           │
+  // │   4. 存檔，完成。不需要修改任何其他檔案                       │
+  // │                                                         │
+  // │ ★ 開發者如何進入：                                         │
+  // │   在瀏覽器按 F12 → Console，輸入：                         │
+  // │   localStorage.setItem("ef_dev_mode", "1")              │
+  // │   然後重新整理頁面，按鈕就會出現（還需要輸入密碼）              │
+  // └─────────────────────────────────────────────────────────┘
+  selector.querySelectorAll('[data-mode="team"],[data-mode="relay"]').forEach(function(btn) {
+    if (!localStorage.getItem("ef_dev_mode")) {
+      btn.style.display = "none";
+    } else {
+      btn.addEventListener("click", function(e) {
+        e.stopPropagation();
+        var pwd = prompt("此功能開發中，開發者請輸入開發密碼：");
+        if (pwd !== "00000") {
+          GameModal.alert("🔒 功能鎖定", "密碼錯誤或已取消，此功能尚在開發中。", { icon: "🔒" });
+        } else {
+          selector.querySelectorAll(".game-mode-btn").forEach(function(b) {
+            b.classList.remove("active");
+          });
+          btn.classList.add("active");
+          var mode = btn.getAttribute("data-mode");
+          var ro = document.getElementById("relayOptions");
+          var to = document.getElementById("teamOptions");
+          if (ro) ro.classList[mode === "relay" ? "add" : "remove"]("visible");
+          if (to) to.classList[mode === "team" ? "add" : "remove"]("visible");
+        }
+      });
+    }
+  });
+  // └───── 🔒 開發中鎖定結束 ─── 功能完成後刪除到這裡 ─────┘
+
   // 模式切換
   selector.addEventListener("click", function (e) {
     var btn = e.target.closest(".game-mode-btn");
