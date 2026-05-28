@@ -506,6 +506,14 @@ function renderMap(mapIndex) {
   var overlay = document.getElementById("points-overlay");
   overlay.innerHTML = "";
 
+  // ─── 關卡連線 SVG ───
+  var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("aria-hidden", "true");
+  svg.style.cssText =
+    "position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;";
+  svg.setAttribute("viewBox", "0 0 100 100");
+  svg.setAttribute("preserveAspectRatio", "none");
+
   var statuses = ProgressTracker.getAllPointStatuses();
   var mapDef = ADVENTURE_MAPS[mapIndex];
   var mapPoints = statuses.filter(function (s) {
@@ -513,6 +521,33 @@ function renderMap(mapIndex) {
   });
 
   var positions = POINT_POSITIONS[mapDef.id];
+
+  // 畫相鄰關卡之間的連線
+  if (positions && positions.length > 1) {
+    for (var i = 0; i < positions.length - 1; i++) {
+      var from = positions[i];
+      var to = positions[i + 1];
+      var line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      line.setAttribute("x1", parseFloat(from.left));
+      line.setAttribute("y1", parseFloat(from.top));
+      line.setAttribute("x2", parseFloat(to.left));
+      line.setAttribute("y2", parseFloat(to.top));
+      // 已通過的段落用亮色實線，其餘用半透明虛線
+      var segmentPassed = mapPoints[i] && mapPoints[i].status === "passed";
+      if (segmentPassed) {
+        line.setAttribute("stroke", "rgba(255,255,255,0.8)");
+        line.setAttribute("stroke-width", "0.4");
+        line.setAttribute("stroke-dasharray", "none");
+      } else {
+        line.setAttribute("stroke", "rgba(255,255,255,0.35)");
+        line.setAttribute("stroke-width", "0.3");
+        line.setAttribute("stroke-dasharray", "1,1");
+      }
+      line.setAttribute("stroke-linecap", "round");
+      svg.appendChild(line);
+    }
+  }
+  overlay.appendChild(svg);
 
   mapPoints.forEach(function (point, idx) {
     var pos = positions[idx] || { left: "50%", top: "50%" };

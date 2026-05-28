@@ -360,6 +360,50 @@ var GameController = (function () {
         : "按！";
   }
 
+  // =========================================
+  // 規則視覺主題
+  // =========================================
+
+  var RULE_THEME = {
+    mouse: {
+      rule1: {
+        color: "#e2a308",
+        label: "🧀 蒐集起司！"
+      },
+      rule2: {
+        color: "#6b7280",
+        label: "🐱 拍拍貓貓！"
+      },
+      mixed: {
+        color: "#7c3aed",
+        label: "🤔 是起司還是貓？"
+      }
+    },
+    fishing: {
+      rule1: {
+        color: "#2563eb",
+        label: "🐟 釣魚！"
+      },
+      rule2: {
+        color: "#6b7280",
+        label: "🦈 捕鯊魚！"
+      },
+      mixed: {
+        color: "#7c3aed",
+        label: "🤔 是魚還是鯊魚？"
+      }
+    }
+  };
+
+  /** 取得特定規則的主題（顏色 + 標籤） */
+  function _getRuleTheme(fieldId, ruleId) {
+    var field = RULE_THEME[fieldId];
+    if (!field) return { color: "#ffffff", label: "按！" };
+    var rule = field[ruleId];
+    if (!rule) return { color: "#ffffff", label: "按！" };
+    return rule;
+  }
+
   // renderStimulus / clearStimulus 已遷移至 TrialRenderer 共用模組
 
   // =========================================
@@ -1359,7 +1403,17 @@ var GameController = (function () {
       GAME_CONFIG.FIELDS[combo.fieldId].icon +
         " " +
         GAME_CONFIG.FIELDS[combo.fieldId].rules[combo.ruleId].name;
-    dom.btnLabel.textContent = getActionLabel(combo.fieldId);
+    // ─── 規則視覺主題 ───
+    var theme = _getRuleTheme(combo.fieldId, combo.ruleId);
+    // E：按鈕顏色 + 文字
+    dom.btnLabel.textContent = theme.label;
+    dom.btnSpace.style.background = theme.color;
+    // C：頂部 header bar
+    dom.headerTitle.parentElement.style.background = theme.color + "33";
+    // A：遊戲邊框
+    dom.gameContainer.style.borderColor = theme.color;
+    // B：背景氛圍色
+    dom.gameContainer.style.background = theme.color + "15";
     dom.progressBar.style.width = "0%";
     dom.trialCurrent.textContent = "0";
 
