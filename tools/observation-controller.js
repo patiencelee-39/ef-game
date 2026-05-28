@@ -16,6 +16,7 @@
   "use strict";
 
   var STORAGE_KEY = "ef-observation-records";
+  var TESTER_LIST_KEY = "ef-observation-testers";
   var CSV_HEADERS =
     "回饋者身份,事前準備,日期,時間,兒童/回饋者代碼,年齡(歲),年齡(月),性別,聽力狀況,溝通方式,場域,完成關卡,總耗時(分鐘),休息次數,觀察重點,規則理解度,規則切換適應,操作順暢度,情緒與投入度,UI問題回報,兒童回饋摘要,綜合觀察紀錄,特殊備註,操作易用性回饋,兒童反應觀察,改善建議,施測者,儲存時間";
 
@@ -33,6 +34,7 @@
     bindEvents();
     setDefaults();
     renderSavedRecords();
+    renderTesterDatalist();
   }
 
   function cacheDom() {
@@ -286,8 +288,10 @@
       return;
     }
 
-    data.uploadedAt = new Date().toISOString();
+    data.uploadedAt = fmtTaiwanDateTime();
     data.uploadedBy = user.uid;
+    data.createdAt = fmtTaiwanDateTime();
+    data.editHistory = [];
 
     dom.btnObsUpload.disabled = true;
     dom.btnObsUpload.textContent = "⏳ 上傳中…";
@@ -297,6 +301,7 @@
       .collection("observationRecords")
       .add(data)
       .then(function (docRef) {
+        addTester(data.tester);
         showMsg(
           "✅ 已上傳至伺服器（ID: " + docRef.id.substring(0, 8) + "…）",
           "ok",
@@ -319,10 +324,13 @@
     var data = collectFormData();
     if (!validate(data)) return;
 
-    data.savedAt = new Date().toISOString();
+    data.savedAt = fmtTaiwanDateTime();
+    data.createdAt = fmtTaiwanDateTime();
+    data.editHistory = [];
     var records = getLocalRecords();
     records.push(data);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+    addTester(data.tester);
     showMsg("✅ 已儲存到本機（共 " + records.length + " 筆）", "ok");
     renderSavedRecords();
   }
@@ -389,7 +397,7 @@
     var data = collectFormData();
     if (!validate(data)) return;
 
-    data.savedAt = new Date().toISOString();
+    data.savedAt = fmtTaiwanDateTime();
     var csv = "\uFEFF" + CSV_HEADERS + "\n" + recordToCSVRow(data);
     var filename = "observation_" + data.childCode + "_" + data.date + ".csv";
     downloadFile(filename, csv, "text/csv;charset=utf-8");
@@ -417,7 +425,7 @@
     var data = collectFormData();
     if (!validate(data)) return;
 
-    data.savedAt = new Date().toISOString();
+    data.savedAt = fmtTaiwanDateTime();
     var json = JSON.stringify(data, null, 2);
     var filename = "observation_" + data.childCode + "_" + data.date + ".json";
     downloadFile(filename, json, "application/json;charset=utf-8");
@@ -564,6 +572,19 @@
       ":" +
       String(d.getMinutes()).padStart(2, "0")
     );
+  }
+
+  function fmtTaiwanDateTime() {
+    return new Date().toLocaleString("zh-TW", {
+      timeZone: "Asia/Taipei",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    });
   }
 
   function escapeHtml(str) {
@@ -837,14 +858,36 @@
         "</div>" +
         "</div>";
     });
-    // 附加：儲存/上傳時間
-    var timeStr = data.savedAt || data.uploadedAt || "";
-    if (timeStr) {
+    // 時間歷程
+    var createdStr = data.createdAt || data.savedAt || data.uploadedAt || "";
+    if (createdStr) {
       html +=
         '<div class="obs-detail-row">' +
-        '<div class="obs-detail-label">儲存時間</div>' +
+        '<div class="obs-detail-label">首次紀錄</div>' +
         '<div class="obs-detail-value">' +
-        escapeHtml(timeStr) +
+        escapeHtml(createdStr) +
+        "</div>" +
+        "</div>";
+    }
+    if (data.editHistory && data.editHistory.length > 0) {
+      var historyHtml = data.editHistory
+        .map(function (h, i) {
+          return (
+            "第 " +
+            (i + 1) +
+            " 次修改：" +
+            escapeHtml(h.editedAt) +
+            "（" +
+            escapeHtml(h.editedBy) +
+            "）"
+          );
+        })
+        .join("<br>");
+      html +=
+        '<div class="obs-detail-row">' +
+        '<div class="obs-detail-label">修改歷程</div>' +
+        '<div class="obs-detail-value">' +
+        historyHtml +
         "</div>" +
         "</div>";
     }
@@ -937,7 +980,15 @@
       }
     });
 
-    _viewingRecord.data.lastEditedAt = new Date().toISOString();
+    if (!_viewingRecord.data.editHistory) {
+      _viewingRecord.data.editHistory = [];
+    }
+    _viewingRecord.data.editHistory.push({
+      editedAt: fmtTaiwanDateTime(),
+      editedBy: _viewingRecord.data.tester || "未知",
+    });
+
+    addTester(_viewingRecord.data.tester);
 
     if (_viewingRecord.source === "local") {
       // 更新 localStorage
@@ -981,6 +1032,40 @@
       .replace(/&/g, "&amp;")
       .replace(/"/g, "&quot;")
       .replace(/</g, "&lt;");
+  }
+
+  // ────────────────────────────────────
+  // 施測者累積 (datalist)
+  // ────────────────────────────────────
+
+  function getTesterList() {
+    try {
+      return JSON.parse(localStorage.getItem(TESTER_LIST_KEY) || "[]");
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function addTester(name) {
+    if (!name) return;
+    var list = getTesterList();
+    if (list.indexOf(name) === -1) {
+      list.push(name);
+      list.sort();
+      localStorage.setItem(TESTER_LIST_KEY, JSON.stringify(list));
+      renderTesterDatalist();
+    }
+  }
+
+  function renderTesterDatalist() {
+    var dl = document.getElementById("testerSuggestions");
+    if (!dl) return;
+    var list = getTesterList();
+    dl.innerHTML = list
+      .map(function (t) {
+        return '<option value="' + escapeAttr(t) + '">';
+      })
+      .join("");
   }
 
   // ── 全域匯出（供 onclick 使用）──
