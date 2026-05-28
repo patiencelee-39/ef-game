@@ -416,6 +416,121 @@
         align-items: center;
         gap: 8px;
       }
+
+      /* 紀錄詳情 Modal */
+      .obs-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+      .obs-modal {
+        background: #fff;
+        border-radius: 12px;
+        width: 100%;
+        max-width: 600px;
+        max-height: 85vh;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      }
+      .obs-modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      .obs-modal-header h3 {
+        margin: 0;
+        font-size: 1.1rem;
+      }
+      .obs-modal-close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #6b7280;
+        line-height: 1;
+      }
+      .obs-modal-body {
+        padding: 20px;
+        overflow-y: auto;
+        flex: 1;
+      }
+      .obs-modal-footer {
+        padding: 12px 20px;
+        border-top: 1px solid #e5e7eb;
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+      }
+      .obs-btn {
+        padding: 8px 16px;
+        border-radius: 8px;
+        border: none;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .obs-btn-edit {
+        background: #fbbf24;
+        color: #1f2937;
+      }
+      .obs-btn-save {
+        background: #10b981;
+        color: #fff;
+      }
+      .obs-btn-cancel {
+        background: #e5e7eb;
+        color: #374151;
+      }
+      .obs-btn-close {
+        background: #6b7280;
+        color: #fff;
+      }
+
+      /* 只讀模式 */
+      .obs-detail-row {
+        display: flex;
+        gap: 8px;
+        padding: 6px 0;
+        border-bottom: 1px solid #f3f4f6;
+      }
+      .obs-detail-label {
+        min-width: 120px;
+        font-weight: 600;
+        color: #374151;
+        font-size: 0.85rem;
+      }
+      .obs-detail-value {
+        flex: 1;
+        color: #1f2937;
+        font-size: 0.9rem;
+        word-break: break-word;
+      }
+      .obs-detail-value:empty::after {
+        content: "（未填）";
+        color: #9ca3af;
+        font-style: italic;
+      }
+
+      /* 編輯模式 */
+      .obs-detail-input {
+        flex: 1;
+        padding: 4px 8px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        font-size: 0.9rem;
+      }
+      textarea.obs-detail-input {
+        min-height: 60px;
+        resize: vertical;
+      }
     </style>
   </head>
   <body>
@@ -1171,5 +1286,23 @@
     <script src="../js/firebase-bundle.js"></script>
     <script src="../js/shared/firestore-leaderboard.js"></script>
     <script src="observation-controller.js"></script>
+
+  <!-- 紀錄詳情 Modal -->
+  <div id="obsDetailModal" class="obs-modal-overlay" style="display:none;">
+    <div class="obs-modal">
+      <div class="obs-modal-header">
+        <h3 id="obsModalTitle">📋 紀錄詳情</h3>
+        <button class="obs-modal-close" id="btnObsModalClose">&times;</button>
+      </div>
+      <div class="obs-modal-body" id="obsModalBody"></div>
+      <div class="obs-modal-footer">
+        <button class="obs-btn obs-btn-edit" id="btnObsEdit" style="display:none;">✏️  編輯</button>
+        <button class="obs-btn obs-btn-save" id="btnObsSave" style="display:none;">💾 儲存修改</button>
+        <button class="obs-btn obs-btn-cancel" id="btnObsCancel" style="display:none;">取消編輯</button>
+        <button class="obs-btn obs-btn-close" id="btnObsModalDone">關閉</button>
+      </div>
+    </div>
+  </div>
+
   </body>
 </html>

@@ -21,6 +21,9 @@
 
   var dom = {};
 
+  var _viewingRecord = null;   // { source: "local"|"server", index: number, docId: string|null, data: {} }
+  var _isEditing = false;
+
   // ────────────────────────────────────
   // 初始化
   // ────────────────────────────────────
@@ -76,6 +79,16 @@
     dom.btnObsDeleteAllServer = document.getElementById(
       "btnObsDeleteAllServer",
     );
+
+    // Modal elements
+    dom.obsDetailModal = document.getElementById("obsDetailModal");
+    dom.obsModalTitle = document.getElementById("obsModalTitle");
+    dom.obsModalBody = document.getElementById("obsModalBody");
+    dom.btnObsEdit = document.getElementById("btnObsEdit");
+    dom.btnObsSave = document.getElementById("btnObsSave");
+    dom.btnObsCancel = document.getElementById("btnObsCancel");
+    dom.btnObsModalClose = document.getElementById("btnObsModalClose");
+    dom.btnObsModalDone = document.getElementById("btnObsModalDone");
   }
 
   function bindEvents() {
@@ -125,6 +138,16 @@
         venueOtherRadio.checked = true;
       });
     }
+
+    // Modal 按鈕事件
+    dom.btnObsModalClose.addEventListener("click", closeDetailModal);
+    dom.btnObsModalDone.addEventListener("click", closeDetailModal);
+    dom.btnObsEdit.addEventListener("click", enterEditMode);
+    dom.btnObsCancel.addEventListener("click", exitEditMode);
+    dom.btnObsSave.addEventListener("click", saveEditedRecord);
+    dom.obsDetailModal.addEventListener("click", function (e) {
+      if (e.target === dom.obsDetailModal) closeDetailModal();
+    });
   }
 
   function setDefaults() {
@@ -473,7 +496,9 @@
       if (rec.ageMonths != null) ageStr += rec.ageMonths + "月";
 
       html +=
-        '<div class="data-item">' +
+        '<div class="data-item" style="cursor:pointer;" onclick="ObsTool.viewRecord(\'local\',' +
+        i +
+        ')">' +
         '<div class="info">' +
         '<div class="name">' +
         escapeHtml(rec.childCode || "P00") +
@@ -607,7 +632,11 @@
         '<input type="checkbox" class="server-obs-cb" data-idx="' +
         i +
         '" onchange="ObsTool.updateServerSelection()">' +
-        '<div class="info">' +
+        '<div class="info" style="cursor:pointer;" onclick="ObsTool.viewRecord(\'server\',' +
+        i +
+        ',\'' +
+        rec.docId +
+        '\')">' +
         '<div class="name">' +
         escapeHtml(rec.childCode || "P00") +
         " · " +
@@ -721,12 +750,246 @@
       });
   }
 
+  // ────────────────────────────────────
+  // 紀錄詳情 Modal（查看 / 編輯）
+  // ────────────────────────────────────
+
+  var DETAIL_FIELDS = [
+    { key: "respondentRole", label: "回饋者身份", type: "text" },
+    { key: "preparation", label: "事前準備", type: "array" },
+    { key: "date", label: "日期", type: "text" },
+    { key: "time", label: "時間", type: "text" },
+    { key: "childCode", label: "兒童/回饋者代碼", type: "text" },
+    { key: "ageYears", label: "年齡（歲）", type: "number" },
+    { key: "ageMonths", label: "年齡（月）", type: "number" },
+    { key: "gender", label: "性別", type: "text" },
+    { key: "hearing", label: "聽力狀況", type: "array" },
+    { key: "communication", label: "溝通方式", type: "array" },
+    { key: "venue", label: "場域", type: "text" },
+    { key: "completedLevels", label: "完成關卡", type: "array" },
+    { key: "totalTime", label: "總耗時（分鐘）", type: "number" },
+    { key: "breaks", label: "休息次數", type: "number" },
+    { key: "observationFocus", label: "觀察重點", type: "array" },
+    { key: "ruleUnderstanding", label: "規則理解度", type: "textarea" },
+    { key: "ruleSwitchAdapt", label: "規則切換適應", type: "textarea" },
+    { key: "operationFluency", label: "操作順暢度", type: "textarea" },
+    { key: "emotionEngagement", label: "情緒與投入度", type: "textarea" },
+    { key: "uiIssues", label: "UI 問題回報", type: "textarea" },
+    { key: "childFeedback", label: "兒童回饋摘要", type: "textarea" },
+    { key: "notes", label: "綜合觀察紀錄", type: "textarea" },
+    { key: "specialNotes", label: "特殊備註", type: "textarea" },
+    { key: "parentUsability", label: "操作易用性回饋", type: "textarea" },
+    { key: "parentChildReaction", label: "兒童反應觀察", type: "textarea" },
+    { key: "parentSuggestion", label: "改善建議", type: "textarea" },
+    { key: "tester", label: "施測者", type: "text" },
+  ];
+
+  function openDetailModal(source, index, docId) {
+    var data;
+    if (source === "local") {
+      data = getLocalRecords()[index];
+    } else {
+      data = _serverRecords[index];
+    }
+    if (!data) return;
+
+    _viewingRecord = {
+      source: source,
+      index: index,
+      docId: docId || null,
+      data: JSON.parse(JSON.stringify(data)),
+    };
+    _isEditing = false;
+
+    dom.obsModalTitle.textContent = "📋 紀錄詳情 — " + (data.childCode || "P00");
+    renderReadOnly();
+
+    dom.btnObsEdit.style.display = "";
+    dom.btnObsSave.style.display = "none";
+    dom.btnObsCancel.style.display = "none";
+    dom.obsDetailModal.style.display = "";
+  }
+
+  function closeDetailModal() {
+    dom.obsDetailModal.style.display = "none";
+    _viewingRecord = null;
+    _isEditing = false;
+  }
+
+  function renderReadOnly() {
+    var data = _viewingRecord.data;
+    var html = "";
+    DETAIL_FIELDS.forEach(function (f) {
+      var val = data[f.key];
+      var display = "";
+      if (Array.isArray(val)) {
+        display = val.join("、");
+      } else if (val != null) {
+        display = String(val);
+      }
+      html +=
+        '<div class="obs-detail-row">' +
+        '<div class="obs-detail-label">' +
+        escapeHtml(f.label) +
+        "</div>" +
+        '<div class="obs-detail-value">' +
+        escapeHtml(display) +
+        "</div>" +
+        "</div>";
+    });
+    // 附加：儲存/上傳時間
+    var timeStr = data.savedAt || data.uploadedAt || "";
+    if (timeStr) {
+      html +=
+        '<div class="obs-detail-row">' +
+        '<div class="obs-detail-label">儲存時間</div>' +
+        '<div class="obs-detail-value">' +
+        escapeHtml(timeStr) +
+        "</div>" +
+        "</div>";
+    }
+    dom.obsModalBody.innerHTML = html;
+  }
+
+  function enterEditMode() {
+    _isEditing = true;
+    dom.btnObsEdit.style.display = "none";
+    dom.btnObsSave.style.display = "";
+    dom.btnObsCancel.style.display = "";
+
+    var data = _viewingRecord.data;
+    var html = "";
+    DETAIL_FIELDS.forEach(function (f) {
+      var val = data[f.key];
+      var inputHtml = "";
+
+      if (f.type === "array") {
+        var arrVal = Array.isArray(val) ? val.join("、") : "";
+        inputHtml =
+          '<input class="obs-detail-input" data-field="' +
+          f.key +
+          '" data-type="array" value="' +
+          escapeAttr(arrVal) +
+          '">';
+      } else if (f.type === "textarea") {
+        inputHtml =
+          '<textarea class="obs-detail-input" data-field="' +
+          f.key +
+          '" data-type="textarea">' +
+          escapeHtml(val || "") +
+          "</textarea>";
+      } else if (f.type === "number") {
+        inputHtml =
+          '<input type="number" class="obs-detail-input" data-field="' +
+          f.key +
+          '" data-type="number" value="' +
+          (val != null ? val : "") +
+          '">';
+      } else {
+        inputHtml =
+          '<input class="obs-detail-input" data-field="' +
+          f.key +
+          '" data-type="text" value="' +
+          escapeAttr(val || "") +
+          '">';
+      }
+
+      html +=
+        '<div class="obs-detail-row">' +
+        '<div class="obs-detail-label">' +
+        escapeHtml(f.label) +
+        "</div>" +
+        inputHtml +
+        "</div>";
+    });
+    dom.obsModalBody.innerHTML = html;
+  }
+
+  function exitEditMode() {
+    _isEditing = false;
+    dom.btnObsEdit.style.display = "";
+    dom.btnObsSave.style.display = "none";
+    dom.btnObsCancel.style.display = "none";
+    renderReadOnly();
+  }
+
+  function saveEditedRecord() {
+    if (
+      !confirm("確定要修改這筆紀錄嗎？修改後無法自動復原。")
+    )
+      return;
+
+    // 收集編輯後的值
+    var inputs = dom.obsModalBody.querySelectorAll(".obs-detail-input");
+    inputs.forEach(function (el) {
+      var field = el.getAttribute("data-field");
+      var type = el.getAttribute("data-type");
+      if (type === "array") {
+        _viewingRecord.data[field] = el.value
+          .split(/[、,;；]\s*/)
+          .filter(Boolean);
+      } else if (type === "number") {
+        _viewingRecord.data[field] = el.value ? parseInt(el.value, 10) : null;
+      } else if (type === "textarea") {
+        _viewingRecord.data[field] = el.value.trim();
+      } else {
+        _viewingRecord.data[field] = el.value.trim();
+      }
+    });
+
+    _viewingRecord.data.lastEditedAt = new Date().toISOString();
+
+    if (_viewingRecord.source === "local") {
+      // 更新 localStorage
+      var records = getLocalRecords();
+      records[_viewingRecord.index] = _viewingRecord.data;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+      renderSavedRecords();
+      showMsg("✅ 本機紀錄已更新", "ok");
+    } else {
+      // 更新 Firestore
+      var docId = _viewingRecord.docId || _viewingRecord.data.docId;
+      if (!docId) {
+        showMsg("❌ 找不到文件 ID，無法更新", "err");
+        return;
+      }
+      var updateData = JSON.parse(JSON.stringify(_viewingRecord.data));
+      delete updateData.docId;
+
+      firebase
+        .firestore()
+        .collection("observationRecords")
+        .doc(docId)
+        .set(updateData)
+        .then(function () {
+          // 同步本地快取
+          _serverRecords[_viewingRecord.index] = _viewingRecord.data;
+          _serverRecords[_viewingRecord.index].docId = docId;
+          renderServerRecords();
+          showMsg("✅ 伺服器紀錄已更新", "ok");
+        })
+        .catch(function (err) {
+          showMsg("❌ 更新失敗：" + err.message, "err");
+        });
+    }
+
+    exitEditMode();
+  }
+
+  function escapeAttr(str) {
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/"/g, "&quot;")
+      .replace(/</g, "&lt;");
+  }
+
   // ── 全域匯出（供 onclick 使用）──
   window.ObsTool = {
     deleteRecord: deleteLocalRecord,
     deleteServerRecord: deleteServerRecord,
     toggleAllServer: toggleAllServer,
     updateServerSelection: updateServerSelection,
+    viewRecord: openDetailModal,
   };
 
   // ── 啟動 ──
