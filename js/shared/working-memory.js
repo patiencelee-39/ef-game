@@ -728,6 +728,7 @@ var WorkingMemory = {
       sequence: sequence,
       startTime: null,
       personalBest: personalBest,
+      responseTimeoutMs: options.responseTimeoutMs || null,
     };
 
     // 4. 取得 UI 元素
@@ -818,7 +819,7 @@ var WorkingMemory = {
       _state.startTime = Date.now();
 
       // --- 可見倒數計時器 ---
-      var timeoutMs = WM_DEFAULTS.RESPONSE_TIMEOUT_MS || 10000;
+      var timeoutMs = _state.responseTimeoutMs || _getConfig("RESPONSE_TIMEOUT_MS");
       var countdownEl = document.createElement("div");
       countdownEl.className = "wm-countdown";
       countdownEl.style.cssText = "text-align:center;font-size:1.1rem;color:#ffd43b;margin-bottom:6px;font-weight:600;";

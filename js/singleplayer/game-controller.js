@@ -1760,6 +1760,9 @@ var GameController = (function () {
           questions: _questions,
           personalBest: personalBest,
           reverseProbability: _wmDiffParams.reverseProbability,
+          positions: _wmDiffParams.positions,
+          direction: _wmDiffParams.direction,
+          responseTimeoutMs: _wmDiffParams.responseTimeoutMs,
           onResult: function (wmScore) {
             if (_wmTimedOut) return; // 已逾時跳過
             _wmDone();
