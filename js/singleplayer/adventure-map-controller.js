@@ -565,7 +565,7 @@ function renderMap(mapIndex) {
       wmIcon.setAttribute("aria-hidden", "true");
       wmIcon.alt = "";
       wmIcon.style.cssText =
-        "position:absolute;top:-6px;right:-6px;width:20px;height:20px;pointer-events:none;";
+        "position:absolute;top:-10px;right:-10px;width:30px;height:30px;pointer-events:none;filter:drop-shadow(0 1px 3px rgba(0,0,0,0.4));";
       el.appendChild(wmIcon);
     }
 
@@ -682,7 +682,7 @@ function showPointInfo(point, pointIndex, mapIndex) {
 
   // 開始按鈕文字
   var playBtn = document.getElementById("popup-play-btn");
-  playBtn.textContent = point.status === "passed" ? "🔄 再玩一次" : "▶️ 開始";
+  playBtn.textContent = point.status === "passed" ? "🔄 再玩一次" : "⏩ 直接開始";
 
   // 規則說明連結
   var ruleLink = document.getElementById("popup-rule-link");
