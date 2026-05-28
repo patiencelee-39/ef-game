@@ -273,40 +273,26 @@
       };
     }
 
-    // Go Miss 模式選擇
+    // 動態調整模式選擇
     var goMissRow = document.getElementById("goMissModeRow");
-    var goMissHint = document.getElementById("goMissHint");
     if (goMissRow && typeof SimpleAdaptiveEngine !== "undefined") {
-      // 載入目前設定
       var currentMode = SimpleAdaptiveEngine.getGoMissMode();
-      goMissRow.querySelectorAll(".team-assign-btn").forEach(function (b) {
+      goMissRow.querySelectorAll(".engine-btn").forEach(function (b) {
         b.classList.toggle("active", b.getAttribute("data-gomiss") === currentMode);
       });
-      _updateGoMissHint(currentMode);
 
-      // 點擊切換
       goMissRow.addEventListener("click", function (e) {
-        var btn = e.target.closest(".team-assign-btn");
+        var btn = e.target.closest(".engine-btn");
         if (!btn) return;
-        goMissRow.querySelectorAll(".team-assign-btn").forEach(function (b) {
+        goMissRow.querySelectorAll(".engine-btn").forEach(function (b) {
           b.classList.remove("active");
         });
         btn.classList.add("active");
         var mode = btn.getAttribute("data-gomiss");
         SimpleAdaptiveEngine.setGoMissMode(mode);
-        _updateGoMissHint(mode);
-        showToast("Go 漏按處理模式：" + btn.textContent.trim());
+        var labels = { strict: "⚡ 嚴格模式", resetOnly: "📊 穩定模式", tolerant: "🛡️  容忍模式" };
+        showToast("動態調整模式：" + (labels[mode] || mode));
       });
-    }
-
-    function _updateGoMissHint(mode) {
-      if (!goMissHint) return;
-      var hints = {
-        strict: "⚡ 嚴格模式：等級變動高敏感，適合測驗",
-        resetOnly: "📊 穩定模式：等級變動穩定，不自動修正，適合研究",
-        tolerant: "🛡️ 容忍模式：具容錯且自動修正，適合日常訓練與課堂使用",
-      };
-      goMissHint.textContent = hints[mode] || "";
     }
 
     var lv = getStoredLevel();

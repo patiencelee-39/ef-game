@@ -289,20 +289,29 @@
               <span style="color:rgba(255,255,255,0.8);font-size:0.9rem;">題 → 升/降一級（Go 試題不列入計算）</span>
             </div>
 
-              <!-- Go Miss 處理模式 -->
-              <div style="margin:12px 0;">
-                <div style="color:rgba(255,255,255,0.8);font-size:0.9rem;margin-bottom:8px;">Go 漏按處理模式</div>
-                <div id="goMissModeRow" style="display:flex;gap:6px;flex-wrap:wrap;">
-                  <button class="team-assign-btn" data-gomiss="strict"
-                    title="等級變動高敏感，適合測驗">⚡ 嚴格</button>
-                  <button class="team-assign-btn" data-gomiss="resetOnly"
-                    title="等級變動穩定，不自動修正，適合研究">📊 穩定</button>
-                  <button class="team-assign-btn active" data-gomiss="tolerant"
-                    title="具容錯且自動修正，適合日常訓練與課堂使用">🛡️ 容忍</button>
+              <!-- 動態調整模式 -->
+              <div style="margin:16px 0 12px;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                  <span style="color:rgba(255,255,255,0.85);font-size:0.9rem;font-weight:600;">動態調整模式</span>
+                  <a href="../docs/adaptive-mode-info.html" target="_blank" rel="noopener"
+                     style="font-size:0.75rem;color:#9b59b6;text-decoration:none;border:1px solid rgba(155,89,182,0.4);border-radius:6px;padding:2px 8px;">
+                    📖 了解更多
+                  </a>
                 </div>
-                <p id="goMissHint" style="color:rgba(255,255,255,0.5);font-size:0.8rem;margin:6px 0 0;">
-                  🛡️ 容忍模式：具容錯且自動修正，適合日常訓練與課堂使用
-                </p>
+                <div id="goMissModeRow" style="display:flex;gap:8px;flex-wrap:wrap;">
+                  <button class="engine-btn" data-gomiss="strict" style="flex:1;padding:10px 8px;text-align:center;">
+                    <span style="display:block;font-size:0.9rem;">⚡ 嚴格</span>
+                    <span style="display:block;font-size:0.7rem;opacity:0.7;margin-top:3px;">高敏感，適合測驗</span>
+                  </button>
+                  <button class="engine-btn" data-gomiss="resetOnly" style="flex:1;padding:10px 8px;text-align:center;">
+                    <span style="display:block;font-size:0.9rem;">📊 穩定</span>
+                    <span style="display:block;font-size:0.7rem;opacity:0.7;margin-top:3px;">不自動修正，適合研究</span>
+                  </button>
+                  <button class="engine-btn active" data-gomiss="tolerant" style="flex:1;padding:10px 8px;text-align:center;">
+                    <span style="display:block;font-size:0.9rem;">🛡️  容忍</span>
+                    <span style="display:block;font-size:0.7rem;opacity:0.7;margin-top:3px;">容錯自動修正，適合訓練</span>
+                  </button>
+                </div>
               </div>
 
             <div class="engine-detail-bar-group">

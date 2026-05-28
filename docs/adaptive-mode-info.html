@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>動態調整模式說明</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #1a1a2e;
+      color: #e0e0e0;
+      padding: 24px;
+      line-height: 1.8;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    h1 { font-size: 1.4rem; margin-bottom: 16px; color: #fff; }
+    h2 { font-size: 1.1rem; margin: 24px 0 12px; color: #c39bd3; border-bottom: 1px solid rgba(155,89,182,0.3); padding-bottom: 6px; }
+    h3 { font-size: 1rem; margin: 16px 0 8px; color: #9b59b6; }
+    p { margin: 8px 0; }
+    table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 0.85rem; }
+    th, td { padding: 8px 10px; border: 1px solid rgba(255,255,255,0.1); text-align: left; }
+    th { background: rgba(155,89,182,0.15); color: #c39bd3; font-weight: 600; }
+    .mode-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 16px; margin: 12px 0; }
+    .mode-card h3 { margin-top: 0; }
+    .tag { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; margin-left: 8px; }
+    .tag-strict { background: rgba(231,76,60,0.2); color: #e74c3c; }
+    .tag-reset { background: rgba(52,152,219,0.2); color: #3498db; }
+    .tag-tolerant { background: rgba(46,204,113,0.2); color: #2ecc71; }
+    code { background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; font-size: 0.85em; }
+    .back-btn { display: inline-block; margin-top: 24px; padding: 10px 20px; background: rgba(155,89,182,0.2); border: 1px solid #9b59b6; border-radius: 8px; color: #c39bd3; text-decoration: none; font-weight: 600; }
+    .back-btn:hover { background: rgba(155,89,182,0.3); }
+  </style>
+</head>
+<body>
+  <h1>🎯 動態調整模式說明</h1>
+  <p>動態難度引擎會依據玩家的作答表現自動調整難度等級（Level 1～10）。<br>
+  「動態調整模式」決定引擎如何處理 <strong>Go 試題漏按（Miss）</strong>的情形。</p>
+
+  <h2>為什麼需要這個設定？</h2>
+  <p>遊戲中，No-Go 試題「沒按」視為正確（成功抑制）。但如果玩家完全不操作（離開座位、分心），所有 No-Go 試題都會被判定為正確，導致系統誤以為能力很高而不斷升級。</p>
+  <p>三種模式提供不同的處理策略，適合不同使用情境。</p>
+
+  <h2>三種模式</h2>
+
+  <div class="mode-card">
+    <h3>⚡ 嚴格模式 <span class="tag tag-strict">適合測驗</span></h3>
+    <p><strong>規則：</strong>Go 漏按直接計入「連續錯誤」，等同 No-Go 答錯。</p>
+    <p><strong>效果：</strong>等級變動高敏感。連續漏按 2 題 Go 就會觸發降級。</p>
+    <p><strong>適用：</strong>正式施測、能力評估。反映真實表現，不操作就視為失敗。</p>
+    <p><strong>注意：</strong>幼兒短暫分心（2-3 秒）就可能觸發降級。</p>
+  </div>
+
+  <div class="mode-card">
+    <h3>📊 穩定模式 <span class="tag tag-reset">適合研究</span></h3>
+    <p><strong>規則：</strong>Go 漏按只會重置「連續答對」計數，不累積錯誤。</p>
+    <p><strong>效果：</strong>等級變動穩定，不會因漏按而降級，但也不容易升級。</p>
+    <p><strong>適用：</strong>研究資料蒐集。等級不會因分心亂跑，研究者事後用 Go Hit Rate 篩選無效資料。</p>
+    <p><strong>注意：</strong>完全不操作時等級凍結，不會自動修正。</p>
+  </div>
+
+  <div class="mode-card">
+    <h3>🛡️  容忍模式 <span class="tag tag-tolerant">適合訓練（預設）</span></h3>
+    <p><strong>規則：</strong>Go 漏按會重置連續答對。連續漏按達 3 題才累積 1 次錯誤。</p>
+    <p><strong>效果：</strong>容忍短暫分心，但長時間不操作會緩慢降級。</p>
+    <p><strong>適用：</strong>日常訓練、課堂使用。最適合 3-6 歲幼兒（注意力本來就不穩定）。</p>
+    <p><strong>注意：</strong>偶爾漏按 1-2 題不受影響，連漏 3 題以上才開始累積。</p>
+  </div>
+
+  <h2>情境比較</h2>
+
+  <h3>完全不操作（AFK）時</h3>
+  <table>
+    <tr><th>模式</th><th>會升級嗎？</th><th>會降級嗎？</th><th>結果</th></tr>
+    <tr><td>⚡ 嚴格</td><td>❌ 不會</td><td>✅ 快速降級</td><td>很快降到 Level 1</td></tr>
+    <tr><td>📊 穩定</td><td>⚠️  極少（需連出2題No-Go）</td><td>❌ 不會</td><td>等級凍結</td></tr>
+    <tr><td>🛡️  容忍</td><td>❌ 不會</td><td>⚠️  緩慢降級</td><td>每6題Go Miss降一級</td></tr>
+  </table>
+
+  <h3>正常遊玩偶爾漏按時</h3>
+  <table>
+    <tr><th>模式</th><th>漏按1題Go</th><th>連漏2題Go</th><th>連漏3題Go</th></tr>
+    <tr><td>⚡ 嚴格</td><td>累積1次連錯</td><td>觸發降級</td><td>觸發降級</td></tr>
+    <tr><td>📊 穩定</td><td>升級進度歸零</td><td>升級進度歸零</td><td>升級進度歸零</td></tr>
+    <tr><td>🛡️  容忍</td><td>升級進度歸零</td><td>升級進度歸零</td><td>累積1次連錯</td></tr>
+  </table>
+
+  <h2>建議選擇</h2>
+  <table>
+    <tr><th>使用情境</th><th>建議模式</th></tr>
+    <tr><td>日常訓練、課堂使用</td><td>🛡️  容忍模式（預設）</td></tr>
+    <tr><td>研究資料蒐集</td><td>📊 穩定模式</td></tr>
+    <tr><td>正式施測、能力評估</td><td>⚡ 嚴格模式</td></tr>
+  </table>
+
+  <a href="javascript:window.close()" class="back-btn">← 關閉此視窗</a>
+</body>
+</html>
