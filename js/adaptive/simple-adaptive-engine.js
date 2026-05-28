@@ -176,15 +176,15 @@ var SimpleAdaptiveEngine = (function () {
    */
   var LEVEL_WM = {
     1:  { minPositions: 2, maxPositions: 2, reverseProbability: 0.0, responseTimeoutMs: 120000 },
-    2:  { minPositions: 2, maxPositions: 2, reverseProbability: 0.0, responseTimeoutMs: 100000 },
-    3:  { minPositions: 2, maxPositions: 3, reverseProbability: 0.1, responseTimeoutMs: 80000 },
-    4:  { minPositions: 2, maxPositions: 3, reverseProbability: 0.2, responseTimeoutMs: 70000 },
-    5:  { minPositions: 2, maxPositions: 4, reverseProbability: 0.3, responseTimeoutMs: 60000 },
-    6:  { minPositions: 3, maxPositions: 4, reverseProbability: 0.4, responseTimeoutMs: 50000 },
-    7:  { minPositions: 3, maxPositions: 5, reverseProbability: 0.5, responseTimeoutMs: 40000 },
-    8:  { minPositions: 3, maxPositions: 5, reverseProbability: 0.7, responseTimeoutMs: 30000 },
-    9:  { minPositions: 4, maxPositions: 6, reverseProbability: 0.8, responseTimeoutMs: 20000 },
-    10: { minPositions: 4, maxPositions: 6, reverseProbability: 0.8, responseTimeoutMs: 15000 },
+    2:  { minPositions: 2, maxPositions: 3, reverseProbability: 0.0, responseTimeoutMs: 100000 },
+    3:  { minPositions: 3, maxPositions: 3, reverseProbability: 0.1, responseTimeoutMs: 80000 },
+    4:  { minPositions: 3, maxPositions: 4, reverseProbability: 0.2, responseTimeoutMs: 70000 },
+    5:  { minPositions: 4, maxPositions: 5, reverseProbability: 0.3, responseTimeoutMs: 60000 },
+    6:  { minPositions: 5, maxPositions: 6, reverseProbability: 0.4, responseTimeoutMs: 50000 },
+    7:  { minPositions: 5, maxPositions: 7, reverseProbability: 0.5, responseTimeoutMs: 40000 },
+    8:  { minPositions: 6, maxPositions: 8, reverseProbability: 0.7, responseTimeoutMs: 30000 },
+    9:  { minPositions: 7, maxPositions: 9, reverseProbability: 0.8, responseTimeoutMs: 20000 },
+    10: { minPositions: 8, maxPositions: 9, reverseProbability: 0.8, responseTimeoutMs: 15000 },
   };
 
   // =========================================

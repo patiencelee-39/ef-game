@@ -197,7 +197,7 @@ const GAME_CONFIG = {
    * ──────────────────────────────────────────────────────── */
   WORKING_MEMORY: {
     MIN_POSITIONS: 2, // ← 教師可改：最少記幾個位置
-    MAX_POSITIONS: 6, // ← 教師可改：最多記幾個位置
+    MAX_POSITIONS: 9, // ← 教師可改：最多記幾個位置
     HIGHLIGHT_DURATION_MS: 800, // ← 教師可改：位置亮起時間（0.8秒）
     HIGHLIGHT_INTERVAL_MS: 400, // ← 教師可改：位置間隔時間（0.4秒）
     RESPONSE_TIMEOUT_MS: 60000, // ← 教師可改：作答時間限制（60秒）
