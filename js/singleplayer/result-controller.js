@@ -31,6 +31,17 @@ var ResultController = (function () {
     return html;
   }
 
+  function getMaxStars(pointDef, wmResult) {
+    var max = 1; // 規則通過⭐
+    if (pointDef && pointDef.hasWM) {
+      max += 1; // WM 通過⭐
+      if (wmResult && wmResult.totalPositions) {
+        max += getWMBonus(wmResult.direction || "forward", wmResult.totalPositions);
+      }
+    }
+    return max;
+  }
+
   /** 百分比格式化 */
   function pct(value) {
     if (value == null) return "—";
@@ -355,11 +366,14 @@ var ResultController = (function () {
           "</div>";
       }
 
+      // 預先取得 pointDef
+      var _pointDef = cr.pointDef || {};
+
       // === 2. 星星 ===
       html +=
         '<div style="text-align:center;">' +
         '<div class="star-display">' +
-        starsHTML(stars.totalStars || 0, 3) +
+        starsHTML(stars.totalStars || 0, getMaxStars(_pointDef, wm)) +
         "</div>" +
         '<div class="star-count-text">獲得 ' +
         (stars.totalStars || 0) +
@@ -369,7 +383,6 @@ var ResultController = (function () {
         "</div>";
 
       // === 2.5 場地資訊 ===
-      var _pointDef = cr.pointDef || {};
       var _fieldId = _pointDef.field || "";
       var _ruleLabel = _pointDef.label || _pointDef.id || "";
       var _fieldName =
@@ -797,7 +810,7 @@ var ResultController = (function () {
         html += "</div>"; // info
         html +=
           '<span class="combo-result-stars">' +
-          starsHTML(ss.totalStars || 0, 3) +
+          starsHTML(ss.totalStars || 0, getMaxStars(combo, result.wmResult)) +
           "</span>";
         html += "</div>"; // item
       }
