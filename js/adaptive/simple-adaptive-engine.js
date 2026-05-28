@@ -35,6 +35,21 @@ var SimpleAdaptiveEngine = (function () {
   var STREAK_THRESHOLD = 2;
   var STREAK_STORAGE_KEY = "ef_adaptive_streak";
 
+  var GO_MISS_MODE_KEY = "ef_adaptive_go_miss_mode";
+  var GO_MISS_TOLERANCE = 3;
+  var _goMissMode = "tolerant"; // 預設：容忍模式
+  var _goMissStreak = 0;
+
+  function _loadGoMissMode() {
+    try {
+      var val = localStorage.getItem(GO_MISS_MODE_KEY);
+      if (val === "strict" || val === "resetOnly" || val === "tolerant") return val;
+    } catch (e) { /* ignore */ }
+    return "tolerant";
+  }
+
+  _goMissMode = _loadGoMissMode();
+
   function _loadStreak() {
     try {
       var val = localStorage.getItem(STREAK_STORAGE_KEY);
@@ -405,9 +420,34 @@ var SimpleAdaptiveEngine = (function () {
      * @param {boolean} trialResult.isCorrect
      */
     onTrialComplete: function (trialResult) {
-      // 只計 No-Go 試題，Go 試題完全忽略（不影響連續計數）
-      if (trialResult.isGo) return;
+      // Go 試題處理（依據 Go Miss 模式）
+      if (trialResult.isGo) {
+        if (!trialResult.isCorrect) {
+          // Go Miss
+          if (_goMissMode === "strict") {
+            _consecutiveIncorrect++;
+            _consecutiveCorrect = 0;
+            _tryAdjustLevel();
+          } else if (_goMissMode === "resetOnly") {
+            _consecutiveCorrect = 0;
+          } else if (_goMissMode === "tolerant") {
+            _consecutiveCorrect = 0;
+            _goMissStreak++;
+            if (_goMissStreak >= GO_MISS_TOLERANCE) {
+              _consecutiveIncorrect++;
+              _goMissStreak = 0;
+              _tryAdjustLevel();
+            }
+          }
+        } else {
+          // Go Hit → 重置 miss 連續計數
+          _goMissStreak = 0;
+        }
+        return;
+      }
 
+      // No-Go 試題（邏輯不變）
+      _goMissStreak = 0;
       if (trialResult.isCorrect) {
         _consecutiveCorrect++;
         _consecutiveIncorrect = 0;
@@ -443,6 +483,8 @@ var SimpleAdaptiveEngine = (function () {
     reset: function () {
       _level = _loadLevel();
       STREAK_THRESHOLD = _loadStreak();
+      _goMissStreak = 0;
+      _goMissMode = _loadGoMissMode();
       _consecutiveCorrect = 0;
       _consecutiveIncorrect = 0;
       _levelHistory = [];
@@ -520,6 +562,20 @@ var SimpleAdaptiveEngine = (function () {
 
     getStreakThreshold: function () {
       return STREAK_THRESHOLD;
+    },
+
+    setGoMissMode: function (mode) {
+      if (mode === "strict" || mode === "resetOnly" || mode === "tolerant") {
+        _goMissMode = mode;
+        _goMissStreak = 0;
+        try {
+          localStorage.setItem(GO_MISS_MODE_KEY, mode);
+        } catch (e) { /* ignore */ }
+      }
+    },
+
+    getGoMissMode: function () {
+      return _goMissMode;
     },
   };
 })();

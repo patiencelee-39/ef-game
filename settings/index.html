@@ -289,6 +289,22 @@
               <span style="color:rgba(255,255,255,0.8);font-size:0.9rem;">題 → 升/降一級（Go 試題不列入計算）</span>
             </div>
 
+              <!-- Go Miss 處理模式 -->
+              <div style="margin:12px 0;">
+                <div style="color:rgba(255,255,255,0.8);font-size:0.9rem;margin-bottom:8px;">Go 漏按處理模式</div>
+                <div id="goMissModeRow" style="display:flex;gap:6px;flex-wrap:wrap;">
+                  <button class="team-assign-btn" data-gomiss="strict"
+                    title="等級變動高敏感，適合測驗">⚡ 嚴格</button>
+                  <button class="team-assign-btn" data-gomiss="resetOnly"
+                    title="等級變動穩定，不自動修正，適合研究">📊 穩定</button>
+                  <button class="team-assign-btn active" data-gomiss="tolerant"
+                    title="具容錯且自動修正，適合日常訓練與課堂使用">🛡️ 容忍</button>
+                </div>
+                <p id="goMissHint" style="color:rgba(255,255,255,0.5);font-size:0.8rem;margin:6px 0 0;">
+                  🛡️ 容忍模式：具容錯且自動修正，適合日常訓練與課堂使用
+                </p>
+              </div>
+
             <div class="engine-detail-bar-group">
               <div class="engine-detail-bar-row">
                 <span class="engine-detail-bar-label" data-param-key="stimulus"></span>
