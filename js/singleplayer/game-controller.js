@@ -375,7 +375,7 @@ var GameController = (function () {
         label: "🐱 拍拍貓貓！"
       },
       mixed: {
-        color: "#7c3aed",
+        color: "#3498db",
         label: "🤔 是起司還是貓？"
       }
     },
@@ -389,7 +389,7 @@ var GameController = (function () {
         label: "🦈 捕鯊魚！"
       },
       mixed: {
-        color: "#7c3aed",
+        color: "#3498db",
         label: "🤔 是魚還是鯊魚？"
       }
     }
