@@ -154,15 +154,22 @@ function _getConfig(key) {
  * @param {number} n - 要擷取的位置數
  * @returns {Array<string>} stimulusKey 陣列，如 ['cheese', 'cat', 'cheese']
  */
+var CONTEXT_TO_SUFFIX = {
+  noPerson: "noperson",
+  hasPerson: "person",
+  day: "sun",
+  night: "moon",
+};
+
 function _extractSequence(questions, n, ruleId) {
   var total = questions.length;
   var start = Math.max(0, total - n);
   var seq = [];
   for (var i = start; i < total && seq.length < n; i++) {
     var key = questions[i].stimulusKey || questions[i].stimulus || "unknown";
-    // 混合規則：如果有 context，組合成 key_context 格式
     if (ruleId === "mixed" && questions[i].context) {
-      key = key + "_" + questions[i].context;
+      var suffix = CONTEXT_TO_SUFFIX[questions[i].context] || questions[i].context;
+      key = key + "_" + suffix;
     }
     seq.push(key);
   }
