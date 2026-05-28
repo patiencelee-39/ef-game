@@ -86,6 +86,55 @@
     <tr><td>🛡️  容忍</td><td>升級進度歸零</td><td>升級進度歸零</td><td>累積1次連錯</td></tr>
   </table>
 
+  <h2>詳細情境模擬</h2>
+  <p>以下模擬基於：連續門檻 = 2 題、Go 比例 = 80%、容忍次數 = 3（容忍模式）。</p>
+
+  <h3>情境 1：完全不操作（AFK）</h3>
+  <p>出題序列：Go → Go → Go → Go → No-Go → Go → Go → No-Go → Go → No-Go</p>
+  <table>
+    <tr><th>步驟</th><th>題型</th><th>結果</th><th>⚡ 嚴格</th><th>📊 穩定</th><th>🛡️ 容忍</th></tr>
+    <tr><td>1</td><td>Go</td><td>Miss</td><td>連錯=1</td><td>連對=0</td><td>連對=0, miss連=1</td></tr>
+    <tr><td>2</td><td>Go</td><td>Miss</td><td>連錯=2 → <strong>降級</strong></td><td>連對=0</td><td>連對=0, miss連=2</td></tr>
+    <tr><td>3</td><td>Go</td><td>Miss</td><td>連錯=1</td><td>連對=0</td><td>miss連=3 → 連錯=1</td></tr>
+    <tr><td>4</td><td>Go</td><td>Miss</td><td>連錯=2 → <strong>降級</strong></td><td>連對=0</td><td>連對=0, miss連=1</td></tr>
+    <tr><td>5</td><td>No-Go</td><td>CR（正確）</td><td>連對=1</td><td>連對=1</td><td>連對=1</td></tr>
+    <tr><td>6</td><td>Go</td><td>Miss</td><td>連錯=1</td><td>連對=0</td><td>連對=0, miss連=1</td></tr>
+    <tr><td>7</td><td>Go</td><td>Miss</td><td>連錯=2 → <strong>降級</strong></td><td>連對=0</td><td>連對=0, miss連=2</td></tr>
+    <tr><td>8</td><td>No-Go</td><td>CR（正確）</td><td>連對=1</td><td>連對=1</td><td>連對=1</td></tr>
+    <tr><td>9</td><td>No-Go</td><td>CR（正確）</td><td>連對=2 → <strong>升級</strong></td><td>連對=2 → <strong>升級</strong></td><td>連對=2 → <strong>升級</strong></td></tr>
+  </table>
+  <p><strong>結論：</strong>嚴格模式快速降級但遇連續 No-Go 仍會升回（震盪）；穩定模式不升不降直到連出 2 題 No-Go；容忍模式每 3 題 Go Miss 累積 1 次連錯，同時阻止升級。</p>
+
+  <h3>情境 2：正常遊玩偶爾漏按 1 題 Go</h3>
+  <table>
+    <tr><th>步驟</th><th>題型</th><th>結果</th><th>⚡ 嚴格</th><th>📊 穩定</th><th>🛡️ 容忍</th></tr>
+    <tr><td>1</td><td>No-Go</td><td>CR（正確）</td><td>連對=1</td><td>連對=1</td><td>連對=1</td></tr>
+    <tr><td>2</td><td>Go</td><td>Hit（正確）</td><td>（忽略）</td><td>（忽略）</td><td>miss連=0</td></tr>
+    <tr><td>3</td><td>Go</td><td><strong>Miss</strong></td><td>連錯=1</td><td>連對=0</td><td>連對=0, miss連=1</td></tr>
+    <tr><td>4</td><td>Go</td><td>Hit（正確）</td><td>（忽略）</td><td>（忽略）</td><td>miss連=0</td></tr>
+    <tr><td>5</td><td>No-Go</td><td>CR（正確）</td><td>連對=1</td><td>連對=1</td><td>連對=1</td></tr>
+    <tr><td>6</td><td>No-Go</td><td>CR（正確）</td><td>連對=2 → <strong>升級</strong></td><td>連對=2 → <strong>升級</strong></td><td>連對=2 → <strong>升級</strong></td></tr>
+  </table>
+  <p><strong>結論：</strong>三種模式在偶爾漏按 1 題的情況下表現相似，都能正常升級。嚴格模式多累積了 1 次連錯但未達門檻。</p>
+
+  <h3>情境 3：幼兒短暫分心（連漏 2 題 Go）</h3>
+  <table>
+    <tr><th>步驟</th><th>題型</th><th>結果</th><th>⚡ 嚴格</th><th>📊 穩定</th><th>🛡️ 容忍</th></tr>
+    <tr><td>1</td><td>No-Go</td><td>CR（正確）</td><td>連對=1</td><td>連對=1</td><td>連對=1</td></tr>
+    <tr><td>2</td><td>Go</td><td><strong>Miss</strong></td><td>連錯=1</td><td>連對=0</td><td>連對=0, miss連=1</td></tr>
+    <tr><td>3</td><td>Go</td><td><strong>Miss</strong></td><td>連錯=2 → <strong>降級！</strong></td><td>連對=0</td><td>連對=0, miss連=2</td></tr>
+    <tr><td>4</td><td>No-Go</td><td>CR（正確）</td><td>連對=1</td><td>連對=1</td><td>連對=1</td></tr>
+  </table>
+  <p><strong>結論：</strong>嚴格模式在連漏 2 題時觸發降級（3-6 歲幼兒注意力波動大，此情境常見）。穩定模式和容忍模式不受影響，只是升級進度被重置。</p>
+
+  <h3>情境 4：長時間不操作（10 題 AFK）後回來</h3>
+  <table>
+    <tr><th>模式</th><th>AFK 期間等級變化</th><th>回來後的狀態</th></tr>
+    <tr><td>⚡ 嚴格</td><td>降了約 4-5 次（每 2 題 Go Miss 降一次，但遇 No-Go CR 可能升回）</td><td>等級震盪後偏低</td></tr>
+    <tr><td>📊 穩定</td><td>不變（不會降，但也升不了）</td><td>維持 AFK 前的等級</td></tr>
+    <tr><td>🛡️ 容忍</td><td>降了約 1-2 次（每 3 題 Go Miss 累積 1 次連錯，需 6 題才降一次）</td><td>小幅下降</td></tr>
+  </table>
+
   <h2>建議選擇</h2>
   <table>
     <tr><th>使用情境</th><th>建議模式</th></tr>
