@@ -62,7 +62,7 @@ function _getQConfig() {
     return GAME_CONFIG.QUESTIONS;
   }
   return {
-    DEFAULT_COUNT: 6,
+    DEFAULT_COUNT: 40,
     MIXED_MULTIPLIER: 2,
     MIN_COUNT: 6,
     MAX_COUNT: 30,

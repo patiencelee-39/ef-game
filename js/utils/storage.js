@@ -157,7 +157,10 @@ function createDefaultPlayerProfile(seatNumber, nickname) {
     soundPack: "default",
     soundOverrides: {},
     questionCountPrefs: {
-      ruleQuestionCount: 50, // 預設 50 題
+      ruleQuestionCount:
+        (typeof GAME_CONFIG !== "undefined")
+          ? GAME_CONFIG.QUESTIONS.DEFAULT_COUNT
+          : 40,
     },
     totalPlayTime: 0,
     firestoreUploadPrefs: {

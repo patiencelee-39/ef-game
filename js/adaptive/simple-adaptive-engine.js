@@ -169,7 +169,7 @@ var SimpleAdaptiveEngine = (function () {
     7:  { minPositions: 3, maxPositions: 5, reverseProbability: 0.5, responseTimeoutMs: 40000 },
     8:  { minPositions: 3, maxPositions: 5, reverseProbability: 0.7, responseTimeoutMs: 30000 },
     9:  { minPositions: 4, maxPositions: 6, reverseProbability: 0.8, responseTimeoutMs: 20000 },
-    10: { minPositions: 4, maxPositions: 6, reverseProbability: 1.0, responseTimeoutMs: 15000 },
+    10: { minPositions: 4, maxPositions: 6, reverseProbability: 0.8, responseTimeoutMs: 15000 },
   };
 
   // =========================================
