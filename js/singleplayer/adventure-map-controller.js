@@ -565,7 +565,7 @@ function renderMap(mapIndex) {
       wmIcon.setAttribute("aria-hidden", "true");
       wmIcon.alt = "";
       wmIcon.style.cssText =
-        "position:absolute;top:-10px;right:-10px;width:30px;height:30px;pointer-events:none;filter:drop-shadow(0 1px 3px rgba(0,0,0,0.4));";
+        "position:absolute;top:-16px;right:-16px;width:42px;height:42px;pointer-events:none;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));";
       el.appendChild(wmIcon);
     }
 
