@@ -345,13 +345,13 @@ button:disabled {
 
 /* 小老鼠混合 — 沒人（規則 A）*/
 .context-no-person {
-  border: 4px solid var(--current-combo-color);
+  border: 4px solid var(--no-person-border);
 }
 
 /* 小老鼠混合 — 有人（規則 B）*/
 .context-has-person {
   border: 6px solid var(--person-border);
-  box-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+  box-shadow: 0 0 20px rgba(107, 114, 128, 0.5);
 }
 
 /* 釣魚混合 — 白天（規則 A）*/
