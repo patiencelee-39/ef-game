@@ -32,7 +32,7 @@ var SimpleAdaptiveEngine = (function () {
   var ENGINE_NAME = "SimpleAdaptiveEngine";
 
   /** 連續答對/答錯幾題觸發難度變化（可由玩家設定） */
-  var STREAK_THRESHOLD = 2;
+  var STREAK_THRESHOLD = 8;
   var STREAK_STORAGE_KEY = "ef_adaptive_streak";
 
   var GO_MISS_MODE_KEY = "ef_adaptive_go_miss_mode";
