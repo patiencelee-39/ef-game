@@ -2,6 +2,17 @@
 let firebaseReady = false;
 
 window.addEventListener("DOMContentLoaded", () => {
+  // 從網址讀取房間代碼並自動填入
+  var urlParams = new URLSearchParams(window.location.search);
+  var codeFromUrl = urlParams.get('code');
+  if (codeFromUrl) {
+    var chars = codeFromUrl.toUpperCase().replace(/-/g, '').split('');
+    var inputs = document.querySelectorAll('.code-input');
+    inputs.forEach(function(input, i) {
+      if (chars[i]) input.value = chars[i];
+    });
+  }
+
   // 等 firebase-config.js 的匿名登入完成
   firebase.auth().onAuthStateChanged((user) => {
     if (user) {

@@ -61,6 +61,26 @@
         <button class="copy-btn" onclick="copyRoomCode()">📋 複製代碼</button>
       </div>
 
+      <!-- 分享加入連結區塊 -->
+      <div class="share-section">
+        <div class="share-toggle" id="shareToggle" onclick="toggleShare()">
+          ▶ 📤 分享加入連結
+        </div>
+        <div class="share-content" id="shareContent" style="display:none;">
+          <img src="../images/[QRcode] EFgame加入房間.png" alt="加入房間 QR Code" 
+   style="width:150px;height:150px;display:block;margin:8px 
+   auto;border-radius:8px;background:#fff;padding:4px;" />
+          <p style="text-align:center;font-size:0.75rem;opacity:0.6;margin:4px 0 
+   12px;">掃碼後需手動輸入房間代碼</p>
+          <div style="text-align:center;font-size:0.8rem;opacity:0.5;margin-bottom:8px;">──
+   或用連結（代碼已帶入）──</div>
+          <button class="copy-btn" id="copyLinkBtn" onclick="copyJoinLink()">📋
+   複製加入連結</button>
+          <p style="text-align:center;font-size:0.75rem;opacity:0.6;margin:4px 0 0;">複製後貼到
+   LINE，點開即可加入</p>
+        </div>
+      </div>
+
       <!-- 玩家列表 -->
       <div class="section">
         <div class="section-title">
@@ -160,6 +180,46 @@
 
     <!-- Toast 通知 -->
     <div class="toast" id="toast"></div>
+
+    <style>
+      .share-section {
+        margin-top: 12px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 8px;
+        padding: 10px 14px;
+      }
+      .share-toggle {
+        cursor: pointer;
+        font-size: 0.9rem;
+        opacity: 0.8;
+        user-select: none;
+      }
+      .share-toggle:hover { opacity: 1; }
+      .share-content { margin-top: 10px; }
+    </style>
+
+    <script>
+      function toggleShare() {
+        var content = document.getElementById('shareContent');
+        var toggle = document.getElementById('shareToggle');
+        if (content.style.display === 'none') {
+          content.style.display = 'block';
+          toggle.textContent = '▼ 📤 分享加入連結';
+        } else {
+          content.style.display = 'none';
+          toggle.textContent = '▶ 📤 分享加入連結';
+        }
+      }
+
+      function copyJoinLink() {
+        var code = document.getElementById('roomCode').textContent.replace(/-/g, '');
+        var link = 'https://efgame-634af.web.app/multiplayer/room-join.html?code=' + code;
+        navigator.clipboard.writeText(link);
+        var btn = document.getElementById('copyLinkBtn');
+        btn.textContent = '已複製✓';
+        setTimeout(function() { btn.textContent = '📋 複製加入連結'; }, 1500);
+      }
+    </script>
 
     <script defer src="../js/multiplayer/relay-manager.js"></script>
     <script defer src="../js/multiplayer/room-lobby-controller.js"></script>
