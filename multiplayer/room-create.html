@@ -144,7 +144,12 @@
 
           <!-- 遊戲模式 -->
           <section class="form-section">
-            <h2>🏁 遊戲模式</h2>
+            <h2 style="display:inline;">🏁 遊戲模式</h2>
+            <span style="margin-left:12px;font-size:0.7rem;opacity:0.4;user-select:none;">
+              <span id="devOnBtn" style="cursor:pointer;" title="點擊複製 開啟開發模式 指令">DEV ON</span>
+              <span style="margin:0 4px;">|</span>
+              <span id="devOffBtn" style="cursor:pointer;" title="點擊複製 關閉開發模式 指令">DEV OFF</span>
+            </span>
             <div class="game-mode-selector" id="gameModeSelector">
               <button
                 type="button"
@@ -434,6 +439,23 @@
         </form>
       </main>
     </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('devOnBtn').addEventListener('click', function() {
+          navigator.clipboard.writeText('localStorage.setItem("ef_dev_mode", "1")');
+          this.textContent = '已複製✓';
+          var btn = this;
+          setTimeout(function() { btn.textContent = 'DEV ON'; }, 1500);
+        });
+        document.getElementById('devOffBtn').addEventListener('click', function() {
+          navigator.clipboard.writeText('localStorage.removeItem("ef_dev_mode")');
+          this.textContent = '已複製✓';
+          var btn = this;
+          setTimeout(function() { btn.textContent = 'DEV OFF'; }, 1500);
+        });
+      });
+    </script>
 
     <script defer src="../js/multiplayer/room-create-controller.js"></script>
   </body>

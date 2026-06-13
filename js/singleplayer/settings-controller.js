@@ -250,11 +250,8 @@
     // 更新規則說明文字
     var ruleText = document.getElementById("edRuleText");
     if (ruleText && typeof SimpleAdaptiveEngine !== "undefined") {
-      var streak = SimpleAdaptiveEngine.getStreakThreshold();
-      ruleText.textContent = "※ 只計 No-Go 試題，連對 " + streak +
-        " 題升一級，連錯 " + streak +
-        " 題降一級（Level " + SimpleAdaptiveEngine.MIN_LEVEL + "～" +
-        SimpleAdaptiveEngine.MAX_LEVEL + "）";
+      var t = SimpleAdaptiveEngine.getStreakThreshold();
+      ruleText.textContent = "※ No-Go連對 " + t + " 題升一級，No-Go連錯 " + t + " 題降一級";
     }
 
     // streak threshold 從引擎抓值

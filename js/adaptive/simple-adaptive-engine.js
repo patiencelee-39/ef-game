@@ -32,7 +32,8 @@ var SimpleAdaptiveEngine = (function () {
   var ENGINE_NAME = "SimpleAdaptiveEngine";
 
   /** 連續答對/答錯幾題觸發難度變化（可由玩家設定） */
-  var STREAK_THRESHOLD = 8;
+  var DEFAULT_STREAK = 8;
+  var STREAK_THRESHOLD = DEFAULT_STREAK;
   var STREAK_STORAGE_KEY = "ef_adaptive_streak";
 
   var GO_MISS_MODE_KEY = "ef_adaptive_go_miss_mode";
@@ -58,7 +59,7 @@ var SimpleAdaptiveEngine = (function () {
         if (n >= 1 && n <= 10) return n;
       }
     } catch (e) { /* ignore */ }
-    return 2;
+    return DEFAULT_STREAK;
   }
 
   STREAK_THRESHOLD = _loadStreak();
@@ -542,6 +543,7 @@ var SimpleAdaptiveEngine = (function () {
 
     /** 常數匯出（供外部參考） */
     get STREAK_THRESHOLD() { return STREAK_THRESHOLD; },
+    DEFAULT_STREAK: DEFAULT_STREAK,
     MIN_LEVEL: MIN_LEVEL,
     MAX_LEVEL: MAX_LEVEL,
     DEFAULT_LEVEL: DEFAULT_LEVEL,
