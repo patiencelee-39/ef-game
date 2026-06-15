@@ -1,4 +1,8 @@
 /* --- 頁面容器 --- */
+body:has(.game-page) {
+  padding: 0;
+}
+
 .game-page {
   width: 100%;
   max-width: 640px;
@@ -119,7 +123,9 @@
   background: var(--bg-dark);
   border: 3px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--border-radius-lg);
-  transition: border-color 0.4s ease, background 0.4s ease;
+  transition:
+    border-color 0.4s ease,
+    background 0.4s ease;
   margin: 8px;
 }
 
@@ -826,5 +832,78 @@
   100% {
     transform: scale(1);
     opacity: 1;
+  }
+}
+
+/* --- 矮視窗適應（網址列佔空間、筆電較矮螢幕） --- */
+@media (max-height: 600px) {
+  .game-header {
+    padding: 4px 12px;
+  }
+  .header-btn {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+    font-size: 1.1rem;
+  }
+  .game-play-area {
+    margin: 4px;
+  }
+  .trial-info {
+    padding: 4px 12px;
+  }
+  .stimulus-container {
+    min-height: 120px;
+    margin: 4px;
+  }
+  .control-area {
+    padding: 6px 12px;
+  }
+  .btn-key {
+    min-height: 56px;
+    font-size: var(--font-size-md);
+  }
+  #stimulus,
+  #demoStimulus {
+    width: 80px;
+    height: 80px;
+  }
+  #contextIndicator,
+  #demoContextIndicator {
+    width: 80px;
+    height: 80px;
+    top: 10px;
+  }
+  .rule-intro {
+    gap: 10px;
+    padding: 10px;
+  }
+  .rule-intro h2 {
+    font-size: 1.2rem;
+  }
+  .rule-stim-icon {
+    width: 48px;
+    height: 48px;
+  }
+  .rule-box {
+    padding: 8px 12px;
+    gap: 10px;
+  }
+}
+
+@media (max-height: 480px) {
+  .stimulus-container {
+    min-height: 80px;
+  }
+  .btn-key {
+    min-height: 44px;
+    font-size: var(--font-size-sm);
+  }
+  .key-hint {
+    display: inline;
+    margin-top: 0;
+    margin-left: 8px;
+    font-size: 0.7rem;
   }
 }
