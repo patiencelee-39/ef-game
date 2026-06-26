@@ -1,4 +1,4 @@
-*.png
+
 # PWA 必要圖示例外
 !icon-192x192.png
 !icon-512x512.png
