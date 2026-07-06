@@ -122,11 +122,11 @@ var IRTSimpleEngine = (function () {
   };
 
   var LEVEL_WM = {
-    1: { minPositions: 2, maxPositions: 3, highlightDurationMs: 1000, reverseProbability: 0.5 },
-    2: { minPositions: 2, maxPositions: 4, highlightDurationMs: 900, reverseProbability: 0.6 },
-    3: { minPositions: 2, maxPositions: 6, highlightDurationMs: 800, reverseProbability: 0.7 },
-    4: { minPositions: 3, maxPositions: 6, highlightDurationMs: 700, reverseProbability: 0.8 },
-    5: { minPositions: 3, maxPositions: 6, highlightDurationMs: 600, reverseProbability: 0.9 },
+    1: { minPositions: 2, maxPositions: 2, highlightDurationMs: 1000, reverseProbability: 0.5 },
+    2: { minPositions: 2, maxPositions: 2, highlightDurationMs: 900, reverseProbability: 0.6 },
+    3: { minPositions: 3, maxPositions: 4, highlightDurationMs: 800, reverseProbability: 0.7 },
+    4: { minPositions: 3, maxPositions: 4, highlightDurationMs: 700, reverseProbability: 0.8 },
+    5: { minPositions: 5, maxPositions: 6, highlightDurationMs: 600, reverseProbability: 0.9 },
   };
 
   // =========================================
